@@ -1,0 +1,5 @@
+manala:
+  description: Foo bar
+  sync:
+    - foo
+    - foo bar
