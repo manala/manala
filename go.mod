@@ -47,3 +47,7 @@ require (
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
 )
+
+// See: https://github.com/manifoldco/promptui/issues/98
+// See: https://github.com/manifoldco/promptui/issues/115
+replace github.com/nicksnyder/go-i18n => github.com/nicksnyder/go-i18n v1.10.1
