@@ -332,7 +332,9 @@ func syncNode(node *node) error {
 				}
 				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
 
-				srcFile.Seek(0, io.SeekStart)
+				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
+					return err
+				}
 			}
 
 			srcReader = srcFile
