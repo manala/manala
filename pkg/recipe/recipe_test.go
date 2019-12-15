@@ -43,7 +43,8 @@ func TestLoadTestSuite(t *testing.T) {
 /****************/
 
 func (s *LoadTestSuite) TestLoad() {
-	repo, _ := repository.Load("testdata/load/repository", "")
+	repo := repository.New("testdata/load/repository")
+	_ = repo.Load("")
 	rec := New("foo")
 	err := rec.Load(repo)
 	s.NoError(err)
@@ -55,7 +56,8 @@ func (s *LoadTestSuite) TestLoad() {
 }
 
 func (s *LoadTestSuite) TestLoadSync() {
-	repo, _ := repository.Load("testdata/load_sync/repository", "")
+	repo := repository.New("testdata/load_sync/repository")
+	_ = repo.Load("")
 	rec := New("foo")
 	err := rec.Load(repo)
 	s.NoError(err)
@@ -81,7 +83,8 @@ func TestWalkTestSuite(t *testing.T) {
 /****************/
 
 func (s *WalkTestSuite) TestWalk() {
-	repo, _ := repository.Load("testdata/walk/repository", "")
+	repo := repository.New("testdata/walk/repository")
+	_ = repo.Load("")
 
 	results := make(map[string]string)
 

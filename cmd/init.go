@@ -41,8 +41,8 @@ func initRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Load repository
-	repo, err := repository.Load(viper.GetString("repository"), viper.GetString("cache_dir"))
-	if err != nil {
+	repo := repository.New(viper.GetString("repository"))
+	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
 		log.Fatal(err.Error())
 	}
 
@@ -51,7 +51,7 @@ func initRun(cmd *cobra.Command, args []string) {
 	var recipes []recipe.Interface
 
 	// Walk into recipes
-	err = recipe.Walk(repo, func(rec recipe.Interface) {
+	err := recipe.Walk(repo, func(rec recipe.Interface) {
 		recipes = append(recipes, rec)
 	})
 	if err != nil {

@@ -28,13 +28,13 @@ Example: manala list -> resulting in a recipes list display`,
 
 func listRun(cmd *cobra.Command, args []string) {
 	// Load repository
-	repo, err := repository.Load(viper.GetString("repository"), viper.GetString("cache_dir"))
-	if err != nil {
+	repo := repository.New(viper.GetString("repository"))
+	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Walk into recipes
-	err = recipe.Walk(repo, func(rec recipe.Interface) {
+	err := recipe.Walk(repo, func(rec recipe.Interface) {
 		fmt.Printf("%s: %s\n", rec.GetName(), rec.GetConfig().Description)
 	})
 	if err != nil {

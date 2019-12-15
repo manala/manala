@@ -44,8 +44,8 @@ func updateRun(cmd *cobra.Command, args []string) {
 	}).Info("Project loaded")
 
 	// Load repository
-	repo, err := repository.Load(prj.GetConfig().Repository, viper.GetString("cache_dir"))
-	if err != nil {
+	repo := repository.New(prj.GetConfig().Repository)
+	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
 		log.Fatal(err.Error())
 	}
 

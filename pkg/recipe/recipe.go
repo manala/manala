@@ -27,7 +27,7 @@ type Interface interface {
 	GetDir() string
 	GetConfig() Config
 	GetVars() map[string]interface{}
-	Load(repo *repository.Repository) error
+	Load(repo repository.Interface) error
 }
 
 type recipe struct {
@@ -67,11 +67,11 @@ func (rec *recipe) GetVars() map[string]interface{} {
 	return rec.vars
 }
 
-// Load a recipe
-func (rec *recipe) Load(repo *repository.Repository) error {
+// Load recipe
+func (rec *recipe) Load(repo repository.Interface) error {
 	log.WithField("name", rec.name).Debug("Loading recipe...")
 
-	rec.dir = path.Join(repo.Dir, rec.name)
+	rec.dir = path.Join(repo.GetDir(), rec.name)
 
 	// Load config file
 	file, err := os.Open(path.Join(rec.GetConfigFile()))
@@ -132,9 +132,9 @@ func stringToSyncUnitHookFunc() mapstructure.DecodeHookFunc {
 }
 
 // walk into repository recipes
-func Walk(repo *repository.Repository, fn walkFunc) error {
+func Walk(repo repository.Interface, fn walkFunc) error {
 
-	files, err := ioutil.ReadDir(repo.Dir)
+	files, err := ioutil.ReadDir(repo.GetDir())
 	if err != nil {
 		return err
 	}

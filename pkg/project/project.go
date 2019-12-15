@@ -63,7 +63,7 @@ func (prj *project) GetVars() map[string]interface{} {
 	return prj.vars
 }
 
-// Load a project
+// Load project
 func (prj *project) Load(cfg Config) error {
 	// Project exist ?
 	if !prj.IsExist() {

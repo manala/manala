@@ -133,8 +133,8 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 		}).Info("Project loaded")
 
 		// Load repository
-		repo, err := repository.Load(prj.GetConfig().Repository, viper.GetString("cache_dir"))
-		if err != nil {
+		repo := repository.New(prj.GetConfig().Repository)
+		if err := repo.Load(viper.GetString("cache_dir")); err != nil {
 			return err
 		}
 
