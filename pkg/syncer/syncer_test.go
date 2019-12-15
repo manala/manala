@@ -257,10 +257,10 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateToYaml() {
 func (s *SyncTemplateTestSuite) TestSyncTemplateCases() {
 	err := Sync("testdata/sync_template/source/cases.tmpl", "testdata/sync_template/destination/cases", NewTemplate(), map[string]interface{}{
 		"foo": map[string]interface{}{
-			"bar":   true,
-			"BAZ":   true,
-			"qUx":   true,
-			"QuuX":  true,
+			"bar":  true,
+			"BAZ":  true,
+			"qUx":  true,
+			"QuuX": true,
 		},
 	})
 	s.NoError(err)

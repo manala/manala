@@ -51,9 +51,9 @@ func updateRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Repository loaded")
 
-	// Lod recipe
-	rec, err := recipe.Load(repo, prj.GetConfig().Recipe)
-	if err != nil {
+	// Load recipe
+	rec := recipe.New(prj.GetConfig().Recipe)
+	if err := rec.Load(repo); err != nil {
 		log.Fatal(err.Error())
 	}
 

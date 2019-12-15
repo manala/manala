@@ -15,15 +15,31 @@ import (
 
 var configFile = ".manala.yaml"
 
-type Recipe struct {
-	Name       string
-	Dir        string
-	ConfigFile string
-	Config     struct {
-		Description string `validate:"required"`
-		Sync        []SyncUnit
+// Create a recipe
+func New(name string) Interface {
+	return &recipe{
+		name: name,
 	}
-	Vars map[string]interface{}
+}
+
+type Interface interface {
+	GetName() string
+	GetDir() string
+	GetConfig() Config
+	GetVars() map[string]interface{}
+	Load(repo *repository.Repository) error
+}
+
+type recipe struct {
+	name   string
+	dir    string
+	config Config
+	vars   map[string]interface{}
+}
+
+type Config struct {
+	Description string `validate:"required"`
+	Sync        []SyncUnit
 }
 
 type SyncUnit struct {
@@ -31,55 +47,65 @@ type SyncUnit struct {
 	Destination string
 }
 
-// New a recipe
-func New(name string) *Recipe {
-	return &Recipe{
-		Name:       name,
-		ConfigFile: configFile,
-	}
+func (rec *recipe) GetName() string {
+	return rec.name
+}
+
+func (rec *recipe) GetDir() string {
+	return rec.dir
+}
+
+func (rec *recipe) GetConfigFile() string {
+	return path.Join(rec.dir, configFile)
+}
+
+func (rec *recipe) GetConfig() Config {
+	return rec.config
+}
+
+func (rec *recipe) GetVars() map[string]interface{} {
+	return rec.vars
 }
 
 // Load a recipe
-func Load(repo *repository.Repository, name string) (*Recipe, error) {
-	rec := New(name)
+func (rec *recipe) Load(repo *repository.Repository) error {
+	log.WithField("name", rec.name).Debug("Loading recipe...")
 
-	log.WithField("name", rec.Name).Debug("Loading template...")
-
-	rec.Dir = path.Join(repo.Dir, rec.Name)
+	rec.dir = path.Join(repo.Dir, rec.name)
 
 	// Load config file
-	file, err := os.Open(path.Join(rec.Dir, rec.ConfigFile))
+	file, err := os.Open(path.Join(rec.GetConfigFile()))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// Parse
-	if err := yaml.NewDecoder(file).Decode(&rec.Vars); err != nil {
-		return nil, err
+	// Parse vars
+	if err := yaml.NewDecoder(file).Decode(&rec.vars); err != nil {
+		return err
 	}
 
-	// Config
+	// Map config
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:     &rec.Config,
-		DecodeHook: StringToSyncUnitHookFunc(),
+		Result:     &rec.config,
+		DecodeHook: stringToSyncUnitHookFunc(),
 	})
-	if err := decoder.Decode(rec.Vars["manala"]); err != nil {
-		return nil, err
+	if err := decoder.Decode(rec.vars["manala"]); err != nil {
+		return err
 	}
 
-	delete(rec.Vars, "manala")
+	delete(rec.vars, "manala")
 
 	// Validate
 	validate := validator.New()
 	if err := validate.Struct(rec); err != nil {
-		return nil, err
+		return err
 	}
 
-	return rec, nil
+	return nil
 }
 
 // Returns a DecodeHookFunc that converts strings to syncUnit
-func StringToSyncUnitHookFunc() mapstructure.DecodeHookFunc {
+func stringToSyncUnitHookFunc() mapstructure.DecodeHookFunc {
 	return func(rf reflect.Type, rt reflect.Type, data interface{}) (interface{}, error) {
 		if rf.Kind() != reflect.String {
 			return data, nil
@@ -119,8 +145,8 @@ func Walk(repo *repository.Repository, fn walkFunc) error {
 			continue
 		}
 		if file.IsDir() {
-			rec, err := Load(repo, file.Name())
-			if err != nil {
+			rec := New(file.Name())
+			if err := rec.Load(repo); err != nil {
 				return err
 			}
 			fn(rec)
@@ -130,4 +156,4 @@ func Walk(repo *repository.Repository, fn walkFunc) error {
 	return nil
 }
 
-type walkFunc func(rec *Recipe)
+type walkFunc func(rec Interface)

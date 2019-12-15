@@ -37,12 +37,12 @@ func (e *SourceNotExistError) Error() string {
 /********/
 
 // Sync a project from a recipe
-func SyncProject(prj project.Interface, rec *recipe.Recipe) error {
+func SyncProject(prj project.Interface, rec recipe.Interface) error {
 	// Template
 	tmpl := NewTemplate()
 
 	// Include helpers if any
-	helpers := path.Join(rec.Dir, "_helpers.tmpl")
+	helpers := path.Join(rec.GetDir(), "_helpers.tmpl")
 	if _, err := os.Stat(helpers); err == nil {
 		_, err = tmpl.ParseFiles(helpers)
 		if err != nil {
@@ -52,16 +52,16 @@ func SyncProject(prj project.Interface, rec *recipe.Recipe) error {
 
 	// Merge project and recipe vars
 	vars := make(map[string]interface{})
-	if err := mergo.Merge(&vars, rec.Vars, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(&vars, rec.GetVars(), mergo.WithOverride); err != nil {
 		return err
 	}
 	if err := mergo.Merge(&vars, prj.GetVars(), mergo.WithOverride); err != nil {
 		return err
 	}
 
-	for _, sync := range rec.Config.Sync {
+	for _, sync := range rec.GetConfig().Sync {
 		if err := Sync(
-			path.Join(rec.Dir, sync.Source),
+			path.Join(rec.GetDir(), sync.Source),
 			path.Join(prj.GetDir(), sync.Destination),
 			tmpl,
 			map[string]interface{}{

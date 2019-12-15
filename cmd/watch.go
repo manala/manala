@@ -94,7 +94,6 @@ func watchRun(cmd *cobra.Command, args []string) {
 								_ = beeep.Alert("Manala", strings.Replace(err.Error(), `"`, `\"`, -1), "")
 							}
 						} else {
-							log.Info("Project synced")
 							if useNotify {
 								_ = beeep.Notify("Manala", "Project synced", "")
 							}
@@ -142,9 +141,9 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 		log.Info("Repository loaded")
 
 		// Load recipe
-		rec, err := recipe.Load(repo, prj.GetConfig().Recipe)
-		if err != nil {
-			return err
+		rec := recipe.New(prj.GetConfig().Recipe)
+		if err := rec.Load(repo); err != nil {
+			log.Fatal(err.Error())
 		}
 
 		log.Info("Recipe loaded")
@@ -152,11 +151,11 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 		if watchRecipe {
 			// Initialize base recipe dir to the first synced recipe
 			if baseRecDir == "" {
-				baseRecDir = rec.Dir
+				baseRecDir = rec.GetDir()
 			}
 
 			// If recipe has changed, first, unwatch old one directories
-			if baseRecDir != rec.Dir {
+			if baseRecDir != rec.GetDir() {
 				if err := filepath.Walk(baseRecDir, func(path string, info os.FileInfo, err error) error {
 					if info.Mode().IsDir() {
 						if err := watcher.Remove(path); err != nil {
@@ -170,7 +169,7 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 			}
 
 			// Watch all recipe directories; don't care if they are already watched
-			if err := filepath.Walk(rec.Dir, func(path string, info os.FileInfo, err error) error {
+			if err := filepath.Walk(rec.GetDir(), func(path string, info os.FileInfo, err error) error {
 				if info.Mode().IsDir() {
 					if err := watcher.Add(path); err != nil {
 						return err

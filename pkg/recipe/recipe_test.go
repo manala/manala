@@ -23,9 +23,8 @@ func TestNewTestSuite(t *testing.T) {
 
 func (s *NewTestSuite) TestNew() {
 	rec := New("foo")
-	s.IsType(&Recipe{}, rec)
-	s.Equal("foo", rec.Name)
-	s.Equal(".manala.yaml", rec.ConfigFile)
+	s.IsType(&recipe{}, rec)
+	s.Equal("foo", rec.GetName())
 }
 
 /****************/
@@ -45,24 +44,25 @@ func TestLoadTestSuite(t *testing.T) {
 
 func (s *LoadTestSuite) TestLoad() {
 	repo, _ := repository.Load("testdata/load/repository", "")
-	rec, err := Load(repo, "foo")
+	rec := New("foo")
+	err := rec.Load(repo)
 	s.NoError(err)
-	s.IsType(&Recipe{}, rec)
-	s.Equal("testdata/load/repository/foo", rec.Dir)
-	s.Equal("foo", rec.Name)
-	s.Equal("Foo bar", rec.Config.Description)
-	s.Equal("bar", rec.Vars["foo"])
+	s.IsType(&recipe{}, rec)
+	s.Equal("testdata/load/repository/foo", rec.GetDir())
+	s.Equal("foo", rec.GetName())
+	s.Equal("Foo bar", rec.GetConfig().Description)
+	s.Equal("bar", rec.GetVars()["foo"])
 }
 
 func (s *LoadTestSuite) TestLoadSync() {
 	repo, _ := repository.Load("testdata/load_sync/repository", "")
-	rec, err := Load(repo, "foo")
+	rec := New("foo")
+	err := rec.Load(repo)
 	s.NoError(err)
-	s.IsType(&Recipe{}, rec)
 	s.Equal([]SyncUnit{
 		{Source: "foo", Destination: "foo"},
 		{Source: "foo", Destination: "bar"},
-	}, rec.Config.Sync)
+	}, rec.GetConfig().Sync)
 }
 
 /****************/
@@ -85,8 +85,8 @@ func (s *WalkTestSuite) TestWalk() {
 
 	results := make(map[string]string)
 
-	err := Walk(repo, func(rec *Recipe) {
-		results[rec.Name] = rec.Config.Description
+	err := Walk(repo, func(rec Interface) {
+		results[rec.GetName()] = rec.GetConfig().Description
 	})
 
 	s.NoError(err)

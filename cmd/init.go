@@ -48,11 +48,11 @@ func initRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Repository loaded")
 
-	var recipes []recipe.Recipe
+	var recipes []recipe.Interface
 
 	// Walk into recipes
-	err = recipe.Walk(repo, func(rec *recipe.Recipe) {
-		recipes = append(recipes, *rec)
+	err = recipe.Walk(repo, func(rec recipe.Interface) {
+		recipes = append(recipes, rec)
 	})
 	if err != nil {
 		log.Fatal(err.Error())
@@ -62,16 +62,16 @@ func initRun(cmd *cobra.Command, args []string) {
 		Items: recipes,
 		Templates: &promptui.SelectTemplates{
 			Label:    "Select recipe:",
-			Active:   `{{ "▸" | bold }} {{ .Name | underline }}`,
-			Inactive: "  {{ .Name }}",
-			Selected: `{{ "✔" | green }} {{ .Name | faint }}`,
+			Active:   `{{ "▸" | bold }} {{ .GetName | underline }}`,
+			Inactive: "  {{ .GetName }}",
+			Selected: `{{ "✔" | green }} {{ .GetName | faint }}`,
 			Details: `
-{{ .Config.Description }}`,
+{{ .GetConfig.Description }}`,
 		},
 		Searcher: func(input string, index int) bool {
 			rec := recipes[index]
-			name := strings.Replace(strings.ToLower(rec.Name), " ", "", -1)
-			description := strings.Replace(strings.ToLower(rec.Name), " ", "", -1)
+			name := strings.Replace(strings.ToLower(rec.GetName()), " ", "", -1)
+			description := strings.Replace(strings.ToLower(rec.GetName()), " ", "", -1)
 			input = strings.Replace(strings.ToLower(input), " ", "", -1)
 
 			return strings.Contains(name, input) || strings.Contains(description, input)
@@ -94,7 +94,7 @@ func initRun(cmd *cobra.Command, args []string) {
 	rec := recipes[index]
 
 	// Sync project
-	if err := syncer.SyncProject(prj, &rec); err != nil {
+	if err := syncer.SyncProject(prj, rec); err != nil {
 		log.Fatal(err.Error())
 	}
 
