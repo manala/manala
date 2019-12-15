@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
@@ -11,65 +12,94 @@ import (
 
 var configFile = ".manala.yaml"
 
-type Project struct {
-	Dir        string
-	ConfigFile string
-	Config     struct {
-		Recipe     string `validate:"required"`
-		Repository string
+// Create a project
+func New(dir string) Interface {
+	return &project{
+		dir: dir,
 	}
-	Vars map[string]interface{}
 }
 
-func (prj *Project) IsExist() bool {
-	info, err := os.Stat(path.Join(prj.Dir, prj.ConfigFile))
+type Interface interface {
+	GetDir() string
+	GetConfigFile() string
+	GetConfig() Config
+	IsExist() bool
+	GetVars() map[string]interface{}
+	Load(cfg Config) error
+}
+
+type project struct {
+	dir    string
+	config Config
+	vars   map[string]interface{}
+}
+
+type Config struct {
+	Recipe     string `validate:"required"`
+	Repository string
+}
+
+func (prj *project) GetDir() string {
+	return prj.dir
+}
+
+func (prj *project) GetConfigFile() string {
+	return path.Join(prj.dir, configFile)
+}
+
+func (prj *project) GetConfig() Config {
+	return prj.config
+}
+
+func (prj *project) IsExist() bool {
+	info, err := os.Stat(prj.GetConfigFile())
 	if os.IsNotExist(err) {
 		return false
 	}
 	return !info.IsDir()
 }
 
-// Create a project
-func New(dir string) *Project {
-	return &Project{
-		Dir:        dir,
-		ConfigFile: configFile,
-	}
+func (prj *project) GetVars() map[string]interface{} {
+	return prj.vars
 }
 
 // Load a project
-func Load(dir string, repo string) (*Project, error) {
-	prj := New(dir)
-	prj.Config.Repository = repo
+func (prj *project) Load(cfg Config) error {
+	// Project exist ?
+	if !prj.IsExist() {
+		return fmt.Errorf("project not found")
+	}
 
-	log.WithField("dir", prj.Dir).Debug("Loading project...")
+	prj.config = cfg
+
+	log.WithField("dir", prj.dir).Debug("Loading project...")
 
 	// Load config file
-	file, err := os.Open(path.Join(dir, prj.ConfigFile))
+	file, err := os.Open(prj.GetConfigFile())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// Parse
-	if err := yaml.NewDecoder(file).Decode(&prj.Vars); err != nil {
-		return nil, err
+	// Parse vars
+	if err := yaml.NewDecoder(file).Decode(&prj.vars); err != nil {
+		return err
 	}
 
-	// Config
+	// Map config
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result: &prj.Config,
+		Result: &prj.config,
 	})
-	if err := decoder.Decode(prj.Vars["manala"]); err != nil {
-		return nil, err
+	if err := decoder.Decode(prj.vars["manala"]); err != nil {
+		return err
 	}
 
-	delete(prj.Vars, "manala")
+	delete(prj.vars, "manala")
 
 	// Validate
 	validate := validator.New()
-	if err := validate.Struct(prj); err != nil {
-		return nil, err
+	if err := validate.Struct(prj.config); err != nil {
+		return err
 	}
 
-	return prj, nil
+	return nil
 }

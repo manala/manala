@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
 	"io"
-	"os"
 	"testing"
 )
 
@@ -26,15 +25,14 @@ func TestNewTestSuite(t *testing.T) {
 
 func (s *NewTestSuite) TestNew() {
 	prj := New("testdata/new")
-	s.IsType(&Project{}, prj)
-	s.Equal("testdata/new", prj.Dir)
-	s.Equal(".manala.yaml", prj.ConfigFile)
+	s.IsType(&project{}, prj)
+	s.Equal("testdata/new", prj.GetDir())
+	s.Equal("testdata/new/.manala.yaml", prj.GetConfigFile())
 	s.True(prj.IsExist())
 }
 
 func (s *NewTestSuite) TestNewNotExists() {
 	prj := New("testdata/new_not_exists")
-	s.IsType(&Project{}, prj)
 	s.False(prj.IsExist())
 }
 
@@ -54,43 +52,55 @@ func TestLoadTestSuite(t *testing.T) {
 /****************/
 
 func (s *LoadTestSuite) TestLoad() {
-	prj, err := Load("testdata/load", "bar")
+	prj := New("testdata/load")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
 	s.NoError(err)
-	s.IsType(&Project{}, prj)
-	s.Equal("testdata/load", prj.Dir)
-	s.Equal(".manala.yaml", prj.ConfigFile)
-	s.Equal("foo", prj.Config.Recipe)
-	s.Equal("bar", prj.Config.Repository)
-	s.Equal("bar", prj.Vars["foo"])
+	s.Equal("testdata/load", prj.GetDir())
+	s.Equal("testdata/load/.manala.yaml", prj.GetConfigFile())
+	s.Equal("foo", prj.GetConfig().Recipe)
+	s.Equal("bar", prj.GetConfig().Repository)
+	s.Equal("bar", prj.GetVars()["foo"])
 }
 
 func (s *LoadTestSuite) TestLoadNotFound() {
-	prj, err := Load("testdata/load_not_found", "bar")
-	s.IsType(&os.PathError{}, err)
-	s.Nil(prj)
+	prj := New("testdata/load_not_found")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
+	s.Error(err, "project not found")
 }
 
 func (s *LoadTestSuite) TestLoadEmpty() {
-	prj, err := Load("testdata/load_empty", "bar")
+	prj := New("testdata/load_empty")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
 	s.Equal(io.EOF, err)
-	s.Nil(prj)
 }
 
 func (s *LoadTestSuite) TestLoadInvalid() {
-	prj, err := Load("testdata/load_invalid", "bar")
+	prj := New("testdata/load_invalid")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
 	s.IsType(&yaml.TypeError{}, err)
-	s.Nil(prj)
 }
 
 func (s *LoadTestSuite) TestLoadWithoutRecipe() {
-	prj, err := Load("testdata/load_without_recipe", "bar")
+	prj := New("testdata/load_without_recipe")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
 	s.IsType(validator.ValidationErrors{}, err)
-	s.Nil(prj)
 }
 
 func (s *LoadTestSuite) TestLoadWithRepository() {
-	prj, err := Load("testdata/load_with_repository", "bar")
+	prj := New("testdata/load_with_repository")
+	err := prj.Load(Config{
+		Repository: "bar",
+	})
 	s.NoError(err)
-	s.IsType(&Project{}, prj)
-	s.Equal("baz", prj.Config.Repository)
+	s.Equal("baz", prj.GetConfig().Repository)
 }

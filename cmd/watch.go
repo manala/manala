@@ -46,7 +46,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 	}
 	defer watcher.Close()
 
-	var prj project.Project
+	var prj project.Interface
 
 	// Get sync function
 	syncProject := watchSyncProjectFunc(&prj, watcher, watchRecipe)
@@ -57,7 +57,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Watch project
-	if err := watcher.Add(prj.Dir); err != nil {
+	if err := watcher.Add(prj.GetDir()); err != nil {
 		log.WithError(err).Fatal("Error adding project watching")
 	}
 
@@ -76,17 +76,15 @@ func watchRun(cmd *cobra.Command, args []string) {
 
 				if event.Op != fsnotify.Chmod {
 					modified := false
-					dir := filepath.Dir(filepath.Clean(event.Name))
-					// Modified directory is not project one. That could only means recipe's one
-					if dir != prj.Dir {
+					file := filepath.Clean(event.Name)
+					dir := filepath.Dir(file)
+					if file == prj.GetConfigFile() {
+						log.WithField("file", file).Info("Project config modified")
+						modified = true
+					} else if dir != prj.GetDir() {
+						// Modified directory is not project one. That could only means recipe's one
 						log.WithField("dir", dir).Info("Recipe modified")
 						modified = true
-					} else {
-						file := filepath.Base(filepath.Clean(event.Name))
-						if file == prj.ConfigFile {
-							log.WithField("file", file).Info("Project config modified")
-							modified = true
-						}
 					}
 
 					if modified {
@@ -114,24 +112,29 @@ func watchRun(cmd *cobra.Command, args []string) {
 	<-done
 }
 
-func watchSyncProjectFunc(basePrj *project.Project, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
+func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
 	var baseRecDir string
 
 	return func() error {
+		// Create project
+		prj := project.New(viper.GetString("dir"))
+
 		// Load project
-		prj, err := project.Load(viper.GetString("dir"), viper.GetString("repository"))
-		if err != nil {
+		if err := prj.Load(project.Config{
+			Repository: viper.GetString("repository"),
+		}); err != nil {
 			return err
 		}
-		*basePrj = *prj
+
+		*basePrj = prj
 
 		log.WithFields(log.Fields{
-			"recipe":     prj.Config.Recipe,
-			"repository": prj.Config.Repository,
+			"recipe":     prj.GetConfig().Recipe,
+			"repository": prj.GetConfig().Repository,
 		}).Info("Project loaded")
 
 		// Load repository
-		repo, err := repository.Load(prj.Config.Repository, viper.GetString("cache_dir"))
+		repo, err := repository.Load(prj.GetConfig().Repository, viper.GetString("cache_dir"))
 		if err != nil {
 			return err
 		}
@@ -139,7 +142,7 @@ func watchSyncProjectFunc(basePrj *project.Project, watcher *fsnotify.Watcher, w
 		log.Info("Repository loaded")
 
 		// Load recipe
-		rec, err := recipe.Load(repo, prj.Config.Recipe)
+		rec, err := recipe.Load(repo, prj.GetConfig().Recipe)
 		if err != nil {
 			return err
 		}

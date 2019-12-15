@@ -37,7 +37,7 @@ func (e *SourceNotExistError) Error() string {
 /********/
 
 // Sync a project from a recipe
-func SyncProject(prj *project.Project, rec *recipe.Recipe) error {
+func SyncProject(prj project.Interface, rec *recipe.Recipe) error {
 	// Template
 	tmpl := NewTemplate()
 
@@ -55,14 +55,14 @@ func SyncProject(prj *project.Project, rec *recipe.Recipe) error {
 	if err := mergo.Merge(&vars, rec.Vars, mergo.WithOverride); err != nil {
 		return err
 	}
-	if err := mergo.Merge(&vars, prj.Vars, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(&vars, prj.GetVars(), mergo.WithOverride); err != nil {
 		return err
 	}
 
 	for _, sync := range rec.Config.Sync {
 		if err := Sync(
 			path.Join(rec.Dir, sync.Source),
-			path.Join(prj.Dir, sync.Destination),
+			path.Join(prj.GetDir(), sync.Destination),
 			tmpl,
 			map[string]interface{}{
 				"Vars": &vars,
@@ -391,7 +391,7 @@ func NewTemplate() *template.Template {
 
 	tmpl.Funcs(sprig.TxtFuncMap())
 	tmpl.Funcs(template.FuncMap{
-		"toYaml": templateToYamlFunc(),
+		"toYaml":  templateToYamlFunc(),
 		"include": templateIncludeFunc(tmpl),
 	})
 

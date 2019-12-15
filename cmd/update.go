@@ -28,19 +28,23 @@ Example: manala update -> resulting in an update in current directory`,
 }
 
 func updateRun(cmd *cobra.Command, args []string) {
+	// Create project
+	prj := project.New(viper.GetString("dir"))
+
 	// Load project
-	prj, err := project.Load(viper.GetString("dir"), viper.GetString("repository"))
-	if err != nil {
+	if err := prj.Load(project.Config{
+		Repository: viper.GetString("repository"),
+	}); err != nil {
 		log.Fatal(err.Error())
 	}
 
 	log.WithFields(log.Fields{
-		"recipe":     prj.Config.Recipe,
-		"repository": prj.Config.Repository,
+		"recipe":     prj.GetConfig().Recipe,
+		"repository": prj.GetConfig().Repository,
 	}).Info("Project loaded")
 
 	// Load repository
-	repo, err := repository.Load(prj.Config.Repository, viper.GetString("cache_dir"))
+	repo, err := repository.Load(prj.GetConfig().Repository, viper.GetString("cache_dir"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -48,7 +52,7 @@ func updateRun(cmd *cobra.Command, args []string) {
 	log.Info("Repository loaded")
 
 	// Lod recipe
-	rec, err := recipe.Load(repo, prj.Config.Recipe)
+	rec, err := recipe.Load(repo, prj.GetConfig().Recipe)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
