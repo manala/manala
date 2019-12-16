@@ -36,7 +36,7 @@ type project struct {
 
 type Config struct {
 	Recipe     string `validate:"required"`
-	Repository string
+	Repository string `validate:"required"`
 }
 
 func (prj *project) GetDir() string {
