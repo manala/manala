@@ -66,41 +66,31 @@ func (s *LoadTestSuite) TestLoad() {
 
 func (s *LoadTestSuite) TestLoadNotFound() {
 	prj := New("testdata/load_not_found")
-	err := prj.Load(Config{
-		Repository: "bar",
-	})
+	err := prj.Load(Config{})
 	s.Error(err, "project not found")
 }
 
 func (s *LoadTestSuite) TestLoadEmpty() {
 	prj := New("testdata/load_empty")
-	err := prj.Load(Config{
-		Repository: "bar",
-	})
+	err := prj.Load(Config{})
 	s.Equal(io.EOF, err)
 }
 
 func (s *LoadTestSuite) TestLoadInvalid() {
 	prj := New("testdata/load_invalid")
-	err := prj.Load(Config{
-		Repository: "bar",
-	})
+	err := prj.Load(Config{})
 	s.IsType(&yaml.TypeError{}, err)
 }
 
 func (s *LoadTestSuite) TestLoadWithoutRecipe() {
 	prj := New("testdata/load_without_recipe")
-	err := prj.Load(Config{
-		Repository: "bar",
-	})
+	err := prj.Load(Config{})
 	s.IsType(validator.ValidationErrors{}, err)
 }
 
 func (s *LoadTestSuite) TestLoadWithRepository() {
 	prj := New("testdata/load_with_repository")
-	err := prj.Load(Config{
-		Repository: "bar",
-	})
+	err := prj.Load(Config{})
 	s.NoError(err)
 	s.Equal("baz", prj.GetConfig().Repository)
 }
