@@ -1,0 +1,14 @@
+manala:
+  recipe: foo
+  repository: bar
+
+foo:
+  foo: bar
+
+bar:
+  &bar
+  bar: baz
+
+baz:
+  <<: *bar
+  baz: qux

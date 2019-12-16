@@ -94,3 +94,11 @@ func (s *LoadTestSuite) TestLoadWithRepository() {
 	s.NoError(err)
 	s.Equal("baz", prj.GetConfig().Repository)
 }
+
+func (s *LoadTestSuite) TestLoadVarsStringMap() {
+	prj := New("testdata/load_vars")
+	_ = prj.Load(Config{})
+	s.IsType(map[string]interface{}{}, prj.GetVars()["foo"], "yaml mapping should be mapped as a string map")
+	s.IsType(map[string]interface{}{}, prj.GetVars()["bar"], "yaml mapping with anchor should be mapped as a string map")
+	s.IsType(map[string]interface{}{}, prj.GetVars()["baz"], "yaml mapping with alias should be mapped as a string map")
+}
