@@ -303,7 +303,7 @@ func syncNode(node *node) error {
 			// Execute
 			var buffer bytes.Buffer
 			if err := node.Template.Execute(&buffer, node.Context); err != nil {
-				return err
+				return fmt.Errorf("invalid template \"%s\" (%s)", node.Src.Path, err)
 			}
 
 			srcReader = bytes.NewReader(buffer.Bytes())
