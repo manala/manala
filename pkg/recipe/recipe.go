@@ -74,13 +74,14 @@ func (rec *recipe) Load(repo repository.Interface) error {
 	rec.dir = path.Join(repo.GetDir(), rec.name)
 
 	// Load config file
-	file, err := os.Open(path.Join(rec.GetConfigFile()))
+	cfgFile, err := os.Open(path.Join(rec.GetConfigFile()))
 	if err != nil {
 		return err
 	}
 
-	// Parse vars
-	if err := yaml.NewDecoder(file).Decode(&rec.vars); err != nil {
+	// Parse config
+	var cfgMap map[string]interface{}
+	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
 		return err
 	}
 
@@ -89,11 +90,12 @@ func (rec *recipe) Load(repo repository.Interface) error {
 		Result:     &rec.config,
 		DecodeHook: stringToSyncUnitHookFunc(),
 	})
-	if err := decoder.Decode(rec.vars["manala"]); err != nil {
+	if err := decoder.Decode(cfgMap["manala"]); err != nil {
 		return err
 	}
 
-	delete(rec.vars, "manala")
+	delete(cfgMap, "manala")
+	rec.vars = cfgMap
 
 	// Validate
 	validate := validator.New()

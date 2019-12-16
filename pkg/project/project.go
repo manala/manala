@@ -75,13 +75,14 @@ func (prj *project) Load(cfg Config) error {
 	log.WithField("dir", prj.dir).Debug("Loading project...")
 
 	// Load config file
-	file, err := os.Open(prj.GetConfigFile())
+	cfgFile, err := os.Open(prj.GetConfigFile())
 	if err != nil {
 		return err
 	}
 
-	// Parse vars
-	if err := yaml.NewDecoder(file).Decode(&prj.vars); err != nil {
+	// Parse config
+	var cfgMap map[string]interface{}
+	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
 		return err
 	}
 
@@ -89,11 +90,12 @@ func (prj *project) Load(cfg Config) error {
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result: &prj.config,
 	})
-	if err := decoder.Decode(prj.vars["manala"]); err != nil {
+	if err := decoder.Decode(cfgMap["manala"]); err != nil {
 		return err
 	}
 
-	delete(prj.vars, "manala")
+	delete(cfgMap, "manala")
+	prj.vars = cfgMap
 
 	// Validate
 	validate := validator.New()
