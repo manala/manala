@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"manala/pkg/project"
-	"manala/pkg/recipe"
 	"manala/pkg/repository"
 	"manala/pkg/sync"
 )
@@ -52,8 +51,8 @@ func updateRun(cmd *cobra.Command, args []string) {
 	log.Info("Repository loaded")
 
 	// Load recipe
-	rec := recipe.New(prj.GetConfig().Recipe)
-	if err := rec.Load(repo); err != nil {
+	rec, err := repo.LoadRecipe(prj.GetConfig().Recipe)
+	if err != nil {
 		log.Fatal(err.Error())
 	}
 

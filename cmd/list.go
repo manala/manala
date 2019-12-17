@@ -34,10 +34,9 @@ func listRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Walk into recipes
-	err := recipe.Walk(repo, func(rec recipe.Interface) {
+	if err := repo.WalkRecipes(func(rec recipe.Interface) {
 		fmt.Printf("%s: %s\n", rec.GetName(), rec.GetConfig().Description)
-	})
-	if err != nil {
+	}); err != nil {
 		log.Fatal(err.Error())
 	}
 }

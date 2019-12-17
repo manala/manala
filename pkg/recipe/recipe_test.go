@@ -1,8 +1,10 @@
 package recipe
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/suite"
-	"manala/pkg/repository"
+	"gopkg.in/yaml.v3"
+	"io"
 	"testing"
 )
 
@@ -22,9 +24,17 @@ func TestNewTestSuite(t *testing.T) {
 /***************/
 
 func (s *NewTestSuite) TestNew() {
-	rec := New("foo")
-	s.IsType(&recipe{}, rec)
-	s.Equal("foo", rec.GetName())
+	rec := New("testdata/new")
+	s.Implements((*Interface)(nil), rec)
+	s.Equal("new", rec.GetName())
+	s.Equal("testdata/new", rec.GetDir())
+	s.Equal("testdata/new/.manala.yaml", rec.GetConfigFile())
+	s.True(rec.IsExist())
+}
+
+func (s *NewTestSuite) TestNewNotExists() {
+	rec := New("testdata/new_not_exists")
+	s.False(rec.IsExist())
 }
 
 /****************/
@@ -43,85 +53,68 @@ func TestLoadTestSuite(t *testing.T) {
 /****************/
 
 func (s *LoadTestSuite) TestLoad() {
-	repo := repository.New("testdata/load/repository")
-	_ = repo.Load("")
-	rec := New("foo")
-	err := rec.Load(repo)
+	rec := New("testdata/load")
+	err := rec.Load(Config{})
 	s.NoError(err)
-	s.IsType(&recipe{}, rec)
-	s.Equal("testdata/load/repository/foo", rec.GetDir())
-	s.Equal("foo", rec.GetName())
+	s.Implements((*Interface)(nil), rec)
+	s.Equal("load", rec.GetName())
+	s.Equal("testdata/load", rec.GetDir())
+	s.Equal("testdata/load/.manala.yaml", rec.GetConfigFile())
 	s.Equal("Foo bar", rec.GetConfig().Description)
 	s.Equal("bar", rec.GetVars()["foo"])
 }
 
+func (s *LoadTestSuite) TestLoadNotFound() {
+	rec := New("testdata/load_not_found")
+	err := rec.Load(Config{})
+	s.Error(err, "recipe not found")
+}
+
+func (s *LoadTestSuite) TestLoadEmpty() {
+	rec := New("testdata/load_empty")
+	err := rec.Load(Config{})
+	s.Equal(io.EOF, err)
+}
+
+func (s *LoadTestSuite) TestLoadInvalid() {
+	rec := New("testdata/load_invalid")
+	err := rec.Load(Config{})
+	s.IsType(&yaml.TypeError{}, err)
+}
+
+func (s *LoadTestSuite) TestLoadWithoutDescription() {
+	rec := New("testdata/load_without_description")
+	err := rec.Load(Config{})
+	s.IsType(validator.ValidationErrors{}, err)
+}
+
 func (s *LoadTestSuite) TestLoadVars() {
-	repo := repository.New("testdata/load_vars/repository")
-	_ = repo.Load("")
-	rec := New("foo")
-	_ = rec.Load(repo)
+	rec := New("testdata/load_vars")
+	_ = rec.Load(Config{})
 	s.IsType(map[string]interface{}{}, rec.GetVars(), "vars should be a string map")
 }
 
 func (s *LoadTestSuite) TestLoadVarsManala() {
-	repo := repository.New("testdata/load_vars/repository")
-	_ = repo.Load("")
-	rec := New("foo")
-	_ = rec.Load(repo)
+	rec := New("testdata/load_vars")
+	_ = rec.Load(Config{})
 	_, exists := rec.GetVars()["manala"]
 	s.False(exists, "vars should not contain \"manala\" key")
 }
 
 func (s *LoadTestSuite) TestLoadVarsStringMap() {
-	repo := repository.New("testdata/load_vars/repository")
-	_ = repo.Load("")
-	rec := New("foo")
-	_ = rec.Load(repo)
+	rec := New("testdata/load_vars")
+	_ = rec.Load(Config{})
 	s.IsType(map[string]interface{}{}, rec.GetVars()["foo"], "yaml mapping should be mapped as a string map")
 	s.IsType(map[string]interface{}{}, rec.GetVars()["bar"], "yaml mapping with anchor should be mapped as a string map")
 	s.IsType(map[string]interface{}{}, rec.GetVars()["baz"], "yaml mapping with alias should be mapped as a string map")
 }
 
 func (s *LoadTestSuite) TestLoadSync() {
-	repo := repository.New("testdata/load_sync/repository")
-	_ = repo.Load("")
-	rec := New("foo")
-	err := rec.Load(repo)
+	rec := New("testdata/load_sync")
+	err := rec.Load(Config{})
 	s.NoError(err)
 	s.Equal([]SyncUnit{
 		{Source: "foo", Destination: "foo"},
 		{Source: "foo", Destination: "bar"},
 	}, rec.GetConfig().Sync)
-}
-
-/****************/
-/* Walk - Suite */
-/****************/
-
-type WalkTestSuite struct{ suite.Suite }
-
-func TestWalkTestSuite(t *testing.T) {
-	// Run
-	suite.Run(t, new(WalkTestSuite))
-}
-
-/****************/
-/* Walk - Tests */
-/****************/
-
-func (s *WalkTestSuite) TestWalk() {
-	repo := repository.New("testdata/walk/repository")
-	_ = repo.Load("")
-
-	results := make(map[string]string)
-
-	err := Walk(repo, func(rec Interface) {
-		results[rec.GetName()] = rec.GetConfig().Description
-	})
-
-	s.NoError(err)
-	s.Len(results, 3)
-	s.Equal("Foo bar", results["foo"])
-	s.Equal("Bar bar", results["bar"])
-	s.Equal("Baz bar", results["baz"])
 }

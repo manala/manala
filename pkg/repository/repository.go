@@ -4,11 +4,16 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/apex/log"
 	"github.com/mingrammer/commonregex"
 	"gopkg.in/src-d/go-git.v4"
+	"io/ioutil"
+	"manala/pkg/recipe"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 )
 
 // Create a repository
@@ -22,6 +27,8 @@ type Interface interface {
 	GetSrc() string
 	GetDir() string
 	Load(cacheDir string) error
+	WalkRecipes(fn walkRecipesFunc) error
+	LoadRecipe(name string) (recipe.Interface, error)
 }
 
 type repository struct {
@@ -124,4 +131,50 @@ func (repo *repository) loadGit(cacheDir string) error {
 	cache[repo.src] = repo.dir
 
 	return nil
+}
+
+// Walk into recipes
+func (repo *repository) WalkRecipes(fn walkRecipesFunc) error {
+	files, err := ioutil.ReadDir(repo.GetDir())
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		// Exclude dot files
+		if strings.HasPrefix(file.Name(), ".") {
+			continue
+		}
+		if file.IsDir() {
+			rec := recipe.New(filepath.Join(repo.GetDir(), file.Name()))
+			if err := rec.Load(recipe.Config{}); err != nil {
+				return err
+			}
+			fn(rec)
+		}
+	}
+
+	return nil
+}
+
+type walkRecipesFunc func(rec recipe.Interface)
+
+// Load recipe by its name
+func (repo *repository) LoadRecipe(name string) (recipe.Interface, error) {
+	var baseRec recipe.Interface
+
+	if err := repo.WalkRecipes(func(rec recipe.Interface) {
+		fmt.Printf("%s: %s\n", rec.GetName(), rec.GetConfig().Description)
+		if rec.GetName() == name {
+			baseRec = rec
+		}
+	}); err != nil {
+		return nil, err
+	}
+
+	if baseRec != nil {
+		return baseRec, nil
+	}
+
+	return nil, fmt.Errorf("recipe not found")
 }

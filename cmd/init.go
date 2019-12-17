@@ -51,10 +51,9 @@ func initRun(cmd *cobra.Command, args []string) {
 	var recipes []recipe.Interface
 
 	// Walk into recipes
-	err := recipe.Walk(repo, func(rec recipe.Interface) {
+	if err := repo.WalkRecipes(func(rec recipe.Interface) {
 		recipes = append(recipes, rec)
-	})
-	if err != nil {
+	}); err != nil {
 		log.Fatal(err.Error())
 	}
 

@@ -25,7 +25,7 @@ func TestNewTestSuite(t *testing.T) {
 
 func (s *NewTestSuite) TestNew() {
 	prj := New("testdata/new")
-	s.IsType(&project{}, prj)
+	s.Implements((*Interface)(nil), prj)
 	s.Equal("testdata/new", prj.GetDir())
 	s.Equal("testdata/new/.manala.yaml", prj.GetConfigFile())
 	s.True(prj.IsExist())

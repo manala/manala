@@ -1,15 +1,15 @@
 package recipe
 
 import (
+	"fmt"
 	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"manala/pkg/clean"
-	"manala/pkg/repository"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"strings"
 )
@@ -17,22 +17,23 @@ import (
 var configFile = ".manala.yaml"
 
 // Create a recipe
-func New(name string) Interface {
+func New(dir string) Interface {
 	return &recipe{
-		name: name,
+		dir: dir,
 	}
 }
 
 type Interface interface {
 	GetName() string
 	GetDir() string
+	GetConfigFile() string
 	GetConfig() Config
+	IsExist() bool
 	GetVars() map[string]interface{}
-	Load(repo repository.Interface) error
+	Load(cfg Config) error
 }
 
 type recipe struct {
-	name   string
 	dir    string
 	config Config
 	vars   map[string]interface{}
@@ -49,7 +50,7 @@ type SyncUnit struct {
 }
 
 func (rec *recipe) GetName() string {
-	return rec.name
+	return filepath.Base(rec.dir)
 }
 
 func (rec *recipe) GetDir() string {
@@ -64,15 +65,28 @@ func (rec *recipe) GetConfig() Config {
 	return rec.config
 }
 
+func (rec *recipe) IsExist() bool {
+	info, err := os.Stat(rec.GetConfigFile())
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
 func (rec *recipe) GetVars() map[string]interface{} {
 	return rec.vars
 }
 
 // Load recipe
-func (rec *recipe) Load(repo repository.Interface) error {
-	log.WithField("name", rec.name).Debug("Loading recipe...")
+func (rec *recipe) Load(cfg Config) error {
+	// Recipe exist ?
+	if !rec.IsExist() {
+		return fmt.Errorf("recipe not found")
+	}
 
-	rec.dir = path.Join(repo.GetDir(), rec.name)
+	rec.config = cfg
+
+	log.WithField("name", rec.GetName()).Debug("Loading recipe...")
 
 	// Load config file
 	cfgFile, err := os.Open(path.Join(rec.GetConfigFile()))
@@ -103,7 +117,7 @@ func (rec *recipe) Load(repo repository.Interface) error {
 
 	// Validate
 	validate := validator.New()
-	if err := validate.Struct(rec); err != nil {
+	if err := validate.Struct(rec.config); err != nil {
 		return err
 	}
 
@@ -136,30 +150,3 @@ func stringToSyncUnitHookFunc() mapstructure.DecodeHookFunc {
 		}, nil
 	}
 }
-
-// walk into repository recipes
-func Walk(repo repository.Interface, fn walkFunc) error {
-
-	files, err := ioutil.ReadDir(repo.GetDir())
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		// Exclude dot files
-		if strings.HasPrefix(file.Name(), ".") {
-			continue
-		}
-		if file.IsDir() {
-			rec := New(file.Name())
-			if err := rec.Load(repo); err != nil {
-				return err
-			}
-			fn(rec)
-		}
-	}
-
-	return nil
-}
-
-type walkFunc func(rec Interface)
