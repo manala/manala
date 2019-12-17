@@ -55,6 +55,22 @@ func (s *LoadTestSuite) TestLoad() {
 	s.Equal("bar", rec.GetVars()["foo"])
 }
 
+func (s *LoadTestSuite) TestLoadVars() {
+	repo := repository.New("testdata/load_vars/repository")
+	_ = repo.Load("")
+	rec := New("foo")
+	_ = rec.Load(repo)
+	s.IsType(map[string]interface{}{}, rec.GetVars(), "vars should be a string map")
+}
+
+func (s *LoadTestSuite) TestLoadVarsManala() {
+	repo := repository.New("testdata/load_vars/repository")
+	_ = repo.Load("")
+	rec := New("foo")
+	_ = rec.Load(repo)
+	_, exists := rec.GetVars()["manala"]
+	s.False(exists, "vars should not contain \"manala\" key")
+}
 
 func (s *LoadTestSuite) TestLoadVarsStringMap() {
 	repo := repository.New("testdata/load_vars/repository")

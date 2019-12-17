@@ -95,6 +95,19 @@ func (s *LoadTestSuite) TestLoadWithRepository() {
 	s.Equal("baz", prj.GetConfig().Repository)
 }
 
+func (s *LoadTestSuite) TestLoadVars() {
+	prj := New("testdata/load_vars")
+	_ = prj.Load(Config{})
+	s.IsType(map[string]interface{}{}, prj.GetVars(), "vars should be a string map")
+}
+
+func (s *LoadTestSuite) TestLoadVarsManala() {
+	prj := New("testdata/load_vars")
+	_ = prj.Load(Config{})
+	_, exists := prj.GetVars()["manala"]
+	s.False(exists, "vars should not contain \"manala\" key")
+}
+
 func (s *LoadTestSuite) TestLoadVarsStringMap() {
 	prj := New("testdata/load_vars")
 	_ = prj.Load(Config{})
