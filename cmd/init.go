@@ -8,7 +8,7 @@ import (
 	"manala/pkg/project"
 	"manala/pkg/recipe"
 	"manala/pkg/repository"
-	"manala/pkg/syncer"
+	"manala/pkg/sync"
 	"os"
 	"strings"
 )
@@ -94,7 +94,7 @@ func initRun(cmd *cobra.Command, args []string) {
 	rec := recipes[index]
 
 	// Sync project
-	if err := syncer.SyncProject(prj, rec); err != nil {
+	if err := sync.SyncProject(prj, rec); err != nil {
 		log.Fatal(err.Error())
 	}
 

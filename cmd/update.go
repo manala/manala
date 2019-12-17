@@ -7,7 +7,7 @@ import (
 	"manala/pkg/project"
 	"manala/pkg/recipe"
 	"manala/pkg/repository"
-	"manala/pkg/syncer"
+	"manala/pkg/sync"
 )
 
 // UpdateCmd represents the update command
@@ -60,7 +60,7 @@ func updateRun(cmd *cobra.Command, args []string) {
 	log.Info("Recipe loaded")
 
 	// Sync project
-	if err := syncer.SyncProject(prj, rec); err != nil {
+	if err := sync.SyncProject(prj, rec); err != nil {
 		log.Fatal(err.Error())
 	}
 

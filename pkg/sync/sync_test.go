@@ -1,4 +1,4 @@
-package syncer
+package sync
 
 import (
 	"github.com/apex/log"

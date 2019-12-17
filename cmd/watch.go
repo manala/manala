@@ -9,7 +9,7 @@ import (
 	"manala/pkg/project"
 	"manala/pkg/recipe"
 	"manala/pkg/repository"
-	"manala/pkg/syncer"
+	"manala/pkg/sync"
 	"os"
 	"path/filepath"
 	"strings"
@@ -182,7 +182,7 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 		}
 
 		// Sync project
-		if err := syncer.SyncProject(prj, rec); err != nil {
+		if err := sync.SyncProject(prj, rec); err != nil {
 			return err
 		}
 
