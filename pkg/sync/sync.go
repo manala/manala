@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	"github.com/apex/log"
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v3"
