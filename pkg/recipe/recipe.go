@@ -6,6 +6,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"manala/pkg/clean"
 	"manala/pkg/repository"
 	"os"
 	"path"
@@ -84,6 +85,9 @@ func (rec *recipe) Load(repo repository.Interface) error {
 	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
 		return err
 	}
+
+	// See: https://github.com/go-yaml/yaml/issues/139
+	cfgMap = clean.YamlStringMap(cfgMap)
 
 	// Map config
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{

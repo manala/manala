@@ -55,6 +55,17 @@ func (s *LoadTestSuite) TestLoad() {
 	s.Equal("bar", rec.GetVars()["foo"])
 }
 
+
+func (s *LoadTestSuite) TestLoadVarsStringMap() {
+	repo := repository.New("testdata/load_vars/repository")
+	_ = repo.Load("")
+	rec := New("foo")
+	_ = rec.Load(repo)
+	s.IsType(map[string]interface{}{}, rec.GetVars()["foo"], "yaml mapping should be mapped as a string map")
+	s.IsType(map[string]interface{}{}, rec.GetVars()["bar"], "yaml mapping with anchor should be mapped as a string map")
+	s.IsType(map[string]interface{}{}, rec.GetVars()["baz"], "yaml mapping with alias should be mapped as a string map")
+}
+
 func (s *LoadTestSuite) TestLoadSync() {
 	repo := repository.New("testdata/load_sync/repository")
 	_ = repo.Load("")

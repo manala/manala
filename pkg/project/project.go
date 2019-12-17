@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
+	"manala/pkg/clean"
 	"os"
 	"path"
 )
@@ -85,6 +86,9 @@ func (prj *project) Load(cfg Config) error {
 	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
 		return err
 	}
+
+	// See: https://github.com/go-yaml/yaml/issues/139
+	cfgMap = clean.YamlStringMap(cfgMap)
 
 	// Map config
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
