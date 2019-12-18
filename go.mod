@@ -27,6 +27,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -37,7 +38,7 @@ require (
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
-	golang.org/x/tools v0.0.0-20191217193050-640059499bce // indirect
+	golang.org/x/tools v0.0.0-20191218040434-6f9e13bbec44 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20191105091915-95d230a53780 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2 // indirect
