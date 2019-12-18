@@ -3,8 +3,6 @@ package project
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/suite"
-	"gopkg.in/yaml.v3"
-	"io"
 	"testing"
 )
 
@@ -73,13 +71,15 @@ func (s *LoadTestSuite) TestLoadNotFound() {
 func (s *LoadTestSuite) TestLoadEmpty() {
 	prj := New("testdata/load_empty")
 	err := prj.Load(Config{})
-	s.Equal(io.EOF, err)
+	s.Error(err)
+	s.Contains(err.Error(), "empty project config")
 }
 
 func (s *LoadTestSuite) TestLoadInvalid() {
 	prj := New("testdata/load_invalid")
 	err := prj.Load(Config{})
-	s.IsType(&yaml.TypeError{}, err)
+	s.Error(err)
+	s.Contains(err.Error(), "invalid project config")
 }
 
 func (s *LoadTestSuite) TestLoadWithoutRecipe() {

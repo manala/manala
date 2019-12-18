@@ -200,6 +200,12 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateBase() {
 `, string(content))
 }
 
+func (s *SyncTemplateTestSuite) TestSyncTemplateInvalid() {
+	err := Sync("testdata/sync_template/source/invalid.tmpl", "testdata/sync_template/destination/invalid", NewTemplate(), nil)
+	s.Error(err)
+	s.Contains(err.Error(), "invalid template")
+}
+
 func (s *SyncTemplateTestSuite) TestSyncTemplateToYaml() {
 	err := Sync("testdata/sync_template/source/to_yaml.tmpl", "testdata/sync_template/destination/to_yaml", NewTemplate(), map[string]interface{}{
 		"foo": map[string]interface{}{

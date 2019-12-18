@@ -3,8 +3,6 @@ package recipe
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/suite"
-	"gopkg.in/yaml.v3"
-	"io"
 	"testing"
 )
 
@@ -73,13 +71,15 @@ func (s *LoadTestSuite) TestLoadNotFound() {
 func (s *LoadTestSuite) TestLoadEmpty() {
 	rec := New("testdata/load_empty")
 	err := rec.Load(Config{})
-	s.Equal(io.EOF, err)
+	s.Error(err)
+	s.Contains(err.Error(), "empty recipe config")
 }
 
 func (s *LoadTestSuite) TestLoadInvalid() {
 	rec := New("testdata/load_invalid")
 	err := rec.Load(Config{})
-	s.IsType(&yaml.TypeError{}, err)
+	s.Error(err)
+	s.Contains(err.Error(), "invalid recipe config")
 }
 
 func (s *LoadTestSuite) TestLoadWithoutDescription() {

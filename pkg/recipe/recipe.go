@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
+	"io"
 	"manala/pkg/clean"
 	"os"
 	"path"
@@ -97,7 +98,10 @@ func (rec *recipe) Load(cfg Config) error {
 	// Parse config
 	var cfgMap map[string]interface{}
 	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
-		return err
+		if err == io.EOF {
+			return fmt.Errorf("empty recipe config \"%s\"", rec.GetConfigFile())
+		}
+		return fmt.Errorf("invalid recipe config \"%s\" (%s)", rec.GetConfigFile(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139

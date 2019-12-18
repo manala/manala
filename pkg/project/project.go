@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
+	"io"
 	"manala/pkg/clean"
 	"os"
 	"path"
@@ -84,7 +85,10 @@ func (prj *project) Load(cfg Config) error {
 	// Parse config
 	var cfgMap map[string]interface{}
 	if err := yaml.NewDecoder(cfgFile).Decode(&cfgMap); err != nil {
-		return err
+		if err == io.EOF {
+			return fmt.Errorf("empty project config \"%s\"", prj.GetConfigFile())
+		}
+		return fmt.Errorf("invalid project config \"%s\" (%s)", prj.GetConfigFile(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139
