@@ -421,10 +421,14 @@ func templateIncludeFunc(tmpl *template.Template) func(name string, data interfa
 	includedNames := make([]string, 0)
 	return func(name string, data interface{}) (string, error) {
 		var buf strings.Builder
+		includedCount := 0
 		for _, n := range includedNames {
 			if n == name {
-				return "", fmt.Errorf("rendering template has a nested reference name: %s", name)
+				includedCount += 1
 			}
+		}
+		if includedCount >= 16 {
+			return "", fmt.Errorf("rendering template has reached the maximum nested reference name level: %s", name)
 		}
 		includedNames = append(includedNames, name)
 		err := tmpl.ExecuteTemplate(&buf, name, data)
