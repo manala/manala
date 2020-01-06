@@ -6,6 +6,8 @@ markdown_extensions:
 
 theme:
   name: readthedocs
+  hljs_languages:
+    - yaml
 
 nav:
   - Introduction: index.md

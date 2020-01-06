@@ -1,19 +1,23 @@
 package loaders
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
+	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"manala/models"
 	"manala/yaml/cleaner"
+	"manala/yaml/doc"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
@@ -112,12 +116,17 @@ func (ld *recipeLoader) loadDir(name string, dir string, repository models.Repos
 	log.WithField("name", name).Debug("Loading recipe...")
 
 	// Parse config
-	var vars map[string]interface{}
-	if err := yaml.NewDecoder(cfgFile).Decode(&vars); err != nil {
+	node := yaml.Node{}
+	if err := yaml.NewDecoder(cfgFile).Decode(&node); err != nil {
 		if err == io.EOF {
 			return nil, fmt.Errorf("empty recipe config \"%s\"", cfgFile.Name())
 		}
 		return nil, fmt.Errorf("invalid recipe config \"%s\" (%w)", cfgFile.Name(), err)
+	}
+
+	var vars map[string]interface{}
+	if err := node.Decode(&vars); err != nil {
+		return nil, fmt.Errorf("incorrect recipe config \"%s\" (%w)", cfgFile.Name(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139
@@ -153,7 +162,97 @@ func (ld *recipeLoader) loadDir(name string, dir string, repository models.Repos
 	rec.MergeVars(&vars)
 	rec.AddSyncUnits(cfg.Sync)
 
+	// Parse node schema
+	schema, err := ld.parseNodeSchema(&node, "")
+	if err != nil {
+		return nil, err
+	}
+	rec.MergeSchema(&schema)
+
 	return rec, nil
+}
+
+func (ld *recipeLoader) parseNodeSchema(node *yaml.Node, path string) (map[string]interface{}, error) {
+	var nodeKey *yaml.Node = nil
+	schemaProperties := map[string]interface{}{}
+
+	for _, nodeChild := range node.Content {
+		// Do we have a current node key ?
+		if nodeKey != nil {
+			nodePath := filepath.Join(path, nodeKey.Value)
+
+			// Exclude "manala" config
+			if nodePath == "/manala" {
+				nodeKey = nil
+				continue
+			}
+
+			var schema map[string]interface{} = nil
+
+			switch nodeChild.Kind {
+			case yaml.ScalarNode:
+				// Both key/value node are scalars
+				schema = map[string]interface{}{}
+			case yaml.MappingNode:
+				var err error
+				schema, err = ld.parseNodeSchema(nodeChild, nodePath)
+				if err != nil {
+					return nil, err
+				}
+			case yaml.SequenceNode:
+				schema = map[string]interface{}{
+					"type": "array",
+				}
+			default:
+				return nil, fmt.Errorf("unknown node kind: %s", strconv.Itoa(int(nodeChild.Kind)))
+			}
+
+			if nodeKey.HeadComment != "" {
+				for _, tag := range doc.ParseCommentTags(nodeKey.HeadComment) {
+					if tag.Name != "schema" {
+						continue
+					}
+					var tagSchema map[string]interface{}
+					if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
+						return nil, fmt.Errorf("invalid recipe schema tag at \"%s\": %w", nodePath, err)
+					}
+					if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
+						return nil, fmt.Errorf("unable to merge recipe schema tag at \"%s\": %w", nodePath, err)
+					}
+				}
+			}
+
+			schemaProperties[nodeKey.Value] = schema
+
+			// Reset node key
+			nodeKey = nil
+		} else {
+			switch nodeChild.Kind {
+			case yaml.ScalarNode:
+				// Now we have a node key \o/
+				nodeKey = nodeChild
+			case yaml.MappingNode:
+				// This could only be the root node
+				schema, err := ld.parseNodeSchema(nodeChild, "/")
+				if err != nil {
+					return nil, err
+				}
+				return schema, nil
+			case yaml.SequenceNode:
+				// This could only be the root node
+				return map[string]interface{}{
+					"type": "array",
+				}, nil
+			default:
+				return nil, fmt.Errorf("unknown node kind: %s", strconv.Itoa(int(nodeChild.Kind)))
+			}
+		}
+	}
+
+	return map[string]interface{}{
+		"type":       "object",
+		"properties": schemaProperties,
+	}, nil
 }
 
 // Returns a DecodeHookFunc that converts strings to syncUnit

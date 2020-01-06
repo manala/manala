@@ -15,8 +15,10 @@ type RecipeTestSuite struct {
 	suite.Suite
 	repository              models.RepositoryInterface
 	repositoryEmpty         models.RepositoryInterface
+	repositoryInvalid       models.RepositoryInterface
 	repositoryIncorrect     models.RepositoryInterface
 	repositoryNoDescription models.RepositoryInterface
+	repositorySchemaInvalid models.RepositoryInterface
 }
 
 func TestRecipeTestSuite(t *testing.T) {
@@ -33,6 +35,10 @@ func (s *RecipeTestSuite) SetupTest() {
 		"testdata/repository_empty",
 		"testdata/repository_empty",
 	)
+	s.repositoryInvalid = models.NewRepository(
+		"testdata/repository_invalid",
+		"testdata/repository_invalid",
+	)
 	s.repositoryIncorrect = models.NewRepository(
 		"testdata/repository_incorrect",
 		"testdata/repository_incorrect",
@@ -40,6 +46,10 @@ func (s *RecipeTestSuite) SetupTest() {
 	s.repositoryNoDescription = models.NewRepository(
 		"testdata/repository_no_description",
 		"testdata/repository_no_description",
+	)
+	s.repositorySchemaInvalid = models.NewRepository(
+		"testdata/repository_schema_invalid",
+		"testdata/repository_schema_invalid",
 	)
 }
 
@@ -103,11 +113,19 @@ func (s *RecipeTestSuite) TestRecipeLoadEmpty() {
 	s.Nil(rec)
 }
 
+func (s *RecipeTestSuite) TestRecipeLoadInvalid() {
+	ld := NewRecipeLoader()
+	rec, err := ld.Load("foo", s.repositoryInvalid)
+	s.Error(err)
+	s.Equal("invalid recipe config \"testdata/repository_invalid/foo/.manala.yaml\" (yaml: mapping values are not allowed in this context)", err.Error())
+	s.Nil(rec)
+}
+
 func (s *RecipeTestSuite) TestRecipeLoadIncorrect() {
 	ld := NewRecipeLoader()
 	rec, err := ld.Load("foo", s.repositoryIncorrect)
 	s.Error(err)
-	s.Equal("invalid recipe config \"testdata/repository_incorrect/foo/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
+	s.Equal("incorrect recipe config \"testdata/repository_incorrect/foo/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
 	s.Nil(rec)
 }
 
@@ -142,6 +160,59 @@ func (s *RecipeTestSuite) TestRecipeLoadSyncUnits() {
 		},
 		rec.SyncUnits(),
 	)
+}
+
+func (s *RecipeTestSuite) TestRecipeLoadSchema() {
+	ld := NewRecipeLoader()
+	rec, _ := ld.Load("foo", s.repository)
+	s.Equal(
+		map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"foo": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"foo": map[string]interface{}{},
+						"bar": map[string]interface{}{
+							"enum": []interface{}{
+								nil,
+								"baz",
+							},
+						},
+						"baz": map[string]interface{}{
+							"type": "array",
+						},
+					},
+					"required": []interface{}{
+						"foo",
+						"bar",
+					},
+				},
+				"bar": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"bar": map[string]interface{}{},
+					},
+				},
+				"baz": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"bar": map[string]interface{}{},
+						"baz": map[string]interface{}{},
+					},
+				},
+			},
+		},
+		rec.Schema(),
+	)
+}
+
+func (s *RecipeTestSuite) TestRecipeLoadSchemaInvalid() {
+	ld := NewRecipeLoader()
+	rec, err := ld.Load("foo", s.repositorySchemaInvalid)
+	s.Error(err)
+	s.Equal("invalid recipe schema tag at \"/foo\": unexpected end of JSON input", err.Error())
+	s.Nil(rec)
 }
 
 func (s *RecipeTestSuite) TestRecipeWalk() {

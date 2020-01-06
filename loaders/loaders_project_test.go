@@ -122,10 +122,10 @@ func (s *ProjectTestSuite) TestProjectLoadVars() {
 	prj, _ := ld.Load("testdata/project")
 	s.Equal(
 		map[string]interface{}{
-			"foo": map[string]interface{}{"foo": "bar", "bar": "baz", "baz": []interface{}{}},
-			"bar": map[string]interface{}{"bar": "baz"},
-			"baz": "qux",
-			"qux": map[string]interface{}{"qux": "quux"},
+			"foo":  map[string]interface{}{"foo": "bar", "bar": "baz", "baz": []interface{}{}},
+			"bar":  map[string]interface{}{"bar": "baz"},
+			"baz":  "qux",
+			"qux":  map[string]interface{}{"qux": "quux"},
 			"quux": map[string]interface{}{"qux": "quux", "quux": "corge"},
 		},
 		prj.Vars(),

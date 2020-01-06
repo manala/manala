@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"manala/loaders"
 	"manala/syncer"
+	"manala/validator"
 )
 
 // UpdateCmd represents the update command
@@ -36,6 +37,13 @@ func updateRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	// Validate project
+	if err := validator.ValidateProject(prj); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	log.Info("Project validated")
 
 	// Sync project
 	if err := syncer.SyncProject(prj); err != nil {
