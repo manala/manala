@@ -1,4 +1,10 @@
-# Manala
+<p align="center">
+  <img alt="Manala" src="https://avatars3.githubusercontent.com/u/17640904?s=128&v=4" height="128" />
+  <h3 align="center">Manala</h3>
+  <p align="center">Let your projects plumbings up to date.</p>
+</p>
+
+---
 
 [![Release](https://img.shields.io/github/release/manala/manala.svg?style=flat-square)](https://github.com/manala/manala/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
@@ -11,6 +17,11 @@
 **homebrew tap:**
 ```
 brew install manala/tap/manala
+```
+
+**snapcraft:**
+```
+sudo snap install --classic manala
 ```
 
 **deb/rpm:**

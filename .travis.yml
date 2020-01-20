@@ -1,14 +1,28 @@
 language: go
+sudo: required
 
 go: 1.13.x
 
 env:
-  - GO111MODULE=on
+  global:
+    - GO111MODULE=on
+    - PATH=/snap/bin:$PATH
+
+addons:
+  apt:
+    packages:
+      - snapd
+
+install:
+  - sudo snap install snapcraft --classic
+
+after_success:
+  - test -n "$TRAVIS_TAG" && openssl aes-256-cbc -K $encrypted_634cf8e7b6b8_key -iv $encrypted_634cf8e7b6b8_iv -in snap.login.enc -out snap.login -d
+  - test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
 
 deploy:
-- provider: script
-  skip_cleanup: true
-  script: curl -sL https://git.io/goreleaser | bash
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
+  - provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true

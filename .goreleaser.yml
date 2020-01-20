@@ -59,3 +59,15 @@ nfpms:
     formats:
       - deb
       - rpm
+snapcrafts:
+  - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    summary: Let your projects plumbings up to date
+    description: |
+      Manala synchronize some boring parts of your projects,
+      such as makefile targets, virtualization and provisioning files...
+
+      Recipes are pulled from a git repository, or a local directory.
+    grade: stable
+    confinement: classic
+    license: MIT
+    publish: true
