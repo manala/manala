@@ -4,9 +4,8 @@ import (
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"manala/pkg/project"
-	"manala/pkg/repository"
-	"manala/pkg/sync"
+	"manala/loaders"
+	"manala/syncer"
 )
 
 // UpdateCmd represents the update command
@@ -27,39 +26,19 @@ Example: manala update -> resulting in an update in current directory`,
 }
 
 func updateRun(cmd *cobra.Command, args []string) {
-	// Create project
-	prj := project.New(viper.GetString("dir"))
+	// Loaders
+	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	recLoader := loaders.NewRecipeLoader()
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
 
 	// Load project
-	if err := prj.Load(project.Config{
-		Repository: viper.GetString("repository"),
-	}); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	log.WithFields(log.Fields{
-		"recipe":     prj.GetConfig().Recipe,
-		"repository": prj.GetConfig().Repository,
-	}).Info("Project loaded")
-
-	// Load repository
-	repo := repository.New(prj.GetConfig().Repository)
-	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	log.Info("Repository loaded")
-
-	// Load recipe
-	rec, err := repo.LoadRecipe(prj.GetConfig().Recipe)
+	prj, err := prjLoader.Load(viper.GetString("dir"))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Info("Recipe loaded")
-
 	// Sync project
-	if err := sync.SyncProject(prj, rec); err != nil {
+	if err := syncer.SyncProject(prj); err != nil {
 		log.Fatal(err.Error())
 	}
 

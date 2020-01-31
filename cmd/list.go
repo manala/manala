@@ -5,8 +5,8 @@ import (
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"manala/pkg/recipe"
-	"manala/pkg/repository"
+	"manala/loaders"
+	"manala/models"
 )
 
 // ListCmd represents the list command
@@ -27,15 +27,19 @@ Example: manala list -> resulting in a recipes list display`,
 }
 
 func listRun(cmd *cobra.Command, args []string) {
+	// Loaders
+	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	recLoader := loaders.NewRecipeLoader()
+
 	// Load repository
-	repo := repository.New(viper.GetString("repository"))
-	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
+	repo, err := repoLoader.Load(viper.GetString("repository"))
+	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	// Walk into recipes
-	if err := repo.WalkRecipes(func(rec recipe.Interface) {
-		fmt.Printf("%s: %s\n", rec.GetName(), rec.GetConfig().Description)
+	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
+		fmt.Printf("%s: %s\n", rec.Name(), rec.Description())
 	}); err != nil {
 		log.Fatal(err.Error())
 	}

@@ -6,9 +6,9 @@ import (
 	"github.com/gen2brain/beeep"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"manala/pkg/project"
-	"manala/pkg/repository"
-	"manala/pkg/sync"
+	"manala/loaders"
+	"manala/models"
+	"manala/syncer"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,18 +45,26 @@ func watchRun(cmd *cobra.Command, args []string) {
 	}
 	defer watcher.Close()
 
-	var prj project.Interface
+	// Loaders
+	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	recLoader := loaders.NewRecipeLoader()
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
+
+	var prj models.ProjectInterface
 
 	// Get sync function
-	syncProject := watchSyncProjectFunc(&prj, watcher, watchRecipe)
+	syncProject := watchSyncProjectFunc(&prj, prjLoader, watcher, watchRecipe)
 
 	// Sync
 	if err := syncProject(); err != nil {
 		log.Fatal(err.Error())
 	}
 
+	// Get project config file
+	prjConfigFile, _ := prjLoader.ConfigFile(prj.Dir())
+
 	// Watch project
-	if err := watcher.Add(prj.GetDir()); err != nil {
+	if err := watcher.Add(prj.Dir()); err != nil {
 		log.WithError(err).Fatal("Error adding project watching")
 	}
 
@@ -77,10 +85,10 @@ func watchRun(cmd *cobra.Command, args []string) {
 					modified := false
 					file := filepath.Clean(event.Name)
 					dir := filepath.Dir(file)
-					if file == prj.GetConfigFile() {
+					if file == prjConfigFile.Name() {
 						log.WithField("file", file).Info("Project config modified")
 						modified = true
-					} else if dir != prj.GetDir() {
+					} else if dir != prj.Dir() {
 						// Modified directory is not project one. That could only means recipe's one
 						log.WithField("dir", dir).Info("Recipe modified")
 						modified = true
@@ -110,51 +118,26 @@ func watchRun(cmd *cobra.Command, args []string) {
 	<-done
 }
 
-func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
+func watchSyncProjectFunc(basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
 	var baseRecDir string
 
 	return func() error {
-		// Create project
-		prj := project.New(viper.GetString("dir"))
-
 		// Load project
-		if err := prj.Load(project.Config{
-			Repository: viper.GetString("repository"),
-		}); err != nil {
+		prj, err := prjLoader.Load(viper.GetString("dir"))
+		if err != nil {
 			return err
 		}
 
 		*basePrj = prj
 
-		log.WithFields(log.Fields{
-			"recipe":     prj.GetConfig().Recipe,
-			"repository": prj.GetConfig().Repository,
-		}).Info("Project loaded")
-
-		// Load repository
-		repo := repository.New(prj.GetConfig().Repository)
-		if err := repo.Load(viper.GetString("cache_dir")); err != nil {
-			return err
-		}
-
-		log.Info("Repository loaded")
-
-		// Load recipe
-		rec, err := repo.LoadRecipe(prj.GetConfig().Recipe)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		log.Info("Recipe loaded")
-
 		if watchRecipe {
 			// Initialize base recipe dir to the first synced recipe
 			if baseRecDir == "" {
-				baseRecDir = rec.GetDir()
+				baseRecDir = prj.Recipe().Dir()
 			}
 
 			// If recipe has changed, first, unwatch old one directories
-			if baseRecDir != rec.GetDir() {
+			if baseRecDir != prj.Recipe().Dir() {
 				if err := filepath.Walk(baseRecDir, func(path string, info os.FileInfo, err error) error {
 					if info.Mode().IsDir() {
 						if err := watcher.Remove(path); err != nil {
@@ -168,7 +151,7 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 			}
 
 			// Watch all recipe directories; don't care if they are already watched
-			if err := filepath.Walk(rec.GetDir(), func(path string, info os.FileInfo, err error) error {
+			if err := filepath.Walk(prj.Recipe().Dir(), func(path string, info os.FileInfo, err error) error {
 				if info.Mode().IsDir() {
 					if err := watcher.Add(path); err != nil {
 						return err
@@ -181,7 +164,7 @@ func watchSyncProjectFunc(basePrj *project.Interface, watcher *fsnotify.Watcher,
 		}
 
 		// Sync project
-		if err := sync.SyncProject(prj, rec); err != nil {
+		if err := syncer.SyncProject(prj); err != nil {
 			return err
 		}
 

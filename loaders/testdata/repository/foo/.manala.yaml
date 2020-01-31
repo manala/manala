@@ -1,0 +1,21 @@
+manala:
+    description: Foo bar
+    sync:
+      - foo
+      - foo bar
+
+# @schema {"required": ["foo", "bar"]}
+foo:
+    foo: bar
+    # @schema {
+    #     "enum": [null, "baz"]
+    # }
+    bar: baz
+    baz: []
+
+bar:
+    bar: baz
+
+baz:
+    bar: baz
+    baz: qux
