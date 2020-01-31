@@ -5,10 +5,9 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"manala/pkg/project"
-	"manala/pkg/recipe"
-	"manala/pkg/repository"
-	"manala/pkg/sync"
+	"manala/loaders"
+	"manala/models"
+	"manala/syncer"
 	"os"
 	"strings"
 )
@@ -33,25 +32,27 @@ Example: manala init /foo/bar -> resulting in an init in /foo/bar directory`,
 }
 
 func initRun(cmd *cobra.Command, args []string) {
-	// Create project
-	prj := project.New(viper.GetString("dir"))
+	// Loaders
+	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	recLoader := loaders.NewRecipeLoader()
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
 
-	if prj.IsExist() {
+	// Ensure project is not yet initialized by checking configuration file existence
+	cfgFile, _ := prjLoader.ConfigFile(viper.GetString("dir"))
+	if cfgFile != nil {
 		log.Fatal("Project already initialized")
 	}
 
 	// Load repository
-	repo := repository.New(viper.GetString("repository"))
-	if err := repo.Load(viper.GetString("cache_dir")); err != nil {
+	repo, err := repoLoader.Load(viper.GetString("repository"))
+	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	log.Info("Repository loaded")
-
-	var recipes []recipe.Interface
+	var recipes []models.RecipeInterface
 
 	// Walk into recipes
-	if err := repo.WalkRecipes(func(rec recipe.Interface) {
+	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
 		recipes = append(recipes, rec)
 	}); err != nil {
 		log.Fatal(err.Error())
@@ -61,16 +62,16 @@ func initRun(cmd *cobra.Command, args []string) {
 		Items: recipes,
 		Templates: &promptui.SelectTemplates{
 			Label:    "Select recipe:",
-			Active:   `{{ "▸" | bold }} {{ .GetName | underline }}`,
-			Inactive: "  {{ .GetName }}",
-			Selected: `{{ "✔" | green }} {{ .GetName | faint }}`,
+			Active:   `{{ "▸" | bold }} {{ .Name | underline }}`,
+			Inactive: "  {{ .Name }}",
+			Selected: `{{ "✔" | green }} {{ .Name | faint }}`,
 			Details: `
-{{ .GetConfig.Description }}`,
+		{{ .Description }}`,
 		},
 		Searcher: func(input string, index int) bool {
 			rec := recipes[index]
-			name := strings.Replace(strings.ToLower(rec.GetName()), " ", "", -1)
-			description := strings.Replace(strings.ToLower(rec.GetName()), " ", "", -1)
+			name := strings.Replace(strings.ToLower(rec.Name()), " ", "", -1)
+			description := strings.Replace(strings.ToLower(rec.Name()), " ", "", -1)
 			input = strings.Replace(strings.ToLower(input), " ", "", -1)
 
 			return strings.Contains(name, input) || strings.Contains(description, input)
@@ -90,10 +91,13 @@ func initRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	rec := recipes[index]
+	prj := models.NewProject(
+		viper.GetString("dir"),
+		recipes[index],
+	)
 
 	// Sync project
-	if err := sync.SyncProject(prj, rec); err != nil {
+	if err := syncer.SyncProject(prj); err != nil {
 		log.Fatal(err.Error())
 	}
 
