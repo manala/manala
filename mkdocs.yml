@@ -1,0 +1,12 @@
+site_name: manala
+repo_url: https://github.com/manala/manal/
+
+theme:
+  name: readthedocs
+
+nav:
+  - Introduction: index.md
+  - Installation: installation.md
+  - Overview: overview.md
+  - Usage: usage.md
+  - Contributing: contributing.md
