@@ -67,7 +67,10 @@ snapcrafts:
       such as makefile targets, virtualization and provisioning files...
 
       Recipes are pulled from a git repository, or a local directory.
-    grade: stable
-    confinement: classic
     license: MIT
+    grade: stable
+    confinement: strict
+    apps:
+      manala:
+        plugs: ["home", "network", "removable-media"]
     publish: true
