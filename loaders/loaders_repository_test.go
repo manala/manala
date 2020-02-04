@@ -82,6 +82,6 @@ func (s *RepositoryTestSuite) TestRepositoryLoadGitNotExist() {
 	ld := NewRepositoryLoader(s.cacheDir)
 	repo, err := ld.Load("https://github.com/octocat/Foo-Bar.git")
 	s.Error(err)
-	s.Equal("unclonable repository: authentication required", err.Error())
+	s.Equal("unable to clone repository: authentication required", err.Error())
 	s.Nil(repo)
 }
