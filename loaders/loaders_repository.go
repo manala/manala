@@ -80,28 +80,29 @@ func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, err
 
 	log.WithField("dir", dir).Debug("Opening repository cache...")
 
+Load:
 	if err := os.MkdirAll(dir, os.FileMode(0700)); err != nil {
 		return nil, err
 	}
 
 	gitRepository, err := git.PlainOpen(dir)
 
-	if err != nil {
-		switch err {
-		case git.ErrRepositoryNotExists:
-			log.Debug("Cloning git repository cache...")
+	switch err {
 
-			gitRepository, err = git.PlainClone(dir, false, &git.CloneOptions{
-				URL:               src,
-				RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("unclonable repository: %w", err)
-			}
-		default:
-			return nil, fmt.Errorf("unopenable repository: %w", err)
+	// Repository not in cache, let's clone it
+	case git.ErrRepositoryNotExists:
+		log.Debug("Cloning git repository cache...")
+
+		gitRepository, err = git.PlainClone(dir, false, &git.CloneOptions{
+			URL:               src,
+			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("unable to clone repository: %w", err)
 		}
-	} else {
+
+	// Repository already in cache, let's pull it
+	case nil:
 		log.Debug("Getting git repository worktree cache...")
 
 		gitRepositoryWorktree, err := gitRepository.Worktree()
@@ -116,10 +117,20 @@ func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, err
 		}); err != nil {
 			switch err {
 			case git.NoErrAlreadyUpToDate:
+			case git.ErrNonFastForwardUpdate:
+				log.Debug("Fast forward update detected, delete repository cache and retry with cloning...")
+				if err := os.RemoveAll(dir); err != nil {
+					return nil, fmt.Errorf("unable to delete repository cache: %w", err)
+				}
+				goto Load
 			default:
-				return nil, err
+				return nil, fmt.Errorf("unable to pull repository: %w", err)
 			}
 		}
+
+	// Unable to open repository...
+	default:
+		return nil, fmt.Errorf("unable to open repository: %w", err)
 	}
 
 	return models.NewRepository(src, dir), nil
