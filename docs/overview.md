@@ -12,11 +12,11 @@ Your company would like to apply always the same coding rules on all of its proj
 
 That's where manala enters the game ...
 
-## Some wording: `project` vs `template` vs `repository`
+## Some wording: `project` vs `recipe` vs `repository`
 
 In manala's vocabulary, your projects (the company's PHP projects in our example) are called ... `projects`.
 
-In our example, our reference coding rules will be stored in a single place where they will be maintained. A `template` is a set of template files (the file containing your coding rules is one of these template files). All the templates and template files you maintain are made accessible to your colleagues through a `repository`.
+In our example, our reference coding rules will be stored in a single place where they will be maintained. A `recipe` is a set of templates (the file containing your coding rules is one of these templates). All the recipes and templates you maintain are made accessible to your colleagues through a `repository`.
 
 ## First step: install manala
 
@@ -24,38 +24,40 @@ In our example, our reference coding rules will be stored in a single place wher
 curl -sL https://github.com/nervo/manala/raw/master/install.sh | sudo sh
 ```
 
-> :bulb: Run `manala` in a console/terminal to obtain a list of available commands.
+> 💡 Run `manala` in a console/terminal to obtain a list of available commands.
 
-## Create your template repository and your first template
+> 💡 Various installation methods exist. Go the [installation documentation](installation.md) to learn more.
 
-> :bulb: manala ships with some templates by default. Run `manala list` to display the list of available templates.
+## Create your recipe repository and your first template
 
-But in this example, we are going to create our own template repository to better understand how manala works under the hood and enable you to develop your own templates when the need arises.
+> 💡 manala ships with some recipes by default. Run `manala list` to display the list of available recipes.
 
-Run the following command to create your template repository: 
+But in this example, we are going to create our own recipe repository to better understand how manala works under the hood and enable you to develop your own recipes and templates when the need arises.
 
-`mkdir ~/my-manala-template-repository`
+Run the following command to create your recipe repository: 
 
-Within this repository, we are going to create a set of templates that will host our PHP rule template file:
+`mkdir ~/my-manala-recipe-repository`
 
-`mkdir mkdir ~/my-manala-template-repository/my-php-templates`
+Within this repository, we are going to create a set of templates that will host our PHP rule template:
 
-> :bulb: In manala's philosophy, a repository is viewed as a company-wide repository where you can store templates for various purposes and many profiles: infrastructure templates, backend developers, frontend developers, etc. In fact, your projects will not embed all the company's templates but just the subset of templates that's useful for your project. In our example, we are going to embed only the template files under `my-php-templates` in our PHP projects.
+`mkdir mkdir ~/my-manala-recipe-repository/my-php-templates`
+
+> 💡 In manala's philosophy, a repository is viewed as a company-wide repository where you can store recipes and templates for various purposes and many profiles: devops, hosting, backend developers, frontend developers, etc. In fact, your projects will not embed all the company's recipes but just the subset of recipes that are useful for your project. In our example, we are going to embed only the templates under `my-php-templates` in our PHP projects.
 
 Let's create a `.manala.yaml` file under the `my-php-templates`:
 
 ```shell
-  cd ~/my-manala-template-repository/my-php-templates
+  cd ~/my-manala-recipe-repository/my-php-templates
   touch ./.manala.yaml
 ```
 
-> :bulb: the `.manala.yaml` acts as a manifest for your template. It holds the name of your template and indicates which files or folders must be put under synchronization.
+> 💡 the `.manala.yaml` acts as a manifest for your recipe. It holds the name of your recipee and indicates which files or folders must be put under synchronization.
 
 Now edit this file and put the following content:
 
 ```yaml
 manala:
-    description: My company's PHP templates
+    description: My company's PHP recipe
     sync:
         - .manala
 ```
@@ -66,7 +68,7 @@ Now we are going to create the `.manala` folder where all our PHP templates will
 mkdir ./.manala
 ```
 
-And finally, our PHP rule template file:
+And finally, our PHP rule template:
 
 ```shell
 touch ./.manala/php-cs-rules.php
@@ -160,7 +162,7 @@ return PhpCsFixer\Config::create()
 ;
 ```
 
-:bulb: For the moment, we have hard-coded our coding rules but in the next step, we will of course replace them with our shared rules.
+💡 For the moment, we have hard-coded our coding rules but in the next step, we will of course replace them with our shared rules.
 
 Run `vendor/bin/php-cs-fixer fix --dry-run` to check that your PHP-CS-fix config is OK.
 
@@ -174,11 +176,11 @@ And add the following content:
 
 ```yaml
 manala:
-  repository: /path/to/your/home/my-manala-template-repository
+  repository: /path/to/your/home/my-manala-recipe-repository
   template: my-php-templates
 ```
 
-> :warning: Update `/path/to/your/home/` to match your real home !!! Using `~` won't work !!!
+> ⚠️ Update `/path/to/your/home/` to match your real home !!! Using `~` won't work !!!
 
 And finally run the following command:
 
@@ -224,24 +226,24 @@ But, hey, just wait a minute ! What about the header of my coding rules ? My sha
 
 ## Defining dynamic parts in your templates
 
-In this chapter, we are going to define some dynamic parts in our templates and implement them in our embedding projects.
+In this chapter, we are going to define some dynamic parts in our templates and implement them in the projects embedding our recipe.
 
-For this, we must first update our template file to include some dynamic parts.
+For this, we must first update our template to include some dynamic parts.
 
 Rename the `php-cs-rules.php` to add a `tmpl` suffix:
 
 ```shell
-	mv ~/my-manala-template-repository/my-php-templates/php-cs-rules.php ~/my-manala-template-repository/my-php-templates/php-cs-rules.php.tmpl
+	mv ~/my-manala-recipe-repository/my-php-templates/php-cs-rules.php ~/my-manala-recipe-repository/my-php-templates/php-cs-rules.php.tmpl
 ```
 
 And update its content:
 
 ```diff
 - This file is part of the XXX project.
-+ This file is part of the {{ .project_name }} project.
++ This file is part of the {{ .Vars.project_name }} project.
 ```
 
-> :bulb: Templates must be written according to [Golang template syntax](https://golang.org/pkg/text/template/), plus some sugar functions brought by [Sprig](http://masterminds.github.io/sprig/).
+> 💡 Templates must be written according to [Golang template syntax](https://golang.org/pkg/text/template/), plus some sugar functions brought by [Sprig](http://masterminds.github.io/sprig/).
 
 Now edit the `.manala.yaml` file in your PHP project to add the following line:
 
@@ -256,16 +258,18 @@ manala up
 cat ./.manala/php-cs-rules.php
 ```
 
+> ⚠️ Don't forget to run `manala up` each time you edit the `.manala.yaml` file !!!
+
 ## Share your templates with your colleagues
 
-As previously stated, templates are meant to be distributed. Github is of course the right place to host your templates!
+As previously stated, recipes are meant to be distributed. Github is of course the right place to host your recipes!
 
-So, push your templates to Github and don't forget to update your manala configuration in the projects that consume your templates (`.manala.yaml`):
+So, push your recipe to Github and don't forget to update your manala configuration in the projects that consume your recipe (`manala up`):
 
 ```diff
 manala:
--  repository: /path/to/your/home/my-manala-template-repository
-+  repository: git@github.com:my-company/my-manala-template-repository
+-  repository: /path/to/your/home/my-manala-recipe-repository
++  repository: git@github.com:my-company/my-manala-recipe-repository
 ```
 
 From now on, each time you push updates to your Github repository, simply run `manala up` in your projects to pass on the last updates.
