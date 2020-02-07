@@ -1,6 +1,9 @@
 site_name: manala
 repo_url: https://github.com/manala/manala/
 
+markdown_extensions:
+  - admonition
+
 theme:
   name: readthedocs
 
