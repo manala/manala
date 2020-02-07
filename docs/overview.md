@@ -24,13 +24,16 @@ In our example, our reference coding rules will be stored in a single place wher
 curl -sL https://github.com/nervo/manala/raw/master/install.sh | sudo sh
 ```
 
-> 💡 Run `manala` in a console/terminal to obtain a list of available commands.
+!!! Tip
+    Run `manala` in a console/terminal to obtain a list of available commands.
 
-> 💡 Various installation methods exist. Go the [installation documentation](installation.md) to learn more.
+!!! Tip
+    Various installation methods exist. Go to the [installation documentation](installation.md) to learn more.
 
 ## Create your recipe repository and your first template
 
-> 💡 manala ships with some recipes by default. Run `manala list` to display the list of available recipes.
+!!! Tip
+    manala ships with some recipes by default. Run `manala list` to get the list of available recipes.
 
 But in this example, we are going to create our own recipe repository to better understand how manala works under the hood and enable you to develop your own recipes and templates when the need arises.
 
@@ -42,7 +45,8 @@ Within this repository, we are going to create a set of templates that will host
 
 `mkdir mkdir ~/my-manala-recipe-repository/my-php-templates`
 
-> 💡 In manala's philosophy, a repository is viewed as a company-wide repository where you can store recipes and templates for various purposes and many profiles: devops, hosting, backend developers, frontend developers, etc. In fact, your projects will not embed all the company's recipes but just the subset of recipes that are useful for your project. In our example, we are going to embed only the templates under `my-php-templates` in our PHP projects.
+!!! Note
+    In manala's philosophy, a repository is viewed as a company-wide repository where you can store recipes and templates for various purposes and many profiles: devops, hosting, backend developers, frontend developers, etc. In fact, your projects will not embed all the company's recipes but just the subset of recipes that are useful for your project. In our example, we are going to embed only the templates under `my-php-templates` in our PHP projects.
 
 Let's create a `.manala.yaml` file under the `my-php-templates`:
 
@@ -51,7 +55,8 @@ Let's create a `.manala.yaml` file under the `my-php-templates`:
   touch ./.manala.yaml
 ```
 
-> 💡 the `.manala.yaml` acts as a manifest for your recipe. It holds the name of your recipe and indicates which files or folders must be put under synchronization.
+!!! Note
+    the `.manala.yaml` acts as a manifest for your recipe. It holds the name of your recipe and indicates which files or folders must be put under synchronization.
 
 Now edit this file and put the following content:
 
@@ -162,7 +167,8 @@ return PhpCsFixer\Config::create()
 ;
 ```
 
-💡 For the moment, we have hard-coded our coding rules but in the next step, we will of course replace them with our shared rules.
+!!! Note
+    For the moment, we have hard-coded our coding rules but in the next step, we will of course replace them with our shared rules.
 
 Run `vendor/bin/php-cs-fixer fix --dry-run` to check that your PHP-CS-fix config is OK.
 
@@ -180,7 +186,8 @@ manala:
   template: my-php-templates
 ```
 
-> ⚠️ Update `/path/to/your/home/` to match your real home !!! Using `~` won't work !!!
+!!! warning
+     Update `/path/to/your/home/` to match your real home !!! Using `~` won't work !!!
 
 And finally run the following command:
 
@@ -243,7 +250,8 @@ And update its content:
 + This file is part of the {{ .Vars.project_name }} project.
 ```
 
-> 💡 Templates must be written according to [Golang template syntax](https://golang.org/pkg/text/template/), plus some sugar functions brought by [Sprig](http://masterminds.github.io/sprig/).
+!!! Tip
+    Templates must be written according to [Golang template syntax](https://golang.org/pkg/text/template/), plus some sugar functions brought by [Sprig](http://masterminds.github.io/sprig/).
 
 Now edit the `.manala.yaml` file in your PHP project to add the following line:
 
@@ -258,7 +266,8 @@ manala up
 cat ./.manala/php-cs-rules.php
 ```
 
-> ⚠️ Don't forget to run `manala up` each time you edit the `.manala.yaml` file !!!
+!!! warning
+    Don't forget to run `manala up` each time you edit the `.manala.yaml` file !!!
 
 ## Share your templates with your colleagues
 
