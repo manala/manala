@@ -45,6 +45,7 @@ func (s *RecipeTestSuite) TestRecipe() {
 	s.Equal(s.repository, rec.Repository())
 	s.Len(rec.Vars(), 0)
 	s.Len(rec.SyncUnits(), 0)
+	s.Len(rec.Schema(), 0)
 }
 
 func (s *RecipeTestSuite) TestRecipeMergeVars() {
@@ -65,4 +66,14 @@ func (s *RecipeTestSuite) TestRecipeAddSyncUnits() {
 	}
 	rec.AddSyncUnits(syncUnits)
 	s.Equal(syncUnits, rec.SyncUnits())
+}
+
+func (s *RecipeTestSuite) TestRecipeMergeSchema() {
+	rec := NewRecipe(s.name, s.description, s.dir, s.repository)
+	schema := map[string]interface{}{
+		"foo": "bar",
+		"bar": "bas",
+	}
+	rec.MergeVars(&schema)
+	s.Equal(schema, rec.Vars())
 }

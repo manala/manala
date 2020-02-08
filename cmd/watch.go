@@ -9,6 +9,7 @@ import (
 	"manala/loaders"
 	"manala/models"
 	"manala/syncer"
+	"manala/validator"
 	"os"
 	"path/filepath"
 	"strings"
@@ -127,6 +128,13 @@ func watchSyncProjectFunc(basePrj *models.ProjectInterface, prjLoader loaders.Pr
 		if err != nil {
 			return err
 		}
+
+		// Validate project
+		if err := validator.ValidateProject(prj); err != nil {
+			return err
+		}
+
+		log.Info("Project validated")
 
 		*basePrj = prj
 
