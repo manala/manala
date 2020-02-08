@@ -163,16 +163,18 @@ func (ld *recipeLoader) loadDir(name string, dir string, repository models.Repos
 	rec.AddSyncUnits(cfg.Sync)
 
 	// Parse config node
-	schema, err := ld.parseConfigNode(&node, "")
+	var options []models.RecipeOption
+	schema, err := ld.parseConfigNode(&node, &options, "")
 	if err != nil {
 		return nil, err
 	}
 	rec.MergeSchema(&schema)
+	rec.AddOptions(options)
 
 	return rec, nil
 }
 
-func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[string]interface{}, error) {
+func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.RecipeOption, path string) (map[string]interface{}, error) {
 	var nodeKey *yaml.Node = nil
 	schemaProperties := map[string]interface{}{}
 
@@ -195,7 +197,7 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[strin
 				schema = map[string]interface{}{}
 			case yaml.MappingNode:
 				var err error
-				schema, err = ld.parseConfigNode(nodeChild, nodePath)
+				schema, err = ld.parseConfigNode(nodeChild, options, nodePath)
 				if err != nil {
 					return nil, err
 				}
@@ -209,6 +211,7 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[strin
 
 			if nodeKey.HeadComment != "" {
 				tags := doc.ParseCommentTags(nodeKey.HeadComment)
+				// Handle schema tags
 				for _, tag := range tags.Filter("schema") {
 					var tagSchema map[string]interface{}
 					if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
@@ -217,6 +220,21 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[strin
 					if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
 						return nil, fmt.Errorf("unable to merge recipe schema tag at \"%s\": %w", nodePath, err)
 					}
+				}
+				// Handle option tags
+				for _, tag := range tags.Filter("option") {
+					option := &models.RecipeOption{
+						Path:   nodePath,
+						Schema: schema,
+					}
+					if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
+						return nil, fmt.Errorf("invalid recipe option tag at \"%s\": %w", nodePath, err)
+					}
+					validate := validator.New()
+					if err := validate.Struct(option); err != nil {
+						return nil, fmt.Errorf("incorrect recipe option tag at \"%s\": %w", nodePath, err)
+					}
+					*options = append(*options, *option)
 				}
 			}
 
@@ -231,7 +249,7 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[strin
 				nodeKey = nodeChild
 			case yaml.MappingNode:
 				// This could only be the root node
-				schema, err := ld.parseConfigNode(nodeChild, "/")
+				schema, err := ld.parseConfigNode(nodeChild, options, "/")
 				if err != nil {
 					return nil, err
 				}

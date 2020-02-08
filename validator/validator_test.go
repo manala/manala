@@ -6,6 +6,40 @@ import (
 	"testing"
 )
 
+/**************************/
+/* Validate Value - Suite */
+/**************************/
+
+type ValidateValueTestSuite struct {
+	suite.Suite
+}
+
+func TestValidateValueTestSuite(t *testing.T) {
+	// Run
+	suite.Run(t, new(ValidateValueTestSuite))
+}
+
+/**************************/
+/* Validate Value - Tests */
+/**************************/
+
+func (s *ValidateValueTestSuite) TestValidateValue() {
+	err := ValidateValue(
+		"foo.bar",
+		map[string]interface{}{"type": "string", "format": "domain"},
+	)
+	s.NoError(err)
+}
+
+func (s *ValidateValueTestSuite) TestValidateValueError() {
+	err := ValidateValue(
+		"foo",
+		map[string]interface{}{"type": "string", "format": "domain"},
+	)
+	s.Error(err)
+	s.Equal("\n- Does not match format 'domain'", err.Error())
+}
+
 /****************************/
 /* Validate Project - Suite */
 /****************************/
@@ -59,7 +93,7 @@ func (s *ValidateProjectTestSuite) TestValidateProject() {
 	s.NoError(err)
 }
 
-func (s *ValidateProjectTestSuite) TestValidateProjectErrors() {
+func (s *ValidateProjectTestSuite) TestValidateProjectError() {
 	s.project.Recipe().MergeSchema(
 		&map[string]interface{}{
 			"type": "object",
