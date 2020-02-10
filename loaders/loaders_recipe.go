@@ -162,8 +162,8 @@ func (ld *recipeLoader) loadDir(name string, dir string, repository models.Repos
 	rec.MergeVars(&vars)
 	rec.AddSyncUnits(cfg.Sync)
 
-	// Parse node schema
-	schema, err := ld.parseNodeSchema(&node, "")
+	// Parse config node
+	schema, err := ld.parseConfigNode(&node, "")
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (ld *recipeLoader) loadDir(name string, dir string, repository models.Repos
 	return rec, nil
 }
 
-func (ld *recipeLoader) parseNodeSchema(node *yaml.Node, path string) (map[string]interface{}, error) {
+func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[string]interface{}, error) {
 	var nodeKey *yaml.Node = nil
 	schemaProperties := map[string]interface{}{}
 
@@ -195,7 +195,7 @@ func (ld *recipeLoader) parseNodeSchema(node *yaml.Node, path string) (map[strin
 				schema = map[string]interface{}{}
 			case yaml.MappingNode:
 				var err error
-				schema, err = ld.parseNodeSchema(nodeChild, nodePath)
+				schema, err = ld.parseConfigNode(nodeChild, nodePath)
 				if err != nil {
 					return nil, err
 				}
@@ -233,7 +233,7 @@ func (ld *recipeLoader) parseNodeSchema(node *yaml.Node, path string) (map[strin
 				nodeKey = nodeChild
 			case yaml.MappingNode:
 				// This could only be the root node
-				schema, err := ld.parseNodeSchema(nodeChild, "/")
+				schema, err := ld.parseConfigNode(nodeChild, "/")
 				if err != nil {
 					return nil, err
 				}
