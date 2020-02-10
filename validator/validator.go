@@ -31,13 +31,13 @@ func ValidateProject(prj models.ProjectInterface) error {
 /* Custom Format Checkers */
 /**************************/
 
-type GitRepoFormatChecker struct {}
+type GitRepoFormatChecker struct{}
 
 func (f GitRepoFormatChecker) IsFormat(input interface{}) bool {
 	return commonregex.GitRepoRegex.MatchString(input.(string))
 }
 
-type FilePathFormatChecker struct {}
+type FilePathFormatChecker struct{}
 
 var FilePathRegex = regexp.MustCompile(`^/[a-z0-9-_/]*$`)
 
@@ -45,7 +45,7 @@ func (f FilePathFormatChecker) IsFormat(input interface{}) bool {
 	return FilePathRegex.MatchString(input.(string))
 }
 
-type DomainFormatChecker struct {}
+type DomainFormatChecker struct{}
 
 var DomainRegex = regexp.MustCompile(`^([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$`)
 
