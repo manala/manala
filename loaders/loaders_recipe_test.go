@@ -121,7 +121,8 @@ func (s *RecipeTestSuite) TestRecipeLoadNoDescription() {
 
 func (s *RecipeTestSuite) TestRecipeLoadVars() {
 	ld := NewRecipeLoader()
-	rec, _ := ld.Load("load_vars", s.repository)
+	rec, err := ld.Load("load_vars", s.repository)
+	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{
 			"foo": map[string]interface{}{"foo": "bar", "bar": "baz", "baz": []interface{}{}},
@@ -134,7 +135,8 @@ func (s *RecipeTestSuite) TestRecipeLoadVars() {
 
 func (s *RecipeTestSuite) TestRecipeLoadSyncUnits() {
 	ld := NewRecipeLoader()
-	rec, _ := ld.Load("load_sync_units", s.repository)
+	rec, err := ld.Load("load_sync_units", s.repository)
+	s.NoError(err)
 	s.Equal(
 		[]models.RecipeSyncUnit{
 			{Source: "foo", Destination: "foo"},
@@ -146,7 +148,8 @@ func (s *RecipeTestSuite) TestRecipeLoadSyncUnits() {
 
 func (s *RecipeTestSuite) TestRecipeLoadSchema() {
 	ld := NewRecipeLoader()
-	rec, _ := ld.Load("load_schema", s.repository)
+	rec, err := ld.Load("load_schema", s.repository)
+	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{
 			"type": "object",

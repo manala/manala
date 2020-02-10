@@ -119,7 +119,8 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 
 func (s *ProjectTestSuite) TestProjectLoadVars() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, s.repositorySrc)
-	prj, _ := ld.Load("testdata/project/load_vars")
+	prj, err := ld.Load("testdata/project/load_vars")
+	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{
 			"foo":  map[string]interface{}{"foo": "bar", "bar": "baz", "baz": []interface{}{}},
