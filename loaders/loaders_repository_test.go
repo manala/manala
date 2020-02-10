@@ -22,7 +22,7 @@ func TestRepositoryTestSuite(t *testing.T) {
 }
 
 func (s *RepositoryTestSuite) SetupTest() {
-	s.cacheDir = "testdata/.cache"
+	s.cacheDir = "testdata/repository/.cache"
 	_ = os.RemoveAll(s.cacheDir)
 	_ = os.Mkdir(s.cacheDir, 0755)
 }
@@ -38,26 +38,26 @@ func (s *RepositoryTestSuite) TestRepository() {
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDir() {
 	ld := NewRepositoryLoader(s.cacheDir)
-	repo, err := ld.Load("testdata/repository")
+	repo, err := ld.Load("testdata/repository/load_dir")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
-	s.Equal("testdata/repository", repo.Src())
-	s.Equal("testdata/repository", repo.Dir())
+	s.Equal("testdata/repository/load_dir", repo.Src())
+	s.Equal("testdata/repository/load_dir", repo.Dir())
 }
 
-func (s *RepositoryTestSuite) TestRepositoryLoadDirNotExist() {
+func (s *RepositoryTestSuite) TestRepositoryLoadDirNotFound() {
 	ld := NewRepositoryLoader(s.cacheDir)
-	repo, err := ld.Load("testdata/repository_not_exist")
+	repo, err := ld.Load("testdata/repository/load_dir_not_found")
 	s.Error(err)
-	s.Equal("stat testdata/repository_not_exist: no such file or directory", err.Error())
+	s.Equal("stat testdata/repository/load_dir_not_found: no such file or directory", err.Error())
 	s.Nil(repo)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirFile() {
 	ld := NewRepositoryLoader(s.cacheDir)
-	repo, err := ld.Load("testdata/repository_file")
+	repo, err := ld.Load("testdata/repository/load_dir_file")
 	s.Error(err)
-	s.Equal("stat testdata/repository_file: is not a directory", err.Error())
+	s.Equal("stat testdata/repository/load_dir_file: is not a directory", err.Error())
 	s.Nil(repo)
 }
 
@@ -67,14 +67,14 @@ func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("https://github.com/octocat/Hello-World.git", repo.Src())
-	s.Equal("testdata/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311", repo.Dir())
+	s.Equal("testdata/repository/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311", repo.Dir())
 
-	s.DirExists("testdata/.cache/repositories")
-	stat, _ := os.Stat("testdata/.cache/repositories")
+	s.DirExists("testdata/repository/.cache/repositories")
+	stat, _ := os.Stat("testdata/repository/.cache/repositories")
 	s.Equal(os.FileMode(0700), stat.Mode().Perm())
 
-	s.DirExists("testdata/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311")
-	stat, _ = os.Stat("testdata/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311")
+	s.DirExists("testdata/repository/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311")
+	stat, _ = os.Stat("testdata/repository/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311")
 	s.Equal(os.FileMode(0700), stat.Mode().Perm())
 }
 

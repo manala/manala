@@ -1,0 +1,3 @@
+manala:
+  recipe: bar
+  repository: testdata/project/_repository_bar

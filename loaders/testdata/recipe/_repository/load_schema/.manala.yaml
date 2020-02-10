@@ -1,8 +1,5 @@
 manala:
-    description: Foo bar
-    sync:
-      - foo
-      - foo bar
+    description: Load schema
 
 # @schema {"required": ["foo", "bar"]}
 foo:
@@ -15,7 +12,3 @@ foo:
 
 bar:
     bar: baz
-
-baz:
-    bar: baz
-    baz: qux

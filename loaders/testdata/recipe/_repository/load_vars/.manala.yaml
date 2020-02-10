@@ -1,0 +1,14 @@
+manala:
+    description: Load vars
+
+foo:
+    foo: bar
+    bar: baz
+    baz: []
+
+bar:
+    bar: baz
+
+baz:
+    bar: baz
+    baz: qux

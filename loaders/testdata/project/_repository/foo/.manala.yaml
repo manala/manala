@@ -1,0 +1,14 @@
+manala:
+  description: Foo bar
+
+foo:
+  foo: bar
+  bar: baz
+  baz: []
+
+bar:
+  bar: baz
+
+baz:
+  bar: baz
+  baz: qux

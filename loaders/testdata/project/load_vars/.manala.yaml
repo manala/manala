@@ -1,0 +1,12 @@
+manala:
+  recipe: foo
+
+baz: qux
+
+qux:
+  &qux
+  qux: quux
+
+quux:
+  <<: *qux
+  quux: corge
