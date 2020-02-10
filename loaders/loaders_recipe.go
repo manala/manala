@@ -208,10 +208,8 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, path string) (map[strin
 			}
 
 			if nodeKey.HeadComment != "" {
-				for _, tag := range doc.ParseCommentTags(nodeKey.HeadComment) {
-					if tag.Name != "schema" {
-						continue
-					}
+				tags := doc.ParseCommentTags(nodeKey.HeadComment)
+				for _, tag := range tags.Filter("schema") {
 					var tagSchema map[string]interface{}
 					if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
 						return nil, fmt.Errorf("invalid recipe schema tag at \"%s\": %w", nodePath, err)

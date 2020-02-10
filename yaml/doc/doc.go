@@ -18,8 +18,32 @@ type Tag struct {
 	Value string
 }
 
-func ParseCommentTags(comment string) []Tag {
-	var tags []Tag
+type TagList struct {
+	tags []*Tag
+}
+
+func (l *TagList) Add(tag *Tag) {
+	l.tags = append(l.tags, tag)
+}
+
+func (l *TagList) All() []*Tag {
+	return l.tags
+}
+
+func (l *TagList) Filter(name string) []*Tag {
+	tags := make([]*Tag, 0)
+	for _, tag := range l.tags {
+		if tag.Name != name {
+			continue
+		}
+		tags = append(tags, tag)
+	}
+	return tags
+}
+
+func ParseCommentTags(comment string) TagList {
+	var list TagList
+
 	// Lexer
 	tokens := make([][2]string, 0)
 	for _, submatch := range regex.FindAllStringSubmatch(comment, -1) {
@@ -33,15 +57,15 @@ func ParseCommentTags(comment string) []Tag {
 		}
 	}
 	// Parser
-	tag := Tag{}
+	tag := &Tag{}
 	for _, token := range tokens {
 		switch token[0] {
 		case "Tag":
 			if tag.Name != "" {
 				if tag.Value != "" {
-					tags = append(tags, tag)
+					list.Add(tag)
 				}
-				tag = Tag{}
+				tag = &Tag{}
 			}
 			tag.Name = token[1]
 		case "String":
@@ -55,8 +79,8 @@ func ParseCommentTags(comment string) []Tag {
 		}
 	}
 	if tag.Name != "" && tag.Value != "" {
-		tags = append(tags, tag)
+		list.Add(tag)
 	}
 
-	return tags
+	return list
 }
