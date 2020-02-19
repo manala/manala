@@ -8,15 +8,14 @@ require (
 	github.com/apex/log v1.1.2
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
+	github.com/gdamore/tcell v1.3.0
 	github.com/gen2brain/beeep v0.0.0-20200131162055-1f001e98c9e1
-	github.com/go-playground/validator/v10 v10.1.0
+	github.com/go-playground/validator/v10 v10.2.0
 	github.com/godbus/dbus v4.1.0+incompatible // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20200209183636-89e6cbcd0b6d // indirect
 	github.com/gopherjs/gopherwasm v1.1.0 // indirect
 	github.com/huandu/xstrings v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.8
-	github.com/lunixbochs/vtclean v1.0.0 // indirect
-	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mingrammer/commonregex v1.0.1
 	github.com/mitchellh/mapstructure v1.1.2
@@ -33,11 +32,11 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.4.0
 	github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af // indirect
-	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
+	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/crypto v0.0.0-20200206161412-a0c6ece9d31a // indirect
+	gitlab.com/tslocum/cview v1.4.3
+	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	gopkg.in/ini.v1 v1.52.0 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2 // indirect

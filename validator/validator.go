@@ -1,12 +1,40 @@
 package validator
 
 import (
-	"fmt"
 	"github.com/mingrammer/commonregex"
 	"github.com/xeipuuv/gojsonschema"
 	"manala/models"
 	"regexp"
 )
+
+func ValidateValue(value interface{}, schema map[string]interface{}) error {
+	result, err := gojsonschema.Validate(
+		gojsonschema.NewGoLoader(schema),
+		gojsonschema.NewGoLoader(value),
+	)
+	if err != nil {
+		return err
+	}
+	if !result.Valid() {
+		return &ValueValidationError{
+			Errors: result.Errors(),
+		}
+	}
+
+	return nil
+}
+
+type ValueValidationError struct {
+	Errors []gojsonschema.ResultError
+}
+
+func (err *ValueValidationError) Error() string {
+	str := ""
+	for _, e := range err.Errors {
+		str += "\n- " + e.Description()
+	}
+	return str
+}
 
 func ValidateProject(prj models.ProjectInterface) error {
 	result, err := gojsonschema.Validate(
@@ -17,14 +45,24 @@ func ValidateProject(prj models.ProjectInterface) error {
 		return err
 	}
 	if !result.Valid() {
-		err := "project config errors:"
-		for _, e := range result.Errors() {
-			err += "\n- " + e.String()
+		return &ProjectValidationError{
+			Errors: result.Errors(),
 		}
-		return fmt.Errorf(err)
 	}
 
 	return nil
+}
+
+type ProjectValidationError struct {
+	Errors []gojsonschema.ResultError
+}
+
+func (err *ProjectValidationError) Error() string {
+	str := "project config errors:"
+	for _, e := range err.Errors {
+		str += "\n- " + e.String()
+	}
+	return str
 }
 
 /**************************/

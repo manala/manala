@@ -48,7 +48,7 @@ func (s *RecipeTestSuite) TestRecipe() {
 	s.Len(rec.Schema(), 0)
 }
 
-func (s *RecipeTestSuite) TestRecipeMergeVars() {
+func (s *RecipeTestSuite) TestRecipeVars() {
 	rec := NewRecipe(s.name, s.description, s.dir, s.repository)
 	vars := map[string]interface{}{
 		"foo": "bar",
@@ -58,7 +58,7 @@ func (s *RecipeTestSuite) TestRecipeMergeVars() {
 	s.Equal(vars, rec.Vars())
 }
 
-func (s *RecipeTestSuite) TestRecipeAddSyncUnits() {
+func (s *RecipeTestSuite) TestRecipeSyncUnits() {
 	rec := NewRecipe(s.name, s.description, s.dir, s.repository)
 	syncUnits := []RecipeSyncUnit{
 		{Source: "foo", Destination: "bar"},
@@ -68,7 +68,7 @@ func (s *RecipeTestSuite) TestRecipeAddSyncUnits() {
 	s.Equal(syncUnits, rec.SyncUnits())
 }
 
-func (s *RecipeTestSuite) TestRecipeMergeSchema() {
+func (s *RecipeTestSuite) TestRecipeSchema() {
 	rec := NewRecipe(s.name, s.description, s.dir, s.repository)
 	schema := map[string]interface{}{
 		"foo": "bar",
@@ -76,4 +76,16 @@ func (s *RecipeTestSuite) TestRecipeMergeSchema() {
 	}
 	rec.MergeVars(&schema)
 	s.Equal(schema, rec.Vars())
+}
+
+func (s *RecipeTestSuite) TestRecipeOptions() {
+	rec := NewRecipe(s.name, s.description, s.dir, s.repository)
+	s.False(rec.HasOptions())
+	options := []RecipeOption{
+		{Label: "foo", Path: "bar", Schema: map[string]interface{}{"baz": "qux"}},
+		{Label: "bar", Path: "baz", Schema: map[string]interface{}{"qux": "quobuz"}},
+	}
+	rec.AddOptions(options)
+	s.True(rec.HasOptions())
+	s.Equal(options, rec.Options())
 }

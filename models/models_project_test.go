@@ -51,7 +51,7 @@ func (s *ProjectTestSuite) TestProject() {
 	s.Equal(s.recipe.Vars(), prj.Vars())
 }
 
-func (s *ProjectTestSuite) TestProjectMergeVars() {
+func (s *ProjectTestSuite) TestProjectVars() {
 	prj := NewProject(s.dir, s.recipe)
 	prj.MergeVars(
 		&map[string]interface{}{

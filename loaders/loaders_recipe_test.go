@@ -193,6 +193,18 @@ func (s *RecipeTestSuite) TestRecipeLoadSchemaInvalid() {
 	s.Nil(rec)
 }
 
+func (s *RecipeTestSuite) TestRecipeLoadOptions() {
+	ld := NewRecipeLoader()
+	rec, err := ld.Load("load_options", s.repository)
+	s.NoError(err)
+	s.Equal(
+		[]models.RecipeOption{
+			{Label: "Foo bar", Path: "/foo/bar", Schema: map[string]interface{}{"enum": []interface{}{nil, "baz"}}},
+		},
+		rec.Options(),
+	)
+}
+
 func (s *RecipeTestSuite) TestRecipeWalk() {
 	ld := NewRecipeLoader()
 	results := make(map[string]string)
@@ -200,9 +212,10 @@ func (s *RecipeTestSuite) TestRecipeWalk() {
 		results[rec.Name()] = rec.Description()
 	})
 	s.NoError(err)
-	s.Len(results, 4)
+	s.Len(results, 5)
 	s.Equal("Load", results["load"])
 	s.Equal("Load vars", results["load_vars"])
 	s.Equal("Load sync units", results["load_sync_units"])
 	s.Equal("Load schema", results["load_schema"])
+	s.Equal("Load options", results["load_options"])
 }

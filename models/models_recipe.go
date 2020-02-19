@@ -14,6 +14,7 @@ func NewRecipe(name string, description string, dir string, repository Repositor
 		vars:        map[string]interface{}{},
 		syncUnits:   []RecipeSyncUnit{},
 		schema:      map[string]interface{}{},
+		options:     []RecipeOption{},
 	}
 }
 
@@ -28,6 +29,9 @@ type RecipeInterface interface {
 	AddSyncUnits(units []RecipeSyncUnit)
 	Schema() map[string]interface{}
 	MergeSchema(schema *map[string]interface{})
+	Options() []RecipeOption
+	AddOptions(options []RecipeOption)
+	HasOptions() bool
 }
 
 type recipe struct {
@@ -38,6 +42,7 @@ type recipe struct {
 	vars        map[string]interface{}
 	syncUnits   []RecipeSyncUnit
 	schema      map[string]interface{}
+	options     []RecipeOption
 }
 
 func (rec *recipe) Name() string {
@@ -80,7 +85,28 @@ func (rec *recipe) MergeSchema(schema *map[string]interface{}) {
 	_ = mergo.Merge(&rec.schema, schema, mergo.WithOverride)
 }
 
+func (rec *recipe) Options() []RecipeOption {
+	return rec.options
+}
+
+func (rec *recipe) AddOptions(options []RecipeOption) {
+	rec.options = append(rec.options, options...)
+}
+
+func (rec *recipe) HasOptions() bool {
+	if len(rec.options) == 0 {
+		return false
+	}
+	return true
+}
+
 type RecipeSyncUnit struct {
 	Source      string
 	Destination string
+}
+
+type RecipeOption struct {
+	Label  string                 `json:"label" validate:"required"`
+	Path   string                 `json:"path"`
+	Schema map[string]interface{} `json:"schema"`
 }
