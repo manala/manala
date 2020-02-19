@@ -31,8 +31,10 @@ bar:        # Scaffold "bar" validation schema as an object
 As seen before, a validation schema is scaffolded from custom variables provided in recipe config file, using [JSON Schema](https://json-schema.org/).
 
 ```yaml
-bar:
-    baz: []
+foo:
+    bar: []
+baz: 123
+qux: {}
 ```
 
 generate:
@@ -40,45 +42,67 @@ generate:
 ```json
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
-    "bar": {
+    "foo": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "baz": {
+        "bar": {
           "type": "array"
         }
       }
+    },
+    "baz": {},
+    "qux": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {}
     }
   }
 }
 ```
 
+!!! note
+    `additionalProperties` default value depends on the number of the relating object properties. An empty object
+    (zero properties) will lead to a default `true`, meaning that all properties are left to the discretion of the end
+    user. Conversely, one or more properties will lead to a default `false`.
+
 !!! warning
-    Only objects and arrays are supported
+    Only objects and arrays are auto scaffolded
 
 Custom validation schema could be provided using doc annotation 
 
 ```yaml
-bar:
-    baz: []
-    # @schema {"enum": [null, 123, "foo"]}
-    qux: 123
+foo:
+    bar: []
+# @schema {"enum": [null, 123, "foo"]}
+baz: 123
+# @schema {"additionalProperties": false}
+qux: {}
 ```
 
 ```json
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
-    "bar": {
+    "foo": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "baz": {
+        "bar": {
           "type": "array"
         },
-        "qux": {
-          "enum": [null, 123, "foo"]
-        }
       }
+    },
+    "baz": {
+      "enum": [null, 123, "foo"]
+    },
+    "qux": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {}
     }
   }
 }
