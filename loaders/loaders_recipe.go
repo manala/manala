@@ -265,9 +265,16 @@ func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.Recip
 		}
 	}
 
+	// Allow additional properties for empty mappings only
+	schemaAdditionalProperties := false
+	if node.Content == nil {
+		schemaAdditionalProperties = true
+	}
+
 	return map[string]interface{}{
-		"type":       "object",
-		"properties": schemaProperties,
+		"type":                 "object",
+		"additionalProperties": schemaAdditionalProperties,
+		"properties":           schemaProperties,
 	}, nil
 }
 

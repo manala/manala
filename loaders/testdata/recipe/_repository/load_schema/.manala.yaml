@@ -12,3 +12,15 @@ foo:
 
 bar:
     bar: baz
+
+additionalProperties:
+    object:
+        foo: bar
+        bar: baz
+    # @schema {"additionalProperties": true}
+    object_overriden:
+        foo: bar
+        bar: baz
+    empty_object: {}
+    # @schema {"additionalProperties": false}
+    empty_object_overriden: {}
