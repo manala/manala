@@ -50,7 +50,7 @@ brews:
     test: |
       system "#{bin}/manala --version"
 nfpms:
-  - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     homepage: https://github.com/manala/manala
     description: Let your projects plumbings up to date
     maintainer: Manala <contact@manala.io>
