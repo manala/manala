@@ -84,11 +84,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 
 	// List
 	list := cview.NewList()
-	list.
-		SetBorder(true).
-		SetBorderPadding(0, 0, 1, 1).
-		SetTitleAlign(cview.AlignLeft).
-		SetTitle(" Select recipe ")
+	list.SetBorderPadding(0, 0, 1, 0)
 	list.
 		SetScrollBarVisibility(cview.ScrollBarAlways).
 		SetDoneFunc(func() {
@@ -100,7 +96,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 
 	// Walk into recipes
 	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
-		list.AddItem(rec.Name(), rec.Description(), 0, func() {
+		list.AddItem(" " + rec.Name() + " ", "   " + rec.Description(), 0, func() {
 			recipe = rec
 			app.Stop()
 		})
@@ -108,7 +104,11 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 		return nil, err
 	}
 
-	if err := app.SetRoot(list, true).SetFocus(list).Run(); err != nil {
+	frame := cview.NewFrame(list).
+		SetBorders(1, 1, 1, 1, 1, 1).
+		AddText("Please, select a recipe...", true, cview.AlignLeft, tcell.ColorAqua)
+
+	if err := app.SetRoot(frame, true).SetFocus(frame).Run(); err != nil {
 		return nil, err
 	}
 
@@ -134,10 +134,7 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 
 	// Form page
 	form := cview.NewForm()
-	form.
-		SetBorder(true).
-		SetTitleAlign(cview.AlignLeft).
-		SetTitle(" Enter \"" + prj.Recipe().Name() + "\" options ")
+	form.SetBorderPadding(0, 0, 1, 0)
 	form.
 		SetItemPadding(0).
 		SetCancelFunc(func() {
@@ -145,10 +142,16 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 			app.Stop()
 		})
 
-	appPages.AddPage("form", form, true, true)
+	frame := cview.NewFrame(form).
+		SetBorders(1, 1, 1, 1, 1, 1).
+		AddText("Please, enter \"" + prj.Recipe().Name() + "\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
+
+	appPages.AddPage("form", frame, true, true)
 
 	// Modal page
 	modal := cview.NewModal()
+	modal.SetBorderColor(tcell.ColorRed)
+	modal.SetTextColor(tcell.ColorWhite)
 	modal.
 		AddButtons([]string{"Ok"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
@@ -203,18 +206,16 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 
 func init() {
 	cview.Styles = cview.Theme{
-		//PrimitiveBackgroundColor:    tcell.ColorBlack,
-		PrimitiveBackgroundColor:    tcell.ColorDefault,
-		ContrastBackgroundColor:     tcell.ColorBlue,
-		MoreContrastBackgroundColor: tcell.ColorGreen,
-		BorderColor:                 tcell.ColorWhite,
-		TitleColor:                  tcell.ColorWhite,
+		PrimitiveBackgroundColor:    tcell.ColorBlack,
+		ContrastBackgroundColor:     tcell.ColorBlack,
+		MoreContrastBackgroundColor: tcell.ColorWhite,
+		BorderColor:                 tcell.ColorRed,
+		TitleColor:                  tcell.ColorAqua,
 		GraphicsColor:               tcell.ColorWhite,
-		//PrimaryTextColor:            tcell.ColorWhite,
-		PrimaryTextColor:            tcell.ColorDefault,
-		SecondaryTextColor:          tcell.ColorYellow,
-		TertiaryTextColor:           tcell.ColorGreen,
-		InverseTextColor:            tcell.ColorBlue,
+		PrimaryTextColor:            tcell.ColorLime,
+		SecondaryTextColor:          tcell.ColorWhite,
+		TertiaryTextColor:           tcell.ColorWhite,
+		InverseTextColor:            tcell.ColorYellow,
 		ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
 		ScrollBarColor:              tcell.ColorWhite,
 	}
