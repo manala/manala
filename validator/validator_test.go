@@ -157,6 +157,7 @@ func (s *FormatCheckerTestSuite) TestDomain() {
 	s.True(checker.IsFormat("foo.bar"))
 	s.True(checker.IsFormat("foo.bar.baz"))
 	s.True(checker.IsFormat("foo-bar.baz"))
+	s.True(checker.IsFormat("fo.ba"))
 
 	s.False(checker.IsFormat("foo"))
 	s.False(checker.IsFormat("foo.b"))

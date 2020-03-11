@@ -85,7 +85,7 @@ func (f FilePathFormatChecker) IsFormat(input interface{}) bool {
 
 type DomainFormatChecker struct{}
 
-var DomainRegex = regexp.MustCompile(`^([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$`)
+var DomainRegex = regexp.MustCompile(`^([a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$`)
 
 func (f DomainFormatChecker) IsFormat(input interface{}) bool {
 	return DomainRegex.MatchString(input.(string))
