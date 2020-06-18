@@ -129,6 +129,8 @@ bar:
 Options fields type are guessed by schema details. For instance, an `enum` will  generate a drop down select, and a 
 string `type` will generate a text input.
 
+In case of an `enum`, choices ares available from left to right, first one will be default.
+
 ### Content
 
 Recipes support three kind of files:
