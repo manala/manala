@@ -12,19 +12,20 @@ import (
 	"manala/models"
 	"manala/syncer"
 	"manala/validator"
+	"os"
 )
 
 // InitCmd represents the init command
 func InitCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "init",
+		Use:   "init [dir]",
 		Aliases: []string{"in"},
 		Short:   "Init project",
 		Long: `Init (manala init) will init a project.
 
-Example: manala init -> resulting in a project init in the current directory`,
+Example: manala init -> resulting in a project init in a directory (default to the current directory)`,
 		Run:  initRun,
-		Args: cobra.NoArgs,
+		Args: cobra.MaximumNArgs(1),
 	}
 
 	return cmd
@@ -36,10 +37,34 @@ func initRun(cmd *cobra.Command, args []string) {
 	recLoader := loaders.NewRecipeLoader()
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
 
+	// Project directory
+	dir := viper.GetString("dir")
+	if len(args) != 0 {
+		// Get directory from first command arg
+		dir = args[0]
+		// Ensure directory exists
+		stat, err := os.Stat(dir)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.WithField("dir", dir).Debug("Creating project directory...")
+				if err := os.MkdirAll(dir, 0755); err != nil {
+					log.WithError(err).Fatal("Error creating project directory")
+				}
+				log.WithField("dir", dir).Info("Project directory created")
+			} else {
+				log.WithError(err).Fatal("Error getting project directory info")
+			}
+		} else {
+			if !stat.IsDir() {
+				log.WithField("dir", dir).Fatal("Project directory invalid")
+			}
+		}
+	}
+
 	// Ensure project is not yet initialized by checking configuration file existence
-	cfgFile, _ := prjLoader.ConfigFile(viper.GetString("dir"))
+	cfgFile, _ := prjLoader.ConfigFile(dir)
 	if cfgFile != nil {
-		log.Fatal("Project already initialized")
+		log.WithField("dir", dir).Fatal("Project already initialized")
 	}
 
 	// Load repository
@@ -55,10 +80,7 @@ func initRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Project
-	prj := models.NewProject(
-		viper.GetString("dir"),
-		rec,
-	)
+	prj := models.NewProject(dir, rec)
 
 	if rec.HasOptions() {
 		// Project form application
