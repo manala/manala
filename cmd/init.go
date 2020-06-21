@@ -78,7 +78,7 @@ func initRun(cmd *cobra.Command, args []string) {
 func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo models.RepositoryInterface) (models.RecipeInterface, error) {
 	// Application
 	app := cview.NewApplication()
-	app.EnableMouse()
+	app.EnableMouse(true)
 
 	var error error
 
@@ -126,7 +126,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 func initProjectFormApplication(prj models.ProjectInterface) error {
 	// Application
 	app := cview.NewApplication()
-	app.EnableMouse()
+	app.EnableMouse(true)
 
 	appPages := cview.NewPages()
 

@@ -1,7 +1,7 @@
 os: linux
 language: go
 
-go: 1.13.x
+go: 1.14.x
 
 env:
   global:
@@ -20,6 +20,6 @@ after_success:
 
 deploy:
   - provider: script
-    script: curl -sL https://git.io/goreleaser | VERSION=v0.126.0 bash
+    script: curl -sL https://git.io/goreleaser | VERSION=v0.138.0 bash
     on:
       tags: true

@@ -248,8 +248,8 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateToYaml() {
     garply: {}
     grault: 1.23
     plugh:
-      - foo
-      - bar
+        - foo
+        - bar
     quux: true
     qux: 123
     thud: "123"
