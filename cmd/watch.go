@@ -23,7 +23,7 @@ func WatchCmd() *cobra.Command {
 		Short:   "Watch project",
 		Long: `Watch (manala watch) will watch project, and launch update on changes.
 
-		Example: manala watch -> resulting in an watch in current directory`,
+Example: manala watch -> resulting in an watch in current directory`,
 		Run:  watchRun,
 		Args: cobra.NoArgs,
 	}
