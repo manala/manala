@@ -18,7 +18,7 @@ import (
 // InitCmd represents the init command
 func InitCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "init [dir]",
+		Use:     "init [dir]",
 		Aliases: []string{"in"},
 		Short:   "Init project",
 		Long: `Init (manala init) will init a project.
@@ -27,6 +27,8 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		Run:  initRun,
 		Args: cobra.MaximumNArgs(1),
 	}
+
+	cmd.Flags().StringP("recipe", "i", "", "recipe")
 
 	return cmd
 }
@@ -73,10 +75,22 @@ func initRun(cmd *cobra.Command, args []string) {
 		log.Fatal(err.Error())
 	}
 
-	// Recipe list application
-	rec, err := initRecipeListApplication(recLoader, repo)
-	if err != nil {
-		log.Fatal(err.Error())
+	// Recipe
+	var rec models.RecipeInterface
+
+	// From command flag
+	recName, _ := cmd.Flags().GetString("recipe")
+	if recName != "" {
+		rec, err = recLoader.Load(recName, repo)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		// From recipe list application
+		rec, err = initRecipeListApplication(recLoader, repo)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 
 	// Project
