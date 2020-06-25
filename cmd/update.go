@@ -12,15 +12,15 @@ import (
 // UpdateCmd represents the update command
 func UpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "update",
+		Use:     "update [dir]",
 		Aliases: []string{"up"},
 		Short:   "Update project",
 		Long: `Update (manala update) will update project, based on
 recipe and related variables defined in manala.yaml.
 
-Example: manala update -> resulting in an update in current directory`,
+Example: manala update -> resulting in an update in a directory (default to the current directory)`,
 		Run:  updateRun,
-		Args: cobra.NoArgs,
+		Args: cobra.MaximumNArgs(1),
 	}
 
 	return cmd
@@ -32,8 +32,15 @@ func updateRun(cmd *cobra.Command, args []string) {
 	recLoader := loaders.NewRecipeLoader()
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
 
+	// Project directory
+	dir := viper.GetString("dir")
+	if len(args) != 0 {
+		// Get directory from first command arg
+		dir = args[0]
+	}
+
 	// Load project
-	prj, err := prjLoader.Load(viper.GetString("dir"))
+	prj, err := prjLoader.Load(dir)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
