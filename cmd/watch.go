@@ -18,14 +18,14 @@ import (
 // WatchCmd represents the watch command
 func WatchCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "watch",
+		Use:     "watch [dir]",
 		Aliases: []string{"Watch project"},
 		Short:   "Watch project",
 		Long: `Watch (manala watch) will watch project, and launch update on changes.
 
-Example: manala watch -> resulting in an watch in current directory`,
+Example: manala watch -> resulting in a watch in a directory (default to the current directory)`,
 		Run:  watchRun,
-		Args: cobra.NoArgs,
+		Args: cobra.MaximumNArgs(1),
 	}
 
 	cmd.Flags().BoolP("recipe", "i", false, "watch recipe too")
@@ -51,10 +51,17 @@ func watchRun(cmd *cobra.Command, args []string) {
 	recLoader := loaders.NewRecipeLoader()
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
 
+	// Project directory
+	dir := viper.GetString("dir")
+	if len(args) != 0 {
+		// Get directory from first command arg
+		dir = args[0]
+	}
+
 	var prj models.ProjectInterface
 
 	// Get sync function
-	syncProject := watchSyncProjectFunc(&prj, prjLoader, watcher, watchRecipe)
+	syncProject := watchSyncProjectFunc(dir, &prj, prjLoader, watcher, watchRecipe)
 
 	// Sync
 	if err := syncProject(); err != nil {
@@ -119,12 +126,12 @@ func watchRun(cmd *cobra.Command, args []string) {
 	<-done
 }
 
-func watchSyncProjectFunc(basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
+func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
 	var baseRecDir string
 
 	return func() error {
 		// Load project
-		prj, err := prjLoader.Load(viper.GetString("dir"))
+		prj, err := prjLoader.Load(dir)
 		if err != nil {
 			return err
 		}
