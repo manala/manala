@@ -20,7 +20,7 @@ Recipes are pulled from a git repository, or a local directory.`,
 	cmd.PersistentFlags().StringP("repository", "o", viper.GetString("repository"), "repository")
 	_ = viper.BindPFlag("repository", cmd.PersistentFlags().Lookup("repository"))
 
-	cmd.PersistentFlags().StringP("cache-dir", "c", viper.GetString("cache_dir"), "cache dir")
+	cmd.PersistentFlags().StringP("cache-dir", "c", viper.GetString("cache_dir"), "cache directory")
 	_ = viper.BindPFlag("cache_dir", cmd.PersistentFlags().Lookup("cache-dir"))
 
 	cmd.PersistentFlags().BoolP("debug", "d", viper.GetBool("debug"), "debug mode")
