@@ -23,6 +23,7 @@ theme:
 
 nav:
   - Introduction: index.md
+  - Commands: commands.md
   - Installation: installation.md
   - Overview: overview.md
   - Usage: usage.md
