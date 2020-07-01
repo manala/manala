@@ -13,6 +13,8 @@ go mod tidy
 
 ## Documentation
 
+With Docker:
+
 ```shell
-docker run --rm -v $(pwd):/data -p 8000:8000 nicksantamaria/mkdocs serve -a 0.0.0.0:8000
+make run
 ```
