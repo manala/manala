@@ -1,13 +1,25 @@
-site_name: manala
+site_name: Manala
 repo_url: https://github.com/manala/manala/
+repo_name: Manala
+
+plugins:
+  - search
+  - git-revision-date-localized
 
 markdown_extensions:
   - admonition
+  - codehilite:
+      linenums: true
+  - toc:
+      permalink: 🔗
 
 theme:
-  name: readthedocs
-  hljs_languages:
-    - yaml
+  name: material
+  palette:
+    primary: 'deep orange'
+    accent: orange
+  logo: images/manala.svg
+  favicon: images/favicon-96x96.png
 
 nav:
   - Introduction: index.md
