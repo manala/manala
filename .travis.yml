@@ -12,6 +12,8 @@ addons:
     packages:
       - snapcraft
 
+script: go test ${gobuild_args} ./...
+
 after_success:
   - test -n "$TRAVIS_TAG" && openssl aes-256-cbc -K $encrypted_634cf8e7b6b8_key -iv $encrypted_634cf8e7b6b8_iv -in snap.login.enc -out snap.login -d
   - test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
