@@ -47,13 +47,13 @@ brews:
       email: contact@manala.io
     folder: Formula
     homepage: https://github.com/manala/manala
-    description: Let your projects plumbings up to date
+    description: Let your project's plumbing up to date
     test: |
       system "#{bin}/manala --version"
 nfpms:
   - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     homepage: https://github.com/manala/manala
-    description: Let your projects plumbings up to date
+    description: Let your project's plumbing up to date
     maintainer: Manala <contact@manala.io>
     license: MIT
     vendor: Manala
@@ -62,7 +62,7 @@ nfpms:
       - rpm
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
-    summary: Let your projects plumbings up to date
+    summary: Let your project's plumbing up to date
     description: |
       Manala synchronize some boring parts of your projects,
       such as makefile targets, virtualization and provisioning files...

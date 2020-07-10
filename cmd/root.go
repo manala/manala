@@ -9,7 +9,7 @@ import (
 func RootCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "manala",
-		Short: "Let your projects plumbings up to date",
+		Short: "Let your project's plumbing up to date",
 		Long: `Manala synchronize some boring parts of your projects,
 such as makefile targets, virtualization and provisioning files...
 
