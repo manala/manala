@@ -152,11 +152,11 @@ func (s *RecipeTestSuite) TestRecipeLoadSchema() {
 	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{
-			"type": "object",
+			"type":                 "object",
 			"additionalProperties": false,
 			"properties": map[string]interface{}{
 				"foo": map[string]interface{}{
-					"type": "object",
+					"type":                 "object",
 					"additionalProperties": false,
 					"properties": map[string]interface{}{
 						"foo": map[string]interface{}{},
@@ -176,18 +176,18 @@ func (s *RecipeTestSuite) TestRecipeLoadSchema() {
 					},
 				},
 				"bar": map[string]interface{}{
-					"type": "object",
+					"type":                 "object",
 					"additionalProperties": false,
 					"properties": map[string]interface{}{
 						"bar": map[string]interface{}{},
 					},
 				},
 				"additionalProperties": map[string]interface{}{
-					"type": "object",
+					"type":                 "object",
 					"additionalProperties": false,
 					"properties": map[string]interface{}{
 						"object": map[string]interface{}{
-							"type": "object",
+							"type":                 "object",
 							"additionalProperties": false,
 							"properties": map[string]interface{}{
 								"foo": map[string]interface{}{},
@@ -195,7 +195,7 @@ func (s *RecipeTestSuite) TestRecipeLoadSchema() {
 							},
 						},
 						"object_overriden": map[string]interface{}{
-							"type": "object",
+							"type":                 "object",
 							"additionalProperties": true,
 							"properties": map[string]interface{}{
 								"foo": map[string]interface{}{},
@@ -203,14 +203,14 @@ func (s *RecipeTestSuite) TestRecipeLoadSchema() {
 							},
 						},
 						"empty_object": map[string]interface{}{
-							"type":       "object",
+							"type":                 "object",
 							"additionalProperties": true,
-							"properties": map[string]interface{}{},
+							"properties":           map[string]interface{}{},
 						},
 						"empty_object_overriden": map[string]interface{}{
-							"type":       "object",
+							"type":                 "object",
 							"additionalProperties": false,
-							"properties": map[string]interface{}{},
+							"properties":           map[string]interface{}{},
 						},
 					},
 				},

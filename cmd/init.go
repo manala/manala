@@ -132,7 +132,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 
 	// Walk into recipes
 	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
-		list.AddItem(" " + rec.Name() + " ", "   " + rec.Description(), 0, func() {
+		list.AddItem(" "+rec.Name()+" ", "   "+rec.Description(), 0, func() {
 			recipe = rec
 			app.Stop()
 		})
@@ -180,7 +180,7 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 
 	frame := cview.NewFrame(form).
 		SetBorders(1, 1, 1, 1, 1, 1).
-		AddText("Please, enter \"" + prj.Recipe().Name() + "\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
+		AddText("Please, enter \""+prj.Recipe().Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
 
 	appPages.AddPage("form", frame, true, true)
 

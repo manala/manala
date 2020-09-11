@@ -19,9 +19,8 @@ func NewRecipeFormBinder(rec models.RecipeInterface) (*RecipeFormBinder, error) 
 			Option: option,
 		}
 
-		// Dropdown item based on enum schema
 		if _, ok := option.Schema["enum"]; ok {
-			// Item
+			// Dropdown item based on enum schema
 			item := cview.NewDropDown()
 
 			// Item label
@@ -58,10 +57,8 @@ func NewRecipeFormBinder(rec models.RecipeInterface) (*RecipeFormBinder, error) 
 
 			// Bind
 			bind.Item = item
-
-		// Input field item based on string type
 		} else if t, ok := option.Schema["type"]; ok && t == "string" {
-			// Item
+			// Input field item based on string type
 			item := cview.NewInputField()
 
 			// Item label
