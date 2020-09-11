@@ -20,6 +20,6 @@ after_success:
 
 deploy:
   - provider: script
-    script: curl -sL https://git.io/goreleaser | VERSION=v0.138.0 bash
+    script: curl -sL https://git.io/goreleaser | VERSION=v0.143.0 bash
     on:
       tags: true

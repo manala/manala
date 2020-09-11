@@ -1,32 +1,18 @@
-env:
-  - GO111MODULE=on
-  - GOPROXY=https://gocenter.io
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 builds:
   - env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - darwin
       - windows
+      - darwin
     goarch:
       - 386
       - amd64
       - arm
       - arm64
-checksum:
-  name_template: "{{ .ProjectName }}_checksums.txt"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^typo:'
-      - Merge pull request
-      - Merge branch
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
@@ -38,8 +24,21 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^typo:'
+      - Merge pull request
+      - Merge branch
 brews:
-  - github:
+  - tap:
       owner: manala
       name: homebrew-tap
     commit_author:
