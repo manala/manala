@@ -278,7 +278,10 @@ So, push your recipe to Github and don't forget to update your manala configurat
 ```diff
 manala:
 -  repository: /path/to/your/home/my-manala-recipe-repository
-+  repository: git@github.com:my-company/my-manala-recipe-repository
+# Public repository
++  repository: https://github.com/my-company/manala-recipes.git
+# Private repository
++  repository: git@github.com:my-company/my-manala-recipe-repository.git
 ```
 
 From now on, each time you push updates to your Github repository, simply run `manala up` in your projects to pass on the last updates.
