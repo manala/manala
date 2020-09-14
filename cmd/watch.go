@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/apex/log"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gen2brain/beeep"
@@ -24,7 +25,7 @@ func WatchCmd() *cobra.Command {
 		Long: `Watch (manala watch) will watch project, and launch update on changes.
 
 Example: manala watch -> resulting in a watch in a directory (default to the current directory)`,
-		Run:  watchRun,
+		RunE: watchRun,
 		Args: cobra.MaximumNArgs(1),
 	}
 
@@ -34,7 +35,7 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 	return cmd
 }
 
-func watchRun(cmd *cobra.Command, args []string) {
+func watchRun(cmd *cobra.Command, args []string) error {
 	// Get flags
 	watchAll, _ := cmd.Flags().GetBool("all")
 	useNotify, _ := cmd.Flags().GetBool("notify")
@@ -42,7 +43,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 	// New watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.WithError(err).Fatal("Error creating watcher")
+		return fmt.Errorf("error creating watcher: %v", err)
 	}
 	defer watcher.Close()
 
@@ -65,7 +66,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 
 	// Sync
 	if err := syncProject(); err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	// Get project config file
@@ -73,7 +74,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 
 	// Watch project
 	if err := watcher.Add(prj.Dir()); err != nil {
-		log.WithError(err).Fatal("Error adding project watching")
+		return fmt.Errorf("error adding project watching: %v", err)
 	}
 
 	log.Info("Start watching...")
@@ -124,6 +125,8 @@ func watchRun(cmd *cobra.Command, args []string) {
 		}
 	}()
 	<-done
+
+	return nil
 }
 
 func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchAll bool) func() error {

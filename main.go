@@ -50,6 +50,7 @@ func main() {
 	})
 
 	if err = rootCmd.Execute(); err != nil {
-		log.WithError(err).Fatal("Error executing command")
+		log.Error(err.Error())
+		os.Exit(1)
 	}
 }

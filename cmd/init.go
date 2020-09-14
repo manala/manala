@@ -24,7 +24,7 @@ func InitCmd() *cobra.Command {
 		Long: `Init (manala init) will init a project.
 
 Example: manala init -> resulting in a project init in a directory (default to the current directory)`,
-		Run:  initRun,
+		RunE: initRun,
 		Args: cobra.MaximumNArgs(1),
 	}
 
@@ -33,7 +33,7 @@ Example: manala init -> resulting in a project init in a directory (default to t
 	return cmd
 }
 
-func initRun(cmd *cobra.Command, args []string) {
+func initRun(cmd *cobra.Command, args []string) error {
 	// Loaders
 	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
 	recLoader := loaders.NewRecipeLoader()
@@ -50,15 +50,15 @@ func initRun(cmd *cobra.Command, args []string) {
 			if os.IsNotExist(err) {
 				log.WithField("dir", dir).Debug("Creating project directory...")
 				if err := os.MkdirAll(dir, 0755); err != nil {
-					log.WithError(err).Fatal("Error creating project directory")
+					return fmt.Errorf("error creating project directory: %v", err)
 				}
 				log.WithField("dir", dir).Info("Project directory created")
 			} else {
-				log.WithError(err).Fatal("Error getting project directory info")
+				return fmt.Errorf("error getting project directory stat: %v", err)
 			}
 		} else {
 			if !stat.IsDir() {
-				log.WithField("dir", dir).Fatal("Project directory invalid")
+				return fmt.Errorf("project directory invalid: %s", dir)
 			}
 		}
 	}
@@ -66,13 +66,13 @@ func initRun(cmd *cobra.Command, args []string) {
 	// Ensure project is not yet initialized by checking configuration file existence
 	cfgFile, _ := prjLoader.ConfigFile(dir)
 	if cfgFile != nil {
-		log.WithField("dir", dir).Fatal("Project already initialized")
+		return fmt.Errorf("project already initialized: %s", dir)
 	}
 
 	// Load repository
 	repo, err := repoLoader.Load(viper.GetString("repository"))
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	// Recipe
@@ -83,13 +83,13 @@ func initRun(cmd *cobra.Command, args []string) {
 	if recName != "" {
 		rec, err = recLoader.Load(recName, repo)
 		if err != nil {
-			log.Fatal(err.Error())
+			return err
 		}
 	} else {
 		// From recipe list application
 		rec, err = initRecipeListApplication(recLoader, repo)
 		if err != nil {
-			log.Fatal(err.Error())
+			return err
 		}
 	}
 
@@ -99,16 +99,18 @@ func initRun(cmd *cobra.Command, args []string) {
 	if rec.HasOptions() {
 		// Project form application
 		if err := initProjectFormApplication(prj); err != nil {
-			log.Fatal(err.Error())
+			return err
 		}
 	}
 
 	// Sync project
 	if err := syncer.SyncProject(prj); err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	log.Info("Project synced")
+
+	return nil
 }
 
 func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo models.RepositoryInterface) (models.RecipeInterface, error) {

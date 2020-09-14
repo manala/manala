@@ -14,7 +14,9 @@ func RootCmd(version string) *cobra.Command {
 such as makefile targets, virtualization and provisioning files...
 
 Recipes are pulled from a git repository, or a local directory.`,
-		Version: version,
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		Version:       version,
 	}
 
 	cmd.PersistentFlags().StringP("repository", "o", viper.GetString("repository"), "repository")
