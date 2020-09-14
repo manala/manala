@@ -45,13 +45,14 @@ func (ld *projectLoader) ConfigFile(dir string) (*os.File, error) {
 		return nil, err
 	}
 
-	info, err := file.Stat()
+	stat, err := file.Stat()
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("\"%s\" file does not exists", file.Name())
+		}
 		return nil, err
-	}
-
-	if info.IsDir() {
-		return nil, fmt.Errorf("open %s: is a directory", file.Name())
+	} else if stat.IsDir() {
+		return nil, fmt.Errorf("\"%s\" is not a file", file.Name())
 	}
 
 	return file, nil

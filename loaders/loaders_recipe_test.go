@@ -64,7 +64,7 @@ func (s *RecipeTestSuite) TestRecipeConfigFileDirectory() {
 	ld := NewRecipeLoader()
 	file, err := ld.ConfigFile("testdata/recipe/config_file_directory")
 	s.Error(err)
-	s.Equal("open testdata/recipe/config_file_directory/.manala.yaml: is a directory", err.Error())
+	s.Equal("\"testdata/recipe/config_file_directory/.manala.yaml\" is not a file", err.Error())
 	s.Nil(file)
 }
 

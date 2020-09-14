@@ -49,7 +49,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadDirNotFound() {
 	ld := NewRepositoryLoader(s.cacheDir)
 	repo, err := ld.Load("testdata/repository/load_dir_not_found")
 	s.Error(err)
-	s.Equal("stat testdata/repository/load_dir_not_found: no such file or directory", err.Error())
+	s.Equal("\"testdata/repository/load_dir_not_found\" directory does not exists", err.Error())
 	s.Nil(repo)
 }
 
@@ -57,7 +57,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadDirFile() {
 	ld := NewRepositoryLoader(s.cacheDir)
 	repo, err := ld.Load("testdata/repository/load_dir_file")
 	s.Error(err)
-	s.Equal("stat testdata/repository/load_dir_file: is not a directory", err.Error())
+	s.Equal("\"testdata/repository/load_dir_file\" is not a directory", err.Error())
 	s.Nil(repo)
 }
 

@@ -65,7 +65,7 @@ func (s *ProjectTestSuite) TestProjectConfigFileDirectory() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, s.repositorySrc)
 	file, err := ld.ConfigFile("testdata/project/config_file_directory")
 	s.Error(err)
-	s.Equal("open testdata/project/config_file_directory/.manala.yaml: is a directory", err.Error())
+	s.Equal("\"testdata/project/config_file_directory/.manala.yaml\" is not a file", err.Error())
 	s.Nil(file)
 }
 

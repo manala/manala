@@ -129,43 +129,43 @@ func (s *SyncExecutableTestSuite) SetupTest() {
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceTrue() {
 	err := Sync("testdata/sync_executable/source/executable_true", "testdata/sync_executable/destination/executable", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable")
-	s.Equal(true, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable")
+	s.Equal(true, (stat.Mode()&0100) != 0)
 }
 
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceFalse() {
 	err := Sync("testdata/sync_executable/source/executable_false", "testdata/sync_executable/destination/executable", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable")
-	s.Equal(false, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable")
+	s.Equal(false, (stat.Mode()&0100) != 0)
 }
 
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceFalseDestinationFalse() {
 	err := Sync("testdata/sync_executable/source/executable_false", "testdata/sync_executable/destination/executable_false", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable_false")
-	s.Equal(false, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable_false")
+	s.Equal(false, (stat.Mode()&0100) != 0)
 }
 
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceTrueDestinationFalse() {
 	err := Sync("testdata/sync_executable/source/executable_true", "testdata/sync_executable/destination/executable_false", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable_false")
-	s.Equal(true, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable_false")
+	s.Equal(true, (stat.Mode()&0100) != 0)
 }
 
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceFalseDestinationTrue() {
 	err := Sync("testdata/sync_executable/source/executable_false", "testdata/sync_executable/destination/executable_true", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable_true")
-	s.Equal(false, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable_true")
+	s.Equal(false, (stat.Mode()&0100) != 0)
 }
 
 func (s *SyncExecutableTestSuite) TestSyncExecutableSourceTrueDestinationTrue() {
 	err := Sync("testdata/sync_executable/source/executable_true", "testdata/sync_executable/destination/executable_true", NewTemplate(), nil)
 	s.NoError(err)
-	info, _ := os.Stat("testdata/sync_executable/destination/executable_true")
-	s.Equal(true, (info.Mode()&0100) != 0)
+	stat, _ := os.Stat("testdata/sync_executable/destination/executable_true")
+	s.Equal(true, (stat.Mode()&0100) != 0)
 }
 
 /*************************/

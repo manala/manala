@@ -56,10 +56,8 @@ func initRun(cmd *cobra.Command, args []string) error {
 			} else {
 				return fmt.Errorf("error getting project directory stat: %v", err)
 			}
-		} else {
-			if !stat.IsDir() {
-				return fmt.Errorf("project directory invalid: %s", dir)
-			}
+		} else if !stat.IsDir() {
+			return fmt.Errorf("project directory invalid: %s", dir)
 		}
 	}
 

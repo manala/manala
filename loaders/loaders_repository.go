@@ -57,13 +57,14 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, error) {
 	log.WithField("src", src).Debug("Loading dir repository...")
 
-	info, err := os.Stat(src)
+	stat, err := os.Stat(src)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("\"%s\" directory does not exists", src)
+		}
 		return nil, err
-	}
-
-	if !info.IsDir() {
-		return nil, fmt.Errorf("stat %s: is not a directory", src)
+	} else if !stat.IsDir() {
+		return nil, fmt.Errorf("\"%s\" is not a directory", src)
 	}
 
 	return models.NewRepository(src, src), nil
