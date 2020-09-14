@@ -28,7 +28,7 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 		Args: cobra.MaximumNArgs(1),
 	}
 
-	cmd.Flags().BoolP("recipe", "i", false, "watch recipe too")
+	cmd.Flags().BoolP("all", "a", false, "watch recipe too")
 	cmd.Flags().BoolP("notify", "n", false, "use system notifications")
 
 	return cmd
@@ -36,7 +36,7 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 func watchRun(cmd *cobra.Command, args []string) {
 	// Get flags
-	watchRecipe, _ := cmd.Flags().GetBool("recipe")
+	watchAll, _ := cmd.Flags().GetBool("all")
 	useNotify, _ := cmd.Flags().GetBool("notify")
 
 	// New watcher
@@ -61,7 +61,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 	var prj models.ProjectInterface
 
 	// Get sync function
-	syncProject := watchSyncProjectFunc(dir, &prj, prjLoader, watcher, watchRecipe)
+	syncProject := watchSyncProjectFunc(dir, &prj, prjLoader, watcher, watchAll)
 
 	// Sync
 	if err := syncProject(); err != nil {
@@ -126,7 +126,7 @@ func watchRun(cmd *cobra.Command, args []string) {
 	<-done
 }
 
-func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchRecipe bool) func() error {
+func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchAll bool) func() error {
 	var baseRecDir string
 
 	return func() error {
@@ -145,7 +145,7 @@ func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoade
 
 		*basePrj = prj
 
-		if watchRecipe {
+		if watchAll {
 			// Initialize base recipe dir to the first synced recipe
 			if baseRecDir == "" {
 				baseRecDir = prj.Recipe().Dir()
