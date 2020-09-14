@@ -13,11 +13,12 @@ import (
 	"path"
 )
 
-func NewProjectLoader(repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface, defaultRepositorySrc string) ProjectLoaderInterface {
+func NewProjectLoader(repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface, forceRepositorySrc string, forceRecipe string) ProjectLoaderInterface {
 	return &projectLoader{
-		repositoryLoader:     repositoryLoader,
-		recipeLoader:         recipeLoader,
-		defaultRepositorySrc: defaultRepositorySrc,
+		repositoryLoader:   repositoryLoader,
+		recipeLoader:       recipeLoader,
+		forceRepositorySrc: forceRepositorySrc,
+		forceRecipe:        forceRecipe,
 	}
 }
 
@@ -34,9 +35,10 @@ type projectConfig struct {
 }
 
 type projectLoader struct {
-	repositoryLoader     RepositoryLoaderInterface
-	recipeLoader         RecipeLoaderInterface
-	defaultRepositorySrc string
+	repositoryLoader   RepositoryLoaderInterface
+	recipeLoader       RecipeLoaderInterface
+	forceRepositorySrc string
+	forceRecipe        string
 }
 
 func (ld *projectLoader) ConfigFile(dir string) (*os.File, error) {
@@ -94,9 +96,14 @@ func (ld *projectLoader) Load(dir string) (models.ProjectInterface, error) {
 		return nil, err
 	}
 
-	// Default repository
-	if cfg.Repository == "" {
-		cfg.Repository = ld.defaultRepositorySrc
+	// Force repository
+	if ld.forceRepositorySrc != "" {
+		cfg.Repository = ld.forceRepositorySrc
+	}
+
+	// Force recipe
+	if ld.forceRecipe != "" {
+		cfg.Recipe = ld.forceRecipe
 	}
 
 	// Cleanup vars

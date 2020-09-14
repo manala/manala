@@ -1,0 +1,4 @@
+manala:
+    description: Default foo recipe
+    sync:
+        - file

@@ -12,10 +12,11 @@ import (
 	"path"
 )
 
-func NewRepositoryLoader(cacheDir string) RepositoryLoaderInterface {
+func NewRepositoryLoader(cacheDir string, defaultSrc string) RepositoryLoaderInterface {
 	return &repositoryLoader{
-		cacheDir: cacheDir,
-		cache:    make(map[string]models.RepositoryInterface),
+		cacheDir:   cacheDir,
+		cache:      make(map[string]models.RepositoryInterface),
+		defaultSrc: defaultSrc,
 	}
 }
 
@@ -24,11 +25,17 @@ type RepositoryLoaderInterface interface {
 }
 
 type repositoryLoader struct {
-	cacheDir string
-	cache    map[string]models.RepositoryInterface
+	cacheDir   string
+	cache      map[string]models.RepositoryInterface
+	defaultSrc string
 }
 
 func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error) {
+	// Use default source if necessary
+	if src == "" {
+		src = ld.defaultSrc
+	}
+
 	// Check if repository already in cache
 	if repo, ok := ld.cache[src]; ok {
 		return repo, nil
@@ -37,7 +44,7 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 	var err error
 	var repo models.RepositoryInterface
 
-	// Is src a git repo ?
+	// Is source a git repo ?
 	if commonregex.GitRepoRegex.MatchString(src) {
 		repo, err = ld.loadGit(src)
 	} else {

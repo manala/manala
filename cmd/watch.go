@@ -29,6 +29,9 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 		Args: cobra.MaximumNArgs(1),
 	}
 
+	addRepositoryFlag(cmd, "force repository")
+	addRecipeFlag(cmd, "force recipe")
+
 	cmd.Flags().BoolP("all", "a", false, "watch recipe too")
 	cmd.Flags().BoolP("notify", "n", false, "use system notifications")
 
@@ -48,9 +51,14 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	defer watcher.Close()
 
 	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	repoLoader := loaders.NewRepositoryLoader(
+		viper.GetString("cache_dir"),
+		viper.GetString("repository"),
+	)
 	recLoader := loaders.NewRecipeLoader()
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
+	repoName, _ := cmd.Flags().GetString("repository")
+	recName, _ := cmd.Flags().GetString("recipe")
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
 
 	// Project directory
 	dir := viper.GetString("dir")

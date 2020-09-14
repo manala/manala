@@ -19,9 +19,6 @@ Recipes are pulled from a git repository, or a local directory.`,
 		Version:       version,
 	}
 
-	cmd.PersistentFlags().StringP("repository", "o", viper.GetString("repository"), "repository")
-	_ = viper.BindPFlag("repository", cmd.PersistentFlags().Lookup("repository"))
-
 	cmd.PersistentFlags().StringP("cache-dir", "c", viper.GetString("cache_dir"), "cache directory")
 	_ = viper.BindPFlag("cache_dir", cmd.PersistentFlags().Lookup("cache-dir"))
 
@@ -29,4 +26,12 @@ Recipes are pulled from a git repository, or a local directory.`,
 	_ = viper.BindPFlag("debug", cmd.PersistentFlags().Lookup("debug"))
 
 	return cmd
+}
+
+func addRepositoryFlag(cmd *cobra.Command, usage string) {
+	cmd.Flags().StringP("repository", "o", "", usage)
+}
+
+func addRecipeFlag(cmd *cobra.Command, usage string) {
+	cmd.Flags().StringP("recipe", "i", "", usage)
 }

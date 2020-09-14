@@ -1,0 +1,4 @@
+manala:
+    description: Default bar recipe
+    sync:
+        - file

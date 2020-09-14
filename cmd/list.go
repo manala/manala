@@ -22,16 +22,22 @@ Example: manala list -> resulting in a recipes list display`,
 		Args: cobra.NoArgs,
 	}
 
+	addRepositoryFlag(cmd, "use repository")
+
 	return cmd
 }
 
 func listRun(cmd *cobra.Command, args []string) error {
 	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	repoLoader := loaders.NewRepositoryLoader(
+		viper.GetString("cache_dir"),
+		viper.GetString("repository"),
+	)
 	recLoader := loaders.NewRecipeLoader()
 
 	// Load repository
-	repo, err := repoLoader.Load(viper.GetString("repository"))
+	repoName, _ := cmd.Flags().GetString("repository")
+	repo, err := repoLoader.Load(repoName)
 	if err != nil {
 		return err
 	}

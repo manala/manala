@@ -1,0 +1,4 @@
+manala:
+    description: Force bar recipe
+    sync:
+        - file

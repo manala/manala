@@ -28,16 +28,20 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		Args: cobra.MaximumNArgs(1),
 	}
 
-	cmd.Flags().StringP("recipe", "i", "", "recipe")
+	addRepositoryFlag(cmd, "use repository")
+	addRecipeFlag(cmd, "use recipe")
 
 	return cmd
 }
 
 func initRun(cmd *cobra.Command, args []string) error {
 	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(viper.GetString("cache_dir"))
+	repoLoader := loaders.NewRepositoryLoader(
+		viper.GetString("cache_dir"),
+		viper.GetString("repository"),
+	)
 	recLoader := loaders.NewRecipeLoader()
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, viper.GetString("repository"))
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, "", "")
 
 	// Project directory
 	dir := viper.GetString("dir")
@@ -68,7 +72,8 @@ func initRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// Load repository
-	repo, err := repoLoader.Load(viper.GetString("repository"))
+	repoName, _ := cmd.Flags().GetString("repository")
+	repo, err := repoLoader.Load(repoName)
 	if err != nil {
 		return err
 	}
