@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"manala/loaders"
@@ -44,7 +43,7 @@ func listRun(cmd *cobra.Command, args []string) error {
 
 	// Walk into recipes
 	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
-		fmt.Printf("%s: %s\n", rec.Name(), rec.Description())
+		cmd.Printf("%s: %s\n", rec.Name(), rec.Description())
 	}); err != nil {
 		return err
 	}

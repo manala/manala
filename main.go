@@ -18,7 +18,7 @@ var repository = "https://github.com/manala/manala-recipes.git"
 var version = "dev"
 
 func main() {
-	// Set log handler
+	// Log handler
 	log.SetHandler(cli.Default)
 
 	// Config
@@ -41,6 +41,9 @@ func main() {
 	rootCmd.AddCommand(cmd.ListCmd())
 	rootCmd.AddCommand(cmd.UpdateCmd())
 	rootCmd.AddCommand(cmd.WatchCmd())
+
+	// Log handler
+	log.SetHandler(cli.New(rootCmd.ErrOrStderr()))
 
 	cobra.OnInitialize(func() {
 		// Debug
