@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/apex/log"
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gitlab.com/tslocum/cview"
