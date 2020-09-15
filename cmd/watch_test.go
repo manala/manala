@@ -20,7 +20,7 @@ type WatchTestSuite struct {
 
 func TestWatchTestSuite(t *testing.T) {
 	// Config
-	viper.SetDefault("repository", "testdata/repository/default")
+	viper.SetDefault("repository", "testdata/watch/repository/default")
 	// Run
 	suite.Run(t, new(WatchTestSuite))
 }
@@ -40,22 +40,22 @@ func (s *WatchTestSuite) Test() {
 	}{
 		{
 			test: "Default project force invalid repository",
-			args: []string{"testdata/project/default", "--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"testdata/watch/project/default", "--repository", "testdata/watch/repository/invalid"},
+			err:  "\"testdata/watch/repository/invalid\" directory does not exists",
 		},
 		{
 			test: "Default project force invalid recipe",
-			args: []string{"testdata/project/default", "--recipe", "invalid"},
+			args: []string{"testdata/watch/project/default", "--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 		{
 			test: "Custom project force invalid repository",
-			args: []string{"testdata/project/custom", "--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"testdata/watch/project/custom", "--repository", "testdata/watch/repository/invalid"},
+			err:  "\"testdata/watch/repository/invalid\" directory does not exists",
 		},
 		{
 			test: "Custom project force invalid recipe",
-			args: []string{"testdata/project/custom", "--recipe", "invalid"},
+			args: []string{"testdata/watch/project/custom", "--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 	} {
@@ -68,11 +68,11 @@ func (s *WatchTestSuite) Test() {
 			cmd.SetOut(stdOut)
 			stdErr := bytes.NewBufferString("")
 			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(cmd.ErrOrStderr()))
+			log.SetHandler(cli.New(stdErr))
 
 			// Clean
-			_ = os.Remove("testdata/project/default/file")
-			_ = os.Remove("testdata/project/custom/file")
+			_ = os.Remove("testdata/watch/project/default/file")
+			_ = os.Remove("testdata/watch/project/custom/file")
 
 			// Execute
 			cmd.SetArgs(t.args)

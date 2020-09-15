@@ -47,28 +47,69 @@ func (s *ProjectTestSuite) TestProject() {
 	s.Implements((*ProjectLoaderInterface)(nil), ld)
 }
 
-func (s *ProjectTestSuite) TestProjectConfigFile() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	file, err := ld.ConfigFile("testdata/project/config_file")
-	s.NoError(err)
-	s.IsType((*os.File)(nil), file)
-	s.Equal("testdata/project/config_file/.manala.yaml", file.Name())
+func (s *ProjectTestSuite) TestProjectFind() {
+	for _, t := range []struct {
+		test        string
+		dir         string
+		prjFileName string
+	}{
+		{
+			test:        "Default",
+			dir:         "testdata/project/find/default",
+			prjFileName: "testdata/project/find/default/.manala.yaml",
+		},
+		{
+			test: "Not found",
+			dir:  "testdata/project/find/not_found",
+		},
+	} {
+		s.Run(t.test, func() {
+			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
+			prjFile, err := ld.Find(t.dir, false)
+			s.NoError(err)
+			if t.prjFileName != "" {
+				s.NotNil(prjFile)
+				s.Equal(t.prjFileName, prjFile.Name())
+			} else {
+				s.Nil(prjFile)
+			}
+		})
+	}
 }
 
-func (s *ProjectTestSuite) TestProjectConfigFileNotFound() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	file, err := ld.ConfigFile("testdata/project/config_file_not_found")
-	s.Error(err)
-	s.Equal("open testdata/project/config_file_not_found/.manala.yaml: no such file or directory", err.Error())
-	s.Nil(file)
-}
-
-func (s *ProjectTestSuite) TestProjectConfigFileDirectory() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	file, err := ld.ConfigFile("testdata/project/config_file_directory")
-	s.Error(err)
-	s.Equal("\"testdata/project/config_file_directory/.manala.yaml\" is not a file", err.Error())
-	s.Nil(file)
+func (s *ProjectTestSuite) TestProjectFindTraverse() {
+	for _, t := range []struct {
+		test        string
+		dir         string
+		prjFileName string
+	}{
+		{
+			test:        "Default",
+			dir:         "testdata/project/find_traverse/default",
+			prjFileName: "testdata/project/find_traverse/default/.manala.yaml",
+		},
+		{
+			test: "Not found",
+			dir:  "testdata/project/find_traverse/not_found",
+		},
+		{
+			test:        "Level one",
+			dir:         "testdata/project/find_traverse/traverse/level",
+			prjFileName: "testdata/project/find_traverse/traverse/.manala.yaml",
+		},
+	} {
+		s.Run(t.test, func() {
+			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
+			prjFile, err := ld.Find(t.dir, true)
+			s.NoError(err)
+			if t.prjFileName != "" {
+				s.NotNil(prjFile)
+				s.Equal(t.prjFileName, prjFile.Name())
+			} else {
+				s.Nil(prjFile)
+			}
+		})
+	}
 }
 
 func (s *ProjectTestSuite) TestProjectLoad() {
@@ -110,7 +151,9 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 	} {
 		s.Run(t.test, func() {
 			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, t.forceRepositorySrc, t.forceRecipe)
-			prj, err := ld.Load("testdata/project/load")
+			prjFile, err := ld.Find("testdata/project/load", false)
+			s.NoError(err)
+			prj, err := ld.Load(prjFile)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal("testdata/project/load", prj.Dir())
@@ -120,17 +163,11 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 	}
 }
 
-func (s *ProjectTestSuite) TestProjectLoadNotFound() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prj, err := ld.Load("testdata/project/load_not_found")
-	s.Error(err)
-	s.Equal("open testdata/project/load_not_found/.manala.yaml: no such file or directory", err.Error())
-	s.Nil(prj)
-}
-
 func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prj, err := ld.Load("testdata/project/load_empty")
+	prjFile, err := ld.Find("testdata/project/load_empty", false)
+	s.NoError(err)
+	prj, err := ld.Load(prjFile)
 	s.Error(err)
 	s.Equal("empty project config \"testdata/project/load_empty/.manala.yaml\"", err.Error())
 	s.Nil(prj)
@@ -138,7 +175,9 @@ func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 
 func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prj, err := ld.Load("testdata/project/load_incorrect")
+	prjFile, err := ld.Find("testdata/project/load_incorrect", false)
+	s.NoError(err)
+	prj, err := ld.Load(prjFile)
 	s.Error(err)
 	s.Equal("invalid project config \"testdata/project/load_incorrect/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
 	s.Nil(prj)
@@ -146,7 +185,9 @@ func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 
 func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prj, err := ld.Load("testdata/project/load_no_recipe")
+	prjFile, err := ld.Find("testdata/project/load_no_recipe", false)
+	s.NoError(err)
+	prj, err := ld.Load(prjFile)
 	s.Error(err)
 	s.Equal("Key: 'projectConfig.Recipe' Error:Field validation for 'Recipe' failed on the 'required' tag", err.Error())
 	s.Nil(prj)
@@ -191,7 +232,9 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 	} {
 		s.Run(t.test, func() {
 			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, t.forceRepositorySrc, t.forceRecipe)
-			prj, err := ld.Load("testdata/project/load_repository")
+			prjFile, err := ld.Find("testdata/project/load_repository", false)
+			s.NoError(err)
+			prj, err := ld.Load(prjFile)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal("testdata/project/load_repository", prj.Dir())
@@ -203,7 +246,9 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 
 func (s *ProjectTestSuite) TestProjectLoadVars() {
 	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prj, err := ld.Load("testdata/project/load_vars")
+	prjFile, err := ld.Find("testdata/project/load_vars", false)
+	s.NoError(err)
+	prj, err := ld.Load(prjFile)
 	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{

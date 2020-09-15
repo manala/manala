@@ -47,8 +47,14 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		dir = args[0]
 	}
 
+	// Find project file
+	prjFile, err := prjLoader.Find(dir, true)
+	if err != nil {
+		return err
+	}
+
 	// Load project
-	prj, err := prjLoader.Load(dir)
+	prj, err := prjLoader.Load(prjFile)
 	if err != nil {
 		return err
 	}

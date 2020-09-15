@@ -1,0 +1,3 @@
+manala:
+  recipe: foo
+  repository: testdata/watch/repository/custom

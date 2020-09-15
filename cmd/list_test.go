@@ -19,7 +19,7 @@ type ListTestSuite struct {
 
 func TestListTestSuite(t *testing.T) {
 	// Config
-	viper.SetDefault("repository", "testdata/repository/default")
+	viper.SetDefault("repository", "testdata/list/repository/default")
 	// Run
 	suite.Run(t, new(ListTestSuite))
 }
@@ -47,7 +47,7 @@ foo: Default foo recipe
 		},
 		{
 			test: "Use repository",
-			args: []string{"--repository", "testdata/repository/custom"},
+			args: []string{"--repository", "testdata/list/repository/custom"},
 			err:  "",
 			stdOut: `bar: Custom bar recipe
 foo: Custom foo recipe
@@ -56,8 +56,8 @@ foo: Custom foo recipe
 		},
 		{
 			test: "Use invalid repository",
-			args: []string{"--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"--repository", "testdata/list/repository/invalid"},
+			err:  "\"testdata/list/repository/invalid\" directory does not exists",
 		},
 	} {
 		s.Run(t.test, func() {
@@ -69,7 +69,7 @@ foo: Custom foo recipe
 			cmd.SetOut(stdOut)
 			stdErr := bytes.NewBufferString("")
 			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(cmd.ErrOrStderr()))
+			log.SetHandler(cli.New(stdErr))
 
 			// Execute
 			cmd.SetArgs(t.args)

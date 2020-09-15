@@ -21,7 +21,7 @@ type InitTestSuite struct {
 
 func TestInitTestSuite(t *testing.T) {
 	// Config
-	viper.SetDefault("repository", "testdata/repository/default")
+	viper.SetDefault("repository", "testdata/init/repository/default")
 	// Run
 	suite.Run(t, new(InitTestSuite))
 }
@@ -41,43 +41,43 @@ func (s *InitTestSuite) Test() {
 	}{
 		{
 			test:   "Use recipe",
-			args:   []string{"testdata/project/init", "--recipe", "foo"},
+			args:   []string{"testdata/init/project/init", "--recipe", "foo"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project directory created dir=testdata/project/init
-   • Synced file               path=testdata/project/init/file
+			stdErr: `   • Project directory created dir=testdata/init/project/init
+   • Synced file               path=testdata/init/project/init/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/init/file",
+				"testdata/init/project/init/file",
 				`Default foo file
 `,
 			},
 		},
 		{
 			test: "Use invalid recipe",
-			args: []string{"testdata/project/init", "--recipe", "invalid"},
+			args: []string{"testdata/init/project/init", "--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 		{
 			test:   "Use recipe use repository",
-			args:   []string{"testdata/project/init", "--recipe", "foo", "--repository", "testdata/repository/custom"},
+			args:   []string{"testdata/init/project/init", "--recipe", "foo", "--repository", "testdata/init/repository/custom"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project directory created dir=testdata/project/init
-   • Synced file               path=testdata/project/init/file
+			stdErr: `   • Project directory created dir=testdata/init/project/init
+   • Synced file               path=testdata/init/project/init/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/init/file",
+				"testdata/init/project/init/file",
 				`Custom foo file
 `,
 			},
 		},
 		{
 			test: "Use recipe use invalid repository",
-			args: []string{"testdata/project/init", "--recipe", "foo", "--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"testdata/init/project/init", "--recipe", "foo", "--repository", "testdata/init/repository/invalid"},
+			err:  "\"testdata/init/repository/invalid\" directory does not exists",
 		},
 	} {
 		s.Run(t.test, func() {
@@ -89,10 +89,10 @@ func (s *InitTestSuite) Test() {
 			cmd.SetOut(stdOut)
 			stdErr := bytes.NewBufferString("")
 			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(cmd.ErrOrStderr()))
+			log.SetHandler(cli.New(stdErr))
 
 			// Clean
-			_ = os.RemoveAll("testdata/project/init")
+			_ = os.RemoveAll("testdata/init/project/init")
 
 			// Execute
 			cmd.SetArgs(t.args)
@@ -128,4 +128,24 @@ func (s *InitTestSuite) Test() {
 			}
 		})
 	}
+}
+
+func (s *InitTestSuite) TestAlreadyExists() {
+	// Command
+	cmd := InitCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/init/project/already_exists"})
+	err := cmd.Execute()
+
+	// Test error
+	s.Error(err)
+	s.Equal("project already exists: testdata/init/project/already_exists", err.Error())
 }

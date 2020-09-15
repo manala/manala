@@ -28,7 +28,7 @@ func NewRecipeLoader() RecipeLoaderInterface {
 var recipeConfigFile = ".manala.yaml"
 
 type RecipeLoaderInterface interface {
-	ConfigFile(dir string) (*os.File, error)
+	Find(dir string) (*os.File, error)
 	Load(name string, repository models.RepositoryInterface) (models.RecipeInterface, error)
 	Walk(repository models.RepositoryInterface, fn recipeWalkFunc) error
 }
@@ -41,20 +41,14 @@ type recipeConfig struct {
 type recipeLoader struct {
 }
 
-func (ld *recipeLoader) ConfigFile(dir string) (*os.File, error) {
-	file, err := os.Open(path.Join(dir, recipeConfigFile))
-	if err != nil {
-		return nil, err
-	}
+func (ld *recipeLoader) Find(dir string) (*os.File, error) {
+	log.WithField("dir", dir).Debug("Searching recipe...")
 
-	stat, err := file.Stat()
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("\"%s\" file does not exists", file.Name())
-		}
+	file, err := os.Open(path.Join(dir, recipeConfigFile))
+
+	// Return all errors but non existing file ones
+	if err != nil && !os.IsNotExist(err) {
 		return nil, err
-	} else if stat.IsDir() {
-		return nil, fmt.Errorf("\"%s\" is not a file", file.Name())
 	}
 
 	return file, nil
@@ -90,11 +84,11 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 			continue
 		}
 		if file.IsDir() {
-			rec, err := ld.loadDir(
-				file.Name(),
-				filepath.Join(repository.Dir(), file.Name()),
-				repository,
-			)
+			recFile, err := ld.Find(filepath.Join(repository.Dir(), file.Name()))
+			if err != nil {
+				return err
+			}
+			rec, err := ld.loadDir(file.Name(), recFile, repository)
 			if err != nil {
 				return err
 			}
@@ -107,27 +101,30 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 
 type recipeWalkFunc func(rec models.RecipeInterface)
 
-func (ld *recipeLoader) loadDir(name string, dir string, repository models.RepositoryInterface) (models.RecipeInterface, error) {
-	// Get config file
-	cfgFile, err := ld.ConfigFile(dir)
+func (ld *recipeLoader) loadDir(name string, file *os.File, repository models.RepositoryInterface) (models.RecipeInterface, error) {
+	// Get dir
+	dir := filepath.Dir(file.Name())
+
+	log.WithField("name", name).Debug("Loading recipe...")
+
+	// Reset file pointer
+	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 
-	log.WithField("name", name).Debug("Loading recipe...")
-
-	// Parse config
+	// Parse config file
 	node := yaml.Node{}
-	if err := yaml.NewDecoder(cfgFile).Decode(&node); err != nil {
+	if err := yaml.NewDecoder(file).Decode(&node); err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("empty recipe config \"%s\"", cfgFile.Name())
+			return nil, fmt.Errorf("empty recipe config \"%s\"", file.Name())
 		}
-		return nil, fmt.Errorf("invalid recipe config \"%s\" (%w)", cfgFile.Name(), err)
+		return nil, fmt.Errorf("invalid recipe config \"%s\" (%w)", file.Name(), err)
 	}
 
 	var vars map[string]interface{}
 	if err := node.Decode(&vars); err != nil {
-		return nil, fmt.Errorf("incorrect recipe config \"%s\" (%w)", cfgFile.Name(), err)
+		return nil, fmt.Errorf("incorrect recipe config \"%s\" (%w)", file.Name(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139

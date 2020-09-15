@@ -3,7 +3,6 @@ package loaders
 import (
 	"github.com/stretchr/testify/suite"
 	"manala/models"
-	"os"
 	"testing"
 )
 
@@ -44,28 +43,34 @@ func (s *RecipeTestSuite) TestRecipe() {
 	s.Implements((*RecipeLoaderInterface)(nil), ld)
 }
 
-func (s *RecipeTestSuite) TestRecipeConfigFile() {
-	ld := NewRecipeLoader()
-	file, err := ld.ConfigFile("testdata/recipe/config_file")
-	s.NoError(err)
-	s.IsType((*os.File)(nil), file)
-	s.Equal("testdata/recipe/config_file/.manala.yaml", file.Name())
-}
-
-func (s *RecipeTestSuite) TestRecipeConfigFileNotFound() {
-	ld := NewRecipeLoader()
-	file, err := ld.ConfigFile("testdata/recipe/config_file_not_found")
-	s.Error(err)
-	s.Equal("open testdata/recipe/config_file_not_found/.manala.yaml: no such file or directory", err.Error())
-	s.Nil(file)
-}
-
-func (s *RecipeTestSuite) TestRecipeConfigFileDirectory() {
-	ld := NewRecipeLoader()
-	file, err := ld.ConfigFile("testdata/recipe/config_file_directory")
-	s.Error(err)
-	s.Equal("\"testdata/recipe/config_file_directory/.manala.yaml\" is not a file", err.Error())
-	s.Nil(file)
+func (s *RecipeTestSuite) TestRecipeFind() {
+	for _, t := range []struct {
+		test        string
+		dir         string
+		recFileName string
+	}{
+		{
+			test:        "Default",
+			dir:         "testdata/recipe/find/default",
+			recFileName: "testdata/recipe/find/default/.manala.yaml",
+		},
+		{
+			test: "Not found",
+			dir:  "testdata/recipe/find/not_found",
+		},
+	} {
+		s.Run(t.test, func() {
+			ld := NewRecipeLoader()
+			recFile, err := ld.Find(t.dir)
+			s.NoError(err)
+			if t.recFileName != "" {
+				s.NotNil(recFile)
+				s.Equal(t.recFileName, recFile.Name())
+			} else {
+				s.Nil(recFile)
+			}
+		})
+	}
 }
 
 func (s *RecipeTestSuite) TestRecipeLoad() {

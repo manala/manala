@@ -65,10 +65,10 @@ func initRun(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Ensure project is not yet initialized by checking configuration file existence
-	cfgFile, _ := prjLoader.ConfigFile(dir)
-	if cfgFile != nil {
-		return fmt.Errorf("project already initialized: %s", dir)
+	// Ensure no project already exists
+	prjFile, _ := prjLoader.Find(dir, false)
+	if prjFile != nil {
+		return fmt.Errorf("project already exists: %s", dir)
 	}
 
 	// Load repository

@@ -21,7 +21,7 @@ type UpdateTestSuite struct {
 
 func TestUpdateTestSuite(t *testing.T) {
 	// Config
-	viper.SetDefault("repository", "testdata/repository/default")
+	viper.SetDefault("repository", "testdata/update/repository/default")
 	// Run
 	suite.Run(t, new(UpdateTestSuite))
 }
@@ -41,166 +41,166 @@ func (s *UpdateTestSuite) Test() {
 	}{
 		{
 			test:   "Default project",
-			args:   []string{"testdata/project/default"},
+			args:   []string{"testdata/update/project/default"},
 			err:    "",
 			stdOut: "",
 			stdErr: `   • Project loaded            recipe=foo repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/default/file
+   • Synced file               path=testdata/update/project/default/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/default/file",
+				"testdata/update/project/default/file",
 				`Default foo file
 `,
 			},
 		},
 		{
 			test:   "Default project force repository",
-			args:   []string{"testdata/project/default", "--repository", "testdata/repository/custom"},
+			args:   []string{"testdata/update/project/default", "--repository", "testdata/update/repository/custom"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/repository/custom
+			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/default/file
+   • Synced file               path=testdata/update/project/default/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/default/file",
+				"testdata/update/project/default/file",
 				`Custom foo file
 `,
 			},
 		},
 		{
 			test: "Default project force invalid repository",
-			args: []string{"testdata/project/default", "--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"testdata/update/project/default", "--repository", "testdata/update/repository/invalid"},
+			err:  "\"testdata/update/repository/invalid\" directory does not exists",
 		},
 		{
 			test:   "Default project force recipe",
-			args:   []string{"testdata/project/default", "--recipe", "bar"},
+			args:   []string{"testdata/update/project/default", "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
 			stdErr: `   • Project loaded            recipe=bar repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/default/file
+   • Synced file               path=testdata/update/project/default/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/default/file",
+				"testdata/update/project/default/file",
 				`Default bar file
 `,
 			},
 		},
 		{
 			test: "Default project force invalid recipe",
-			args: []string{"testdata/project/default", "--recipe", "invalid"},
+			args: []string{"testdata/update/project/default", "--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 		{
 			test:   "Default project force repository force recipe",
-			args:   []string{"testdata/project/default", "--repository", "testdata/repository/custom", "--recipe", "bar"},
+			args:   []string{"testdata/update/project/default", "--repository", "testdata/update/repository/custom", "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/repository/custom
+			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/default/file
+   • Synced file               path=testdata/update/project/default/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/default/file",
+				"testdata/update/project/default/file",
 				`Custom bar file
 `,
 			},
 		},
 		{
 			test:   "Custom project",
-			args:   []string{"testdata/project/custom"},
+			args:   []string{"testdata/update/project/custom"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/repository/custom
+			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/custom/file
+   • Synced file               path=testdata/update/project/custom/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/custom/file",
+				"testdata/update/project/custom/file",
 				`Custom foo file
 `,
 			},
 		},
 		{
 			test:   "Custom project force repository",
-			args:   []string{"testdata/project/custom", "--repository", "testdata/repository/force"},
+			args:   []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/force"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/repository/force
+			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/force
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/custom/file
+   • Synced file               path=testdata/update/project/custom/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/custom/file",
+				"testdata/update/project/custom/file",
 				`Force foo file
 `,
 			},
 		},
 		{
 			test: "Custom project force invalid repository",
-			args: []string{"testdata/project/custom", "--repository", "testdata/repository/invalid"},
-			err:  "\"testdata/repository/invalid\" directory does not exists",
+			args: []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/invalid"},
+			err:  "\"testdata/update/repository/invalid\" directory does not exists",
 		},
 		{
 			test:   "Custom project force recipe",
-			args:   []string{"testdata/project/custom", "--recipe", "bar"},
+			args:   []string{"testdata/update/project/custom", "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/repository/custom
+			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/custom/file
+   • Synced file               path=testdata/update/project/custom/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/custom/file",
+				"testdata/update/project/custom/file",
 				`Custom bar file
 `,
 			},
 		},
 		{
 			test:   "Custom project force repository force recipe",
-			args:   []string{"testdata/project/custom", "--repository", "testdata/repository/force", "--recipe", "bar"},
+			args:   []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/force", "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/repository/force
+			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/force
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/project/custom/file
+   • Synced file               path=testdata/update/project/custom/file
    • Project synced           
 `,
 			file: [2]string{
-				"testdata/project/custom/file",
+				"testdata/update/project/custom/file",
 				`Force bar file
 `,
 			},
 		},
 		{
 			test: "Custom project force invalid recipe",
-			args: []string{"testdata/project/custom", "--recipe", "invalid"},
+			args: []string{"testdata/update/project/custom", "--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 	} {
@@ -213,11 +213,11 @@ func (s *UpdateTestSuite) Test() {
 			cmd.SetOut(stdOut)
 			stdErr := bytes.NewBufferString("")
 			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(cmd.ErrOrStderr()))
+			log.SetHandler(cli.New(stdErr))
 
 			// Clean
-			_ = os.Remove("testdata/project/default/file")
-			_ = os.Remove("testdata/project/custom/file")
+			_ = os.Remove("testdata/update/project/default/file")
+			_ = os.Remove("testdata/update/project/custom/file")
 
 			// Execute
 			cmd.SetArgs(t.args)
@@ -253,4 +253,43 @@ func (s *UpdateTestSuite) Test() {
 			}
 		})
 	}
+}
+
+func (s *UpdateTestSuite) TestTraverse() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Clean
+	_ = os.Remove("testdata/update/project/traverse/file")
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/traverse/level"})
+	err := cmd.Execute()
+
+	s.NoError(err)
+
+	// Test stdout
+	s.Zero(stdOut.Len())
+
+	// Test stderr
+	s.Equal(`   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/traverse/file
+   • Project synced           
+`, stdErr.String())
+
+	// Test file
+	s.FileExists("testdata/update/project/traverse/file")
+	content, _ := ioutil.ReadFile("testdata/update/project/traverse/file")
+	s.Equal(`Default foo file
+`, string(content))
 }

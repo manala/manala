@@ -67,18 +67,21 @@ func watchRun(cmd *cobra.Command, args []string) error {
 		dir = args[0]
 	}
 
+	// Find project file
+	prjFile, err := prjLoader.Find(dir, true)
+	if err != nil {
+		return err
+	}
+
 	var prj models.ProjectInterface
 
 	// Get sync function
-	syncProject := watchSyncProjectFunc(dir, &prj, prjLoader, watcher, watchAll)
+	syncProject := watchSyncProjectFunc(prjFile, &prj, prjLoader, watcher, watchAll)
 
 	// Sync
 	if err := syncProject(); err != nil {
 		return err
 	}
-
-	// Get project config file
-	prjConfigFile, _ := prjLoader.ConfigFile(prj.Dir())
 
 	// Watch project
 	if err := watcher.Add(prj.Dir()); err != nil {
@@ -102,7 +105,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 					modified := false
 					file := filepath.Clean(event.Name)
 					dir := filepath.Dir(file)
-					if file == prjConfigFile.Name() {
+					if file == prjFile.Name() {
 						log.WithField("file", file).Info("Project config modified")
 						modified = true
 					} else if dir != prj.Dir() {
@@ -137,12 +140,12 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func watchSyncProjectFunc(dir string, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchAll bool) func() error {
+func watchSyncProjectFunc(file *os.File, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchAll bool) func() error {
 	var baseRecDir string
 
 	return func() error {
 		// Load project
-		prj, err := prjLoader.Load(dir)
+		prj, err := prjLoader.Load(file)
 		if err != nil {
 			return err
 		}

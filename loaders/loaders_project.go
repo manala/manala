@@ -11,6 +11,7 @@ import (
 	"manala/yaml/cleaner"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func NewProjectLoader(repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface, forceRepositorySrc string, forceRecipe string) ProjectLoaderInterface {
@@ -23,8 +24,8 @@ func NewProjectLoader(repositoryLoader RepositoryLoaderInterface, recipeLoader R
 }
 
 type ProjectLoaderInterface interface {
-	ConfigFile(dir string) (*os.File, error)
-	Load(dir string) (models.ProjectInterface, error)
+	Find(dir string, traverse bool) (*os.File, error)
+	Load(file *os.File) (models.ProjectInterface, error)
 }
 
 var projectConfigFile = ".manala.yaml"
@@ -41,41 +42,60 @@ type projectLoader struct {
 	forceRecipe        string
 }
 
-func (ld *projectLoader) ConfigFile(dir string) (*os.File, error) {
+func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
+	log.WithField("dir", dir).Debug("Searching project...")
+
 	file, err := os.Open(path.Join(dir, projectConfigFile))
+
+	// Return all errors but non existing file ones
+	if err != nil && !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	if file != nil || traverse == false {
+		return file, nil
+	}
+
+	// Traversal mode
+	abs, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	stat, err := file.Stat()
+	parentDdir := path.Join(dir, "..")
+	parentAbs, err := filepath.Abs(parentDdir)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("\"%s\" file does not exists", file.Name())
-		}
 		return nil, err
-	} else if stat.IsDir() {
-		return nil, fmt.Errorf("\"%s\" is not a file", file.Name())
 	}
 
-	return file, nil
+	// If absolute path equals to parent absolute path,
+	// we have reached the top of the filesystem
+	if abs == parentAbs {
+		return nil, nil
+	}
+
+	return ld.Find(parentDdir, true)
 }
 
-func (ld *projectLoader) Load(dir string) (models.ProjectInterface, error) {
-	// Get config file
-	cfgFile, err := ld.ConfigFile(dir)
-	if err != nil {
-		return nil, err
-	}
+func (ld *projectLoader) Load(file *os.File) (models.ProjectInterface, error) {
+	// Get dir
+	dir := filepath.Dir(file.Name())
 
 	log.WithField("dir", dir).Debug("Loading project...")
 
+	// Reset file pointer
+	_, err := file.Seek(0, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+
 	// Parse config file
 	var vars map[string]interface{}
-	if err := yaml.NewDecoder(cfgFile).Decode(&vars); err != nil {
+	if err := yaml.NewDecoder(file).Decode(&vars); err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("empty project config \"%s\"", cfgFile.Name())
+			return nil, fmt.Errorf("empty project config \"%s\"", file.Name())
 		}
-		return nil, fmt.Errorf("invalid project config \"%s\" (%w)", cfgFile.Name(), err)
+		return nil, fmt.Errorf("invalid project config \"%s\" (%w)", file.Name(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139
