@@ -255,6 +255,44 @@ func (s *UpdateTestSuite) Test() {
 	}
 }
 
+func (s *UpdateTestSuite) TestNotFound() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/not_found"})
+	err := cmd.Execute()
+
+	s.Error(err)
+	s.Equal("project not found: testdata/update/project/not_found", err.Error())
+}
+
+func (s *UpdateTestSuite) TestInvalid() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/invalid"})
+	err := cmd.Execute()
+
+	s.Error(err)
+	s.Equal("project not found: testdata/update/project/invalid", err.Error())
+}
+
 func (s *UpdateTestSuite) TestTraverse() {
 	// Command
 	cmd := UpdateCmd()
@@ -292,4 +330,117 @@ func (s *UpdateTestSuite) TestTraverse() {
 	content, _ := ioutil.ReadFile("testdata/update/project/traverse/file")
 	s.Equal(`Default foo file
 `, string(content))
+}
+
+func (s *UpdateTestSuite) TestRecursive() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Clean
+	_ = os.Remove("testdata/update/project/recursive/foo/file")
+	_ = os.Remove("testdata/update/project/recursive/bar/file")
+	_ = os.Remove("testdata/update/project/recursive/custom/foo/file")
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/recursive", "--recursive"})
+	err := cmd.Execute()
+
+	s.NoError(err)
+
+	// Test stdout
+	s.Zero(stdOut.Len())
+
+	// Test stderr
+	s.Equal(`   • Project loaded            recipe=bar repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/bar/file
+   • Project synced           
+   • Project loaded            recipe=foo repository=testdata/update/repository/custom
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/custom/foo/file
+   • Project synced           
+   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/foo/file
+   • Project synced           
+`, stdErr.String())
+
+	// Test file - Foo
+	s.FileExists("testdata/update/project/recursive/foo/file")
+	content, _ := ioutil.ReadFile("testdata/update/project/recursive/foo/file")
+	s.Equal(`Default foo file
+`, string(content))
+
+	// Test file - Bar
+	s.FileExists("testdata/update/project/recursive/bar/file")
+	content, _ = ioutil.ReadFile("testdata/update/project/recursive/bar/file")
+	s.Equal(`Default bar file
+`, string(content))
+
+	// Test file - Custom Foo
+	s.FileExists("testdata/update/project/recursive/custom/foo/file")
+	content, _ = ioutil.ReadFile("testdata/update/project/recursive/custom/foo/file")
+	s.Equal(`Custom foo file
+`, string(content))
+}
+
+func (s *UpdateTestSuite) TestRecursiveNotFound() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/not_found", "--recursive"})
+	err := cmd.Execute()
+
+	s.NoError(err)
+
+	// Test stdout
+	s.Zero(stdOut.Len())
+
+	// Test stderr
+	s.Zero(stdErr.Len())
+}
+
+func (s *UpdateTestSuite) TestRecursiveInvalid() {
+	// Command
+	cmd := UpdateCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/update/project/invalid", "--recursive"})
+	err := cmd.Execute()
+
+	s.NoError(err)
+
+	// Test stdout
+	s.Zero(stdOut.Len())
+
+	// Test stderr
+	s.Zero(stdErr.Len())
 }

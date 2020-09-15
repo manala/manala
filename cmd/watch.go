@@ -60,7 +60,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	recName, _ := cmd.Flags().GetString("recipe")
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
 
-	// Project directory
+	// Directory
 	var dir string
 	if len(args) != 0 {
 		// Get directory from first command arg
@@ -71,6 +71,10 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	prjFile, err := prjLoader.Find(dir, true)
 	if err != nil {
 		return err
+	}
+
+	if prjFile == nil {
+		return fmt.Errorf("project not found: %s", dir)
 	}
 
 	var prj models.ProjectInterface

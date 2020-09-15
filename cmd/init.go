@@ -43,7 +43,7 @@ func initRun(cmd *cobra.Command, args []string) error {
 	recLoader := loaders.NewRecipeLoader()
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, "", "")
 
-	// Project directory
+	// Directory
 	var dir string
 	if len(args) != 0 {
 		// Get directory from first command arg

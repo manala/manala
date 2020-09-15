@@ -84,3 +84,41 @@ func (s *WatchTestSuite) Test() {
 		})
 	}
 }
+
+func (s *WatchTestSuite) TestNotFound() {
+	// Command
+	cmd := WatchCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/watch/project/not_found"})
+	err := cmd.Execute()
+
+	s.Error(err)
+	s.Equal("project not found: testdata/watch/project/not_found", err.Error())
+}
+
+func (s *WatchTestSuite) TestInvalid() {
+	// Command
+	cmd := WatchCmd()
+
+	// Io
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+	log.SetHandler(cli.New(stdErr))
+
+	// Execute
+	cmd.SetArgs([]string{"testdata/watch/project/invalid"})
+	err := cmd.Execute()
+
+	s.Error(err)
+	s.Equal("project not found: testdata/watch/project/invalid", err.Error())
+}
