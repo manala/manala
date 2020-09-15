@@ -1,4 +1,5 @@
 name: Deploy Manala documentation to GH Pages
+
 on:
   push:
     branches:
