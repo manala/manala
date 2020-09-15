@@ -1,14 +1,12 @@
 package main
 
 import (
-	"github.com/OpenPeeDeeP/xdg"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"manala/cmd"
 	"os"
-	"path"
 )
 
 // Default repository
@@ -25,9 +23,14 @@ func main() {
 	viper.SetEnvPrefix("manala")
 	viper.AutomaticEnv()
 
-	viper.SetDefault("cache_dir", path.Join(xdg.CacheHome(), "manala"))
 	viper.SetDefault("repository", repository)
 	viper.SetDefault("debug", false)
+
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		log.WithError(err).Fatal("Error getting cache dir")
+	}
+	viper.SetDefault("cache_dir", cacheDir)
 
 	// Commands
 	rootCmd := cmd.RootCmd(version)

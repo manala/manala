@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/Masterminds/sprig/v3 v3.1.0
-	github.com/OpenPeeDeeP/xdg v1.0.0
 	github.com/apex/log v1.9.0
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9
