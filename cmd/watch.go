@@ -61,7 +61,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
 
 	// Project directory
-	dir := viper.GetString("dir")
+	var dir string
 	if len(args) != 0 {
 		// Get directory from first command arg
 		dir = args[0]

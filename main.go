@@ -25,12 +25,6 @@ func main() {
 	viper.SetEnvPrefix("manala")
 	viper.AutomaticEnv()
 
-	dir, err := os.Getwd()
-	if err != nil {
-		log.WithError(err).Fatal("Error getting dir")
-	}
-
-	viper.SetDefault("dir", dir)
 	viper.SetDefault("cache_dir", path.Join(xdg.CacheHome(), "manala"))
 	viper.SetDefault("repository", repository)
 	viper.SetDefault("debug", false)
