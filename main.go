@@ -39,9 +39,6 @@ func main() {
 	rootCmd.AddCommand(cmd.UpdateCmd())
 	rootCmd.AddCommand(cmd.WatchCmd())
 
-	// Log handler
-	log.SetHandler(cli.New(rootCmd.ErrOrStderr()))
-
 	cobra.OnInitialize(func() {
 		// Debug
 		if viper.GetBool("debug") {
@@ -49,8 +46,7 @@ func main() {
 		}
 	})
 
-	if err = rootCmd.Execute(); err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err.Error())
 	}
 }
