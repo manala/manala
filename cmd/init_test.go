@@ -130,7 +130,7 @@ func (s *InitTestSuite) Test() {
 	}
 }
 
-func (s *InitTestSuite) TestAlreadyExists() {
+func (s *InitTestSuite) TestProjectAlreadyExists() {
 	// Command
 	cmd := InitCmd()
 
