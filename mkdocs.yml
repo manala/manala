@@ -23,8 +23,13 @@ theme:
 
 nav:
   - Introduction: index.md
-  - Commands: commands.md
   - Installation: installation.md
   - Overview: overview.md
   - Usage: usage.md
+  - Commands:
+    - manala: commands/manala.md
+    - manala init: commands/manala_init.md
+    - manala list: commands/manala_list.md
+    - manala update: commands/manala_update.md
+    - manala watch: commands/manala_watch.md
   - Contributing: contributing.md

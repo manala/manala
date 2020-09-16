@@ -23,8 +23,9 @@ func UpdateCmd() *cobra.Command {
 recipe and related variables defined in manala.yaml.
 
 Example: manala update -> resulting in an update in a directory (default to the current directory)`,
-		RunE: updateRun,
-		Args: cobra.MaximumNArgs(1),
+		Args:              cobra.MaximumNArgs(1),
+		DisableAutoGenTag: true,
+		RunE:              updateRun,
 	}
 
 	addRepositoryFlag(cmd, "force repository")

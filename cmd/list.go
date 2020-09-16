@@ -17,8 +17,9 @@ func ListCmd() *cobra.Command {
 repository.
 
 Example: manala list -> resulting in a recipes list display`,
-		RunE: listRun,
-		Args: cobra.NoArgs,
+		Args:              cobra.NoArgs,
+		DisableAutoGenTag: true,
+		RunE:              listRun,
 	}
 
 	addRepositoryFlag(cmd, "use repository")

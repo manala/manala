@@ -25,8 +25,9 @@ func WatchCmd() *cobra.Command {
 		Long: `Watch (manala watch) will watch project, and launch update on changes.
 
 Example: manala watch -> resulting in a watch in a directory (default to the current directory)`,
-		RunE: watchRun,
-		Args: cobra.MaximumNArgs(1),
+		Args:              cobra.MaximumNArgs(1),
+		DisableAutoGenTag: true,
+		RunE:              watchRun,
 	}
 
 	addRepositoryFlag(cmd, "force repository")

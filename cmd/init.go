@@ -24,8 +24,9 @@ func InitCmd() *cobra.Command {
 		Long: `Init (manala init) will init a project.
 
 Example: manala init -> resulting in a project init in a directory (default to the current directory)`,
-		RunE: initRun,
-		Args: cobra.MaximumNArgs(1),
+		Args:              cobra.MaximumNArgs(1),
+		DisableAutoGenTag: true,
+		RunE:              initRun,
 	}
 
 	addRepositoryFlag(cmd, "use repository")

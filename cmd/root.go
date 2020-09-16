@@ -14,9 +14,10 @@ func RootCmd(version string) *cobra.Command {
 such as makefile targets, virtualization and provisioning files...
 
 Recipes are pulled from a git repository, or a local directory.`,
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Version:       version,
+		SilenceErrors:     true,
+		SilenceUsage:      true,
+		Version:           version,
+		DisableAutoGenTag: true,
 	}
 
 	cmd.PersistentFlags().StringP("cache-dir", "c", viper.GetString("cache_dir"), "cache directory")

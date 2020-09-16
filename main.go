@@ -39,6 +39,11 @@ func main() {
 	rootCmd.AddCommand(cmd.UpdateCmd())
 	rootCmd.AddCommand(cmd.WatchCmd())
 
+	// Documentation
+	if version == "dev" {
+		rootCmd.AddCommand(cmd.DocsCmd(rootCmd))
+	}
+
 	cobra.OnInitialize(func() {
 		// Debug
 		if viper.GetBool("debug") {
