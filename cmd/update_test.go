@@ -6,9 +6,10 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
+	"text/template"
 )
 
 /******************/
@@ -17,13 +18,49 @@ import (
 
 type UpdateTestSuite struct {
 	suite.Suite
+	wd string
 }
 
 func TestUpdateTestSuite(t *testing.T) {
-	// Config
-	viper.SetDefault("repository", "testdata/update/repository/default")
 	// Run
 	suite.Run(t, new(UpdateTestSuite))
+}
+
+func (s *UpdateTestSuite) SetupSuite() {
+	// Current working directory
+	s.wd, _ = os.Getwd()
+	// Default repository
+	viper.SetDefault(
+		"repository",
+		filepath.Join(s.wd, "testdata/update/repository/default"),
+	)
+}
+
+func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
+	if dir != "" {
+		_ = os.Chdir(dir)
+	}
+
+	// Command
+	cmd := UpdateCmd()
+	cmd.SetArgs(args)
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+
+	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+
+	err := cmd.Execute()
+
+	if dir != "" {
+		_ = os.Chdir(s.wd)
+	}
+
+	return stdOut, stdErr, err
 }
 
 /******************/
@@ -33,414 +70,346 @@ func TestUpdateTestSuite(t *testing.T) {
 func (s *UpdateTestSuite) Test() {
 	for _, t := range []struct {
 		test   string
+		dir    string
 		args   []string
 		err    string
 		stdErr string
 		stdOut string
-		file   [2]string
+		file   string
 	}{
 		{
-			test:   "Default project",
-			args:   []string{"testdata/update/project/default"},
-			err:    "",
-			stdOut: "",
+			test: "Default",
+			dir:  "testdata/update/project/default",
+			args: []string{},
 			stdErr: `   • Project loaded            recipe=foo repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/default/file
+   • Synced file               path={{ .Dir }}file_default_foo
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/update/project/default/file",
-				`Default foo file
-`,
-			},
+			file: "testdata/update/project/default/file_default_foo",
 		},
 		{
-			test:   "Default project force repository",
-			args:   []string{"testdata/update/project/default", "--repository", "testdata/update/repository/custom"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/custom
+			test: "Default force repository",
+			dir:  "testdata/update/project/default",
+			args: []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom")},
+			stdErr: `   • Project loaded            recipe=foo repository={{ .Wd }}testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/default/file
+   • Synced file               path={{ .Dir }}file_custom_foo
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/update/project/default/file",
-				`Custom foo file
-`,
-			},
+			file: "testdata/update/project/default/file_custom_foo",
 		},
 		{
-			test: "Default project force invalid repository",
-			args: []string{"testdata/update/project/default", "--repository", "testdata/update/repository/invalid"},
+			test: "Default force invalid repository",
+			dir:  "testdata/update/project/default",
+			args: []string{"--repository", "testdata/update/repository/invalid"},
 			err:  "\"testdata/update/repository/invalid\" directory does not exists",
+			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/invalid
+`,
 		},
 		{
-			test:   "Default project force recipe",
-			args:   []string{"testdata/update/project/default", "--recipe", "bar"},
-			err:    "",
-			stdOut: "",
+			test: "Default force recipe",
+			dir:  "testdata/update/project/default",
+			args: []string{"--recipe", "bar"},
 			stdErr: `   • Project loaded            recipe=bar repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/default/file
+   • Synced file               path={{ .Dir }}file_default_bar
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/update/project/default/file",
-				`Default bar file
-`,
-			},
+			file: "testdata/update/project/default/file_default_bar",
 		},
 		{
-			test: "Default project force invalid recipe",
-			args: []string{"testdata/update/project/default", "--recipe", "invalid"},
+			test: "Default force invalid recipe",
+			dir:  "testdata/update/project/default",
+			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
+			stdErr: `   • Project loaded            recipe=invalid repository=
+   • Repository loaded        
+`,
 		},
 		{
-			test:   "Default project force repository force recipe",
-			args:   []string{"testdata/update/project/default", "--repository", "testdata/update/repository/custom", "--recipe", "bar"},
+			test:   "Default force repository and recipe",
+			dir:    "testdata/update/project/default",
+			args:   []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom"), "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/custom
+			stdErr: `   • Project loaded            recipe=bar repository={{ .Wd }}testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/default/file
+   • Synced file               path={{ .Dir }}file_custom_bar
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/update/project/default/file",
-				`Custom bar file
-`,
-			},
-		},
-		{
-			test:   "Custom project",
-			args:   []string{"testdata/update/project/custom"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/custom
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=testdata/update/project/custom/file
-   • Project synced           
-`,
-			file: [2]string{
-				"testdata/update/project/custom/file",
-				`Custom foo file
-`,
-			},
-		},
-		{
-			test:   "Custom project force repository",
-			args:   []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/force"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project loaded            recipe=foo repository=testdata/update/repository/force
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=testdata/update/project/custom/file
-   • Project synced           
-`,
-			file: [2]string{
-				"testdata/update/project/custom/file",
-				`Force foo file
-`,
-			},
-		},
-		{
-			test: "Custom project force invalid repository",
-			args: []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/invalid"},
-			err:  "\"testdata/update/repository/invalid\" directory does not exists",
-		},
-		{
-			test:   "Custom project force recipe",
-			args:   []string{"testdata/update/project/custom", "--recipe", "bar"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/custom
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=testdata/update/project/custom/file
-   • Project synced           
-`,
-			file: [2]string{
-				"testdata/update/project/custom/file",
-				`Custom bar file
-`,
-			},
-		},
-		{
-			test:   "Custom project force repository force recipe",
-			args:   []string{"testdata/update/project/custom", "--repository", "testdata/update/repository/force", "--recipe", "bar"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository=testdata/update/repository/force
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=testdata/update/project/custom/file
-   • Project synced           
-`,
-			file: [2]string{
-				"testdata/update/project/custom/file",
-				`Force bar file
-`,
-			},
-		},
-		{
-			test: "Custom project force invalid recipe",
-			args: []string{"testdata/update/project/custom", "--recipe", "invalid"},
-			err:  "recipe not found",
+			file: "testdata/update/project/default/file_custom_bar",
 		},
 	} {
-		s.Run(t.test, func() {
-			// Command
-			cmd := UpdateCmd()
-
-			// Io
-			stdOut := bytes.NewBufferString("")
-			cmd.SetOut(stdOut)
-			stdErr := bytes.NewBufferString("")
-			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(stdErr))
-
+		s.Run(t.test+"/relative", func() {
 			// Clean
-			_ = os.Remove("testdata/update/project/default/file")
-			_ = os.Remove("testdata/update/project/custom/file")
-
+			_ = os.Remove(t.file)
 			// Execute
-			cmd.SetArgs(t.args)
-			err := cmd.Execute()
-
-			// Test error
+			stdOut, stdErr, err := s.ExecuteCmd(
+				t.dir,
+				t.args,
+			)
+			// Tests
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())
 			} else {
 				s.NoError(err)
-
-				// Test stdout
-				if t.stdOut == "" {
-					s.Zero(stdOut.Len())
-				} else {
-					s.Equal(t.stdOut, stdOut.String())
-				}
-
-				// Test stderr
-				if t.stdErr == "" {
-					s.Zero(stdErr.Len())
-				} else {
-					s.Equal(t.stdErr, stdErr.String())
-				}
-
-				// Test file
-				if t.file[0] != "" {
-					s.FileExists(t.file[0])
-					content, _ := ioutil.ReadFile(t.file[0])
-					s.Equal(t.file[1], string(content))
-				}
+			}
+			s.Equal(t.stdOut, stdOut.String())
+			// Stderr
+			var stdErrContent bytes.Buffer
+			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
+				"Wd":  s.wd + "/",
+				"Dir": "",
+			})
+			s.Equal(stdErrContent.String(), stdErr.String())
+			// File
+			if t.file != "" {
+				s.FileExists(t.file)
+			}
+		})
+		s.Run(t.test+"/dir", func() {
+			// Clean
+			_ = os.Remove(t.file)
+			// Execute
+			stdOut, stdErr, err := s.ExecuteCmd(
+				"",
+				append([]string{t.dir}, t.args...),
+			)
+			// Test
+			if t.err != "" {
+				s.Error(err)
+				s.Equal(t.err, err.Error())
+			} else {
+				s.NoError(err)
+			}
+			s.Equal(t.stdOut, stdOut.String())
+			// Stderr
+			var stdErrContent bytes.Buffer
+			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
+				"Wd":  s.wd + "/",
+				"Dir": t.dir + "/",
+			})
+			s.Equal(stdErrContent.String(), stdErr.String())
+			// File
+			if t.file != "" {
+				s.FileExists(t.file)
 			}
 		})
 	}
 }
 
 func (s *UpdateTestSuite) TestNotFound() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/not_found"})
-	err := cmd.Execute()
-
-	s.Error(err)
-	s.Equal("project not found: testdata/update/project/not_found", err.Error())
+	s.Run("relative", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"testdata/update/project/not_found",
+			[]string{},
+		)
+		s.Error(err)
+		s.Equal("project not found: .", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
+	s.Run("dir", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/not_found"},
+		)
+		s.Error(err)
+		s.Equal("project not found: testdata/update/project/not_found", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
 }
 
 func (s *UpdateTestSuite) TestInvalid() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/invalid"})
-	err := cmd.Execute()
-
-	s.Error(err)
-	s.Equal("project not found: testdata/update/project/invalid", err.Error())
+	s.Run("dir", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/invalid"},
+		)
+		s.Error(err)
+		s.Equal("invalid directory: testdata/update/project/invalid", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
 }
 
 func (s *UpdateTestSuite) TestTraverse() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Clean
-	_ = os.Remove("testdata/update/project/traverse/file")
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/traverse/level"})
-	err := cmd.Execute()
-
-	s.NoError(err)
-
-	// Test stdout
-	s.Zero(stdOut.Len())
-
-	// Test stderr
-	s.Equal(`   • Project loaded            recipe=foo repository=
+	s.Run("relative", func() {
+		// Clean
+		_ = os.Remove("testdata/update/project/traverse/file_default_foo")
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"testdata/update/project/traverse/level",
+			[]string{},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal(`   • Project loaded            recipe=foo repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/traverse/file
+   • Synced file               path=../file_default_foo
    • Project synced           
 `, stdErr.String())
-
-	// Test file
-	s.FileExists("testdata/update/project/traverse/file")
-	content, _ := ioutil.ReadFile("testdata/update/project/traverse/file")
-	s.Equal(`Default foo file
-`, string(content))
+		s.FileExists("testdata/update/project/traverse/file_default_foo")
+	})
+	s.Run("dir", func() {
+		// Clean
+		_ = os.Remove("testdata/update/project/traverse/file_default_foo")
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/traverse/level"},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal(`   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/traverse/file_default_foo
+   • Project synced           
+`, stdErr.String())
+		s.FileExists("testdata/update/project/traverse/file_default_foo")
+	})
 }
 
 func (s *UpdateTestSuite) TestRecursive() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Clean
-	_ = os.Remove("testdata/update/project/recursive/foo/file")
-	_ = os.Remove("testdata/update/project/recursive/bar/file")
-	_ = os.Remove("testdata/update/project/recursive/custom/foo/file")
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/recursive", "--recursive"})
-	err := cmd.Execute()
-
-	s.NoError(err)
-
-	// Test stdout
-	s.Zero(stdOut.Len())
-
-	// Test stderr
-	s.Equal(`   • Project loaded            recipe=bar repository=
+	s.Run("relative", func() {
+		// Clean
+		_ = os.Remove("testdata/update/project/recursive/foo/file_default_foo")
+		_ = os.Remove("testdata/update/project/recursive/foo/embedded/file_default_bar")
+		_ = os.Remove("testdata/update/project/recursive/bar/file_default_bar")
+		_ = os.Remove("testdata/update/project/recursive/level/foo/file_default_foo")
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"testdata/update/project/recursive",
+			[]string{"--recursive"},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal(`   • Project loaded            recipe=bar repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/bar/file
-   • Project synced           
-   • Project loaded            recipe=foo repository=testdata/update/repository/custom
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=testdata/update/project/recursive/custom/foo/file
+   • Synced file               path=bar/file_default_bar
    • Project synced           
    • Project loaded            recipe=foo repository=
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/foo/file
+   • Synced file               path=foo/file_default_foo
+   • Project synced           
+   • Project loaded            recipe=bar repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=foo/embedded/file_default_bar
+   • Project synced           
+   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=level/foo/file_default_foo
    • Project synced           
 `, stdErr.String())
-
-	// Test file - Foo
-	s.FileExists("testdata/update/project/recursive/foo/file")
-	content, _ := ioutil.ReadFile("testdata/update/project/recursive/foo/file")
-	s.Equal(`Default foo file
-`, string(content))
-
-	// Test file - Bar
-	s.FileExists("testdata/update/project/recursive/bar/file")
-	content, _ = ioutil.ReadFile("testdata/update/project/recursive/bar/file")
-	s.Equal(`Default bar file
-`, string(content))
-
-	// Test file - Custom Foo
-	s.FileExists("testdata/update/project/recursive/custom/foo/file")
-	content, _ = ioutil.ReadFile("testdata/update/project/recursive/custom/foo/file")
-	s.Equal(`Custom foo file
-`, string(content))
+		s.FileExists("testdata/update/project/recursive/foo/file_default_foo")
+		s.FileExists("testdata/update/project/recursive/foo/embedded/file_default_bar")
+		s.FileExists("testdata/update/project/recursive/bar/file_default_bar")
+		s.FileExists("testdata/update/project/recursive/level/foo/file_default_foo")
+	})
+	s.Run("dir", func() {
+		// Clean
+		_ = os.Remove("testdata/update/project/recursive/foo/file_default_foo")
+		_ = os.Remove("testdata/update/project/recursive/foo/embedded/file_default_bar")
+		_ = os.Remove("testdata/update/project/recursive/bar/file_default_bar")
+		_ = os.Remove("testdata/update/project/recursive/level/foo/file_default_foo")
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/recursive", "--recursive"},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal(`   • Project loaded            recipe=bar repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/bar/file_default_bar
+   • Project synced           
+   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/foo/file_default_foo
+   • Project synced           
+   • Project loaded            recipe=bar repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/foo/embedded/file_default_bar
+   • Project synced           
+   • Project loaded            recipe=foo repository=
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=testdata/update/project/recursive/level/foo/file_default_foo
+   • Project synced           
+`, stdErr.String())
+		s.FileExists("testdata/update/project/recursive/foo/file_default_foo")
+		s.FileExists("testdata/update/project/recursive/foo/embedded/file_default_bar")
+		s.FileExists("testdata/update/project/recursive/bar/file_default_bar")
+		s.FileExists("testdata/update/project/recursive/level/foo/file_default_foo")
+	})
 }
 
 func (s *UpdateTestSuite) TestRecursiveNotFound() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/not_found", "--recursive"})
-	err := cmd.Execute()
-
-	s.NoError(err)
-
-	// Test stdout
-	s.Zero(stdOut.Len())
-
-	// Test stderr
-	s.Zero(stdErr.Len())
+	s.Run("relative", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"testdata/update/project/not_found",
+			[]string{"--recursive"},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
+	s.Run("dir", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/not_found", "--recursive"},
+		)
+		s.NoError(err)
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
 }
 
 func (s *UpdateTestSuite) TestRecursiveInvalid() {
-	// Command
-	cmd := UpdateCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/update/project/invalid", "--recursive"})
-	err := cmd.Execute()
-
-	s.NoError(err)
-
-	// Test stdout
-	s.Zero(stdOut.Len())
-
-	// Test stderr
-	s.Zero(stdErr.Len())
+	s.Run("dir", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/update/project/invalid", "--recursive"},
+		)
+		s.Error(err)
+		s.Equal("invalid directory: testdata/update/project/invalid", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
 }

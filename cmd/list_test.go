@@ -6,6 +6,8 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -15,6 +17,7 @@ import (
 
 type ListTestSuite struct {
 	suite.Suite
+	wd string
 }
 
 func TestListTestSuite(t *testing.T) {
@@ -22,6 +25,43 @@ func TestListTestSuite(t *testing.T) {
 	viper.SetDefault("repository", "testdata/list/repository/default")
 	// Run
 	suite.Run(t, new(ListTestSuite))
+}
+
+func (s *ListTestSuite) SetupSuite() {
+	// Current working directory
+	s.wd, _ = os.Getwd()
+	// Default repository
+	viper.SetDefault(
+		"repository",
+		filepath.Join(s.wd, "testdata/list/repository/default"),
+	)
+}
+
+func (s *ListTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
+	if dir != "" {
+		_ = os.Chdir(dir)
+	}
+
+	// Command
+	cmd := ListCmd()
+	cmd.SetArgs(args)
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+
+	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+
+	err := cmd.Execute()
+
+	if dir != "" {
+		_ = os.Chdir(s.wd)
+	}
+
+	return stdOut, stdErr, err
 }
 
 /****************/
@@ -39,20 +79,16 @@ func (s *ListTestSuite) Test() {
 		{
 			test: "Default repository",
 			args: []string{},
-			err:  "",
 			stdOut: `bar: Default bar recipe
 foo: Default foo recipe
 `,
-			stdErr: "",
 		},
 		{
 			test: "Use repository",
 			args: []string{"--repository", "testdata/list/repository/custom"},
-			err:  "",
 			stdOut: `bar: Custom bar recipe
 foo: Custom foo recipe
 `,
-			stdErr: "",
 		},
 		{
 			test: "Use invalid repository",
@@ -61,41 +97,20 @@ foo: Custom foo recipe
 		},
 	} {
 		s.Run(t.test, func() {
-			// Command
-			cmd := ListCmd()
-
-			// Io
-			stdOut := bytes.NewBufferString("")
-			cmd.SetOut(stdOut)
-			stdErr := bytes.NewBufferString("")
-			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(stdErr))
-
 			// Execute
-			cmd.SetArgs(t.args)
-			err := cmd.Execute()
-
-			// Test error
+			stdOut, stdErr, err := s.ExecuteCmd(
+				"",
+				t.args,
+			)
+			// Tests
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())
 			} else {
 				s.NoError(err)
-
-				// Test stdout
-				if t.stdOut == "" {
-					s.Zero(stdOut.Len())
-				} else {
-					s.Equal(t.stdOut, stdOut.String())
-				}
-
-				// Test stderr
-				if t.stdErr == "" {
-					s.Zero(stdErr.Len())
-				} else {
-					s.Equal(t.stdErr, stdErr.String())
-				}
 			}
+			s.Equal(t.stdOut, stdOut.String())
+			s.Equal(t.stdErr, stdErr.String())
 		})
 	}
 }

@@ -1,4 +1,0 @@
-manala:
-    description: Force foo recipe
-    sync:
-        - file

@@ -6,9 +6,10 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
+	"text/template"
 )
 
 /****************/
@@ -17,13 +18,49 @@ import (
 
 type InitTestSuite struct {
 	suite.Suite
+	wd string
 }
 
 func TestInitTestSuite(t *testing.T) {
-	// Config
-	viper.SetDefault("repository", "testdata/init/repository/default")
 	// Run
 	suite.Run(t, new(InitTestSuite))
+}
+
+func (s *InitTestSuite) SetupSuite() {
+	// Current working directory
+	s.wd, _ = os.Getwd()
+	// Default repository
+	viper.SetDefault(
+		"repository",
+		filepath.Join(s.wd, "testdata/init/repository/default"),
+	)
+}
+
+func (s *InitTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
+	if dir != "" {
+		_ = os.Chdir(dir)
+	}
+
+	// Command
+	cmd := InitCmd()
+	cmd.SetArgs(args)
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+
+	stdOut := bytes.NewBufferString("")
+	cmd.SetOut(stdOut)
+	stdErr := bytes.NewBufferString("")
+	cmd.SetErr(stdErr)
+
+	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+
+	err := cmd.Execute()
+
+	if dir != "" {
+		_ = os.Chdir(s.wd)
+	}
+
+	return stdOut, stdErr, err
 }
 
 /****************/
@@ -33,119 +70,124 @@ func TestInitTestSuite(t *testing.T) {
 func (s *InitTestSuite) Test() {
 	for _, t := range []struct {
 		test   string
+		dir    string
 		args   []string
 		err    string
 		stdErr string
 		stdOut string
-		file   [2]string
+		file   string
 	}{
 		{
-			test:   "Use recipe",
-			args:   []string{"testdata/init/project/init", "--recipe", "foo"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project directory created dir=testdata/init/project/init
-   • Synced file               path=testdata/init/project/init/file
+			test: "Use recipe",
+			dir:  "testdata/init/project/default",
+			args: []string{"--recipe", "foo"},
+			stdErr: `   • Synced file               path={{ .Dir }}file_default_foo
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/init/project/init/file",
-				`Default foo file
-`,
-			},
+			file: "testdata/init/project/default/file_default_foo",
 		},
 		{
 			test: "Use invalid recipe",
-			args: []string{"testdata/init/project/init", "--recipe", "invalid"},
+			dir:  "testdata/init/project/default",
+			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
 		},
 		{
-			test:   "Use recipe use repository",
-			args:   []string{"testdata/init/project/init", "--recipe", "foo", "--repository", "testdata/init/repository/custom"},
-			err:    "",
-			stdOut: "",
-			stdErr: `   • Project directory created dir=testdata/init/project/init
-   • Synced file               path=testdata/init/project/init/file
+			test:   "Use recipe and repository",
+			dir:  "testdata/init/project/default",
+			args:   []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
+			stdErr: `   • Synced file               path={{ .Dir }}file_custom_foo
    • Project synced           
 `,
-			file: [2]string{
-				"testdata/init/project/init/file",
-				`Custom foo file
-`,
-			},
+			file: "testdata/init/project/default/file_custom_foo",
 		},
 		{
-			test: "Use recipe use invalid repository",
-			args: []string{"testdata/init/project/init", "--recipe", "foo", "--repository", "testdata/init/repository/invalid"},
+			test: "Use recipe and invalid repository",
+			dir:  "testdata/init/project/default",
+			args: []string{"--recipe", "foo", "--repository", "testdata/init/repository/invalid"},
 			err:  "\"testdata/init/repository/invalid\" directory does not exists",
 		},
 	} {
-		s.Run(t.test, func() {
-			// Command
-			cmd := InitCmd()
-
-			// Io
-			stdOut := bytes.NewBufferString("")
-			cmd.SetOut(stdOut)
-			stdErr := bytes.NewBufferString("")
-			cmd.SetErr(stdErr)
-			log.SetHandler(cli.New(stdErr))
-
+		s.Run(t.test+"/relative", func() {
 			// Clean
-			_ = os.RemoveAll("testdata/init/project/init")
-
+			_ = os.Remove(t.file)
 			// Execute
-			cmd.SetArgs(t.args)
-			err := cmd.Execute()
-
-			// Test error
+			stdOut, stdErr, err := s.ExecuteCmd(
+				t.dir,
+				t.args,
+			)
+			// Tests
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())
 			} else {
 				s.NoError(err)
-
-				// Test stdout
-				if t.stdOut == "" {
-					s.Zero(stdOut.Len())
-				} else {
-					s.Equal(t.stdOut, stdOut.String())
-				}
-
-				// Test stderr
-				if t.stdErr == "" {
-					s.Zero(stdErr.Len())
-				} else {
-					s.Equal(t.stdErr, stdErr.String())
-				}
-
-				// Test file
-				if t.file[0] != "" {
-					s.FileExists(t.file[0])
-					content, _ := ioutil.ReadFile(t.file[0])
-					s.Equal(t.file[1], string(content))
-				}
+			}
+			s.Equal(t.stdOut, stdOut.String())
+			// Stderr
+			var stdErrContent bytes.Buffer
+			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
+				"Wd":  s.wd + "/",
+				"Dir": "",
+			})
+			s.Equal(stdErrContent.String(), stdErr.String())
+			// File
+			if t.file != "" {
+				s.FileExists(t.file)
+			}
+		})
+		s.Run(t.test+"/dir", func() {
+			// Clean
+			_ = os.Remove(t.file)
+			// Execute
+			stdOut, stdErr, err := s.ExecuteCmd(
+				"",
+				append([]string{t.dir}, t.args...),
+			)
+			// Test
+			if t.err != "" {
+				s.Error(err)
+				s.Equal(t.err, err.Error())
+			} else {
+				s.NoError(err)
+			}
+			s.Equal(t.stdOut, stdOut.String())
+			// Stderr
+			var stdErrContent bytes.Buffer
+			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
+				"Wd":  s.wd + "/",
+				"Dir": t.dir + "/",
+			})
+			s.Equal(stdErrContent.String(), stdErr.String())
+			// File
+			if t.file != "" {
+				s.FileExists(t.file)
 			}
 		})
 	}
 }
 
 func (s *InitTestSuite) TestProjectAlreadyExists() {
-	// Command
-	cmd := InitCmd()
-
-	// Io
-	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
-	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
-	log.SetHandler(cli.New(stdErr))
-
-	// Execute
-	cmd.SetArgs([]string{"testdata/init/project/already_exists"})
-	err := cmd.Execute()
-
-	// Test error
-	s.Error(err)
-	s.Equal("project already exists: testdata/init/project/already_exists", err.Error())
+	s.Run("relative", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"testdata/init/project/already_exists",
+			[]string{},
+		)
+		s.Error(err)
+		s.Equal("project already exists: .", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
+	s.Run("dir", func() {
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCmd(
+			"",
+			[]string{"testdata/init/project/already_exists"},
+		)
+		s.Error(err)
+		s.Equal("project already exists: testdata/init/project/already_exists", err.Error())
+		s.Equal("", stdOut.String())
+		s.Equal("", stdErr.String())
+	})
 }

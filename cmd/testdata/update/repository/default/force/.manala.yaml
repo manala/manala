@@ -1,0 +1,4 @@
+manala:
+    description: Default force recipe
+    sync:
+        - file_default_force
