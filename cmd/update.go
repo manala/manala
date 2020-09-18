@@ -48,7 +48,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
 
 	// Directory
-	var dir string
+	dir := "."
 	if len(args) != 0 {
 		// Get directory from first command arg
 		dir = args[0]
@@ -64,7 +64,8 @@ func updateRun(cmd *cobra.Command, args []string) error {
 			}
 
 			// Only not dotted directories
-			if strings.HasPrefix(filepath.Base(path), ".") {
+			// (except - of course - current directory)
+			if strings.HasPrefix(filepath.Base(path), ".") && (path != ".") {
 				return filepath.SkipDir
 			}
 

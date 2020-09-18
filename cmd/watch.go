@@ -62,7 +62,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
 
 	// Directory
-	var dir string
+	dir := "."
 	if len(args) != 0 {
 		// Get directory from first command arg
 		dir = args[0]
