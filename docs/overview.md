@@ -8,7 +8,7 @@ In this usage example, we are going to implement a very basic feature, yet rich 
 
 All your company's projects use [`PHP-CS-fixer`](https://github.com/FriendsOfPHP/PHP-CS-Fixer) in order to define your coding rules and apply them.
 
-Your company would like to apply always the same coding rules on all of its projects, but maintaining the same set of rules in every project can be tedious and error-prone. In an idealistic world, the coding rules should be maintained in one place and passed on to all your projects as seamlessly as possible.
+Your company would like to always apply the same coding rules on all of its projects, but maintaining the same set of rules in every project can be tedious and error-prone. In an idealistic world, the coding rules should be maintained in one place and passed on to all your projects as seamlessly as possible.
 
 That's where manala enters the game ...
 
@@ -229,7 +229,7 @@ And finally run `vendor/bin/php-cs-fixer fix` to apply the coding rules.
 
 That's done !
 
-But, hey, just wait a minute ! What about the header of my coding rules ? My shared coding rules mention a hard-coded project name (`This file is part of the XXX project`) and I want this part to be dynamic, depending on the current project !
+But, hey, just wait a minute ! What about the header of my coding rules ? My shared coding rules mention a hard-coded project name (`This file is part of the XXX project`), and I want this part to be dynamic, depending on the current project !
 
 ## Defining dynamic parts in your templates
 
