@@ -93,7 +93,7 @@ qux: {}
       "properties": {
         "bar": {
           "type": "array"
-        },
+        }
       }
     },
     "baz": {
