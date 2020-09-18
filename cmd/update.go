@@ -76,8 +76,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 
 			// Update
 			if prjFile != nil {
-				err := updateRunFunc(prjLoader, prjFile)
-				if err != nil {
+				if err := updateRunFunc(prjLoader, prjFile); err != nil {
 					return err
 				}
 			}
@@ -99,8 +98,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		}
 
 		// Update
-		err = updateRunFunc(prjLoader, prjFile)
-		if err != nil {
+		if err = updateRunFunc(prjLoader, prjFile); err != nil {
 			return err
 		}
 	}

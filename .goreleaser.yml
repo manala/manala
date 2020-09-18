@@ -35,6 +35,7 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^typo:'
+      - '^misc:'
       - Merge pull request
       - Merge branch
 brews:
