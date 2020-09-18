@@ -66,6 +66,9 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	if len(args) != 0 {
 		// Get directory from first command arg
 		dir = args[0]
+		if _, err := os.Stat(dir); err != nil {
+			return fmt.Errorf("invalid directory: %s", dir)
+		}
 	}
 
 	// Find project file
