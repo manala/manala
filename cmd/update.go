@@ -43,9 +43,9 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		viper.GetString("repository"),
 	)
 	recLoader := loaders.NewRecipeLoader()
-	repoName, _ := cmd.Flags().GetString("repository")
+	repoSrc, _ := cmd.Flags().GetString("repository")
 	recName, _ := cmd.Flags().GetString("recipe")
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoName, recName)
+	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoSrc, recName)
 
 	// Directory
 	dir := "."

@@ -36,8 +36,8 @@ func listRun(cmd *cobra.Command, args []string) error {
 	recLoader := loaders.NewRecipeLoader()
 
 	// Load repository
-	repoName, _ := cmd.Flags().GetString("repository")
-	repo, err := repoLoader.Load(repoName)
+	repoSrc, _ := cmd.Flags().GetString("repository")
+	repo, err := repoLoader.Load(repoSrc)
 	if err != nil {
 		return err
 	}

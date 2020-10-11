@@ -73,8 +73,8 @@ func initRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// Load repository
-	repoName, _ := cmd.Flags().GetString("repository")
-	repo, err := repoLoader.Load(repoName)
+	repoSrc, _ := cmd.Flags().GetString("repository")
+	repo, err := repoLoader.Load(repoSrc)
 	if err != nil {
 		return err
 	}
