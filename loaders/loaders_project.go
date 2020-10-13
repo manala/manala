@@ -62,8 +62,8 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 		return nil, err
 	}
 
-	parentDdir := path.Join(dir, "..")
-	parentAbs, err := filepath.Abs(parentDdir)
+	parentDir := path.Join(dir, "..")
+	parentAbs, err := filepath.Abs(parentDir)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 		return nil, nil
 	}
 
-	return ld.Find(parentDdir, true)
+	return ld.Find(parentDir, true)
 }
 
 func (ld *projectLoader) Load(file *os.File) (models.ProjectInterface, error) {
