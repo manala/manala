@@ -47,9 +47,11 @@ func NewRecipeFormBinder(rec models.RecipeInterface) (*RecipeFormBinder, error) 
 					text = fmt.Sprintf("%v", value)
 				}
 				itemValue := value
-				item.AddOption(text, func() {
+				itemOption := cview.NewDropDownOption(text)
+				itemOption.SetSelectedFunc(func(index int, option *cview.DropDownOption) {
 					bind.Value = itemValue
 				})
+				item.AddOptions(itemOption)
 			}
 
 			// Item current option

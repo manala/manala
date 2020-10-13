@@ -126,31 +126,35 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 
 	// List
 	list := cview.NewList()
-	list.SetBorderPadding(0, 0, 1, 0)
-	list.
-		SetScrollBarVisibility(cview.ScrollBarAlways).
-		SetDoneFunc(func() {
-			err = fmt.Errorf("operation cancelled")
-			app.Stop()
-		})
+	list.SetPadding(0, 0, 1, 0)
+	list.SetScrollBarVisibility(cview.ScrollBarAlways)
+	list.SetDoneFunc(func() {
+		err = fmt.Errorf("operation cancelled")
+		app.Stop()
+	})
 
 	var recipe models.RecipeInterface
 
 	// Walk into recipes
 	if err2 := recLoader.Walk(repo, func(rec models.RecipeInterface) {
-		list.AddItem(" "+rec.Name()+" ", "   "+rec.Description(), 0, func() {
+		listItem := cview.NewListItem(" " + rec.Name() + " ")
+		listItem.SetSecondaryText("   " + rec.Description())
+		listItem.SetSelectedFunc(func() {
 			recipe = rec
 			app.Stop()
 		})
+		list.AddItem(listItem)
 	}); err2 != nil {
 		return nil, err2
 	}
 
-	frame := cview.NewFrame(list).
-		SetBorders(1, 1, 1, 1, 1, 1).
-		AddText("Please, select a recipe...", true, cview.AlignLeft, tcell.ColorAqua)
+	frame := cview.NewFrame(list)
+	frame.SetBorders(1, 1, 1, 1, 1, 1)
+	frame.AddText("Please, select a recipe...", true, cview.AlignLeft, tcell.ColorAqua)
 
-	if err2 := app.SetRoot(frame, true).SetFocus(frame).Run(); err2 != nil {
+	app.SetRoot(frame, true)
+	app.SetFocus(frame)
+	if err2 := app.Run(); err2 != nil {
 		return nil, err2
 	}
 
@@ -170,37 +174,35 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 	app := cview.NewApplication()
 	app.EnableMouse(true)
 
-	appPages := cview.NewPages()
+	appPanels := cview.NewPanels()
 
 	var err error
 
-	// Form page
+	// Form panel
 	form := cview.NewForm()
-	form.SetBorderPadding(0, 0, 1, 0)
-	form.
-		SetItemPadding(0).
-		SetCancelFunc(func() {
-			err = fmt.Errorf("operation cancelled")
-			app.Stop()
-		})
+	form.SetPadding(0, 0, 1, 0)
+	form.SetItemPadding(0)
+	form.SetCancelFunc(func() {
+		err = fmt.Errorf("operation cancelled")
+		app.Stop()
+	})
 
-	frame := cview.NewFrame(form).
-		SetBorders(1, 1, 1, 1, 1, 1).
-		AddText("Please, enter \""+prj.Recipe().Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
+	frame := cview.NewFrame(form)
+	frame.SetBorders(1, 1, 1, 1, 1, 1)
+	frame.AddText("Please, enter \""+prj.Recipe().Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
 
-	appPages.AddPage("form", frame, true, true)
+	appPanels.AddPanel("form", frame, true, true)
 
-	// Modal page
+	// Modal panel
 	modal := cview.NewModal()
 	modal.SetBorderColor(tcell.ColorRed)
 	modal.SetTextColor(tcell.ColorWhite)
-	modal.
-		AddButtons([]string{"Ok"}).
-		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			appPages.HidePage("modal")
-		})
+	modal.AddButtons([]string{"Ok"})
+	modal.SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		appPanels.HidePanel("modal")
+	})
 
-	appPages.AddPage("modal", modal, false, false)
+	appPanels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
 	bndr, err2 := binder.NewRecipeFormBinder(prj.Recipe())
@@ -219,7 +221,7 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 				if err3, ok := err2.(*validator.ValueValidationError); ok {
 					valid = false
 					modal.SetText(bnd.Option.Label + err3.Error())
-					appPages.ShowPage("modal")
+					appPanels.ShowPanel("modal")
 					form.SetFocus(bnd.ItemIndex)
 				} else {
 					err = err2
@@ -235,7 +237,9 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 		}
 	})
 
-	if err3 := app.SetRoot(appPages, true).SetFocus(appPages).Run(); err3 != nil {
+	app.SetRoot(appPanels, true)
+	app.SetFocus(appPanels)
+	if err3 := app.Run(); err3 != nil {
 		return err3
 	}
 

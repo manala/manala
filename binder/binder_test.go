@@ -56,39 +56,39 @@ func (s *RecipeFormBinderTestSuite) TestNewEnum() {
 
 	item := bind.Item.(*cview.DropDown)
 
-	itemIndex, itemValue := item.GetCurrentOption()
+	itemIndex, itemOption := item.GetCurrentOption()
 	s.Equal(0, itemIndex)
-	s.Equal("<True>", itemValue)
+	s.Equal("<True>", itemOption.GetText())
 	s.Equal(true, bind.Value)
 
 	item.SetCurrentOption(1)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("<False>", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("<False>", itemOption.GetText())
 	s.Equal(false, bind.Value)
 
 	item.SetCurrentOption(2)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("<None>", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("<None>", itemOption.GetText())
 	s.Equal(nil, bind.Value)
 
 	item.SetCurrentOption(3)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("foo", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("foo", itemOption.GetText())
 	s.Equal("foo", bind.Value)
 
 	item.SetCurrentOption(4)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("123", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("123", itemOption.GetText())
 	s.Equal(123, bind.Value)
 
 	item.SetCurrentOption(5)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("7.0", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("7.0", itemOption.GetText())
 	s.Equal("7.0", bind.Value)
 
 	item.SetCurrentOption(6)
-	itemIndex, itemValue = item.GetCurrentOption()
-	s.Equal("7.1", itemValue)
+	itemIndex, itemOption = item.GetCurrentOption()
+	s.Equal("7.1", itemOption.GetText())
 	s.Equal(7.1, bind.Value)
 }
 
