@@ -55,8 +55,8 @@ func (s *RecipeTestSuite) TestRecipeFind() {
 			recFileName: "testdata/recipe/find/default/.manala.yaml",
 		},
 		{
-			test: "Not found",
-			dir:  "testdata/recipe/find/not_found",
+			test: "Invalid",
+			dir:  "testdata/recipe/find/invalid",
 		},
 	} {
 		s.Run(t.test, func() {

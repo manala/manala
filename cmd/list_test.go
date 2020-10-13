@@ -84,16 +84,16 @@ foo: Default foo recipe
 `,
 		},
 		{
-			test: "Use repository",
+			test: "Custom repository",
 			args: []string{"--repository", "testdata/list/repository/custom"},
 			stdOut: `bar: Custom bar recipe
 foo: Custom foo recipe
 `,
 		},
 		{
-			test: "Use invalid repository",
-			args: []string{"--repository", "testdata/list/repository/invalid"},
-			err:  "\"testdata/list/repository/invalid\" directory does not exists",
+			test: "Nonexistent repository",
+			args: []string{"--repository", "testdata/list/repository/nonexistent"},
+			err:  "\"testdata/list/repository/nonexistent\" directory does not exists",
 		},
 	} {
 		s.Run(t.test, func() {
