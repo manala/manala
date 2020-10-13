@@ -83,17 +83,24 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
-		if file.IsDir() {
-			recFile, err := ld.Find(filepath.Join(repository.Dir(), file.Name()))
-			if err != nil {
-				return err
-			}
-			rec, err := ld.loadDir(file.Name(), recFile, repository)
-			if err != nil {
-				return err
-			}
-			fn(rec)
+		if !file.IsDir() {
+			continue
 		}
+
+		recFile, err := ld.Find(filepath.Join(repository.Dir(), file.Name()))
+		if err != nil {
+			return err
+		}
+		if recFile == nil {
+			continue
+		}
+
+		rec, err := ld.loadDir(file.Name(), recFile, repository)
+		if err != nil {
+			return err
+		}
+
+		fn(rec)
 	}
 
 	return nil

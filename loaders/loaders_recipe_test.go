@@ -247,15 +247,12 @@ func (s *RecipeTestSuite) TestRecipeLoadOptions() {
 
 func (s *RecipeTestSuite) TestRecipeWalk() {
 	ld := NewRecipeLoader()
+	repo := models.NewRepository("testdata/recipe/walk", "testdata/recipe/walk")
 	results := make(map[string]string)
-	err := ld.Walk(s.repository, func(rec models.RecipeInterface) {
+	err := ld.Walk(repo, func(rec models.RecipeInterface) {
 		results[rec.Name()] = rec.Description()
 	})
 	s.NoError(err)
-	s.Len(results, 5)
-	s.Equal("Load", results["load"])
-	s.Equal("Load vars", results["load_vars"])
-	s.Equal("Load sync units", results["load_sync_units"])
-	s.Equal("Load schema", results["load_schema"])
-	s.Equal("Load options", results["load_options"])
+	s.Len(results, 1)
+	s.Equal("Default", results["default"])
 }
