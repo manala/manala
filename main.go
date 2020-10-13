@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"manala/cmd"
 	"os"
+	"path"
 )
 
 // Default repository
@@ -30,7 +31,7 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatal("Error getting cache dir")
 	}
-	viper.SetDefault("cache_dir", cacheDir)
+	viper.SetDefault("cache_dir", path.Join(cacheDir, "manala"))
 
 	// Commands
 	rootCmd := cmd.RootCmd(version)
