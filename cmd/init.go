@@ -122,7 +122,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 	app := cview.NewApplication()
 	app.EnableMouse(true)
 
-	var error error
+	var err error
 
 	// List
 	list := cview.NewList()
@@ -130,32 +130,32 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 	list.
 		SetScrollBarVisibility(cview.ScrollBarAlways).
 		SetDoneFunc(func() {
-			error = fmt.Errorf("operation cancelled")
+			err = fmt.Errorf("operation cancelled")
 			app.Stop()
 		})
 
 	var recipe models.RecipeInterface
 
 	// Walk into recipes
-	if err := recLoader.Walk(repo, func(rec models.RecipeInterface) {
+	if err2 := recLoader.Walk(repo, func(rec models.RecipeInterface) {
 		list.AddItem(" "+rec.Name()+" ", "   "+rec.Description(), 0, func() {
 			recipe = rec
 			app.Stop()
 		})
-	}); err != nil {
-		return nil, err
+	}); err2 != nil {
+		return nil, err2
 	}
 
 	frame := cview.NewFrame(list).
 		SetBorders(1, 1, 1, 1, 1, 1).
 		AddText("Please, select a recipe...", true, cview.AlignLeft, tcell.ColorAqua)
 
-	if err := app.SetRoot(frame, true).SetFocus(frame).Run(); err != nil {
-		return nil, err
+	if err2 := app.SetRoot(frame, true).SetFocus(frame).Run(); err2 != nil {
+		return nil, err2
 	}
 
-	if error != nil {
-		return nil, error
+	if err != nil {
+		return nil, err
 	}
 
 	if recipe == nil {
@@ -172,7 +172,7 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 
 	appPages := cview.NewPages()
 
-	var error error
+	var err error
 
 	// Form page
 	form := cview.NewForm()
@@ -180,7 +180,7 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 	form.
 		SetItemPadding(0).
 		SetCancelFunc(func() {
-			error = fmt.Errorf("operation cancelled")
+			err = fmt.Errorf("operation cancelled")
 			app.Stop()
 		})
 
@@ -203,9 +203,9 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 	appPages.AddPage("modal", modal, false, false)
 
 	// Recipe form binder
-	bndr, err := binder.NewRecipeFormBinder(prj.Recipe())
-	if err != nil {
-		return err
+	bndr, err2 := binder.NewRecipeFormBinder(prj.Recipe())
+	if err2 != nil {
+		return err2
 	}
 
 	bndr.BindForm(form)
@@ -214,33 +214,33 @@ func initProjectFormApplication(prj models.ProjectInterface) error {
 		// Validate
 		valid := true
 		for _, bnd := range bndr.Binds() {
-			err := validator.ValidateValue(bnd.Value, bnd.Option.Schema)
-			if err != nil {
-				if err, ok := err.(*validator.ValueValidationError); ok {
+			err2 := validator.ValidateValue(bnd.Value, bnd.Option.Schema)
+			if err2 != nil {
+				if err3, ok := err2.(*validator.ValueValidationError); ok {
 					valid = false
-					modal.SetText(bnd.Option.Label + err.Error())
+					modal.SetText(bnd.Option.Label + err3.Error())
 					appPages.ShowPage("modal")
 					form.SetFocus(bnd.ItemIndex)
 				} else {
-					error = err
+					err = err2
 					app.Stop()
 				}
 				break
 			}
 		}
-		if valid && err == nil {
+		if valid && (err == nil) {
 			// Apply values
-			bndr.ApplyValues(prj.Vars())
+			_ = bndr.ApplyValues(prj.Vars())
 			app.Stop()
 		}
 	})
 
-	if err := app.SetRoot(appPages, true).SetFocus(appPages).Run(); err != nil {
-		return err
+	if err3 := app.SetRoot(appPages, true).SetFocus(appPages).Run(); err3 != nil {
+		return err3
 	}
 
-	if error != nil {
-		return error
+	if err != nil {
+		return err
 	}
 
 	return nil
