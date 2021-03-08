@@ -9,7 +9,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
-	"io/ioutil"
 	"manala/models"
 	"manala/yaml/cleaner"
 	"manala/yaml/doc"
@@ -73,7 +72,7 @@ func (ld *recipeLoader) Load(name string, repository models.RepositoryInterface)
 }
 
 func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWalkFunc) error {
-	files, err := ioutil.ReadDir(repository.Dir())
+	files, err := os.ReadDir(repository.Dir())
 	if err != nil {
 		return err
 	}

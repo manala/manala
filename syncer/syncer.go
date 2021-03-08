@@ -8,7 +8,6 @@ import (
 	"github.com/apex/log"
 	"gopkg.in/yaml.v3"
 	"io"
-	"io/ioutil"
 	"manala/models"
 	"os"
 	"path"
@@ -122,7 +121,7 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 	node.Src.IsDir = stat.IsDir()
 
 	if node.Src.IsDir {
-		files, err := ioutil.ReadDir(node.Src.Path)
+		files, err := os.ReadDir(node.Src.Path)
 		if err != nil {
 			return nil, err
 		}
@@ -162,7 +161,7 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 		node.Dst.Mode = stat.Mode()
 
 		if node.Dst.IsDir {
-			files, err := ioutil.ReadDir(node.Dst.Path)
+			files, err := os.ReadDir(node.Dst.Path)
 			if err != nil {
 				return nil, err
 			}
@@ -238,7 +237,7 @@ func syncNode(node *node) error {
 		}
 
 		// Delete not synced destination files
-		files, err := ioutil.ReadDir(node.Dst.Path)
+		files, err := os.ReadDir(node.Dst.Path)
 		if err != nil {
 			return err
 		}
@@ -280,7 +279,7 @@ func syncNode(node *node) error {
 
 		if node.IsTmpl {
 			// Read template content
-			tmplContent, err := ioutil.ReadFile(node.Src.Path)
+			tmplContent, err := os.ReadFile(node.Src.Path)
 			if err != nil {
 				return err
 			}

@@ -4,7 +4,6 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/discard"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -26,12 +25,12 @@ func (s *SyncTestSuite) SetupTest() {
 	dir := "testdata/sync/destination"
 	_ = os.RemoveAll(dir)
 	_ = os.Mkdir(dir, 0755)
-	_ = ioutil.WriteFile(dir+"/file_foo", []byte("foo"), 0666)
-	_ = ioutil.WriteFile(dir+"/file_bar", []byte("bar"), 0666)
+	_ = os.WriteFile(dir+"/file_foo", []byte("foo"), 0666)
+	_ = os.WriteFile(dir+"/file_bar", []byte("bar"), 0666)
 	_ = os.Mkdir(dir+"/dir_empty", 0755)
 	_ = os.Mkdir(dir+"/dir", 0755)
 	_, _ = os.Create(dir + "/dir/foo")
-	_ = ioutil.WriteFile(dir+"/dir/foo", []byte("bar"), 0666)
+	_ = os.WriteFile(dir+"/dir/foo", []byte("bar"), 0666)
 	_ = os.Mkdir(dir+"/dir/bar", 0755)
 	_, _ = os.Create(dir + "/dir/bar/foo")
 }
@@ -49,7 +48,7 @@ func (s *SyncTestSuite) TestSyncDestinationFileNotExists() {
 	err := Sync("testdata/sync/source/foo", "testdata/sync/destination/foo", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/foo")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/foo")
+	content, _ := os.ReadFile("testdata/sync/destination/foo")
 	s.Equal("bar", string(content))
 }
 
@@ -57,7 +56,7 @@ func (s *SyncTestSuite) TestSyncDestinationFileExistsAndSame() {
 	err := Sync("testdata/sync/source/foo", "testdata/sync/destination/file_bar", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/file_bar")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/file_bar")
+	content, _ := os.ReadFile("testdata/sync/destination/file_bar")
 	s.Equal("bar", string(content))
 }
 
@@ -65,7 +64,7 @@ func (s *SyncTestSuite) TestSyncDestinationFileExistsAndDifferent() {
 	err := Sync("testdata/sync/source/foo", "testdata/sync/destination/file_foo", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/file_foo")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/file_foo")
+	content, _ := os.ReadFile("testdata/sync/destination/file_foo")
 	s.Equal("bar", string(content))
 }
 
@@ -73,7 +72,7 @@ func (s *SyncTestSuite) TestSyncSourceFileOverDestinationDirectoryEmpty() {
 	err := Sync("testdata/sync/source/foo", "testdata/sync/destination/dir_empty", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/dir_empty")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/dir_empty")
+	content, _ := os.ReadFile("testdata/sync/destination/dir_empty")
 	s.Equal("bar", string(content))
 }
 
@@ -81,7 +80,7 @@ func (s *SyncTestSuite) TestSyncSourceFileOverDestinationDirectory() {
 	err := Sync("testdata/sync/source/foo", "testdata/sync/destination/dir", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/dir")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/dir")
+	content, _ := os.ReadFile("testdata/sync/destination/dir")
 	s.Equal("bar", string(content))
 }
 
@@ -89,7 +88,7 @@ func (s *SyncTestSuite) TestSyncDestinationDirectoryNotExists() {
 	err := Sync("testdata/sync/source/bar", "testdata/sync/destination/bar", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/bar/foo")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/bar/foo")
+	content, _ := os.ReadFile("testdata/sync/destination/bar/foo")
 	s.Equal("baz", string(content))
 }
 
@@ -97,7 +96,7 @@ func (s *SyncTestSuite) TestSyncDestinationDirectoryExists() {
 	err := Sync("testdata/sync/source/bar", "testdata/sync/destination/dir", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync/destination/dir/foo")
-	content, _ := ioutil.ReadFile("testdata/sync/destination/dir/foo")
+	content, _ := os.ReadFile("testdata/sync/destination/dir/foo")
 	s.Equal("baz", string(content))
 }
 
@@ -118,8 +117,8 @@ func (s *SyncExecutableTestSuite) SetupTest() {
 	dir := "testdata/sync_executable/destination"
 	_ = os.RemoveAll(dir)
 	_ = os.Mkdir(dir, 0755)
-	_ = ioutil.WriteFile(dir+"/executable_true", []byte(""), 0777)
-	_ = ioutil.WriteFile(dir+"/executable_false", []byte(""), 0666)
+	_ = os.WriteFile(dir+"/executable_true", []byte(""), 0777)
+	_ = os.WriteFile(dir+"/executable_false", []byte(""), 0666)
 }
 
 /***************************/
@@ -195,7 +194,7 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateBase() {
 	err := Sync("testdata/sync_template/source/base.tmpl", "testdata/sync_template/destination/base", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/base")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/base")
+	content, _ := os.ReadFile("testdata/sync_template/destination/base")
 	s.Equal(`foo
 `, string(content))
 }
@@ -237,7 +236,7 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateToYaml() {
 	})
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/to_yaml")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/to_yaml")
+	content, _ := os.ReadFile("testdata/sync_template/destination/to_yaml")
 	s.Equal(`foo:
     bar: string
     baz:
@@ -271,7 +270,7 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateCases() {
 	})
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/cases")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/cases")
+	content, _ := os.ReadFile("testdata/sync_template/destination/cases")
 	s.Equal(`foo:
     BAZ: true
     QuuX: true
@@ -290,7 +289,7 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateDict() {
 	})
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/dict")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/dict")
+	content, _ := os.ReadFile("testdata/sync_template/destination/dict")
 	s.Equal(`bar: true
 qux: true
 `, string(content))
@@ -300,7 +299,7 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateInclude() {
 	err := Sync("testdata/sync_template/source/include.tmpl", "testdata/sync_template/destination/include", NewTemplate(), nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/include")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/include")
+	content, _ := os.ReadFile("testdata/sync_template/destination/include")
 	s.Equal(`foo: bar`, string(content))
 }
 
@@ -310,6 +309,6 @@ func (s *SyncTemplateTestSuite) TestSyncTemplateHelpers() {
 	err := Sync("testdata/sync_template/source/helpers.tmpl", "testdata/sync_template/destination/helpers", tmpl, nil)
 	s.NoError(err)
 	s.FileExists("testdata/sync_template/destination/helpers")
-	content, _ := ioutil.ReadFile("testdata/sync_template/destination/helpers")
+	content, _ := os.ReadFile("testdata/sync_template/destination/helpers")
 	s.Equal(`bar: foo`, string(content))
 }
