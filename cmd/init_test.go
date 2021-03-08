@@ -93,9 +93,9 @@ func (s *InitTestSuite) Test() {
 			err:  "recipe not found",
 		},
 		{
-			test:   "Use recipe and repository",
+			test: "Use recipe and repository",
 			dir:  "testdata/init/project/default",
-			args:   []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
+			args: []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
 			stdErr: `   • Synced file               path={{ .Dir }}file_custom_foo
    • Project synced           
 `,
