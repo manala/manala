@@ -4,17 +4,13 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/Masterminds/sprig/v3"
-	"github.com/apex/log"
-	"gopkg.in/yaml.v3"
 	"io"
+	"manala/logger"
 	"manala/models"
+	"manala/template"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
-	"strings"
-	"text/template"
 )
 
 /**********/
@@ -29,29 +25,36 @@ func (e *SourceNotExistError) Error() string {
 	return "no source " + e.Source + " file or directory "
 }
 
-/********/
-/* Sync */
-/********/
+/**********/
+/* Syncer */
+/**********/
 
-// Sync a project from a recipe
-func SyncProject(prj models.ProjectInterface) error {
-	// Template
-	tmpl := NewTemplate()
+func New(log *logger.Logger, tmpl *template.Template) *Syncer {
+	return &Syncer{
+		log:  log,
+		tmpl: tmpl,
+	}
+}
 
-	// Include helpers if any
-	helpers := path.Join(prj.Recipe().Dir(), "_helpers.tmpl")
+type Syncer struct {
+	log  *logger.Logger
+	tmpl *template.Template
+}
+
+// Sync a project from its recipe
+func (snc *Syncer) SyncProject(prj models.ProjectInterface) error {
+	// Include template helpers if any
+	helpers := filepath.Join(prj.Recipe().Dir(), "_helpers.tmpl")
 	if _, err := os.Stat(helpers); err == nil {
-		_, err = tmpl.ParseFiles(helpers)
-		if err != nil {
+		if err := snc.tmpl.ParseFiles(helpers); err == nil {
 			return err
 		}
 	}
 
 	for _, sync := range prj.Recipe().SyncUnits() {
-		if err := Sync(
-			path.Join(prj.Recipe().Dir(), sync.Source),
-			path.Join(prj.Dir(), sync.Destination),
-			tmpl,
+		if err := snc.Sync(
+			filepath.Join(prj.Recipe().Dir(), sync.Source),
+			filepath.Join(prj.Dir(), sync.Destination),
 			map[string]interface{}{
 				"Vars": prj.Vars(),
 			},
@@ -64,17 +67,193 @@ func SyncProject(prj models.ProjectInterface) error {
 }
 
 // Sync a source with a destination
-func Sync(src string, dst string, tmpl *template.Template, ctx interface{}) error {
-	node, err := newNode(src, dst, tmpl, ctx)
+func (snc *Syncer) Sync(src string, dst string, ctx interface{}) error {
+	node, err := newNode(src, dst, snc.tmpl, ctx)
 	if err != nil {
 		return err
 	}
 
-	if err := syncNode(node); err != nil {
+	if err := snc.syncNode(node); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (snc *Syncer) syncNode(node *node) error {
+	if node.Src.IsDir {
+
+		snc.log.DebugWithFields("Syncing directory...", logger.Fields{
+			"src": node.Src.Path,
+			"dst": node.Dst.Path,
+		})
+
+		// Destination is a file; remove
+		if node.Dst.IsExist && !node.Dst.IsDir {
+			if err := os.Remove(node.Dst.Path); err != nil {
+				return err
+			}
+			node.Dst.IsExist = false
+		}
+
+		// Destination does not exists; create
+		if !node.Dst.IsExist {
+			if err := os.MkdirAll(node.Dst.Path, 0755); err != nil {
+				return err
+			}
+
+			snc.log.InfoWithField("Synced directory", "path", node.Dst.Path)
+		}
+
+		// Iterate over source files
+		// Make a map of destination files map for quick lookup; used in deletion below
+		dstMap := make(map[string]bool)
+		for _, file := range node.Src.Files {
+			fileNode, err := newNode(
+				filepath.Join(node.Src.Path, file),
+				filepath.Join(node.Dst.Path, file),
+				node.Template,
+				&node.Context,
+			)
+			if err != nil {
+				return err
+			}
+
+			dstMap[filepath.Base(fileNode.Dst.Path)] = true
+
+			if err := snc.syncNode(fileNode); err != nil {
+				return err
+			}
+		}
+
+		// Delete not synced destination files
+		files, err := os.ReadDir(node.Dst.Path)
+		if err != nil {
+			return err
+		}
+
+		for _, file := range files {
+			if !dstMap[file.Name()] {
+				if err := os.RemoveAll(filepath.Join(node.Dst.Path, file.Name())); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+
+	} else {
+
+		snc.log.DebugWithFields("Syncing file...", logger.Fields{
+			"src": node.Src.Path,
+			"dst": node.Dst.Path,
+		})
+
+		// Destination is a directory; remove
+		if node.Dst.IsExist && node.Dst.IsDir {
+			if err := os.RemoveAll(node.Dst.Path); err != nil {
+				return err
+			}
+			node.Dst.IsExist = false
+			node.Dst.IsDir = false
+		}
+
+		// Node is a dist and destination already exists (or was a directory); exit
+		if node.Dst.IsExist && node.IsDist {
+			return nil
+		}
+
+		equal := false
+
+		var srcReader io.Reader
+
+		if node.IsTmpl {
+			// Read template content
+			tmplContent, err := os.ReadFile(node.Src.Path)
+			if err != nil {
+				return err
+			}
+			// Parse
+			if err := node.Template.Parse(string(tmplContent)); err != nil {
+				return err
+			}
+			// Execute
+			var buffer bytes.Buffer
+			if err := node.Template.Execute(&buffer, node.Context); err != nil {
+				return fmt.Errorf("invalid template \"%s\" (%s)", node.Src.Path, err)
+			}
+
+			srcReader = bytes.NewReader(buffer.Bytes())
+
+			if node.Dst.IsExist {
+				// Get template hash
+				hash := md5.New()
+				if _, err := io.Copy(hash, &buffer); err != nil {
+					return err
+				}
+				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
+			}
+		} else {
+			// Node is not a template, let's go buffering \o/
+			srcFile, err := os.Open(node.Src.Path)
+			if err != nil {
+				return err
+			}
+			defer srcFile.Close()
+
+			if node.Dst.IsExist {
+				// Get source hash
+				hash := md5.New()
+				if _, err := io.Copy(hash, srcFile); err != nil {
+					return err
+				}
+				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
+
+				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
+					return err
+				}
+			}
+
+			srcReader = srcFile
+		}
+
+		// Files are not equals or destination does not exists
+		if !equal {
+			// Destination file mode
+			var dstMode os.FileMode = 0666
+			if node.Src.IsExecutable {
+				dstMode = 0777
+			}
+
+			// Create or truncate destination file
+			dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
+			if err != nil {
+				return err
+			}
+			defer dstFile.Close()
+
+			// Copy from source to destination
+			_, err = io.Copy(dstFile, srcReader)
+			if err != nil {
+				return err
+			}
+
+			snc.log.InfoWithField("Synced file", "path", node.Dst.Path)
+		} else {
+			dstMode := node.Dst.Mode &^ 0111
+			if node.Src.IsExecutable {
+				dstMode = node.Dst.Mode | 0111
+			}
+
+			if dstMode != node.Dst.Mode {
+				if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}
 }
 
 type node struct {
@@ -186,241 +365,4 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 	}
 
 	return node, nil
-}
-
-func syncNode(node *node) error {
-	if node.Src.IsDir {
-
-		log.WithFields(log.Fields{
-			"src": node.Src.Path,
-			"dst": node.Dst.Path,
-		}).Debug("Syncing directory...")
-
-		// Destination is a file; remove
-		if node.Dst.IsExist && !node.Dst.IsDir {
-			if err := os.Remove(node.Dst.Path); err != nil {
-				return err
-			}
-			node.Dst.IsExist = false
-		}
-
-		// Destination does not exists; create
-		if !node.Dst.IsExist {
-			if err := os.MkdirAll(node.Dst.Path, 0755); err != nil {
-				return err
-			}
-
-			log.WithFields(log.Fields{
-				"path": node.Dst.Path,
-			}).Info("Synced directory")
-		}
-
-		// Iterate over source files
-		// Make a map of destination files map for quick lookup; used in deletion below
-		dstMap := make(map[string]bool)
-		for _, file := range node.Src.Files {
-			fileNode, err := newNode(
-				path.Join(node.Src.Path, file),
-				path.Join(node.Dst.Path, file),
-				node.Template,
-				&node.Context,
-			)
-			if err != nil {
-				return err
-			}
-
-			dstMap[filepath.Base(fileNode.Dst.Path)] = true
-
-			if err := syncNode(fileNode); err != nil {
-				return err
-			}
-		}
-
-		// Delete not synced destination files
-		files, err := os.ReadDir(node.Dst.Path)
-		if err != nil {
-			return err
-		}
-
-		for _, file := range files {
-			if !dstMap[file.Name()] {
-				if err := os.RemoveAll(filepath.Join(node.Dst.Path, file.Name())); err != nil {
-					return err
-				}
-			}
-		}
-
-		return nil
-
-	} else {
-
-		log.WithFields(log.Fields{
-			"src": node.Src.Path,
-			"dst": node.Dst.Path,
-		}).Debug("Syncing file...")
-
-		// Destination is a directory; remove
-		if node.Dst.IsExist && node.Dst.IsDir {
-			if err := os.RemoveAll(node.Dst.Path); err != nil {
-				return err
-			}
-			node.Dst.IsExist = false
-			node.Dst.IsDir = false
-		}
-
-		// Node is a dist and destination already exists (or was a directory); exit
-		if node.Dst.IsExist && node.IsDist {
-			return nil
-		}
-
-		equal := false
-
-		var srcReader io.Reader
-
-		if node.IsTmpl {
-			// Read template content
-			tmplContent, err := os.ReadFile(node.Src.Path)
-			if err != nil {
-				return err
-			}
-			// Parse
-			_, err = node.Template.Parse(string(tmplContent))
-			if err != nil {
-				return err
-			}
-			// Execute
-			var buffer bytes.Buffer
-			if err := node.Template.Execute(&buffer, node.Context); err != nil {
-				return fmt.Errorf("invalid template \"%s\" (%s)", node.Src.Path, err)
-			}
-
-			srcReader = bytes.NewReader(buffer.Bytes())
-
-			if node.Dst.IsExist {
-				// Get template hash
-				hash := md5.New()
-				if _, err := io.Copy(hash, &buffer); err != nil {
-					return err
-				}
-				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
-			}
-		} else {
-			// Node is not a template, let's go buffering \o/
-			srcFile, err := os.Open(node.Src.Path)
-			if err != nil {
-				return err
-			}
-			defer srcFile.Close()
-
-			if node.Dst.IsExist {
-				// Get source hash
-				hash := md5.New()
-				if _, err := io.Copy(hash, srcFile); err != nil {
-					return err
-				}
-				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
-
-				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
-					return err
-				}
-			}
-
-			srcReader = srcFile
-		}
-
-		// Files are not equals or destination does not exists
-		if !equal {
-			// Destination file mode
-			var dstMode os.FileMode = 0666
-			if node.Src.IsExecutable {
-				dstMode = 0777
-			}
-
-			// Create or truncate destination file
-			dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
-			if err != nil {
-				return err
-			}
-			defer dstFile.Close()
-
-			// Copy from source to destination
-			_, err = io.Copy(dstFile, srcReader)
-			if err != nil {
-				return err
-			}
-
-			log.WithFields(log.Fields{
-				"path": node.Dst.Path,
-			}).Info("Synced file")
-		} else {
-			dstMode := node.Dst.Mode &^ 0111
-			if node.Src.IsExecutable {
-				dstMode = node.Dst.Mode | 0111
-			}
-
-			if dstMode != node.Dst.Mode {
-				if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
-					return err
-				}
-			}
-		}
-
-		return nil
-	}
-}
-
-/************/
-/* Template */
-/************/
-
-func NewTemplate() *template.Template {
-	tmpl := template.New("")
-
-	// Execution stops immediately with an error.
-	tmpl.Option("missingkey=error")
-
-	tmpl.Funcs(sprig.TxtFuncMap())
-	tmpl.Funcs(template.FuncMap{
-		"toYaml":  templateToYamlFunc(),
-		"include": templateIncludeFunc(tmpl),
-	})
-
-	return tmpl
-}
-
-// As seen in helm
-func templateToYamlFunc() func(value interface{}) string {
-	return func(value interface{}) string {
-		var buf bytes.Buffer
-
-		enc := yaml.NewEncoder(&buf)
-
-		if err := enc.Encode(value); err != nil {
-			// Swallow errors inside of a template.
-			return ""
-		}
-
-		return strings.TrimSuffix(buf.String(), "\n")
-	}
-}
-
-// As seen in helm
-func templateIncludeFunc(tmpl *template.Template) func(name string, data interface{}) (string, error) {
-	includedNames := make([]string, 0)
-	return func(name string, data interface{}) (string, error) {
-		var buf strings.Builder
-		includedCount := 0
-		for _, n := range includedNames {
-			if n == name {
-				includedCount += 1
-			}
-		}
-		if includedCount >= 16 {
-			return "", fmt.Errorf("rendering template has reached the maximum nested reference name level: %s", name)
-		}
-		includedNames = append(includedNames, name)
-		err := tmpl.ExecuteTemplate(&buf, name, data)
-		includedNames = includedNames[:len(includedNames)-1]
-		return buf.String(), err
-	}
 }

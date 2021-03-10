@@ -3,25 +3,26 @@ package loaders
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
+	"manala/logger"
 	"manala/models"
 	"manala/yaml/cleaner"
 	"manala/yaml/doc"
 	"os"
-	"path"
 	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-func NewRecipeLoader() RecipeLoaderInterface {
-	return &recipeLoader{}
+func NewRecipeLoader(log *logger.Logger) RecipeLoaderInterface {
+	return &recipeLoader{
+		log: log,
+	}
 }
 
 var recipeConfigFile = ".manala.yaml"
@@ -38,12 +39,13 @@ type recipeConfig struct {
 }
 
 type recipeLoader struct {
+	log *logger.Logger
 }
 
 func (ld *recipeLoader) Find(dir string) (*os.File, error) {
-	log.WithField("dir", dir).Debug("Searching recipe...")
+	ld.log.DebugWithField("Searching recipe...", "dir", dir)
 
-	file, err := os.Open(path.Join(dir, recipeConfigFile))
+	file, err := os.Open(filepath.Join(dir, recipeConfigFile))
 
 	// Return all errors but non existing file ones
 	if err != nil && !os.IsNotExist(err) {
@@ -111,7 +113,7 @@ func (ld *recipeLoader) loadDir(name string, file *os.File, repository models.Re
 	// Get dir
 	dir := filepath.Dir(file.Name())
 
-	log.WithField("name", name).Debug("Loading recipe...")
+	ld.log.DebugWithField("Loading recipe...", "name", name)
 
 	// Reset file pointer
 	_, err := file.Seek(0, io.SeekStart)

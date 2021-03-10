@@ -2,30 +2,28 @@ package loaders
 
 import (
 	"fmt"
-	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
+	"manala/logger"
 	"manala/models"
 	"manala/yaml/cleaner"
 	"os"
-	"path"
 	"path/filepath"
 )
 
-func NewProjectLoader(repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface, forceRepositorySrc string, forceRecipe string) ProjectLoaderInterface {
+func NewProjectLoader(log *logger.Logger, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
 	return &projectLoader{
-		repositoryLoader:   repositoryLoader,
-		recipeLoader:       recipeLoader,
-		forceRepositorySrc: forceRepositorySrc,
-		forceRecipe:        forceRecipe,
+		log:              log,
+		repositoryLoader: repositoryLoader,
+		recipeLoader:     recipeLoader,
 	}
 }
 
 type ProjectLoaderInterface interface {
 	Find(dir string, traverse bool) (*os.File, error)
-	Load(file *os.File) (models.ProjectInterface, error)
+	Load(file *os.File, withRepositorySrc string, withRecipeName string) (models.ProjectInterface, error)
 }
 
 var projectConfigFile = ".manala.yaml"
@@ -36,16 +34,15 @@ type projectConfig struct {
 }
 
 type projectLoader struct {
-	repositoryLoader   RepositoryLoaderInterface
-	recipeLoader       RecipeLoaderInterface
-	forceRepositorySrc string
-	forceRecipe        string
+	log              *logger.Logger
+	repositoryLoader RepositoryLoaderInterface
+	recipeLoader     RecipeLoaderInterface
 }
 
 func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
-	log.WithField("dir", dir).Debug("Searching project...")
+	ld.log.DebugWithField("Searching project...", "dir", dir)
 
-	file, err := os.Open(path.Join(dir, projectConfigFile))
+	file, err := os.Open(filepath.Join(dir, projectConfigFile))
 
 	// Return all errors but non existing file ones
 	if err != nil && !os.IsNotExist(err) {
@@ -62,7 +59,7 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 		return nil, err
 	}
 
-	parentDir := path.Join(dir, "..")
+	parentDir := filepath.Join(dir, "..")
 	parentAbs, err := filepath.Abs(parentDir)
 	if err != nil {
 		return nil, err
@@ -77,11 +74,11 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	return ld.Find(parentDir, true)
 }
 
-func (ld *projectLoader) Load(file *os.File) (models.ProjectInterface, error) {
+func (ld *projectLoader) Load(file *os.File, withRepositorySrc string, withRecipeName string) (models.ProjectInterface, error) {
 	// Get dir
 	dir := filepath.Dir(file.Name())
 
-	log.WithField("dir", dir).Debug("Loading project...")
+	ld.log.DebugWithField("Loading project...", "dir", dir)
 
 	// Reset file pointer
 	_, err := file.Seek(0, io.SeekStart)
@@ -116,23 +113,23 @@ func (ld *projectLoader) Load(file *os.File) (models.ProjectInterface, error) {
 		return nil, err
 	}
 
-	// Force repository
-	if ld.forceRepositorySrc != "" {
-		cfg.Repository = ld.forceRepositorySrc
+	// With repository
+	if withRepositorySrc != "" {
+		cfg.Repository = withRepositorySrc
 	}
 
-	// Force recipe
-	if ld.forceRecipe != "" {
-		cfg.Recipe = ld.forceRecipe
+	// With recipe
+	if withRecipeName != "" {
+		cfg.Recipe = withRecipeName
 	}
 
 	// Cleanup vars
 	delete(vars, "manala")
 
-	log.WithFields(log.Fields{
+	ld.log.InfoWithFields("Project loaded", logger.Fields{
 		"recipe":     cfg.Recipe,
 		"repository": cfg.Repository,
-	}).Info("Project loaded")
+	})
 
 	// Load repository
 	repo, err := ld.repositoryLoader.Load(cfg.Repository)
@@ -140,14 +137,14 @@ func (ld *projectLoader) Load(file *os.File) (models.ProjectInterface, error) {
 		return nil, err
 	}
 
-	log.Info("Repository loaded")
+	ld.log.Info("Repository loaded")
 
 	rec, err := ld.recipeLoader.Load(cfg.Recipe, repo)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("Recipe loaded")
+	ld.log.Info("Recipe loaded")
 
 	prj := models.NewProject(
 		dir,

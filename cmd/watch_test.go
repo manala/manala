@@ -2,14 +2,16 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"manala/config"
+	"manala/loaders"
+	"manala/logger"
+	"manala/syncer"
+	"manala/template"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
-	"text/template"
 )
 
 /*****************/
@@ -29,11 +31,6 @@ func TestWatchTestSuite(t *testing.T) {
 func (s *WatchTestSuite) SetupSuite() {
 	// Current working directory
 	s.wd, _ = os.Getwd()
-	// Default repository
-	viper.SetDefault(
-		"repository",
-		filepath.Join(s.wd, "testdata/watch/repository/default"),
-	)
 }
 
 func (s *WatchTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
@@ -41,20 +38,34 @@ func (s *WatchTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *
 		_ = os.Chdir(dir)
 	}
 
-	// Command
-	cmd := WatchCmd()
-	cmd.SetArgs(args)
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-
 	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
 	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
 
-	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+	conf := config.New("test", filepath.Join(s.wd, "testdata/update/repository/default"))
 
-	err := cmd.Execute()
+	log := logger.New(conf)
+	log.SetOut(stdErr)
+
+	tmpl := template.New()
+
+	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
+	recipeLoader := loaders.NewRecipeLoader(log)
+
+	cmd := &WatchCmd{
+		Log:           log,
+		ProjectLoader: loaders.NewProjectLoader(log, repositoryLoader, recipeLoader),
+		Sync:          syncer.New(log, tmpl),
+	}
+
+	// Command
+	command := cmd.Command()
+	command.SetArgs(args)
+	command.SilenceErrors = true
+	command.SilenceUsage = true
+	command.SetOut(stdOut)
+	command.SetErr(stdErr)
+
+	err := command.Execute()
 
 	if dir != "" {
 		_ = os.Chdir(s.wd)
@@ -112,12 +123,10 @@ func (s *WatchTestSuite) Test() {
 			}
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
-			var stdErrContent bytes.Buffer
-			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
-				"Wd":  s.wd + "/",
-				"Dir": "",
-			})
-			s.Equal(stdErrContent.String(), stdErr.String())
+			s.Equal(
+				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", "").Replace(t.stdErr),
+				stdErr.String(),
+			)
 			// File
 			if t.file != "" {
 				s.FileExists(t.file)
@@ -140,12 +149,10 @@ func (s *WatchTestSuite) Test() {
 			}
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
-			var stdErrContent bytes.Buffer
-			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
-				"Wd":  s.wd + "/",
-				"Dir": t.dir + "/",
-			})
-			s.Equal(stdErrContent.String(), stdErr.String())
+			s.Equal(
+				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", t.dir+"/").Replace(t.stdErr),
+				stdErr.String(),
+			)
 			// File
 			if t.file != "" {
 				s.FileExists(t.file)

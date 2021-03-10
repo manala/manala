@@ -16,15 +16,15 @@ manala init [dir] [flags]
 
 ```
   -h, --help                help for init
-  -i, --recipe string       use recipe
-  -o, --repository string   use repository
+  -i, --recipe string       use recipe name
+  -o, --repository string   use repository source
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --cache-dir string   cache directory (default "/Users/florian.rey/Library/Caches")
-  -d, --debug              debug mode (default true)
+  -c, --cache-dir string   use cache directory
+  -d, --debug              set debug mode
 ```
 
 ### SEE ALSO

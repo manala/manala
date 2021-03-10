@@ -1,58 +1,58 @@
 package main
 
 import (
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/cmd"
+	"manala/config"
+	"manala/loaders"
+	"manala/logger"
+	"manala/syncer"
+	"manala/template"
 	"os"
-	"path"
 )
 
-// Default repository
+// Main repository source
 var repository = "https://github.com/manala/manala-recipes.git"
 
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
 
 func main() {
-	// Log handler
-	log.SetHandler(cli.Default)
-
 	// Config
-	viper.SetEnvPrefix("manala")
-	viper.AutomaticEnv()
+	conf := config.New(version, repository)
 
-	viper.SetDefault("repository", repository)
-	viper.SetDefault("debug", false)
+	// Logger
+	log := logger.New(conf)
 
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		log.WithError(err).Fatal("Error getting cache dir")
-	}
-	viper.SetDefault("cache_dir", path.Join(cacheDir, "manala"))
+	// Template
+	tmpl := template.New()
+
+	// Syncer
+	sync := syncer.New(log, tmpl)
+
+	// Loaders
+	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
+	recipeLoader := loaders.NewRecipeLoader(log)
+	projectLoader := loaders.NewProjectLoader(log, repositoryLoader, recipeLoader)
 
 	// Commands
-	rootCmd := cmd.RootCmd(version)
-	rootCmd.AddCommand(cmd.InitCmd())
-	rootCmd.AddCommand(cmd.ListCmd())
-	rootCmd.AddCommand(cmd.UpdateCmd())
-	rootCmd.AddCommand(cmd.WatchCmd())
+	rootCommand := (&cmd.RootCmd{Conf: conf}).Command()
+	rootCommand.AddCommand(
+		(&cmd.InitCmd{Log: log, RepositoryLoader: repositoryLoader, RecipeLoader: recipeLoader, ProjectLoader: projectLoader, Sync: sync}).Command(),
+		(&cmd.ListCmd{RepositoryLoader: repositoryLoader, RecipeLoader: recipeLoader, Out: rootCommand.OutOrStdout()}).Command(),
+		(&cmd.UpdateCmd{Log: log, ProjectLoader: projectLoader, Sync: sync}).Command(),
+		(&cmd.WatchCmd{Log: log, ProjectLoader: projectLoader, Sync: sync}).Command(),
+	)
 
-	// Documentation
-	if version == "dev" {
-		rootCmd.AddCommand(cmd.DocsCmd(rootCmd))
+	// Docs generation command
+	if conf.Version() == "dev" {
+		rootCommand.AddCommand(
+			(&cmd.DocsCmd{RootCommand: rootCommand, Dir: "docs/commands"}).Command(),
+		)
 	}
 
-	cobra.OnInitialize(func() {
-		// Debug
-		if viper.GetBool("debug") {
-			log.SetLevel(log.DebugLevel)
-		}
-	})
-
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err.Error())
+	// Execute command
+	if err := rootCommand.Execute(); err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
 	}
 }

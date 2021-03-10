@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/apex/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/loaders"
+	"manala/logger"
 	"manala/syncer"
 	"manala/validator"
 	"os"
@@ -13,9 +12,14 @@ import (
 	"strings"
 )
 
-// UpdateCmd represents the update command
-func UpdateCmd() *cobra.Command {
-	cmd := &cobra.Command{
+type UpdateCmd struct {
+	Log           *logger.Logger
+	ProjectLoader loaders.ProjectLoaderInterface
+	Sync          *syncer.Syncer
+}
+
+func (cmd *UpdateCmd) Command() *cobra.Command {
+	command := &cobra.Command{
 		Use:     "update [dir]",
 		Aliases: []string{"up"},
 		Short:   "Update project",
@@ -25,41 +29,43 @@ recipe and related variables defined in manala.yaml.
 Example: manala update -> resulting in an update in a directory (default to the current directory)`,
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
-		RunE:              updateRun,
+		RunE: func(command *cobra.Command, args []string) error {
+			// Get directory from first command arg
+			dir := "."
+			if len(args) != 0 {
+				dir = args[0]
+			}
+
+			flags := command.Flags()
+
+			repoSrc, _ := flags.GetString("repository")
+			recName, _ := flags.GetString("recipe")
+
+			recursive, _ := flags.GetBool("recursive")
+
+			return cmd.Run(dir, repoSrc, recName, recursive)
+		},
 	}
 
-	addRepositoryFlag(cmd, "force repository")
-	addRecipeFlag(cmd, "force recipe")
+	flags := command.Flags()
 
-	cmd.Flags().BoolP("recursive", "r", false, "recursive")
+	flags.StringP("repository", "o", "", "with repository source")
+	flags.StringP("recipe", "i", "", "with recipe name")
 
-	return cmd
+	flags.BoolP("recursive", "r", false, "set recursive mode")
+
+	return command
 }
 
-func updateRun(cmd *cobra.Command, args []string) error {
-	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(
-		viper.GetString("cache_dir"),
-		viper.GetString("repository"),
-	)
-	recLoader := loaders.NewRecipeLoader()
-	repoSrc, _ := cmd.Flags().GetString("repository")
-	recName, _ := cmd.Flags().GetString("recipe")
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoSrc, recName)
-
-	// Directory
-	dir := "."
-	if len(args) != 0 {
-		// Get directory from first command arg
-		dir = args[0]
+func (cmd *UpdateCmd) Run(dir string, repoSrc string, recName string, recursive bool) error {
+	// Check directory
+	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {
 			return fmt.Errorf("invalid directory: %s", dir)
 		}
 	}
 
-	recursive, _ := cmd.Flags().GetBool("recursive")
-
-	if recursive == true {
+	if recursive {
 		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			// Only directories
 			if err != nil || !info.IsDir() {
@@ -73,14 +79,14 @@ func updateRun(cmd *cobra.Command, args []string) error {
 			}
 
 			// Find project file
-			prjFile, err := prjLoader.Find(path, false)
+			prjFile, err := cmd.ProjectLoader.Find(path, false)
 			if err != nil {
 				return err
 			}
 
-			// Update
+			// Sync
 			if prjFile != nil {
-				if err := updateRunFunc(prjLoader, prjFile); err != nil {
+				if err := cmd.runProjectSync(prjFile, repoSrc, recName); err != nil {
 					return err
 				}
 			}
@@ -92,7 +98,7 @@ func updateRun(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		// Find project file
-		prjFile, err := prjLoader.Find(dir, true)
+		prjFile, err := cmd.ProjectLoader.Find(dir, true)
 		if err != nil {
 			return err
 		}
@@ -101,8 +107,8 @@ func updateRun(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("project not found: %s", dir)
 		}
 
-		// Update
-		if err = updateRunFunc(prjLoader, prjFile); err != nil {
+		// Sync
+		if err = cmd.runProjectSync(prjFile, repoSrc, recName); err != nil {
 			return err
 		}
 	}
@@ -110,9 +116,9 @@ func updateRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func updateRunFunc(prjLoader loaders.ProjectLoaderInterface, prjFile *os.File) error {
+func (cmd *UpdateCmd) runProjectSync(prjFile *os.File, repoSrc string, recName string) error {
 	// Load project
-	prj, err := prjLoader.Load(prjFile)
+	prj, err := cmd.ProjectLoader.Load(prjFile, repoSrc, recName)
 	if err != nil {
 		return err
 	}
@@ -122,14 +128,14 @@ func updateRunFunc(prjLoader loaders.ProjectLoaderInterface, prjFile *os.File) e
 		return err
 	}
 
-	log.Info("Project validated")
+	cmd.Log.Info("Project validated")
 
 	// Sync project
-	if err := syncer.SyncProject(prj); err != nil {
+	if err := cmd.Sync.SyncProject(prj); err != nil {
 		return err
 	}
 
-	log.Info("Project synced")
+	cmd.Log.Info("Project synced")
 
 	return nil
 }

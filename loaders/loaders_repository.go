@@ -4,19 +4,20 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/mingrammer/commonregex"
+	"manala/config"
+	"manala/logger"
 	"manala/models"
 	"os"
-	"path"
+	"path/filepath"
 )
 
-func NewRepositoryLoader(cacheDir string, defaultSrc string) RepositoryLoaderInterface {
+func NewRepositoryLoader(log *logger.Logger, conf *config.Config) RepositoryLoaderInterface {
 	return &repositoryLoader{
-		cacheDir:   cacheDir,
-		cache:      make(map[string]models.RepositoryInterface),
-		defaultSrc: defaultSrc,
+		log:   log,
+		conf:  conf,
+		cache: make(map[string]models.RepositoryInterface),
 	}
 }
 
@@ -25,15 +26,15 @@ type RepositoryLoaderInterface interface {
 }
 
 type repositoryLoader struct {
-	cacheDir   string
-	cache      map[string]models.RepositoryInterface
-	defaultSrc string
+	log   *logger.Logger
+	conf  *config.Config
+	cache map[string]models.RepositoryInterface
 }
 
 func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error) {
 	// Use default source if necessary
 	if src == "" {
-		src = ld.defaultSrc
+		src = ld.conf.Repository()
 	}
 
 	// Check if repository already in cache
@@ -62,7 +63,7 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 }
 
 func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, error) {
-	log.WithField("src", src).Debug("Loading dir repository...")
+	ld.log.DebugWithField("Loading dir repository...", "src", src)
 
 	stat, err := os.Stat(src)
 	if err != nil {
@@ -81,12 +82,16 @@ func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, err
 	hash := md5.New()
 	hash.Write([]byte(src))
 
-	log.WithField("src", src).Debug("Loading git repository...")
+	ld.log.DebugWithField("Loading git repository...", "src", src)
 
 	// Repository cache directory should be unique
-	dir := path.Join(ld.cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
+	cacheDir, err := ld.conf.CacheDir()
+	if err != nil {
+		return nil, err
+	}
+	dir := filepath.Join(cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
 
-	log.WithField("dir", dir).Debug("Opening repository cache...")
+	ld.log.DebugWithField("Opening repository cache...", "dir", dir)
 
 Load:
 	if err := os.MkdirAll(dir, os.FileMode(0700)); err != nil {
@@ -99,7 +104,7 @@ Load:
 
 	// Repository not in cache, let's clone it
 	case git.ErrRepositoryNotExists:
-		log.Debug("Cloning git repository cache...")
+		ld.log.Debug("Cloning git repository cache...")
 
 		gitRepository, err = git.PlainClone(dir, false, &git.CloneOptions{
 			URL:               src,
@@ -111,14 +116,14 @@ Load:
 
 	// Repository already in cache, let's pull it
 	case nil:
-		log.Debug("Getting git repository worktree cache...")
+		ld.log.Debug("Getting git repository worktree cache...")
 
 		gitRepositoryWorktree, err := gitRepository.Worktree()
 		if err != nil {
 			return nil, fmt.Errorf("invalid repository: %w", err)
 		}
 
-		log.Debug("Pulling cache git repository worktree...")
+		ld.log.Debug("Pulling cache git repository worktree...")
 
 		if err := gitRepositoryWorktree.Pull(&git.PullOptions{
 			RemoteName: "origin",
@@ -126,7 +131,7 @@ Load:
 			switch err {
 			case git.NoErrAlreadyUpToDate:
 			case git.ErrNonFastForwardUpdate:
-				log.Debug("Fast forward update detected, delete repository cache and retry with cloning...")
+				ld.log.Debug("Fast forward update detected, delete repository cache and retry with cloning...")
 				if err := os.RemoveAll(dir); err != nil {
 					return nil, fmt.Errorf("unable to delete repository cache: %w", err)
 				}

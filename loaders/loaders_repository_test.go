@@ -1,7 +1,10 @@
 package loaders
 
 import (
+	"bytes"
 	"github.com/stretchr/testify/suite"
+	"manala/config"
+	"manala/logger"
 	"manala/models"
 	"os"
 	"testing"
@@ -13,7 +16,7 @@ import (
 
 type RepositoryTestSuite struct {
 	suite.Suite
-	cacheDir string
+	ld RepositoryLoaderInterface
 }
 
 func TestRepositoryTestSuite(t *testing.T) {
@@ -22,9 +25,17 @@ func TestRepositoryTestSuite(t *testing.T) {
 }
 
 func (s *RepositoryTestSuite) SetupTest() {
-	s.cacheDir = "testdata/repository/.cache"
-	_ = os.RemoveAll(s.cacheDir)
-	_ = os.Mkdir(s.cacheDir, 0755)
+	cacheDir := "testdata/repository/.cache"
+	_ = os.RemoveAll(cacheDir)
+	_ = os.Mkdir(cacheDir, 0755)
+
+	conf := config.New("test", "testdata/repository/load_dir")
+	conf.SetCacheDir(cacheDir)
+
+	log := logger.New(conf)
+	log.SetOut(bytes.NewBufferString(""))
+
+	s.ld = NewRepositoryLoader(log, conf)
 }
 
 /**********************/
@@ -32,13 +43,11 @@ func (s *RepositoryTestSuite) SetupTest() {
 /**********************/
 
 func (s *RepositoryTestSuite) TestRepository() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	s.Implements((*RepositoryLoaderInterface)(nil), ld)
+	s.Implements((*RepositoryLoaderInterface)(nil), s.ld)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDir() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	repo, err := ld.Load("testdata/repository/load_dir")
+	repo, err := s.ld.Load("testdata/repository/load_dir")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("testdata/repository/load_dir", repo.Src())
@@ -46,8 +55,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadDir() {
 }
 
 func (s *RepositoryTestSuite) TestRepositoryDefaultLoadDir() {
-	ld := NewRepositoryLoader(s.cacheDir, "testdata/repository/load_dir")
-	repo, err := ld.Load("")
+	repo, err := s.ld.Load("")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("testdata/repository/load_dir", repo.Src())
@@ -55,24 +63,21 @@ func (s *RepositoryTestSuite) TestRepositoryDefaultLoadDir() {
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirNotFound() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	repo, err := ld.Load("testdata/repository/load_dir_not_found")
+	repo, err := s.ld.Load("testdata/repository/load_dir_not_found")
 	s.Error(err)
 	s.Equal("\"testdata/repository/load_dir_not_found\" directory does not exists", err.Error())
 	s.Nil(repo)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirFile() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	repo, err := ld.Load("testdata/repository/load_dir_file")
+	repo, err := s.ld.Load("testdata/repository/load_dir_file")
 	s.Error(err)
 	s.Equal("\"testdata/repository/load_dir_file\" is not a directory", err.Error())
 	s.Nil(repo)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	repo, err := ld.Load("https://github.com/octocat/Hello-World.git")
+	repo, err := s.ld.Load("https://github.com/octocat/Hello-World.git")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("https://github.com/octocat/Hello-World.git", repo.Src())
@@ -88,8 +93,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadGitNotExist() {
-	ld := NewRepositoryLoader(s.cacheDir, "")
-	repo, err := ld.Load("https://github.com/octocat/Foo-Bar.git")
+	repo, err := s.ld.Load("https://github.com/octocat/Foo-Bar.git")
 	s.Error(err)
 	s.Equal("unable to clone repository: authentication required", err.Error())
 	s.Nil(repo)

@@ -2,12 +2,15 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"manala/config"
 )
 
-// RootCmd represents the base command when called without any subcommands
-func RootCmd(version string) *cobra.Command {
-	cmd := &cobra.Command{
+type RootCmd struct {
+	Conf *config.Config
+}
+
+func (cmd *RootCmd) Command() *cobra.Command {
+	command := &cobra.Command{
 		Use:   "manala",
 		Short: "Let your project's plumbing up to date",
 		Long: `Manala synchronize some boring parts of your projects,
@@ -16,23 +19,19 @@ such as makefile targets, virtualization and provisioning files...
 Recipes are pulled from a git repository, or a local directory.`,
 		SilenceErrors:     true,
 		SilenceUsage:      true,
-		Version:           version,
+		Version:           cmd.Conf.Version(),
 		DisableAutoGenTag: true,
 	}
 
-	cmd.PersistentFlags().StringP("cache-dir", "c", viper.GetString("cache_dir"), "cache directory")
-	_ = viper.BindPFlag("cache_dir", cmd.PersistentFlags().Lookup("cache-dir"))
+	pFlags := command.PersistentFlags()
 
-	cmd.PersistentFlags().BoolP("debug", "d", viper.GetBool("debug"), "debug mode")
-	_ = viper.BindPFlag("debug", cmd.PersistentFlags().Lookup("debug"))
+	// Cache dir
+	pFlags.StringP("cache-dir", "c", "", "use cache directory")
+	cmd.Conf.BindCacheDirFlag(pFlags.Lookup("cache-dir"))
 
-	return cmd
-}
+	// Debug
+	pFlags.BoolP("debug", "d", false, "set debug mode")
+	cmd.Conf.BindDebugFlag(pFlags.Lookup("debug"))
 
-func addRepositoryFlag(cmd *cobra.Command, usage string) {
-	cmd.Flags().StringP("repository", "o", "", usage)
-}
-
-func addRecipeFlag(cmd *cobra.Command, usage string) {
-	cmd.Flags().StringP("recipe", "i", "", usage)
+	return command
 }

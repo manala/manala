@@ -1,9 +1,10 @@
 package loaders
 
 import (
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/discard"
+	"bytes"
 	"github.com/stretchr/testify/suite"
+	"manala/config"
+	"manala/logger"
 	"manala/models"
 	"os"
 	"testing"
@@ -15,14 +16,10 @@ import (
 
 type ProjectTestSuite struct {
 	suite.Suite
-	repositoryLoader RepositoryLoaderInterface
-	recipeLoader     RecipeLoaderInterface
-	repositorySrc    string
+	ld ProjectLoaderInterface
 }
 
 func TestProjectTestSuite(t *testing.T) {
-	// Discard logs
-	log.SetHandler(discard.Default)
 	// Run
 	suite.Run(t, new(ProjectTestSuite))
 }
@@ -31,11 +28,17 @@ func (s *ProjectTestSuite) SetupTest() {
 	cacheDir := "testdata/project/.cache"
 	_ = os.RemoveAll(cacheDir)
 	_ = os.Mkdir(cacheDir, 0755)
-	s.repositoryLoader = NewRepositoryLoader(
-		cacheDir,
-		"testdata/project/_repository_default",
-	)
-	s.recipeLoader = NewRecipeLoader()
+
+	conf := config.New("test", "testdata/project/_repository_default")
+	conf.SetCacheDir(cacheDir)
+
+	log := logger.New(conf)
+	log.SetOut(bytes.NewBufferString(""))
+
+	repositoryLoader := NewRepositoryLoader(log, conf)
+	recipeLoader := NewRecipeLoader(log)
+
+	s.ld = NewProjectLoader(log, repositoryLoader, recipeLoader)
 }
 
 /*******************/
@@ -43,8 +46,7 @@ func (s *ProjectTestSuite) SetupTest() {
 /*******************/
 
 func (s *ProjectTestSuite) TestProject() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	s.Implements((*ProjectLoaderInterface)(nil), ld)
+	s.Implements((*ProjectLoaderInterface)(nil), s.ld)
 }
 
 func (s *ProjectTestSuite) TestProjectFind() {
@@ -64,8 +66,7 @@ func (s *ProjectTestSuite) TestProjectFind() {
 		},
 	} {
 		s.Run(t.test, func() {
-			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-			prjFile, err := ld.Find(t.dir, false)
+			prjFile, err := s.ld.Find(t.dir, false)
 			s.NoError(err)
 			if t.prjFileName != "" {
 				s.NotNil(prjFile)
@@ -99,8 +100,7 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 		},
 	} {
 		s.Run(t.test, func() {
-			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-			prjFile, err := ld.Find(t.dir, true)
+			prjFile, err := s.ld.Find(t.dir, true)
 			s.NoError(err)
 			if t.prjFileName != "" {
 				s.NotNil(prjFile)
@@ -114,46 +114,45 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 
 func (s *ProjectTestSuite) TestProjectLoad() {
 	for _, t := range []struct {
-		test               string
-		forceRepositorySrc string
-		forceRecipe        string
-		recipeName         string
-		recipeDescription  string
+		test              string
+		withRepositorySrc string
+		withRecipe        string
+		recipeName        string
+		recipeDescription string
 	}{
 		{
-			test:               "Default",
-			forceRepositorySrc: "",
-			forceRecipe:        "",
-			recipeName:         "foo",
-			recipeDescription:  "Default foo",
+			test:              "Default",
+			withRepositorySrc: "",
+			withRecipe:        "",
+			recipeName:        "foo",
+			recipeDescription: "Default foo",
 		},
 		{
-			test:               "Force repository",
-			forceRepositorySrc: "testdata/project/_repository_force",
-			forceRecipe:        "",
-			recipeName:         "foo",
-			recipeDescription:  "Force foo",
+			test:              "With repository",
+			withRepositorySrc: "testdata/project/_repository_with",
+			withRecipe:        "",
+			recipeName:        "foo",
+			recipeDescription: "With foo",
 		},
 		{
-			test:               "Force recipe",
-			forceRepositorySrc: "",
-			forceRecipe:        "bar",
-			recipeName:         "bar",
-			recipeDescription:  "Default bar",
+			test:              "With recipe",
+			withRepositorySrc: "",
+			withRecipe:        "bar",
+			recipeName:        "bar",
+			recipeDescription: "Default bar",
 		},
 		{
-			test:               "Force repository force recipe",
-			forceRepositorySrc: "testdata/project/_repository_force",
-			forceRecipe:        "bar",
-			recipeName:         "bar",
-			recipeDescription:  "Force bar",
+			test:              "With repository with recipe",
+			withRepositorySrc: "testdata/project/_repository_with",
+			withRecipe:        "bar",
+			recipeName:        "bar",
+			recipeDescription: "With bar",
 		},
 	} {
 		s.Run(t.test, func() {
-			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, t.forceRepositorySrc, t.forceRecipe)
-			prjFile, err := ld.Find("testdata/project/load", false)
+			prjFile, err := s.ld.Find("testdata/project/load", false)
 			s.NoError(err)
-			prj, err := ld.Load(prjFile)
+			prj, err := s.ld.Load(prjFile, t.withRepositorySrc, t.withRecipe)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal("testdata/project/load", prj.Dir())
@@ -164,30 +163,27 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 }
 
 func (s *ProjectTestSuite) TestProjectLoadEmpty() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prjFile, err := ld.Find("testdata/project/load_empty", false)
+	prjFile, err := s.ld.Find("testdata/project/load_empty", false)
 	s.NoError(err)
-	prj, err := ld.Load(prjFile)
+	prj, err := s.ld.Load(prjFile, "", "")
 	s.Error(err)
 	s.Equal("empty project config \"testdata/project/load_empty/.manala.yaml\"", err.Error())
 	s.Nil(prj)
 }
 
 func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prjFile, err := ld.Find("testdata/project/load_incorrect", false)
+	prjFile, err := s.ld.Find("testdata/project/load_incorrect", false)
 	s.NoError(err)
-	prj, err := ld.Load(prjFile)
+	prj, err := s.ld.Load(prjFile, "", "")
 	s.Error(err)
 	s.Equal("invalid project config \"testdata/project/load_incorrect/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
 	s.Nil(prj)
 }
 
 func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prjFile, err := ld.Find("testdata/project/load_no_recipe", false)
+	prjFile, err := s.ld.Find("testdata/project/load_no_recipe", false)
 	s.NoError(err)
-	prj, err := ld.Load(prjFile)
+	prj, err := s.ld.Load(prjFile, "", "")
 	s.Error(err)
 	s.Equal("Key: 'projectConfig.Recipe' Error:Field validation for 'Recipe' failed on the 'required' tag", err.Error())
 	s.Nil(prj)
@@ -195,46 +191,45 @@ func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 
 func (s *ProjectTestSuite) TestProjectLoadRepository() {
 	for _, t := range []struct {
-		test               string
-		forceRepositorySrc string
-		forceRecipe        string
-		recipeName         string
-		recipeDescription  string
+		test              string
+		withRepositorySrc string
+		withRecipe        string
+		recipeName        string
+		recipeDescription string
 	}{
 		{
-			test:               "Default",
-			forceRepositorySrc: "",
-			forceRecipe:        "",
-			recipeName:         "foo",
-			recipeDescription:  "Custom foo",
+			test:              "Default",
+			withRepositorySrc: "",
+			withRecipe:        "",
+			recipeName:        "foo",
+			recipeDescription: "Custom foo",
 		},
 		{
-			test:               "Force repository",
-			forceRepositorySrc: "testdata/project/_repository_force",
-			forceRecipe:        "",
-			recipeName:         "foo",
-			recipeDescription:  "Force foo",
+			test:              "With repository",
+			withRepositorySrc: "testdata/project/_repository_with",
+			withRecipe:        "",
+			recipeName:        "foo",
+			recipeDescription: "With foo",
 		},
 		{
-			test:               "Force recipe",
-			forceRepositorySrc: "",
-			forceRecipe:        "bar",
-			recipeName:         "bar",
-			recipeDescription:  "Custom bar",
+			test:              "With recipe",
+			withRepositorySrc: "",
+			withRecipe:        "bar",
+			recipeName:        "bar",
+			recipeDescription: "Custom bar",
 		},
 		{
-			test:               "Force repository force recipe",
-			forceRepositorySrc: "testdata/project/_repository_force",
-			forceRecipe:        "bar",
-			recipeName:         "bar",
-			recipeDescription:  "Force bar",
+			test:              "With repository with recipe",
+			withRepositorySrc: "testdata/project/_repository_with",
+			withRecipe:        "bar",
+			recipeName:        "bar",
+			recipeDescription: "With bar",
 		},
 	} {
 		s.Run(t.test, func() {
-			ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, t.forceRepositorySrc, t.forceRecipe)
-			prjFile, err := ld.Find("testdata/project/load_repository", false)
+			prjFile, err := s.ld.Find("testdata/project/load_repository", false)
 			s.NoError(err)
-			prj, err := ld.Load(prjFile)
+			prj, err := s.ld.Load(prjFile, t.withRepositorySrc, t.withRecipe)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal("testdata/project/load_repository", prj.Dir())
@@ -245,10 +240,9 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 }
 
 func (s *ProjectTestSuite) TestProjectLoadVars() {
-	ld := NewProjectLoader(s.repositoryLoader, s.recipeLoader, "", "")
-	prjFile, err := ld.Find("testdata/project/load_vars", false)
+	prjFile, err := s.ld.Find("testdata/project/load_vars", false)
 	s.NoError(err)
-	prj, err := ld.Load(prjFile)
+	prj, err := s.ld.Load(prjFile, "", "")
 	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{

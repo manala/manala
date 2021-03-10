@@ -12,8 +12,8 @@ Recipes are pulled from a git repository, or a local directory.
 ### Options
 
 ```
-  -c, --cache-dir string   cache directory (default "/Users/florian.rey/Library/Caches")
-  -d, --debug              debug mode (default true)
+  -c, --cache-dir string   use cache directory
+  -d, --debug              set debug mode
   -h, --help               help for manala
 ```
 

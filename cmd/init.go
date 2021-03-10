@@ -2,22 +2,28 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/apex/log"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"gitlab.com/tslocum/cview"
 	"manala/binder"
 	"manala/loaders"
+	"manala/logger"
 	"manala/models"
 	"manala/syncer"
 	"manala/validator"
 	"os"
 )
 
-// InitCmd represents the init command
-func InitCmd() *cobra.Command {
-	cmd := &cobra.Command{
+type InitCmd struct {
+	Log              *logger.Logger
+	RepositoryLoader loaders.RepositoryLoaderInterface
+	RecipeLoader     loaders.RecipeLoaderInterface
+	ProjectLoader    loaders.ProjectLoaderInterface
+	Sync             *syncer.Syncer
+}
+
+func (cmd *InitCmd) Command() *cobra.Command {
+	command := &cobra.Command{
 		Use:     "init [dir]",
 		Aliases: []string{"in"},
 		Short:   "Init project",
@@ -26,38 +32,41 @@ func InitCmd() *cobra.Command {
 Example: manala init -> resulting in a project init in a directory (default to the current directory)`,
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
-		RunE:              initRun,
+		RunE: func(command *cobra.Command, args []string) error {
+			// Get directory from first command arg
+			dir := "."
+			if len(args) != 0 {
+				dir = args[0]
+			}
+
+			flags := command.Flags()
+
+			repoSrc, _ := flags.GetString("repository")
+			recName, _ := flags.GetString("recipe")
+
+			return cmd.Run(dir, repoSrc, recName)
+		},
 	}
 
-	addRepositoryFlag(cmd, "use repository")
-	addRecipeFlag(cmd, "use recipe")
+	flags := command.Flags()
 
-	return cmd
+	flags.StringP("repository", "o", "", "use repository source")
+	flags.StringP("recipe", "i", "", "use recipe name")
+
+	return command
 }
 
-func initRun(cmd *cobra.Command, args []string) error {
-	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(
-		viper.GetString("cache_dir"),
-		viper.GetString("repository"),
-	)
-	recLoader := loaders.NewRecipeLoader()
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, "", "")
-
-	// Directory
-	dir := "."
-	if len(args) != 0 {
-		// Get directory from first command arg
-		dir = args[0]
-		// Ensure directory exists
+func (cmd *InitCmd) Run(dir string, repoSrc string, recName string) error {
+	// Ensure directory exists
+	if dir != "." {
 		stat, err := os.Stat(dir)
 		if err != nil {
 			if os.IsNotExist(err) {
-				log.WithField("dir", dir).Debug("Creating project directory...")
+				cmd.Log.DebugWithField("Creating project directory...", "dir", dir)
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					return fmt.Errorf("error creating project directory: %v", err)
 				}
-				log.WithField("dir", dir).Info("Project directory created")
+				cmd.Log.InfoWithField("Project directory created", "dir", dir)
 			} else {
 				return fmt.Errorf("error getting project directory stat: %v", err)
 			}
@@ -67,57 +76,55 @@ func initRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// Ensure no project already exists
-	prjFile, _ := prjLoader.Find(dir, false)
+	prjFile, _ := cmd.ProjectLoader.Find(dir, false)
 	if prjFile != nil {
 		return fmt.Errorf("project already exists: %s", dir)
 	}
 
 	// Load repository
-	repoSrc, _ := cmd.Flags().GetString("repository")
-	repo, err := repoLoader.Load(repoSrc)
+	repo, err := cmd.RepositoryLoader.Load(repoSrc)
 	if err != nil {
 		return err
 	}
 
-	// Recipe
+	// Load recipe...
 	var rec models.RecipeInterface
 
-	// From command flag
-	recName, _ := cmd.Flags().GetString("recipe")
 	if recName != "" {
-		rec, err = recLoader.Load(recName, repo)
+		// ...from name if given
+		rec, err = cmd.RecipeLoader.Load(recName, repo)
 		if err != nil {
 			return err
 		}
 	} else {
-		// From recipe list application
-		rec, err = initRecipeListApplication(recLoader, repo)
+		// ...from recipe list cli application
+		rec, err = cmd.runRecipeListApplication(cmd.RecipeLoader, repo)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Project
+	// Create project
 	prj := models.NewProject(dir, rec)
 
 	if rec.HasOptions() {
-		// Project form application
-		if err := initProjectFormApplication(prj); err != nil {
+		// Use project form cli application if necessary
+		if err := cmd.runProjectFormApplication(prj); err != nil {
 			return err
 		}
 	}
 
 	// Sync project
-	if err := syncer.SyncProject(prj); err != nil {
+	if err := cmd.Sync.SyncProject(prj); err != nil {
 		return err
 	}
 
-	log.Info("Project synced")
+	cmd.Log.Info("Project synced")
 
 	return nil
 }
 
-func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo models.RepositoryInterface) (models.RecipeInterface, error) {
+func (cmd *InitCmd) runRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo models.RepositoryInterface) (models.RecipeInterface, error) {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)
@@ -169,7 +176,7 @@ func initRecipeListApplication(recLoader loaders.RecipeLoaderInterface, repo mod
 	return recipe, nil
 }
 
-func initProjectFormApplication(prj models.ProjectInterface) error {
+func (cmd *InitCmd) runProjectFormApplication(prj models.ProjectInterface) error {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)

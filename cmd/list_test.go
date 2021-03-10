@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"manala/config"
+	"manala/loaders"
+	"manala/logger"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,8 +21,6 @@ type ListTestSuite struct {
 }
 
 func TestListTestSuite(t *testing.T) {
-	// Config
-	viper.SetDefault("repository", "testdata/list/repository/default")
 	// Run
 	suite.Run(t, new(ListTestSuite))
 }
@@ -30,32 +28,39 @@ func TestListTestSuite(t *testing.T) {
 func (s *ListTestSuite) SetupSuite() {
 	// Current working directory
 	s.wd, _ = os.Getwd()
-	// Default repository
-	viper.SetDefault(
-		"repository",
-		filepath.Join(s.wd, "testdata/list/repository/default"),
-	)
 }
 
-func (s *ListTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *ListTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
 	if dir != "" {
 		_ = os.Chdir(dir)
 	}
 
-	// Command
-	cmd := ListCmd()
-	cmd.SetArgs(args)
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-
 	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
 	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
 
-	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+	conf := config.New("test", filepath.Join(s.wd, "testdata/list/repository/default"))
 
-	err := cmd.Execute()
+	log := logger.New(conf)
+	log.SetOut(stdErr)
+
+	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
+	recipeLoader := loaders.NewRecipeLoader(log)
+
+	cmd := &ListCmd{
+		RepositoryLoader: repositoryLoader,
+		RecipeLoader:     recipeLoader,
+		Out:              stdOut,
+	}
+
+	// Command
+	command := cmd.Command()
+	command.SetArgs(args)
+	command.SilenceErrors = true
+	command.SilenceUsage = true
+	command.SetOut(stdOut)
+	command.SetErr(stdErr)
+
+	err := command.Execute()
 
 	if dir != "" {
 		_ = os.Chdir(s.wd)
@@ -98,7 +103,7 @@ foo: Custom foo recipe
 	} {
 		s.Run(t.test, func() {
 			// Execute
-			stdOut, stdErr, err := s.ExecuteCmd(
+			stdOut, stdErr, err := s.ExecuteCommand(
 				"",
 				t.args,
 			)

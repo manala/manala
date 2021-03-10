@@ -17,16 +17,16 @@ manala update [dir] [flags]
 
 ```
   -h, --help                help for update
-  -i, --recipe string       force recipe
-  -r, --recursive           recursive
-  -o, --repository string   force repository
+  -i, --recipe string       with recipe name
+  -r, --recursive           set recursive mode
+  -o, --repository string   with repository source
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --cache-dir string   cache directory (default "/Users/florian.rey/Library/Caches")
-  -d, --debug              debug mode (default true)
+  -c, --cache-dir string   use cache directory
+  -d, --debug              set debug mode
 ```
 
 ### SEE ALSO

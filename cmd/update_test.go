@@ -2,14 +2,16 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"manala/config"
+	"manala/loaders"
+	"manala/logger"
+	"manala/syncer"
+	"manala/template"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
-	"text/template"
 )
 
 /******************/
@@ -29,11 +31,6 @@ func TestUpdateTestSuite(t *testing.T) {
 func (s *UpdateTestSuite) SetupSuite() {
 	// Current working directory
 	s.wd, _ = os.Getwd()
-	// Default repository
-	viper.SetDefault(
-		"repository",
-		filepath.Join(s.wd, "testdata/update/repository/default"),
-	)
 }
 
 func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
@@ -41,20 +38,34 @@ func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, 
 		_ = os.Chdir(dir)
 	}
 
-	// Command
-	cmd := UpdateCmd()
-	cmd.SetArgs(args)
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-
 	stdOut := bytes.NewBufferString("")
-	cmd.SetOut(stdOut)
 	stdErr := bytes.NewBufferString("")
-	cmd.SetErr(stdErr)
 
-	log.SetHandler(cli.New(cmd.ErrOrStderr()))
+	conf := config.New("test", filepath.Join(s.wd, "testdata/update/repository/default"))
 
-	err := cmd.Execute()
+	log := logger.New(conf)
+	log.SetOut(stdErr)
+
+	tmpl := template.New()
+
+	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
+	recipeLoader := loaders.NewRecipeLoader(log)
+
+	cmd := &UpdateCmd{
+		Log:           log,
+		ProjectLoader: loaders.NewProjectLoader(log, repositoryLoader, recipeLoader),
+		Sync:          syncer.New(log, tmpl),
+	}
+
+	// Command
+	command := cmd.Command()
+	command.SetArgs(args)
+	command.SilenceErrors = true
+	command.SilenceUsage = true
+	command.SetOut(stdOut)
+	command.SetErr(stdErr)
+
+	err := command.Execute()
 
 	if dir != "" {
 		_ = os.Chdir(s.wd)
@@ -85,7 +96,7 @@ func (s *UpdateTestSuite) Test() {
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ .Dir }}file_default_foo
+   • Synced file               path={{ dir }}file_default_foo
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_default_foo",
@@ -94,11 +105,11 @@ func (s *UpdateTestSuite) Test() {
 			test: "Default force repository",
 			dir:  "testdata/update/project/default",
 			args: []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom")},
-			stdErr: `   • Project loaded            recipe=foo repository={{ .Wd }}testdata/update/repository/custom
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ .Dir }}file_custom_foo
+   • Synced file               path={{ dir }}file_custom_foo
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_custom_foo",
@@ -119,7 +130,7 @@ func (s *UpdateTestSuite) Test() {
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ .Dir }}file_default_bar
+   • Synced file               path={{ dir }}file_default_bar
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_default_bar",
@@ -139,11 +150,11 @@ func (s *UpdateTestSuite) Test() {
 			args:   []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom"), "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository={{ .Wd }}testdata/update/repository/custom
+			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ .Dir }}file_custom_bar
+   • Synced file               path={{ dir }}file_custom_bar
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_custom_bar",
@@ -166,12 +177,10 @@ func (s *UpdateTestSuite) Test() {
 			}
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
-			var stdErrContent bytes.Buffer
-			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
-				"Wd":  s.wd + "/",
-				"Dir": "",
-			})
-			s.Equal(stdErrContent.String(), stdErr.String())
+			s.Equal(
+				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", "").Replace(t.stdErr),
+				stdErr.String(),
+			)
 			// File
 			if t.file != "" {
 				s.FileExists(t.file)
@@ -194,12 +203,10 @@ func (s *UpdateTestSuite) Test() {
 			}
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
-			var stdErrContent bytes.Buffer
-			_ = template.Must(template.New("stdErr").Parse(t.stdErr)).Execute(&stdErrContent, map[string]string{
-				"Wd":  s.wd + "/",
-				"Dir": t.dir + "/",
-			})
-			s.Equal(stdErrContent.String(), stdErr.String())
+			s.Equal(
+				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", t.dir+"/").Replace(t.stdErr),
+				stdErr.String(),
+			)
 			// File
 			if t.file != "" {
 				s.FileExists(t.file)

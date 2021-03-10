@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/apex/log"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gen2brain/beeep"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/loaders"
+	"manala/logger"
 	"manala/models"
 	"manala/syncer"
 	"manala/validator"
@@ -16,9 +15,14 @@ import (
 	"strings"
 )
 
-// WatchCmd represents the watch command
-func WatchCmd() *cobra.Command {
-	cmd := &cobra.Command{
+type WatchCmd struct {
+	Log           *logger.Logger
+	ProjectLoader loaders.ProjectLoaderInterface
+	Sync          *syncer.Syncer
+}
+
+func (cmd *WatchCmd) Command() *cobra.Command {
+	command := &cobra.Command{
 		Use:     "watch [dir]",
 		Aliases: []string{"Watch project"},
 		Short:   "Watch project",
@@ -27,23 +31,37 @@ func WatchCmd() *cobra.Command {
 Example: manala watch -> resulting in a watch in a directory (default to the current directory)`,
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
-		RunE:              watchRun,
+		RunE: func(command *cobra.Command, args []string) error {
+			// Get directory from first command arg
+			dir := "."
+			if len(args) != 0 {
+				dir = args[0]
+			}
+
+			flags := command.Flags()
+
+			repoSrc, _ := flags.GetString("repository")
+			recName, _ := flags.GetString("recipe")
+
+			watchAll, _ := flags.GetBool("all")
+			useNotify, _ := flags.GetBool("notify")
+
+			return cmd.Run(dir, repoSrc, recName, watchAll, useNotify)
+		},
 	}
 
-	addRepositoryFlag(cmd, "force repository")
-	addRecipeFlag(cmd, "force recipe")
+	flags := command.Flags()
 
-	cmd.Flags().BoolP("all", "a", false, "watch recipe too")
-	cmd.Flags().BoolP("notify", "n", false, "use system notifications")
+	flags.StringP("repository", "o", "", "with repository source")
+	flags.StringP("recipe", "i", "", "with recipe name")
 
-	return cmd
+	flags.BoolP("all", "a", false, "watch recipe too")
+	flags.BoolP("notify", "n", false, "use system notifications")
+
+	return command
 }
 
-func watchRun(cmd *cobra.Command, args []string) error {
-	// Get flags
-	watchAll, _ := cmd.Flags().GetBool("all")
-	useNotify, _ := cmd.Flags().GetBool("notify")
-
+func (cmd *WatchCmd) Run(dir string, repoSrc string, recName string, watchAll bool, useNotify bool) error {
 	// New watcher
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -51,28 +69,15 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	}
 	defer watcher.Close()
 
-	// Loaders
-	repoLoader := loaders.NewRepositoryLoader(
-		viper.GetString("cache_dir"),
-		viper.GetString("repository"),
-	)
-	recLoader := loaders.NewRecipeLoader()
-	repoSrc, _ := cmd.Flags().GetString("repository")
-	recName, _ := cmd.Flags().GetString("recipe")
-	prjLoader := loaders.NewProjectLoader(repoLoader, recLoader, repoSrc, recName)
-
-	// Directory
-	dir := "."
-	if len(args) != 0 {
-		// Get directory from first command arg
-		dir = args[0]
+	// Check directory
+	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {
 			return fmt.Errorf("invalid directory: %s", dir)
 		}
 	}
 
 	// Find project file
-	prjFile, err := prjLoader.Find(dir, true)
+	prjFile, err := cmd.ProjectLoader.Find(dir, true)
 	if err != nil {
 		return err
 	}
@@ -84,7 +89,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	var prj models.ProjectInterface
 
 	// Get sync function
-	syncProject := watchSyncProjectFunc(prjFile, &prj, prjLoader, watcher, watchAll)
+	syncProject := cmd.runProjectSync(prjFile, &prj, repoSrc, recName, watcher, watchAll)
 
 	// Sync
 	if err := syncProject(); err != nil {
@@ -96,7 +101,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error adding project watching: %v", err)
 	}
 
-	log.Info("Start watching...")
+	cmd.Log.Info("Start watching...")
 
 	done := make(chan bool)
 	go func() {
@@ -107,24 +112,24 @@ func watchRun(cmd *cobra.Command, args []string) error {
 					return
 				}
 
-				log.WithField("event", event).Debug("Watch event")
+				cmd.Log.DebugWithField("Watch event", "event", event)
 
 				if event.Op != fsnotify.Chmod {
 					modified := false
 					file := filepath.Clean(event.Name)
 					dir := filepath.Dir(file)
 					if file == prjFile.Name() {
-						log.WithField("file", file).Info("Project config modified")
+						cmd.Log.InfoWithField("Project config modified", "file", file)
 						modified = true
 					} else if dir != prj.Dir() {
 						// Modified directory is not project one. That could only means recipe's one
-						log.WithField("dir", dir).Info("Recipe modified")
+						cmd.Log.InfoWithField("Recipe modified", "dir", dir)
 						modified = true
 					}
 
 					if modified {
 						if err := syncProject(); err != nil {
-							log.Error(err.Error())
+							cmd.Log.Error(err.Error())
 							if useNotify {
 								_ = beeep.Alert("Manala", strings.Replace(err.Error(), `"`, `\"`, -1), "")
 							}
@@ -139,7 +144,7 @@ func watchRun(cmd *cobra.Command, args []string) error {
 				if !ok {
 					return
 				}
-				log.WithError(err).Error("Watching error")
+				cmd.Log.ErrorWithError("Watching error", err)
 			}
 		}
 	}()
@@ -148,12 +153,12 @@ func watchRun(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func watchSyncProjectFunc(file *os.File, basePrj *models.ProjectInterface, prjLoader loaders.ProjectLoaderInterface, watcher *fsnotify.Watcher, watchAll bool) func() error {
+func (cmd *WatchCmd) runProjectSync(prjFile *os.File, basePrj *models.ProjectInterface, repoSrc string, recName string, watcher *fsnotify.Watcher, watchAll bool) func() error {
 	var baseRecDir string
 
 	return func() error {
 		// Load project
-		prj, err := prjLoader.Load(file)
+		prj, err := cmd.ProjectLoader.Load(prjFile, repoSrc, recName)
 		if err != nil {
 			return err
 		}
@@ -163,7 +168,7 @@ func watchSyncProjectFunc(file *os.File, basePrj *models.ProjectInterface, prjLo
 			return err
 		}
 
-		log.Info("Project validated")
+		cmd.Log.Info("Project validated")
 
 		*basePrj = prj
 
@@ -201,11 +206,11 @@ func watchSyncProjectFunc(file *os.File, basePrj *models.ProjectInterface, prjLo
 		}
 
 		// Sync project
-		if err := syncer.SyncProject(prj); err != nil {
+		if err := cmd.Sync.SyncProject(prj); err != nil {
 			return err
 		}
 
-		log.Info("Project synced")
+		cmd.Log.Info("Project synced")
 
 		return nil
 	}

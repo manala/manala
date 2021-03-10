@@ -18,15 +18,15 @@ manala watch [dir] [flags]
   -a, --all                 watch recipe too
   -h, --help                help for watch
   -n, --notify              use system notifications
-  -i, --recipe string       force recipe
-  -o, --repository string   force repository
+  -i, --recipe string       with recipe name
+  -o, --repository string   with repository source
 ```
 
 ### Options inherited from parent commands
 
 ```
-  -c, --cache-dir string   cache directory (default "/Users/florian.rey/Library/Caches")
-  -d, --debug              debug mode (default true)
+  -c, --cache-dir string   use cache directory
+  -d, --debug              set debug mode
 ```
 
 ### SEE ALSO
