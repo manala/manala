@@ -2,9 +2,11 @@ package syncer
 
 import (
 	"bytes"
-	"crypto/md5"
+	"crypto/sha1"
+	"errors"
 	"fmt"
 	"io"
+	"manala/fs"
 	"manala/logger"
 	"manala/models"
 	"manala/template"
@@ -29,35 +31,37 @@ func (e *SourceNotExistError) Error() string {
 /* Syncer */
 /**********/
 
-func New(log *logger.Logger, tmpl *template.Template) *Syncer {
+func New(log *logger.Logger, fsManager models.FsManagerInterface, templateManager models.TemplateManagerInterface) *Syncer {
 	return &Syncer{
-		log:  log,
-		tmpl: tmpl,
+		log:             log,
+		fsManager:       fsManager,
+		templateManager: templateManager,
 	}
 }
 
 type Syncer struct {
-	log  *logger.Logger
-	tmpl *template.Template
+	log             *logger.Logger
+	fsManager       models.FsManagerInterface
+	templateManager models.TemplateManagerInterface
 }
 
 // Sync a project from its recipe
 func (snc *Syncer) SyncProject(prj models.ProjectInterface) error {
-	// Include template helpers if any
-	helpers := filepath.Join(prj.Recipe().Dir(), "_helpers.tmpl")
-	if _, err := os.Stat(helpers); err == nil {
-		if err := snc.tmpl.ParseFiles(helpers); err == nil {
-			return err
-		}
+	// Recipe template
+	recTmpl, err := snc.templateManager.NewRecipeTemplate(prj.Recipe())
+	if err != nil {
+		return err
 	}
 
-	for _, sync := range prj.Recipe().SyncUnits() {
+	// Loop over sync nodes
+	for _, node := range prj.Recipe().Sync() {
 		if err := snc.Sync(
-			filepath.Join(prj.Recipe().Dir(), sync.Source),
-			filepath.Join(prj.Dir(), sync.Destination),
-			map[string]interface{}{
-				"Vars": prj.Vars(),
-			},
+			snc.fsManager.NewModelFs(prj.Recipe()),
+			node.Source,
+			recTmpl,
+			node.Destination,
+			snc.fsManager.NewModelFs(prj),
+			prj.Vars(),
 		); err != nil {
 			return err
 		}
@@ -67,8 +71,8 @@ func (snc *Syncer) SyncProject(prj models.ProjectInterface) error {
 }
 
 // Sync a source with a destination
-func (snc *Syncer) Sync(src string, dst string, ctx interface{}) error {
-	node, err := newNode(src, dst, snc.tmpl, ctx)
+func (snc *Syncer) Sync(srcFs fs.ReadInterface, src string, srcTmpl template.Interface, dst string, dstFs fs.ReadWriteInterface, vars map[string]interface{}) error {
+	node, err := newNode(srcFs, src, dstFs, dst, srcTmpl, vars)
 	if err != nil {
 		return err
 	}
@@ -90,7 +94,7 @@ func (snc *Syncer) syncNode(node *node) error {
 
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
-			if err := os.Remove(node.Dst.Path); err != nil {
+			if err := node.Dst.Fs.Remove(node.Dst.Path); err != nil {
 				return err
 			}
 			node.Dst.IsExist = false
@@ -98,7 +102,7 @@ func (snc *Syncer) syncNode(node *node) error {
 
 		// Destination does not exists; create
 		if !node.Dst.IsExist {
-			if err := os.MkdirAll(node.Dst.Path, 0755); err != nil {
+			if err := node.Dst.Fs.MkdirAll(node.Dst.Path, 0755); err != nil {
 				return err
 			}
 
@@ -110,10 +114,12 @@ func (snc *Syncer) syncNode(node *node) error {
 		dstMap := make(map[string]bool)
 		for _, file := range node.Src.Files {
 			fileNode, err := newNode(
+				node.Src.Fs,
 				filepath.Join(node.Src.Path, file),
+				node.Dst.Fs,
 				filepath.Join(node.Dst.Path, file),
-				node.Template,
-				&node.Context,
+				node.Src.Template,
+				node.Vars,
 			)
 			if err != nil {
 				return err
@@ -127,14 +133,14 @@ func (snc *Syncer) syncNode(node *node) error {
 		}
 
 		// Delete not synced destination files
-		files, err := os.ReadDir(node.Dst.Path)
+		files, err := node.Dst.Fs.ReadDir(node.Dst.Path)
 		if err != nil {
 			return err
 		}
 
 		for _, file := range files {
 			if !dstMap[file.Name()] {
-				if err := os.RemoveAll(filepath.Join(node.Dst.Path, file.Name())); err != nil {
+				if err := node.Dst.Fs.RemoveAll(filepath.Join(node.Dst.Path, file.Name())); err != nil {
 					return err
 				}
 			}
@@ -151,7 +157,7 @@ func (snc *Syncer) syncNode(node *node) error {
 
 		// Destination is a directory; remove
 		if node.Dst.IsExist && node.Dst.IsDir {
-			if err := os.RemoveAll(node.Dst.Path); err != nil {
+			if err := node.Dst.Fs.RemoveAll(node.Dst.Path); err != nil {
 				return err
 			}
 			node.Dst.IsExist = false
@@ -168,18 +174,14 @@ func (snc *Syncer) syncNode(node *node) error {
 		var srcReader io.Reader
 
 		if node.IsTmpl {
-			// Read template content
-			tmplContent, err := os.ReadFile(node.Src.Path)
-			if err != nil {
-				return err
-			}
 			// Parse
-			if err := node.Template.Parse(string(tmplContent)); err != nil {
+			if err := node.Src.Template.ParseFile(node.Src.Path); err != nil {
 				return err
 			}
+
 			// Execute
 			var buffer bytes.Buffer
-			if err := node.Template.Execute(&buffer, node.Context); err != nil {
+			if err := node.Src.Template.Execute(&buffer, node.Vars); err != nil {
 				return fmt.Errorf("invalid template \"%s\" (%s)", node.Src.Path, err)
 			}
 
@@ -187,7 +189,7 @@ func (snc *Syncer) syncNode(node *node) error {
 
 			if node.Dst.IsExist {
 				// Get template hash
-				hash := md5.New()
+				hash := sha1.New()
 				if _, err := io.Copy(hash, &buffer); err != nil {
 					return err
 				}
@@ -195,23 +197,27 @@ func (snc *Syncer) syncNode(node *node) error {
 			}
 		} else {
 			// Node is not a template, let's go buffering \o/
-			srcFile, err := os.Open(node.Src.Path)
+			srcFile, err := node.Src.Fs.Open(node.Src.Path)
 			if err != nil {
 				return err
 			}
 			defer srcFile.Close()
 
 			if node.Dst.IsExist {
+				// Open a new source file to not interfere with previous one read position,
+				// as fs.File interface does not provide a Seek method
+				srcFileHash, err := node.Src.Fs.Open(node.Src.Path)
+				if err != nil {
+					return err
+				}
+				defer srcFileHash.Close()
+
 				// Get source hash
-				hash := md5.New()
-				if _, err := io.Copy(hash, srcFile); err != nil {
+				hash := sha1.New()
+				if _, err := io.Copy(hash, srcFileHash); err != nil {
 					return err
 				}
 				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
-
-				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
-					return err
-				}
 			}
 
 			srcReader = srcFile
@@ -226,7 +232,7 @@ func (snc *Syncer) syncNode(node *node) error {
 			}
 
 			// Create or truncate destination file
-			dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
+			dstFile, err := node.Dst.Fs.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 			if err != nil {
 				return err
 			}
@@ -246,7 +252,7 @@ func (snc *Syncer) syncNode(node *node) error {
 			}
 
 			if dstMode != node.Dst.Mode {
-				if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
+				if err := node.Dst.Fs.Chmod(node.Dst.Path, dstMode); err != nil {
 					return err
 				}
 			}
@@ -258,6 +264,8 @@ func (snc *Syncer) syncNode(node *node) error {
 
 type node struct {
 	Src struct {
+		Fs           fs.ReadInterface
+		Template     template.Interface
 		Path         string
 		IsDir        bool
 		Files        []string
@@ -266,6 +274,7 @@ type node struct {
 	IsDist bool
 	IsTmpl bool
 	Dst    struct {
+		Fs      fs.ReadWriteInterface
 		Path    string
 		Mode    os.FileMode
 		Hash    []byte
@@ -273,34 +282,33 @@ type node struct {
 		IsDir   bool
 		Files   []string
 	}
-	Template *template.Template
-	Context  interface{}
+	Vars map[string]interface{}
 }
 
 var distRegex = regexp.MustCompile(`(\.dist)(?:$|\.tmpl$)`)
 var tmplRegex = regexp.MustCompile(`(\.tmpl)(?:$|\.dist$)`)
 
-func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (*node, error) {
+func newNode(srcFs fs.ReadInterface, src string, dstFs fs.ReadWriteInterface, dst string, srcTmpl template.Interface, vars map[string]interface{}) (*node, error) {
 	node := &node{}
-	node.Src.Path = src
-	node.Dst.Path = dst
-	node.Template = tmpl
-	node.Context = cxt
+	node.Src.Fs = srcFs
+	node.Src.Template = srcTmpl
+	node.Dst.Fs = dstFs
+	node.Vars = vars
 
-	// Source info
-	stat, err := os.Stat(node.Src.Path)
+	// Source stat
+	srcStat, err := srcFs.Stat(src)
 	if err != nil {
 		// Source does not exist
-		if os.IsNotExist(err) {
-			return nil, &SourceNotExistError{node.Src.Path}
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, &SourceNotExistError{src}
 		} else {
 			return nil, err
 		}
 	}
-	node.Src.IsDir = stat.IsDir()
+	node.Src.IsDir = srcStat.IsDir()
 
 	if node.Src.IsDir {
-		files, err := os.ReadDir(node.Src.Path)
+		files, err := srcFs.ReadDir(src)
 		if err != nil {
 			return nil, err
 		}
@@ -309,38 +317,38 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 			node.Src.Files = append(node.Src.Files, file.Name())
 		}
 	} else {
-		node.Src.IsExecutable = (stat.Mode() & 0100) != 0
+		node.Src.IsExecutable = (srcStat.Mode() & 0100) != 0
 
-		if distRegex.MatchString(node.Src.Path) {
+		if distRegex.MatchString(src) {
 			node.IsDist = true
-			node.Dst.Path = distRegex.ReplaceAllString(node.Dst.Path, "")
+			dst = distRegex.ReplaceAllString(dst, "")
 		}
 
-		if tmplRegex.MatchString(node.Src.Path) {
+		if tmplRegex.MatchString(src) {
 			node.IsTmpl = true
-			node.Dst.Path = tmplRegex.ReplaceAllString(node.Dst.Path, "")
+			dst = tmplRegex.ReplaceAllString(dst, "")
 		}
 	}
 
-	// Destination info
-	stat, err = os.Stat(node.Dst.Path)
+	// Destination stat
+	dstStat, err := dstFs.Stat(dst)
 	if err != nil {
 		// Error other than not existing destination
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, os.ErrNotExist) {
 			return nil, err
 		}
 		node.Dst.IsExist = false
 	} else {
 		node.Dst.IsExist = true
-		node.Dst.IsDir = stat.IsDir()
+		node.Dst.IsDir = dstStat.IsDir()
 	}
 
 	if node.Dst.IsExist {
 		// Mode
-		node.Dst.Mode = stat.Mode()
+		node.Dst.Mode = dstStat.Mode()
 
 		if node.Dst.IsDir {
-			files, err := os.ReadDir(node.Dst.Path)
+			files, err := dstFs.ReadDir(dst)
 			if err != nil {
 				return nil, err
 			}
@@ -349,13 +357,13 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 			}
 		} else {
 			// Get destination hash
-			file, err := os.Open(node.Dst.Path)
+			file, err := dstFs.Open(dst)
 			if err != nil {
 				return nil, err
 			}
 			defer file.Close()
 
-			hash := md5.New()
+			hash := sha1.New()
 			if _, err := io.Copy(hash, file); err != nil {
 				return nil, err
 			}
@@ -363,6 +371,9 @@ func newNode(src string, dst string, tmpl *template.Template, cxt interface{}) (
 			node.Dst.Hash = hash.Sum(nil)
 		}
 	}
+
+	node.Src.Path = src
+	node.Dst.Path = dst
 
 	return node, nil
 }

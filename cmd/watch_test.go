@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
+	"manala/fs"
 	"manala/loaders"
 	"manala/logger"
+	"manala/models"
 	"manala/syncer"
 	"manala/template"
 	"os"
@@ -46,15 +48,20 @@ func (s *WatchTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *
 	log := logger.New(conf)
 	log.SetOut(stdErr)
 
-	tmpl := template.New()
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+	templateManager := template.NewManager()
+	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
+	modelWatcherManager := models.NewWatcherManager(log)
 
 	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log)
+	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &WatchCmd{
-		Log:           log,
-		ProjectLoader: loaders.NewProjectLoader(log, repositoryLoader, recipeLoader),
-		Sync:          syncer.New(log, tmpl),
+		Log:            log,
+		ProjectLoader:  loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
+		WatcherManager: modelWatcherManager,
+		Sync:           syncer.New(log, modelFsManager, modelTemplateManager),
 	}
 
 	// Command
@@ -89,7 +96,7 @@ func (s *WatchTestSuite) Test() {
 		file   string
 	}{
 		{
-			test: "Default force invalid repository",
+			test: "Default with invalid repository",
 			dir:  "testdata/watch/project/default",
 			args: []string{"--repository", "testdata/watch/repository/invalid"},
 			err:  "\"testdata/watch/repository/invalid\" directory does not exists",
@@ -97,11 +104,11 @@ func (s *WatchTestSuite) Test() {
 `,
 		},
 		{
-			test: "Default force invalid recipe",
+			test: "Default with invalid recipe",
 			dir:  "testdata/watch/project/default",
 			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
-			stdErr: `   • Project loaded            recipe=invalid repository=
+			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
 `,
 		},
@@ -124,7 +131,7 @@ func (s *WatchTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", "").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -150,7 +157,7 @@ func (s *WatchTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", t.dir+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File

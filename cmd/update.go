@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"manala/loaders"
@@ -38,12 +39,12 @@ Example: manala update -> resulting in an update in a directory (default to the 
 
 			flags := command.Flags()
 
-			repoSrc, _ := flags.GetString("repository")
-			recName, _ := flags.GetString("recipe")
+			withRepositorySource, _ := flags.GetString("repository")
+			withRecipeName, _ := flags.GetString("recipe")
 
 			recursive, _ := flags.GetBool("recursive")
 
-			return cmd.Run(dir, repoSrc, recName, recursive)
+			return cmd.Run(dir, withRepositorySource, withRecipeName, recursive)
 		},
 	}
 
@@ -57,7 +58,7 @@ Example: manala update -> resulting in an update in a directory (default to the 
 	return command
 }
 
-func (cmd *UpdateCmd) Run(dir string, repoSrc string, recName string, recursive bool) error {
+func (cmd *UpdateCmd) Run(dir string, withRepositorySource string, withRecipeName string, recursive bool) error {
 	// Check directory
 	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {
@@ -78,37 +79,37 @@ func (cmd *UpdateCmd) Run(dir string, repoSrc string, recName string, recursive 
 				return filepath.SkipDir
 			}
 
-			// Find project file
-			prjFile, err := cmd.ProjectLoader.Find(path, false)
+			// Find project manifest
+			prjManifest, err := cmd.ProjectLoader.Find(path, false)
 			if err != nil {
 				return err
 			}
 
 			// Sync
-			if prjFile != nil {
-				if err := cmd.runProjectSync(prjFile, repoSrc, recName); err != nil {
+			if prjManifest != nil {
+				if err := cmd.runProjectSync(prjManifest, withRepositorySource, withRecipeName); err != nil {
 					return err
 				}
 			}
 
 			return nil
 		})
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	} else {
-		// Find project file
-		prjFile, err := cmd.ProjectLoader.Find(dir, true)
+		// Find project manifest
+		prjManifest, err := cmd.ProjectLoader.Find(dir, true)
 		if err != nil {
 			return err
 		}
 
-		if prjFile == nil {
+		if prjManifest == nil {
 			return fmt.Errorf("project not found: %s", dir)
 		}
 
 		// Sync
-		if err = cmd.runProjectSync(prjFile, repoSrc, recName); err != nil {
+		if err = cmd.runProjectSync(prjManifest, withRepositorySource, withRecipeName); err != nil {
 			return err
 		}
 	}
@@ -116,9 +117,9 @@ func (cmd *UpdateCmd) Run(dir string, repoSrc string, recName string, recursive 
 	return nil
 }
 
-func (cmd *UpdateCmd) runProjectSync(prjFile *os.File, repoSrc string, recName string) error {
+func (cmd *UpdateCmd) runProjectSync(prjManifest *os.File, withRepositorySource string, withRecipeName string) error {
 	// Load project
-	prj, err := cmd.ProjectLoader.Load(prjFile, repoSrc, recName)
+	prj, err := cmd.ProjectLoader.Load(prjManifest, withRepositorySource, withRecipeName)
 	if err != nil {
 		return err
 	}

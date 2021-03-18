@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
+	"manala/fs"
 	"manala/loaders"
 	"manala/logger"
+	"manala/models"
 	"os"
 	"path/filepath"
 	"testing"
@@ -43,10 +45,14 @@ func (s *ListTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	log := logger.New(conf)
 	log.SetOut(stdErr)
 
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+
 	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log)
+	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &ListCmd{
+		Conf:             conf,
 		RepositoryLoader: repositoryLoader,
 		RecipeLoader:     recipeLoader,
 		Out:              stdOut,

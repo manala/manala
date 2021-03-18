@@ -4,20 +4,26 @@ import (
 	"github.com/imdario/mergo"
 )
 
+const ProjectManifestFile = ".manala.yaml"
+
 // Create a project
-func NewProject(dir string, recipe RecipeInterface) ProjectInterface {
-	return &project{
+func NewProject(dir string, recipe RecipeInterface, vars map[string]interface{}) ProjectInterface {
+	project := &project{
 		dir:    dir,
 		recipe: recipe,
-		vars:   recipe.Vars(),
 	}
+
+	// Merge vars
+	_ = mergo.Merge(&project.vars, recipe.Vars())
+	_ = mergo.Merge(&project.vars, vars, mergo.WithOverride)
+
+	return project
 }
 
 type ProjectInterface interface {
-	Dir() string
+	model
 	Recipe() RecipeInterface
 	Vars() map[string]interface{}
-	MergeVars(vars *map[string]interface{})
 }
 
 type project struct {
@@ -26,7 +32,7 @@ type project struct {
 	vars   map[string]interface{}
 }
 
-func (prj *project) Dir() string {
+func (prj *project) getDir() string {
 	return prj.dir
 }
 
@@ -36,8 +42,4 @@ func (prj *project) Recipe() RecipeInterface {
 
 func (prj *project) Vars() map[string]interface{} {
 	return prj.vars
-}
-
-func (prj *project) MergeVars(vars *map[string]interface{}) {
-	_ = mergo.Merge(&prj.vars, vars, mergo.WithOverride)
 }

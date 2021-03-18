@@ -3,7 +3,7 @@ package template
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
-	"os"
+	"manala/fs"
 	"testing"
 )
 
@@ -13,11 +13,18 @@ import (
 
 type TemplateTestSuite struct {
 	suite.Suite
+	fsManager fs.ManagerInterface
+	manager   ManagerInterface
 }
 
 func TestTemplateTestSuite(t *testing.T) {
 	// Run
 	suite.Run(t, new(TemplateTestSuite))
+}
+
+func (s *TemplateTestSuite) SetupTest() {
+	s.fsManager = fs.NewManager()
+	s.manager = NewManager()
 }
 
 /*********/
@@ -29,24 +36,24 @@ func (s *TemplateTestSuite) Test() {
 		test    string
 		file    string
 		helpers string
-		data    interface{}
+		data    map[string]interface{}
 		out     string
 		err     string
 	}{
 		{
 			test: "Base",
-			file: "testdata/base.tmpl",
+			file: "base.tmpl",
 			out: `foo
 `,
 		},
 		{
 			test: "Invalid",
-			file: "testdata/invalid.tmpl",
-			err:  "template: :1:3: executing \"\" at <.foo>: nil data; no entry for key \"foo\"",
+			file: "invalid.tmpl",
+			err:  "template: :1:3: executing \"\" at <.foo>: map has no entry for key \"foo\"",
 		},
 		{
 			test: "To Yaml",
-			file: "testdata/to_yaml.tmpl",
+			file: "to_yaml.tmpl",
 			data: map[string]interface{}{
 				"foo": map[string]interface{}{
 					"bar": "string",
@@ -98,7 +105,7 @@ func (s *TemplateTestSuite) Test() {
 		},
 		{
 			test: "Cases",
-			file: "testdata/cases.tmpl",
+			file: "cases.tmpl",
 			data: map[string]interface{}{
 				"foo": map[string]interface{}{
 					"bar":  true,
@@ -116,7 +123,7 @@ func (s *TemplateTestSuite) Test() {
 		},
 		{
 			test: "Dict",
-			file: "testdata/dict.tmpl",
+			file: "dict.tmpl",
 			data: map[string]interface{}{
 				"foo": map[string]interface{}{
 					"bar": true,
@@ -130,25 +137,26 @@ qux: true
 		},
 		{
 			test: "Include",
-			file: "testdata/include.tmpl",
+			file: "include.tmpl",
 			out:  `foo: bar`,
 		},
 		{
 			test:    "Helpers",
-			file:    "testdata/helpers.tmpl",
-			helpers: "testdata/_helpers.tmpl",
+			file:    "helpers.tmpl",
+			helpers: "_helpers.tmpl",
 			out:     `bar: foo`,
 		},
 	} {
 		s.Run(t.test, func() {
-			tmpl := New()
+			fs := s.fsManager.NewDirFs("testdata")
+			template := s.manager.NewFsTemplate(fs)
 			if t.helpers != "" {
-				_ = tmpl.ParseFiles(t.helpers)
+				_ = template.ParseFiles(t.helpers)
 			}
-			tmplContent, _ := os.ReadFile(t.file)
-			_ = tmpl.Parse(string(tmplContent))
+			tmplContent, _ := fs.ReadFile(t.file)
+			_ = template.Parse(string(tmplContent))
 			var tmplOut bytes.Buffer
-			err := tmpl.Execute(&tmplOut, t.data)
+			err := template.Execute(&tmplOut, t.data)
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())

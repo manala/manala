@@ -26,6 +26,7 @@ func TestConfigTestSuite(t *testing.T) {
 func (s *ConfigTestSuite) Test() {
 	conf := New("foo", "bar")
 	s.Equal("foo", conf.Version())
+	s.Equal("bar", conf.MainRepository())
 	s.Equal("bar", conf.Repository())
 	cacheDir, _ := conf.CacheDir()
 	s.NotEmpty(cacheDir)
@@ -48,14 +49,19 @@ func (s *ConfigTestSuite) TestBind() {
 
 	f := new(pflag.FlagSet)
 	f.String("cache-dir", "", "")
+	f.String("repository", "", "")
 	f.Bool("debug", false, "")
 
 	conf.BindCacheDirFlag(f.Lookup("cache-dir"))
+	conf.BindRepositoryFlag(f.Lookup("repository"))
 	conf.BindDebugFlag(f.Lookup("debug"))
 
 	f.Set("cache-dir", "baz")
 	cacheDir, _ := conf.CacheDir()
 	s.Equal("baz", cacheDir)
+
+	f.Set("repository", "qux")
+	s.Equal("qux", conf.Repository())
 
 	f.Set("debug", "1")
 	s.True(conf.Debug())

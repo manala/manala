@@ -56,7 +56,7 @@ Let's create a `.manala.yaml` file under the `my-php-templates`:
 ```
 
 !!! Note
-    the `.manala.yaml` acts as a manifest for your recipe. It holds the name of your recipe and indicates which files or folders must be put under synchronization.
+    the `.manala.yaml` file acts as a manifest for your recipe. It holds its description, and indicates which files or folders must be put under synchronization.
 
 Now edit this file and put the following content:
 
@@ -273,7 +273,7 @@ cat ./.manala/php-cs-rules.php
 
 As previously stated, recipes are meant to be distributed. Github is of course the right place to host your recipes!
 
-So, push your recipe to Github and don't forget to update your manala configuration (`.manala.yaml`) in the projects that consume your recipe:
+So, push your recipe to Github and don't forget to update your manala manifest (`.manala.yaml`) in the projects that consume your recipe:
 
 ```diff
 manala:

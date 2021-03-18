@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
+	"manala/fs"
 	"manala/loaders"
 	"manala/logger"
+	"manala/models"
 	"manala/syncer"
 	"manala/template"
 	"os"
@@ -46,15 +48,18 @@ func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, 
 	log := logger.New(conf)
 	log.SetOut(stdErr)
 
-	tmpl := template.New()
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+	templateManager := template.NewManager()
+	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
 
 	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log)
+	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &UpdateCmd{
 		Log:           log,
-		ProjectLoader: loaders.NewProjectLoader(log, repositoryLoader, recipeLoader),
-		Sync:          syncer.New(log, tmpl),
+		ProjectLoader: loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
+		Sync:          syncer.New(log, modelFsManager, modelTemplateManager),
 	}
 
 	// Command
@@ -92,30 +97,30 @@ func (s *UpdateTestSuite) Test() {
 			test: "Default",
 			dir:  "testdata/update/project/default",
 			args: []string{},
-			stdErr: `   • Project loaded            recipe=foo repository=
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ dir }}file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_default_foo",
 		},
 		{
-			test: "Default force repository",
+			test: "Default with repository",
 			dir:  "testdata/update/project/default",
 			args: []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom")},
 			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ dir }}file_custom_foo
+   • Synced file               path=file_custom_foo
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_custom_foo",
 		},
 		{
-			test: "Default force invalid repository",
+			test: "Default with invalid repository",
 			dir:  "testdata/update/project/default",
 			args: []string{"--repository", "testdata/update/repository/invalid"},
 			err:  "\"testdata/update/repository/invalid\" directory does not exists",
@@ -123,29 +128,29 @@ func (s *UpdateTestSuite) Test() {
 `,
 		},
 		{
-			test: "Default force recipe",
+			test: "Default with recipe",
 			dir:  "testdata/update/project/default",
 			args: []string{"--recipe", "bar"},
-			stdErr: `   • Project loaded            recipe=bar repository=
+			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ dir }}file_default_bar
+   • Synced file               path=file_default_bar
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_default_bar",
 		},
 		{
-			test: "Default force invalid recipe",
+			test: "Default with invalid recipe",
 			dir:  "testdata/update/project/default",
 			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
-			stdErr: `   • Project loaded            recipe=invalid repository=
+			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
 `,
 		},
 		{
-			test:   "Default force repository and recipe",
+			test:   "Default with repository and recipe",
 			dir:    "testdata/update/project/default",
 			args:   []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom"), "--recipe", "bar"},
 			err:    "",
@@ -154,7 +159,7 @@ func (s *UpdateTestSuite) Test() {
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path={{ dir }}file_custom_bar
+   • Synced file               path=file_custom_bar
    • Project synced           
 `,
 			file: "testdata/update/project/default/file_custom_bar",
@@ -178,7 +183,7 @@ func (s *UpdateTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", "").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -204,7 +209,7 @@ func (s *UpdateTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", t.dir+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -265,13 +270,16 @@ func (s *UpdateTestSuite) TestTraverse() {
 		)
 		s.NoError(err)
 		s.Equal("", stdOut.String())
-		s.Equal(`   • Project loaded            recipe=foo repository=
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=../file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-`, stdErr.String())
+`),
+			stdErr.String(),
+		)
 		s.FileExists("testdata/update/project/traverse/file_default_foo")
 	})
 	s.Run("dir", func() {
@@ -284,13 +292,16 @@ func (s *UpdateTestSuite) TestTraverse() {
 		)
 		s.NoError(err)
 		s.Equal("", stdOut.String())
-		s.Equal(`   • Project loaded            recipe=foo repository=
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/traverse/file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-`, stdErr.String())
+`),
+			stdErr.String(),
+		)
 		s.FileExists("testdata/update/project/traverse/file_default_foo")
 	})
 }
@@ -309,31 +320,34 @@ func (s *UpdateTestSuite) TestRecursive() {
 		)
 		s.NoError(err)
 		s.Equal("", stdOut.String())
-		s.Equal(`   • Project loaded            recipe=bar repository=
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(
+				`   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=bar/file_default_bar
+   • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository=
+   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=foo/file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-   • Project loaded            recipe=bar repository=
+   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=foo/embedded/file_default_bar
+   • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository=
+   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=level/foo/file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-`, stdErr.String())
+`), stdErr.String(),
+		)
 		s.FileExists("testdata/update/project/recursive/foo/file_default_foo")
 		s.FileExists("testdata/update/project/recursive/foo/embedded/file_default_bar")
 		s.FileExists("testdata/update/project/recursive/bar/file_default_bar")
@@ -352,31 +366,34 @@ func (s *UpdateTestSuite) TestRecursive() {
 		)
 		s.NoError(err)
 		s.Equal("", stdOut.String())
-		s.Equal(`   • Project loaded            recipe=bar repository=
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/bar/file_default_bar
+   • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository=
+   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/foo/file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-   • Project loaded            recipe=bar repository=
+   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/foo/embedded/file_default_bar
+   • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository=
+   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
-   • Synced file               path=testdata/update/project/recursive/level/foo/file_default_foo
+   • Synced file               path=file_default_foo
    • Project synced           
-`, stdErr.String())
+`),
+			stdErr.String(),
+		)
 		s.FileExists("testdata/update/project/recursive/foo/file_default_foo")
 		s.FileExists("testdata/update/project/recursive/foo/embedded/file_default_bar")
 		s.FileExists("testdata/update/project/recursive/bar/file_default_bar")

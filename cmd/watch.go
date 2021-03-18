@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"github.com/gen2brain/beeep"
 	"github.com/spf13/cobra"
 	"manala/loaders"
@@ -11,14 +10,14 @@ import (
 	"manala/syncer"
 	"manala/validator"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
 type WatchCmd struct {
-	Log           *logger.Logger
-	ProjectLoader loaders.ProjectLoaderInterface
-	Sync          *syncer.Syncer
+	Log            *logger.Logger
+	ProjectLoader  loaders.ProjectLoaderInterface
+	WatcherManager models.WatcherManagerInterface
+	Sync           *syncer.Syncer
 }
 
 func (cmd *WatchCmd) Command() *cobra.Command {
@@ -40,13 +39,13 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 			flags := command.Flags()
 
-			repoSrc, _ := flags.GetString("repository")
-			recName, _ := flags.GetString("recipe")
+			withRepositorySource, _ := flags.GetString("repository")
+			withRecipeName, _ := flags.GetString("recipe")
 
 			watchAll, _ := flags.GetBool("all")
 			useNotify, _ := flags.GetBool("notify")
 
-			return cmd.Run(dir, repoSrc, recName, watchAll, useNotify)
+			return cmd.Run(dir, withRepositorySource, withRecipeName, watchAll, useNotify)
 		},
 	}
 
@@ -61,14 +60,7 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 	return command
 }
 
-func (cmd *WatchCmd) Run(dir string, repoSrc string, recName string, watchAll bool, useNotify bool) error {
-	// New watcher
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return fmt.Errorf("error creating watcher: %v", err)
-	}
-	defer watcher.Close()
-
+func (cmd *WatchCmd) Run(dir string, withRepositorySource string, withRecipeName string, watchAll bool, useNotify bool) error {
 	// Check directory
 	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {
@@ -76,89 +68,54 @@ func (cmd *WatchCmd) Run(dir string, repoSrc string, recName string, watchAll bo
 		}
 	}
 
-	// Find project file
-	prjFile, err := cmd.ProjectLoader.Find(dir, true)
+	// Find project manifest
+	prjManifest, err := cmd.ProjectLoader.Find(dir, true)
 	if err != nil {
 		return err
 	}
 
-	if prjFile == nil {
+	if prjManifest == nil {
 		return fmt.Errorf("project not found: %s", dir)
 	}
 
-	var prj models.ProjectInterface
+	// Sync function
+	syncFunc := cmd.getSyncFunc(prjManifest, withRepositorySource, withRecipeName, watchAll)
 
-	// Get sync function
-	syncProject := cmd.runProjectSync(prjFile, &prj, repoSrc, recName, watcher, watchAll)
+	// Watcher
+	watcher, err := cmd.WatcherManager.NewWatcher()
+	if err != nil {
+		return fmt.Errorf("error creating watcher: %v", err)
+	}
+	defer watcher.Close()
 
 	// Sync
-	if err := syncProject(); err != nil {
+	if err := syncFunc(watcher); err != nil {
 		return err
-	}
-
-	// Watch project
-	if err := watcher.Add(prj.Dir()); err != nil {
-		return fmt.Errorf("error adding project watching: %v", err)
 	}
 
 	cmd.Log.Info("Start watching...")
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-
-				cmd.Log.DebugWithField("Watch event", "event", event)
-
-				if event.Op != fsnotify.Chmod {
-					modified := false
-					file := filepath.Clean(event.Name)
-					dir := filepath.Dir(file)
-					if file == prjFile.Name() {
-						cmd.Log.InfoWithField("Project config modified", "file", file)
-						modified = true
-					} else if dir != prj.Dir() {
-						// Modified directory is not project one. That could only means recipe's one
-						cmd.Log.InfoWithField("Recipe modified", "dir", dir)
-						modified = true
-					}
-
-					if modified {
-						if err := syncProject(); err != nil {
-							cmd.Log.Error(err.Error())
-							if useNotify {
-								_ = beeep.Alert("Manala", strings.Replace(err.Error(), `"`, `\"`, -1), "")
-							}
-						} else {
-							if useNotify {
-								_ = beeep.Notify("Manala", "Project synced", "")
-							}
-						}
-					}
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				cmd.Log.ErrorWithError("Watching error", err)
+	// Watch
+	watcher.Watch(func(watcher models.WatcherInterface) {
+		if err := syncFunc(watcher); err != nil {
+			cmd.Log.Error(err.Error())
+			if useNotify {
+				_ = beeep.Alert("Manala", strings.Replace(err.Error(), `"`, `\"`, -1), "")
+			}
+		} else {
+			if useNotify {
+				_ = beeep.Notify("Manala", "Project synced", "")
 			}
 		}
-	}()
-	<-done
+	})
 
 	return nil
 }
 
-func (cmd *WatchCmd) runProjectSync(prjFile *os.File, basePrj *models.ProjectInterface, repoSrc string, recName string, watcher *fsnotify.Watcher, watchAll bool) func() error {
-	var baseRecDir string
-
-	return func() error {
+func (cmd *WatchCmd) getSyncFunc(prjManifest *os.File, withRepositorySource string, withRecipeName string, watchAll bool) func(watcher models.WatcherInterface) error {
+	return func(watcher models.WatcherInterface) error {
 		// Load project
-		prj, err := cmd.ProjectLoader.Load(prjFile, repoSrc, recName)
+		prj, err := cmd.ProjectLoader.Load(prjManifest, withRepositorySource, withRecipeName)
 		if err != nil {
 			return err
 		}
@@ -170,38 +127,15 @@ func (cmd *WatchCmd) runProjectSync(prjFile *os.File, basePrj *models.ProjectInt
 
 		cmd.Log.Info("Project validated")
 
-		*basePrj = prj
+		// Watch project
+		if err := watcher.SetProject(prj); err != nil {
+			return fmt.Errorf("error setting project watching: %v", err)
+		}
 
+		// Watch recipe
 		if watchAll {
-			// Initialize base recipe dir to the first synced recipe
-			if baseRecDir == "" {
-				baseRecDir = prj.Recipe().Dir()
-			}
-
-			// If recipe has changed, first, unwatch old one directories
-			if baseRecDir != prj.Recipe().Dir() {
-				if err := filepath.Walk(baseRecDir, func(path string, info os.FileInfo, err error) error {
-					if info.Mode().IsDir() {
-						if err := watcher.Remove(path); err != nil {
-							return err
-						}
-					}
-					return nil
-				}); err != nil {
-					return err
-				}
-			}
-
-			// Watch all recipe directories; don't care if they are already watched
-			if err := filepath.Walk(prj.Recipe().Dir(), func(path string, info os.FileInfo, err error) error {
-				if info.Mode().IsDir() {
-					if err := watcher.Add(path); err != nil {
-						return err
-					}
-				}
-				return nil
-			}); err != nil {
-				return err
+			if err := watcher.SetRecipe(prj.Recipe()); err != nil {
+				return fmt.Errorf("error setting recipe watching: %v", err)
 			}
 		}
 

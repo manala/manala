@@ -1,25 +1,32 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
 	"gitlab.com/tslocum/cview"
+	"io/fs"
 	"manala/binder"
+	"manala/config"
 	"manala/loaders"
 	"manala/logger"
 	"manala/models"
 	"manala/syncer"
 	"manala/validator"
 	"os"
+	"path/filepath"
 )
 
 type InitCmd struct {
 	Log              *logger.Logger
+	Conf             *config.Config
 	RepositoryLoader loaders.RepositoryLoaderInterface
 	RecipeLoader     loaders.RecipeLoaderInterface
 	ProjectLoader    loaders.ProjectLoaderInterface
+	TemplateManager  models.TemplateManagerInterface
 	Sync             *syncer.Syncer
+	Assets           fs.ReadFileFS
 }
 
 func (cmd *InitCmd) Command() *cobra.Command {
@@ -41,10 +48,11 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 			flags := command.Flags()
 
-			repoSrc, _ := flags.GetString("repository")
+			cmd.Conf.BindRepositoryFlag(flags.Lookup("repository"))
+
 			recName, _ := flags.GetString("recipe")
 
-			return cmd.Run(dir, repoSrc, recName)
+			return cmd.Run(dir, recName)
 		},
 	}
 
@@ -56,12 +64,12 @@ Example: manala init -> resulting in a project init in a directory (default to t
 	return command
 }
 
-func (cmd *InitCmd) Run(dir string, repoSrc string, recName string) error {
+func (cmd *InitCmd) Run(dir string, recName string) error {
 	// Ensure directory exists
 	if dir != "." {
 		stat, err := os.Stat(dir)
 		if err != nil {
-			if os.IsNotExist(err) {
+			if errors.Is(err, os.ErrNotExist) {
 				cmd.Log.DebugWithField("Creating project directory...", "dir", dir)
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					return fmt.Errorf("error creating project directory: %v", err)
@@ -76,20 +84,19 @@ func (cmd *InitCmd) Run(dir string, repoSrc string, recName string) error {
 	}
 
 	// Ensure no project already exists
-	prjFile, _ := cmd.ProjectLoader.Find(dir, false)
-	if prjFile != nil {
+	prjManifest, _ := cmd.ProjectLoader.Find(dir, false)
+	if prjManifest != nil {
 		return fmt.Errorf("project already exists: %s", dir)
 	}
 
 	// Load repository
-	repo, err := cmd.RepositoryLoader.Load(repoSrc)
+	repo, err := cmd.RepositoryLoader.Load(cmd.Conf.Repository())
 	if err != nil {
 		return err
 	}
 
 	// Load recipe...
 	var rec models.RecipeInterface
-
 	if recName != "" {
 		// ...from name if given
 		rec, err = cmd.RecipeLoader.Load(recName, repo)
@@ -97,22 +104,64 @@ func (cmd *InitCmd) Run(dir string, repoSrc string, recName string) error {
 			return err
 		}
 	} else {
-		// ...from recipe list cli application
+		// ...from recipe list
 		rec, err = cmd.runRecipeListApplication(cmd.RecipeLoader, repo)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Create project
-	prj := models.NewProject(dir, rec)
+	// Vars
+	vars := rec.Vars()
 
-	if rec.HasOptions() {
-		// Use project form cli application if necessary
-		if err := cmd.runProjectFormApplication(prj); err != nil {
+	// Use recipe options form if any
+	if len(rec.Options()) > 0 {
+		if err := cmd.runRecipeOptionsFormApplication(rec, vars); err != nil {
 			return err
 		}
 	}
+
+	// Template
+	template, err := cmd.TemplateManager.NewRecipeTemplate(rec)
+	if err != nil {
+		return err
+	}
+
+	if rec.Template() != "" {
+		// Load template from recipe
+		if err := template.ParseFile(rec.Template()); err != nil {
+			return err
+		}
+	} else {
+		// Load default template from embedded assets
+		text, _ := cmd.Assets.ReadFile("assets/" + models.ProjectManifestFile + ".tmpl")
+		if err := template.Parse(string(text)); err != nil {
+			return err
+		}
+	}
+
+	// Create project manifest
+	prjManifest, err = os.Create(filepath.Join(dir, models.ProjectManifestFile))
+	if err != nil {
+		return err
+	}
+	defer prjManifest.Close()
+
+	if err := template.Execute(prjManifest, vars); err != nil {
+		return err
+	}
+
+	prj, err := cmd.ProjectLoader.Load(prjManifest, "", "")
+	if err != nil {
+		return err
+	}
+
+	// Validate project
+	if err := validator.ValidateProject(prj); err != nil {
+		return err
+	}
+
+	cmd.Log.Info("Project validated")
 
 	// Sync project
 	if err := cmd.Sync.SyncProject(prj); err != nil {
@@ -176,7 +225,7 @@ func (cmd *InitCmd) runRecipeListApplication(recLoader loaders.RecipeLoaderInter
 	return recipe, nil
 }
 
-func (cmd *InitCmd) runProjectFormApplication(prj models.ProjectInterface) error {
+func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, vars map[string]interface{}) error {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)
@@ -196,7 +245,7 @@ func (cmd *InitCmd) runProjectFormApplication(prj models.ProjectInterface) error
 
 	frame := cview.NewFrame(form)
 	frame.SetBorders(1, 1, 1, 1, 1, 1)
-	frame.AddText("Please, enter \""+prj.Recipe().Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
+	frame.AddText("Please, enter \""+rec.Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
 
 	appPanels.AddPanel("form", frame, true, true)
 
@@ -212,7 +261,7 @@ func (cmd *InitCmd) runProjectFormApplication(prj models.ProjectInterface) error
 	appPanels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
-	bndr, err2 := binder.NewRecipeFormBinder(prj.Recipe())
+	bndr, err2 := binder.NewRecipeFormBinder(rec)
 	if err2 != nil {
 		return err2
 	}
@@ -239,7 +288,7 @@ func (cmd *InitCmd) runProjectFormApplication(prj models.ProjectInterface) error
 		}
 		if valid && (err == nil) {
 			// Apply values
-			_ = bndr.ApplyValues(prj.Vars())
+			_ = bndr.Apply(vars)
 			app.Stop()
 		}
 	})

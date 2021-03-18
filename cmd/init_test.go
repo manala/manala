@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
+	"manala/fs"
 	"manala/loaders"
 	"manala/logger"
+	"manala/models"
 	"manala/syncer"
 	"manala/template"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"testing/fstest"
 )
 
 /****************/
@@ -46,17 +49,28 @@ func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	log := logger.New(conf)
 	log.SetOut(stdErr)
 
-	tmpl := template.New()
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+	templateManager := template.NewManager()
+	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
 
 	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log)
+	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &InitCmd{
 		Log:              log,
+		Conf:             conf,
 		RepositoryLoader: repositoryLoader,
 		RecipeLoader:     recipeLoader,
-		ProjectLoader:    loaders.NewProjectLoader(log, repositoryLoader, recipeLoader),
-		Sync:             syncer.New(log, tmpl),
+		ProjectLoader:    loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
+		TemplateManager:  modelTemplateManager,
+		Sync:             syncer.New(log, modelFsManager, modelTemplateManager),
+		Assets: fstest.MapFS{
+			"assets/.manala.yaml.tmpl": {Data: []byte(`manala:
+   recipe: {{ .Recipe.Name }}
+   repository: {{ .Recipe.Repository.Source }}
+`)},
+		},
 	}
 
 	// Command
@@ -82,22 +96,31 @@ func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 
 func (s *InitTestSuite) Test() {
 	for _, t := range []struct {
-		test   string
-		dir    string
-		args   []string
-		err    string
-		stdErr string
-		stdOut string
-		file   string
+		test     string
+		dir      string
+		args     []string
+		err      string
+		stdErr   string
+		stdOut   string
+		manifest string
+		file     string
 	}{
 		{
 			test: "Use recipe",
 			dir:  "testdata/init/project/default",
 			args: []string{"--recipe", "foo"},
-			stdErr: `   • Synced file               path={{ dir }}file_default_foo
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/default
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=file_default_foo
    • Project synced           
 `,
-			file: "testdata/init/project/default/file_default_foo",
+			manifest: `manala:
+   recipe: foo
+   repository: {{ wd }}testdata/init/repository/default
+`,
+			file: "file_default_foo",
 		},
 		{
 			test: "Use invalid recipe",
@@ -109,10 +132,18 @@ func (s *InitTestSuite) Test() {
 			test: "Use recipe and repository",
 			dir:  "testdata/init/project/default",
 			args: []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
-			stdErr: `   • Synced file               path={{ dir }}file_custom_foo
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/custom
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Synced file               path=file_custom_foo
    • Project synced           
 `,
-			file: "testdata/init/project/default/file_custom_foo",
+			manifest: `manala:
+   recipe: foo
+   repository: {{ wd }}testdata/init/repository/custom
+`,
+			file: "file_custom_foo",
 		},
 		{
 			test: "Use recipe and invalid repository",
@@ -130,7 +161,7 @@ func (s *InitTestSuite) Test() {
 				t.dir,
 				t.args,
 			)
-			// Tests
+			// Tests - Error
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())
@@ -138,14 +169,23 @@ func (s *InitTestSuite) Test() {
 				s.NoError(err)
 			}
 			s.Equal(t.stdOut, stdOut.String())
-			// Stderr
+			// Tests - Std
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", "").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
-			// File
+			// Tests - Manifest
+			if t.manifest != "" {
+				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
+				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
+				s.Equal(
+					strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.manifest),
+					string(content),
+				)
+			}
+			// Tests - File
 			if t.file != "" {
-				s.FileExists(t.file)
+				s.FileExists(filepath.Join(t.dir, t.file))
 			}
 		})
 		s.Run(t.test+"/dir", func() {
@@ -157,22 +197,31 @@ func (s *InitTestSuite) Test() {
 				"",
 				append([]string{t.dir}, t.args...),
 			)
-			// Test
+			// Tests - Error
 			if t.err != "" {
 				s.Error(err)
 				s.Equal(t.err, err.Error())
 			} else {
 				s.NoError(err)
 			}
+			// Tests - Std
 			s.Equal(t.stdOut, stdOut.String())
-			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/", "{{ dir }}", t.dir+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
 				stdErr.String(),
 			)
-			// File
+			// Tests - Manifest
+			if t.manifest != "" {
+				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
+				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
+				s.Equal(
+					strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.manifest),
+					string(content),
+				)
+			}
+			// Tests - File
 			if t.file != "" {
-				s.FileExists(t.file)
+				s.FileExists(filepath.Join(t.dir, t.file))
 			}
 		})
 	}
@@ -185,8 +234,10 @@ func (s *InitTestSuite) TestProjectAlreadyExists() {
 			"testdata/init/project/already_exists",
 			[]string{},
 		)
+		// Tests - Error
 		s.Error(err)
 		s.Equal("project already exists: .", err.Error())
+		// Tests - Std
 		s.Equal("", stdOut.String())
 		s.Equal("", stdErr.String())
 	})
@@ -196,9 +247,51 @@ func (s *InitTestSuite) TestProjectAlreadyExists() {
 			"",
 			[]string{"testdata/init/project/already_exists"},
 		)
+		// Tests - Error
 		s.Error(err)
 		s.Equal("project already exists: testdata/init/project/already_exists", err.Error())
+		// Tests - Std
 		s.Equal("", stdOut.String())
 		s.Equal("", stdErr.String())
+	})
+}
+
+func (s *InitTestSuite) TestTemplate() {
+	s.Run("default", func() {
+		// Clean
+		_ = os.RemoveAll("testdata/init/project/default")
+		_ = os.Mkdir("testdata/init/project/default", 0755)
+		// Execute
+		stdOut, stdErr, err := s.ExecuteCommand(
+			"testdata/init/project/default",
+			[]string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/template")},
+		)
+		// Tests - Error
+		s.NoError(err)
+		// Tests - Std
+		s.Equal("", stdOut.String())
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/template
+   • Repository loaded        
+   • Recipe loaded            
+   • Project validated        
+   • Project synced           
+`),
+			stdErr.String(),
+		)
+		// Tests - Manifest
+		s.FileExists("testdata/init/project/default/.manala.yaml")
+		content, _ := os.ReadFile("testdata/init/project/default/.manala.yaml")
+		s.Equal(
+			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`manala:
+   recipe: foo
+   repository: {{ wd }}testdata/init/repository/template
+
+# Foo
+foo:
+    bar: baz
+`),
+			string(content),
+		)
 	})
 }
