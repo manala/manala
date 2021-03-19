@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 )
 
-func NewProjectLoader(log logger.Logger, conf *config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
+func NewProjectLoader(log logger.Logger, conf config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
 	return &projectLoader{
 		log:              log,
 		conf:             conf,
@@ -36,7 +36,7 @@ type projectConfig struct {
 
 type projectLoader struct {
 	log              logger.Logger
-	conf             *config.Config
+	conf             config.Config
 	repositoryLoader RepositoryLoaderInterface
 	recipeLoader     RecipeLoaderInterface
 }

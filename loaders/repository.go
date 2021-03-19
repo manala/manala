@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-func NewRepositoryLoader(log logger.Logger, conf *config.Config) RepositoryLoaderInterface {
+func NewRepositoryLoader(log logger.Logger, conf config.Config) RepositoryLoaderInterface {
 	return &repositoryLoader{
 		log:   log,
 		conf:  conf,
@@ -28,7 +28,7 @@ type RepositoryLoaderInterface interface {
 
 type repositoryLoader struct {
 	log   logger.Logger
-	conf  *config.Config
+	conf  config.Config
 	cache map[string]models.RepositoryInterface
 }
 

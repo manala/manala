@@ -6,7 +6,7 @@ import (
 )
 
 type RootCmd struct {
-	Conf *config.Config
+	Conf config.Config
 }
 
 func (cmd *RootCmd) Command() *cobra.Command {

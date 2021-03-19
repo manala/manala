@@ -27,8 +27,7 @@ func TestLoggerTestSuite(t *testing.T) {
 
 func (s *LoggerTestSuite) TestWithConfig() {
 	s.Run("Debug true", func() {
-		conf := config.New("", "")
-		conf.SetDebug(true)
+		conf := config.New(config.WithDebug(true))
 		out := bytes.NewBufferString("")
 		log := New(WithConfig(conf), WithWriter(out))
 
@@ -43,8 +42,7 @@ func (s *LoggerTestSuite) TestWithConfig() {
 	})
 
 	s.Run("Debug false", func() {
-		conf := config.New("", "")
-		conf.SetDebug(false)
+		conf := config.New(config.WithDebug(false))
 		out := bytes.NewBufferString("")
 		log := New(WithConfig(conf), WithWriter(out))
 

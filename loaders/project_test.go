@@ -29,8 +29,10 @@ func (s *ProjectTestSuite) SetupTest() {
 	_ = os.RemoveAll(cacheDir)
 	_ = os.Mkdir(cacheDir, 0755)
 
-	conf := config.New("test", "testdata/project/_repository_default")
-	conf.SetCacheDir(cacheDir)
+	conf := config.New(
+		config.WithMainRepository("testdata/project/_repository_default"),
+		config.WithCacheDir(cacheDir),
+	)
 
 	log := logger.New(logger.WithDiscardment())
 

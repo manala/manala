@@ -7,73 +7,102 @@ import (
 	"path/filepath"
 )
 
-type Config struct {
-	version        string
-	mainRepository string
-	viper          *viper.Viper
-}
-
-func New(version string, mainRepository string) *Config {
+// Create a config
+func New(opts ...func(config *config)) Config {
 	// Viper
 	v := viper.New()
 
 	v.SetEnvPrefix("manala")
 	v.AutomaticEnv()
 
-	v.SetDefault("repository", mainRepository)
-	v.SetDefault("debug", false)
+	config := &config{
+		viper: v,
+	}
 
-	return &Config{
-		version:        version,
-		mainRepository: mainRepository,
-		viper:          v,
+	// Options
+	for _, opt := range opts {
+		opt(config)
+	}
+
+	return config
+}
+
+func WithVersion(version string) func(config *config) {
+	return func(config *config) {
+		config.viper.Set("version", version)
 	}
 }
 
-func (conf *Config) Version() string {
-	return conf.version
+func WithMainRepository(repository string) func(config *config) {
+	return func(config *config) {
+		config.viper.Set("main_repository", repository)
+		config.viper.SetDefault("repository", repository)
+	}
 }
 
-func (conf *Config) CacheDir() (string, error) {
-	if !conf.viper.IsSet("cache_dir") {
+func WithDebug(debug bool) func(config *config) {
+	return func(config *config) {
+		config.viper.SetDefault("debug", debug)
+	}
+}
+
+func WithCacheDir(dir string) func(config *config) {
+	return func(config *config) {
+		config.viper.Set("cache_dir", dir)
+	}
+}
+
+type Config interface {
+	Version() string
+	CacheDir() (string, error)
+	BindCacheDirFlag(flag *pflag.Flag)
+	MainRepository() string
+	Repository() string
+	BindRepositoryFlag(flag *pflag.Flag)
+	Debug() bool
+	BindDebugFlag(flag *pflag.Flag)
+}
+
+type config struct {
+	viper *viper.Viper
+}
+
+func (config *config) Version() string {
+	return config.viper.GetString("version")
+}
+
+func (config *config) CacheDir() (string, error) {
+	if !config.viper.IsSet("cache_dir") {
 		cacheDir, err := os.UserCacheDir()
 		if err != nil {
 			return "", err
 		}
-		conf.viper.Set("cache_dir", filepath.Join(cacheDir, "manala"))
+		config.viper.Set("cache_dir", filepath.Join(cacheDir, "manala"))
 	}
 
-	return conf.viper.GetString("cache_dir"), nil
+	return config.viper.GetString("cache_dir"), nil
 }
 
-func (conf *Config) SetCacheDir(dir string) {
-	conf.viper.Set("cache_dir", dir)
+func (config *config) BindCacheDirFlag(flag *pflag.Flag) {
+	_ = config.viper.BindPFlag("cache_dir", flag)
 }
 
-func (conf *Config) BindCacheDirFlag(flag *pflag.Flag) {
-	_ = conf.viper.BindPFlag("cache_dir", flag)
+func (config *config) MainRepository() string {
+	return config.viper.GetString("main_repository")
 }
 
-func (conf *Config) MainRepository() string {
-	return conf.mainRepository
+func (config *config) Repository() string {
+	return config.viper.GetString("repository")
 }
 
-func (conf *Config) Repository() string {
-	return conf.viper.GetString("repository")
+func (config *config) BindRepositoryFlag(flag *pflag.Flag) {
+	_ = config.viper.BindPFlag("repository", flag)
 }
 
-func (conf *Config) BindRepositoryFlag(flag *pflag.Flag) {
-	_ = conf.viper.BindPFlag("repository", flag)
+func (config *config) Debug() bool {
+	return config.viper.GetBool("debug")
 }
 
-func (conf *Config) Debug() bool {
-	return conf.viper.GetBool("debug")
-}
-
-func (conf *Config) SetDebug(debug bool) {
-	conf.viper.Set("debug", debug)
-}
-
-func (conf *Config) BindDebugFlag(flag *pflag.Flag) {
-	_ = conf.viper.BindPFlag("debug", flag)
+func (config *config) BindDebugFlag(flag *pflag.Flag) {
+	_ = config.viper.BindPFlag("debug", flag)
 }

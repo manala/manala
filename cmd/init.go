@@ -20,7 +20,7 @@ import (
 
 type InitCmd struct {
 	Log              logger.Logger
-	Conf             *config.Config
+	Conf             config.Config
 	RepositoryLoader loaders.RepositoryLoaderInterface
 	RecipeLoader     loaders.RecipeLoaderInterface
 	ProjectLoader    loaders.ProjectLoaderInterface

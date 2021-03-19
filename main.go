@@ -24,7 +24,10 @@ var assets embed.FS
 
 func main() {
 	// Config
-	conf := config.New(version, mainRepository)
+	conf := config.New(
+		config.WithVersion(version),
+		config.WithMainRepository(mainRepository),
+	)
 
 	// Logger
 	log := logger.New(

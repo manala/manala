@@ -24,45 +24,97 @@ func TestConfigTestSuite(t *testing.T) {
 /*********/
 
 func (s *ConfigTestSuite) Test() {
-	conf := New("foo", "bar")
-	s.Equal("foo", conf.Version())
-	s.Equal("bar", conf.MainRepository())
-	s.Equal("bar", conf.Repository())
+	conf := New()
+
+	s.Equal("", conf.Version())
 	cacheDir, _ := conf.CacheDir()
 	s.NotEmpty(cacheDir)
+	s.Equal("", conf.MainRepository())
+	s.Equal("", conf.Repository())
 	s.False(conf.Debug())
 }
 
-func (s *ConfigTestSuite) TestSet() {
-	conf := New("foo", "bar")
+func (s *ConfigTestSuite) TestWithVersion() {
+	s.Run("Dir", func() {
+		version := "version"
 
-	conf.SetCacheDir("baz")
-	cacheDir, _ := conf.CacheDir()
-	s.Equal("baz", cacheDir)
+		conf := New(WithVersion(version))
 
-	conf.SetDebug(true)
-	s.Equal(true, conf.Debug())
+		s.Equal(version, conf.Version())
+	})
+}
+
+func (s *ConfigTestSuite) TestWithMainRepository() {
+	s.Run("Dir", func() {
+		repository := "repository"
+
+		conf := New(WithMainRepository(repository))
+
+		s.Equal(repository, conf.MainRepository())
+		s.Equal(repository, conf.Repository())
+	})
+}
+
+func (s *ConfigTestSuite) TestWithDebug() {
+	s.Run("True", func() {
+		debug := true
+
+		conf := New(WithDebug(debug))
+
+		s.Equal(debug, conf.Debug())
+	})
+
+	s.Run("False", func() {
+		debug := false
+
+		conf := New(WithDebug(debug))
+
+		s.Equal(debug, conf.Debug())
+	})
+}
+
+func (s *ConfigTestSuite) TestWithCacheDir() {
+	s.Run("Dir", func() {
+		dir := "dir"
+
+		conf := New(WithCacheDir(dir))
+
+		cacheDir, _ := conf.CacheDir()
+		s.Equal(dir, cacheDir)
+	})
 }
 
 func (s *ConfigTestSuite) TestBind() {
-	conf := New("foo", "bar")
-
+	conf := New()
 	f := new(pflag.FlagSet)
-	f.String("cache-dir", "", "")
-	f.String("repository", "", "")
-	f.Bool("debug", false, "")
 
-	conf.BindCacheDirFlag(f.Lookup("cache-dir"))
-	conf.BindRepositoryFlag(f.Lookup("repository"))
-	conf.BindDebugFlag(f.Lookup("debug"))
+	s.Run("Cache dir", func() {
+		dir := "dir"
+		f.String("cache-dir", "", "")
+		conf.BindCacheDirFlag(f.Lookup("cache-dir"))
 
-	f.Set("cache-dir", "baz")
-	cacheDir, _ := conf.CacheDir()
-	s.Equal("baz", cacheDir)
+		_ = f.Set("cache-dir", dir)
 
-	f.Set("repository", "qux")
-	s.Equal("qux", conf.Repository())
+		cacheDir, _ := conf.CacheDir()
+		s.Equal(dir, cacheDir)
+	})
 
-	f.Set("debug", "1")
-	s.True(conf.Debug())
+	s.Run("Repository", func() {
+		repository := "repository"
+		f.String("repository", "", "")
+		conf.BindRepositoryFlag(f.Lookup("repository"))
+
+		_ = f.Set("repository", repository)
+
+		s.Equal(repository, conf.Repository())
+	})
+
+	s.Run("Debug", func() {
+		f.Bool("debug", false, "")
+		conf.BindDebugFlag(f.Lookup("debug"))
+
+		_ = f.Set("debug", "1")
+
+		s.Equal(true, conf.Debug())
+	})
 }

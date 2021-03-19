@@ -10,7 +10,7 @@ import (
 )
 
 type ListCmd struct {
-	Conf             *config.Config
+	Conf             config.Config
 	RepositoryLoader loaders.RepositoryLoaderInterface
 	RecipeLoader     loaders.RecipeLoaderInterface
 	Out              io.Writer

@@ -28,7 +28,7 @@ func New(opts ...func(logger *logger)) Logger {
 	return logger
 }
 
-func WithConfig(conf *config.Config) func(logger *logger) {
+func WithConfig(conf config.Config) func(logger *logger) {
 	return func(logger *logger) {
 		logger.debug = func() bool {
 			return conf.Debug()

@@ -28,8 +28,7 @@ func (s *RepositoryTestSuite) SetupTest() {
 	_ = os.RemoveAll(cacheDir)
 	_ = os.Mkdir(cacheDir, 0755)
 
-	conf := config.New("test", "foo")
-	conf.SetCacheDir(cacheDir)
+	conf := config.New(config.WithCacheDir(cacheDir))
 
 	log := logger.New(logger.WithDiscardment())
 

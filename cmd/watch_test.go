@@ -43,7 +43,9 @@ func (s *WatchTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *
 	stdOut := bytes.NewBufferString("")
 	stdErr := bytes.NewBufferString("")
 
-	conf := config.New("test", filepath.Join(s.wd, "testdata/update/repository/default"))
+	conf := config.New(
+		config.WithMainRepository(filepath.Join(s.wd, "testdata/update/repository/default")),
+	)
 
 	log := logger.New(logger.WithWriter(stdErr))
 
