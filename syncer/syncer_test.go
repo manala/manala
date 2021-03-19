@@ -1,9 +1,7 @@
 package syncer
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
-	"manala/config"
 	"manala/fs"
 	"manala/logger"
 	"manala/models"
@@ -29,10 +27,7 @@ func TestSyncTestSuite(t *testing.T) {
 }
 
 func (s *SyncTestSuite) SetupTest() {
-	conf := config.New("test", "foo")
-
-	log := logger.New(conf)
-	log.SetOut(bytes.NewBufferString(""))
+	log := logger.New(logger.WithDiscardment())
 
 	s.fsManager = fs.NewManager()
 	modelFsManager := models.NewFsManager(s.fsManager)

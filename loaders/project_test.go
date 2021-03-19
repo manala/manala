@@ -1,7 +1,6 @@
 package loaders
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
 	"manala/fs"
@@ -33,8 +32,7 @@ func (s *ProjectTestSuite) SetupTest() {
 	conf := config.New("test", "testdata/project/_repository_default")
 	conf.SetCacheDir(cacheDir)
 
-	log := logger.New(conf)
-	log.SetOut(bytes.NewBufferString(""))
+	log := logger.New(logger.WithDiscardment())
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)

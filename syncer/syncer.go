@@ -31,7 +31,7 @@ func (e *SourceNotExistError) Error() string {
 /* Syncer */
 /**********/
 
-func New(log *logger.Logger, fsManager models.FsManagerInterface, templateManager models.TemplateManagerInterface) *Syncer {
+func New(log logger.Logger, fsManager models.FsManagerInterface, templateManager models.TemplateManagerInterface) *Syncer {
 	return &Syncer{
 		log:             log,
 		fsManager:       fsManager,
@@ -40,7 +40,7 @@ func New(log *logger.Logger, fsManager models.FsManagerInterface, templateManage
 }
 
 type Syncer struct {
-	log             *logger.Logger
+	log             logger.Logger
 	fsManager       models.FsManagerInterface
 	templateManager models.TemplateManagerInterface
 }
@@ -87,10 +87,10 @@ func (snc *Syncer) Sync(srcFs fs.ReadInterface, src string, srcTmpl template.Int
 func (snc *Syncer) syncNode(node *node) error {
 	if node.Src.IsDir {
 
-		snc.log.DebugWithFields("Syncing directory...", logger.Fields{
-			"src": node.Src.Path,
-			"dst": node.Dst.Path,
-		})
+		snc.log.Debug("Syncing directory...",
+			snc.log.WithField("src", node.Src.Path),
+			snc.log.WithField("dst", node.Dst.Path),
+		)
 
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
@@ -106,7 +106,7 @@ func (snc *Syncer) syncNode(node *node) error {
 				return err
 			}
 
-			snc.log.InfoWithField("Synced directory", "path", node.Dst.Path)
+			snc.log.Info("Synced directory", snc.log.WithField("path", node.Dst.Path))
 		}
 
 		// Iterate over source files
@@ -150,10 +150,10 @@ func (snc *Syncer) syncNode(node *node) error {
 
 	} else {
 
-		snc.log.DebugWithFields("Syncing file...", logger.Fields{
-			"src": node.Src.Path,
-			"dst": node.Dst.Path,
-		})
+		snc.log.Debug("Syncing file...",
+			snc.log.WithField("src", node.Src.Path),
+			snc.log.WithField("dst", node.Dst.Path),
+		)
 
 		// Destination is a directory; remove
 		if node.Dst.IsExist && node.Dst.IsDir {
@@ -244,7 +244,7 @@ func (snc *Syncer) syncNode(node *node) error {
 				return err
 			}
 
-			snc.log.InfoWithField("Synced file", "path", node.Dst.Path)
+			snc.log.Info("Synced file", snc.log.WithField("path", node.Dst.Path))
 		} else {
 			dstMode := node.Dst.Mode &^ 0111
 			if node.Src.IsExecutable {

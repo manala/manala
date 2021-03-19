@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-func NewRecipeLoader(log *logger.Logger, fsManager models.FsManagerInterface) RecipeLoaderInterface {
+func NewRecipeLoader(log logger.Logger, fsManager models.FsManagerInterface) RecipeLoaderInterface {
 	return &recipeLoader{
 		log:       log,
 		fsManager: fsManager,
@@ -40,7 +40,7 @@ type recipeConfig struct {
 }
 
 type recipeLoader struct {
-	log       *logger.Logger
+	log       logger.Logger
 	fsManager models.FsManagerInterface
 }
 
@@ -105,7 +105,7 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 type recipeWalkFunc func(rec models.RecipeInterface)
 
 func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.RepositoryInterface) (models.RecipeInterface, error) {
-	ld.log.DebugWithField("Loading recipe...", "dir", dir)
+	ld.log.Debug("Loading recipe...", ld.log.WithField("dir", dir))
 
 	// Parse manifest
 	node := yaml.Node{}

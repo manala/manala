@@ -14,7 +14,7 @@ import (
 )
 
 type UpdateCmd struct {
-	Log           *logger.Logger
+	Log           logger.Logger
 	ProjectLoader loaders.ProjectLoaderInterface
 	Sync          *syncer.Syncer
 }

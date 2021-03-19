@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-func NewRepositoryLoader(log *logger.Logger, conf *config.Config) RepositoryLoaderInterface {
+func NewRepositoryLoader(log logger.Logger, conf *config.Config) RepositoryLoaderInterface {
 	return &repositoryLoader{
 		log:   log,
 		conf:  conf,
@@ -27,7 +27,7 @@ type RepositoryLoaderInterface interface {
 }
 
 type repositoryLoader struct {
-	log   *logger.Logger
+	log   logger.Logger
 	conf  *config.Config
 	cache map[string]models.RepositoryInterface
 }
@@ -59,7 +59,7 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 }
 
 func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, error) {
-	ld.log.DebugWithField("Loading dir repository...", "source", src)
+	ld.log.Debug("Loading dir repository...", ld.log.WithField("source", src))
 
 	stat, err := os.Stat(src)
 	if err != nil {
@@ -78,7 +78,7 @@ func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, err
 	hash := md5.New()
 	hash.Write([]byte(src))
 
-	ld.log.DebugWithField("Loading git repository...", "source", src)
+	ld.log.Debug("Loading git repository...", ld.log.WithField("source", src))
 
 	// Repository cache directory should be unique
 	cacheDir, err := ld.conf.CacheDir()
@@ -87,7 +87,7 @@ func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, err
 	}
 	dir := filepath.Join(cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
 
-	ld.log.DebugWithField("Opening repository cache...", "dir", dir)
+	ld.log.Debug("Opening repository cache...", ld.log.WithField("dir", dir))
 
 Load:
 	if err := os.MkdirAll(dir, os.FileMode(0700)); err != nil {

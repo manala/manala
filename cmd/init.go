@@ -19,7 +19,7 @@ import (
 )
 
 type InitCmd struct {
-	Log              *logger.Logger
+	Log              logger.Logger
 	Conf             *config.Config
 	RepositoryLoader loaders.RepositoryLoaderInterface
 	RecipeLoader     loaders.RecipeLoaderInterface
@@ -70,11 +70,11 @@ func (cmd *InitCmd) Run(dir string, recName string) error {
 		stat, err := os.Stat(dir)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				cmd.Log.DebugWithField("Creating project directory...", "dir", dir)
+				cmd.Log.Debug("Creating project directory...", cmd.Log.WithField("dir", dir))
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					return fmt.Errorf("error creating project directory: %v", err)
 				}
-				cmd.Log.InfoWithField("Project directory created", "dir", dir)
+				cmd.Log.Info("Project directory created", cmd.Log.WithField("dir", dir))
 			} else {
 				return fmt.Errorf("error getting project directory stat: %v", err)
 			}

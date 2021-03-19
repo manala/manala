@@ -14,7 +14,7 @@ import (
 )
 
 type WatchCmd struct {
-	Log            *logger.Logger
+	Log            logger.Logger
 	ProjectLoader  loaders.ProjectLoaderInterface
 	WatcherManager models.WatcherManagerInterface
 	Sync           *syncer.Syncer

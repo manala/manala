@@ -45,8 +45,7 @@ func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, 
 
 	conf := config.New("test", filepath.Join(s.wd, "testdata/update/repository/default"))
 
-	log := logger.New(conf)
-	log.SetOut(stdErr)
+	log := logger.New(logger.WithWriter(stdErr))
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)

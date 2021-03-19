@@ -1,7 +1,6 @@
 package loaders
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
 	"manala/logger"
@@ -32,8 +31,7 @@ func (s *RepositoryTestSuite) SetupTest() {
 	conf := config.New("test", "foo")
 	conf.SetCacheDir(cacheDir)
 
-	log := logger.New(conf)
-	log.SetOut(bytes.NewBufferString(""))
+	log := logger.New(logger.WithDiscardment())
 
 	s.ld = NewRepositoryLoader(log, conf)
 }

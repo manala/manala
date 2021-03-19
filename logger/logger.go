@@ -1,78 +1,116 @@
 package logger
 
 import (
-	apex "github.com/apex/log"
-	apexHandlersCli "github.com/apex/log/handlers/cli"
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/apex/log/handlers/discard"
 	"io"
 	"manala/config"
 )
 
-type Fields map[string]interface{}
-
-type Logger struct {
-	apex *apex.Logger
-	conf *config.Config
-}
-
-func New(conf *config.Config) *Logger {
-	// Apex
-	apex := &apex.Logger{
-		Handler: apexHandlersCli.Default,
-		Level:   apex.DebugLevel,
+// Create a logger
+func New(opts ...func(logger *logger)) Logger {
+	logger := &logger{
+		log: &log.Logger{
+			Handler: cli.Default,
+			Level:   log.DebugLevel,
+		},
 	}
 
-	return &Logger{
-		apex: apex,
-		conf: conf,
+	// Debug false by default
+	WithDebug(false)(logger)
+
+	// Options
+	for _, opt := range opts {
+		opt(logger)
 	}
+
+	return logger
 }
 
-func (log *Logger) SetOut(out io.Writer) {
-	log.apex.Handler = apexHandlersCli.New(out)
-}
-
-func (log *Logger) Debug(msg string) {
-	if log.conf.Debug() {
-		log.apex.Debug(msg)
-	}
-}
-
-func (log *Logger) DebugWithField(msg string, key string, value interface{}) {
-	if log.conf.Debug() {
-		log.apex.WithField(key, value).Debug(msg)
-	}
-}
-
-func (log *Logger) DebugWithFields(msg string, fields Fields) {
-	if log.conf.Debug() {
-		f := apex.Fields{}
-		for k, v := range fields {
-			f[k] = v
+func WithConfig(conf *config.Config) func(logger *logger) {
+	return func(logger *logger) {
+		logger.debug = func() bool {
+			return conf.Debug()
 		}
-		log.apex.WithFields(f).Debug(msg)
 	}
 }
 
-func (log *Logger) Info(msg string) {
-	log.apex.Info(msg)
-}
-
-func (log *Logger) InfoWithField(msg string, key string, value interface{}) {
-	log.apex.WithField(key, value).Info(msg)
-}
-
-func (log *Logger) InfoWithFields(msg string, fields Fields) {
-	f := apex.Fields{}
-	for k, v := range fields {
-		f[k] = v
+func WithDebug(debug bool) func(logger *logger) {
+	return func(logger *logger) {
+		logger.debug = func() bool {
+			return debug
+		}
 	}
-	log.apex.WithFields(f).Info(msg)
 }
 
-func (log *Logger) Error(msg string) {
-	log.apex.Error(msg)
+func WithWriter(writer io.Writer) func(logger *logger) {
+	return func(logger *logger) {
+		logger.log.Handler = cli.New(writer)
+	}
 }
 
-func (log *Logger) ErrorWithError(msg string, err error) {
-	log.apex.WithError(err).Error(msg)
+func WithDiscardment() func(logger *logger) {
+	return func(logger *logger) {
+		logger.log.Handler = discard.New()
+	}
+}
+
+type Logger interface {
+	Debug(msg string, fields ...*field)
+	Info(msg string, fields ...*field)
+	WithField(key string, value interface{}) *field
+	Error(msg string, errs ...error)
+}
+
+type field struct {
+	key   string
+	value interface{}
+}
+
+type logger struct {
+	log   *log.Logger
+	debug func() bool
+}
+
+func (logger *logger) Debug(msg string, fields ...*field) {
+	if logger.debug() {
+		entry := log.NewEntry(logger.log)
+
+		// Fields
+		for _, field := range fields {
+			entry = entry.WithField(field.key, field.value)
+		}
+
+		entry.Debug(msg)
+	}
+}
+
+func (logger *logger) Info(msg string, fields ...*field) {
+	entry := log.NewEntry(logger.log)
+
+	// Fields
+	for _, field := range fields {
+		entry = entry.WithField(field.key, field.value)
+	}
+
+	entry.Info(msg)
+}
+
+func (logger *logger) WithField(key string, value interface{}) *field {
+	return &field{
+		key:   key,
+		value: value,
+	}
+}
+
+func (logger *logger) Error(msg string, errs ...error) {
+	entry := log.NewEntry(logger.log)
+
+	// Errors
+	for _, err := range errs {
+		entry = entry.WithError(err)
+	}
+
+	entry.Error(msg)
 }

@@ -1,9 +1,7 @@
 package loaders
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
-	"manala/config"
 	"manala/fs"
 	"manala/logger"
 	"manala/models"
@@ -38,10 +36,7 @@ func (s *RecipeTestSuite) SetupTest() {
 	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description", false)
 	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid", false)
 
-	conf := config.New("test", "foo")
-
-	log := logger.New(conf)
-	log.SetOut(bytes.NewBufferString(""))
+	log := logger.New(logger.WithDiscardment())
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)

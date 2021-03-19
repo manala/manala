@@ -27,7 +27,9 @@ func main() {
 	conf := config.New(version, mainRepository)
 
 	// Logger
-	log := logger.New(conf)
+	log := logger.New(
+		logger.WithConfig(conf),
+	)
 
 	// Managers
 	fsManager := fs.NewManager()

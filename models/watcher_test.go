@@ -1,9 +1,7 @@
 package models
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
-	"manala/config"
 	"manala/logger"
 	"testing"
 )
@@ -23,10 +21,7 @@ func TestWatcherTestSuite(t *testing.T) {
 }
 
 func (s *WatcherTestSuite) SetupTest() {
-	conf := config.New("test", "foo")
-
-	log := logger.New(conf)
-	log.SetOut(bytes.NewBufferString(""))
+	log := logger.New(logger.WithDiscardment())
 
 	s.manager = NewWatcherManager(log)
 }

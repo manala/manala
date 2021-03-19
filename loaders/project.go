@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 )
 
-func NewProjectLoader(log *logger.Logger, conf *config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
+func NewProjectLoader(log logger.Logger, conf *config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
 	return &projectLoader{
 		log:              log,
 		conf:             conf,
@@ -35,14 +35,14 @@ type projectConfig struct {
 }
 
 type projectLoader struct {
-	log              *logger.Logger
+	log              logger.Logger
 	conf             *config.Config
 	repositoryLoader RepositoryLoaderInterface
 	recipeLoader     RecipeLoaderInterface
 }
 
 func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
-	ld.log.DebugWithField("Searching project...", "dir", dir)
+	ld.log.Debug("Searching project...", ld.log.WithField("dir", dir))
 
 	manifest, err := os.Open(filepath.Join(dir, models.ProjectManifestFile))
 
@@ -85,7 +85,7 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 	// Get dir
 	dir := filepath.Dir(manifest.Name())
 
-	ld.log.DebugWithField("Loading project...", "dir", dir)
+	ld.log.Debug("Loading project...", ld.log.WithField("dir", dir))
 
 	// Reset manifest pointer
 	_, err := manifest.Seek(0, io.SeekStart)
@@ -135,10 +135,10 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 		return nil, err
 	}
 
-	ld.log.InfoWithFields("Project loaded", logger.Fields{
-		"recipe":     cfg.Recipe,
-		"repository": cfg.Repository,
-	})
+	ld.log.Info("Project loaded",
+		ld.log.WithField("recipe", cfg.Recipe),
+		ld.log.WithField("repository", cfg.Repository),
+	)
 
 	// Load repository
 	repo, err := ld.repositoryLoader.Load(cfg.Repository)

@@ -13,7 +13,7 @@ import (
 /***********/
 
 // Create a model watcher manager
-func NewWatcherManager(log *logger.Logger) *watcherManager {
+func NewWatcherManager(log logger.Logger) *watcherManager {
 	return &watcherManager{
 		log: log,
 	}
@@ -24,7 +24,7 @@ type WatcherManagerInterface interface {
 }
 
 type watcherManager struct {
-	log *logger.Logger
+	log logger.Logger
 }
 
 /***********/
@@ -53,7 +53,7 @@ type WatcherInterface interface {
 }
 
 type watcher struct {
-	log        *logger.Logger
+	log        logger.Logger
 	watcher    *fsnotify.Watcher
 	projectDir string
 	recipeDir  string
@@ -113,7 +113,7 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					return
 				}
 
-				watcher.log.DebugWithField("Watch event", "event", event)
+				watcher.log.Debug("Watch event", watcher.log.WithField("event", event))
 
 				// Ignore chmod events
 				if event.Op != fsnotify.Chmod {
@@ -121,11 +121,11 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					dir := filepath.Dir(file)
 					if (dir == watcher.projectDir) && (filepath.Base(file) == ProjectManifestFile) {
 						// Project manifest
-						watcher.log.InfoWithField("Project manifest modified", "file", file)
+						watcher.log.Info("Project manifest modified", watcher.log.WithField("file", file))
 						callback(watcher)
 					} else if dir != watcher.projectDir {
 						// Recipe dir
-						watcher.log.InfoWithField("Recipe modified", "path", file)
+						watcher.log.Info("Recipe modified", watcher.log.WithField("path", file))
 						callback(watcher)
 					}
 				}
@@ -134,7 +134,7 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					return
 				}
 
-				watcher.log.ErrorWithError("Watch error", err)
+				watcher.log.Error("Watch error", err)
 			}
 		}
 	}()
