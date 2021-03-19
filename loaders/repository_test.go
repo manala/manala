@@ -29,7 +29,7 @@ func (s *RepositoryTestSuite) SetupTest() {
 	_ = os.RemoveAll(cacheDir)
 	_ = os.Mkdir(cacheDir, 0755)
 
-	conf := config.New("test", "testdata/repository/load_dir")
+	conf := config.New("test", "foo")
 	conf.SetCacheDir(cacheDir)
 
 	log := logger.New(conf)
@@ -50,16 +50,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadDir() {
 	repo, err := s.ld.Load("testdata/repository/load_dir")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
-	s.Equal("testdata/repository/load_dir", repo.Src())
-	s.Equal("testdata/repository/load_dir", repo.Dir())
-}
-
-func (s *RepositoryTestSuite) TestRepositoryDefaultLoadDir() {
-	repo, err := s.ld.Load("")
-	s.NoError(err)
-	s.Implements((*models.RepositoryInterface)(nil), repo)
-	s.Equal("testdata/repository/load_dir", repo.Src())
-	s.Equal("testdata/repository/load_dir", repo.Dir())
+	s.Equal("testdata/repository/load_dir", repo.Source())
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirNotFound() {
@@ -80,8 +71,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
 	repo, err := s.ld.Load("https://github.com/octocat/Hello-World.git")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
-	s.Equal("https://github.com/octocat/Hello-World.git", repo.Src())
-	s.Equal("testdata/repository/.cache/repositories/1d60d0a17c4d14e9bda84ee53ee51311", repo.Dir())
+	s.Equal("https://github.com/octocat/Hello-World.git", repo.Source())
 
 	s.DirExists("testdata/repository/.cache/repositories")
 	stat, _ := os.Stat("testdata/repository/.cache/repositories")

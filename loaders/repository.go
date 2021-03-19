@@ -3,6 +3,7 @@ package loaders
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/mingrammer/commonregex"
@@ -32,11 +33,6 @@ type repositoryLoader struct {
 }
 
 func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error) {
-	// Use default source if necessary
-	if src == "" {
-		src = ld.conf.Repository()
-	}
-
 	// Check if repository already in cache
 	if repo, ok := ld.cache[src]; ok {
 		return repo, nil
@@ -63,11 +59,11 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 }
 
 func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, error) {
-	ld.log.DebugWithField("Loading dir repository...", "src", src)
+	ld.log.DebugWithField("Loading dir repository...", "source", src)
 
 	stat, err := os.Stat(src)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return nil, fmt.Errorf("\"%s\" directory does not exists", src)
 		}
 		return nil, err
@@ -75,14 +71,14 @@ func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, err
 		return nil, fmt.Errorf("\"%s\" is not a directory", src)
 	}
 
-	return models.NewRepository(src, src), nil
+	return models.NewRepository(src, src, src == ld.conf.MainRepository()), nil
 }
 
 func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, error) {
 	hash := md5.New()
 	hash.Write([]byte(src))
 
-	ld.log.DebugWithField("Loading git repository...", "src", src)
+	ld.log.DebugWithField("Loading git repository...", "source", src)
 
 	// Repository cache directory should be unique
 	cacheDir, err := ld.conf.CacheDir()
@@ -146,5 +142,5 @@ Load:
 		return nil, fmt.Errorf("unable to open repository: %w", err)
 	}
 
-	return models.NewRepository(src, dir), nil
+	return models.NewRepository(src, dir, src == ld.conf.MainRepository()), nil
 }

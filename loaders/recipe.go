@@ -2,12 +2,14 @@ package loaders
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
+	"io/fs"
 	"manala/logger"
 	"manala/models"
 	"manala/yaml/cleaner"
@@ -19,40 +21,27 @@ import (
 	"strings"
 )
 
-func NewRecipeLoader(log *logger.Logger) RecipeLoaderInterface {
+func NewRecipeLoader(log *logger.Logger, fsManager models.FsManagerInterface) RecipeLoaderInterface {
 	return &recipeLoader{
-		log: log,
+		log:       log,
+		fsManager: fsManager,
 	}
 }
 
-var recipeConfigFile = ".manala.yaml"
-
 type RecipeLoaderInterface interface {
-	Find(dir string) (*os.File, error)
 	Load(name string, repository models.RepositoryInterface) (models.RecipeInterface, error)
 	Walk(repository models.RepositoryInterface, fn recipeWalkFunc) error
 }
 
 type recipeConfig struct {
 	Description string `validate:"required"`
+	Template    string
 	Sync        []models.RecipeSyncUnit
 }
 
 type recipeLoader struct {
-	log *logger.Logger
-}
-
-func (ld *recipeLoader) Find(dir string) (*os.File, error) {
-	ld.log.DebugWithField("Searching recipe...", "dir", dir)
-
-	file, err := os.Open(filepath.Join(dir, recipeConfigFile))
-
-	// Return all errors but non existing file ones
-	if err != nil && !os.IsNotExist(err) {
-		return nil, err
-	}
-
-	return file, nil
+	log       *logger.Logger
+	fsManager models.FsManagerInterface
 }
 
 func (ld *recipeLoader) Load(name string, repository models.RepositoryInterface) (models.RecipeInterface, error) {
@@ -74,7 +63,10 @@ func (ld *recipeLoader) Load(name string, repository models.RepositoryInterface)
 }
 
 func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWalkFunc) error {
-	files, err := os.ReadDir(repository.Dir())
+	// Repository file system
+	repoFs := ld.fsManager.NewModelFs(repository)
+
+	files, err := repoFs.ReadDir("")
 	if err != nil {
 		return err
 	}
@@ -84,19 +76,22 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
+
+		// Keep dirs only
 		if !file.IsDir() {
 			continue
 		}
 
-		recFile, err := ld.Find(filepath.Join(repository.Dir(), file.Name()))
+		manifest, err := repoFs.Open(filepath.Join(file.Name(), models.RecipeManifestFile))
 		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				// Dir does not contain a manifest
+				continue
+			}
 			return err
 		}
-		if recFile == nil {
-			continue
-		}
 
-		rec, err := ld.loadDir(file.Name(), recFile, repository)
+		rec, err := ld.loadDir(file.Name(), manifest, repository)
 		if err != nil {
 			return err
 		}
@@ -109,30 +104,22 @@ func (ld *recipeLoader) Walk(repository models.RepositoryInterface, fn recipeWal
 
 type recipeWalkFunc func(rec models.RecipeInterface)
 
-func (ld *recipeLoader) loadDir(name string, file *os.File, repository models.RepositoryInterface) (models.RecipeInterface, error) {
-	// Get dir
-	dir := filepath.Dir(file.Name())
+func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.RepositoryInterface) (models.RecipeInterface, error) {
+	ld.log.DebugWithField("Loading recipe...", "dir", dir)
 
-	ld.log.DebugWithField("Loading recipe...", "name", name)
-
-	// Reset file pointer
-	_, err := file.Seek(0, io.SeekStart)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse config file
+	// Parse manifest
 	node := yaml.Node{}
-	if err := yaml.NewDecoder(file).Decode(&node); err != nil {
+
+	if err := yaml.NewDecoder(manifest).Decode(&node); err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("empty recipe config \"%s\"", file.Name())
+			return nil, fmt.Errorf("empty recipe manifest \"%s\"", dir)
 		}
-		return nil, fmt.Errorf("invalid recipe config \"%s\" (%w)", file.Name(), err)
+		return nil, fmt.Errorf("invalid recipe manifest \"%s\" (%w)", dir, err)
 	}
 
 	var vars map[string]interface{}
 	if err := node.Decode(&vars); err != nil {
-		return nil, fmt.Errorf("incorrect recipe config \"%s\" (%w)", file.Name(), err)
+		return nil, fmt.Errorf("incorrect recipe manifest \"%s\" (%w)", dir, err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139
@@ -157,27 +144,24 @@ func (ld *recipeLoader) loadDir(name string, file *os.File, repository models.Re
 	// Cleanup vars
 	delete(vars, "manala")
 
-	rec := models.NewRecipe(
-		name,
-		cfg.Description,
-		dir,
-		repository,
-	)
-
-	// Handle config
-	rec.MergeVars(&vars)
-	rec.AddSyncUnits(cfg.Sync)
-
 	// Parse config node
 	var options []models.RecipeOption
 	schema, err := ld.parseConfigNode(&node, &options, "")
 	if err != nil {
 		return nil, err
 	}
-	rec.MergeSchema(&schema)
-	rec.AddOptions(options)
 
-	return rec, nil
+	return models.NewRecipe(
+		dir,
+		cfg.Description,
+		cfg.Template,
+		dir,
+		repository,
+		vars,
+		cfg.Sync,
+		schema,
+		options,
+	), nil
 }
 
 func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.RecipeOption, path string) (map[string]interface{}, error) {

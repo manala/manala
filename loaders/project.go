@@ -1,11 +1,13 @@
 package loaders
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 	"io"
+	"manala/config"
 	"manala/logger"
 	"manala/models"
 	"manala/yaml/cleaner"
@@ -13,9 +15,10 @@ import (
 	"path/filepath"
 )
 
-func NewProjectLoader(log *logger.Logger, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
+func NewProjectLoader(log *logger.Logger, conf *config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
 	return &projectLoader{
 		log:              log,
+		conf:             conf,
 		repositoryLoader: repositoryLoader,
 		recipeLoader:     recipeLoader,
 	}
@@ -23,10 +26,8 @@ func NewProjectLoader(log *logger.Logger, repositoryLoader RepositoryLoaderInter
 
 type ProjectLoaderInterface interface {
 	Find(dir string, traverse bool) (*os.File, error)
-	Load(file *os.File, withRepositorySrc string, withRecipeName string) (models.ProjectInterface, error)
+	Load(manifest *os.File, withRepositorySource string, withRecipeName string) (models.ProjectInterface, error)
 }
-
-var projectConfigFile = ".manala.yaml"
 
 type projectConfig struct {
 	Recipe     string `validate:"required"`
@@ -35,6 +36,7 @@ type projectConfig struct {
 
 type projectLoader struct {
 	log              *logger.Logger
+	conf             *config.Config
 	repositoryLoader RepositoryLoaderInterface
 	recipeLoader     RecipeLoaderInterface
 }
@@ -42,18 +44,23 @@ type projectLoader struct {
 func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	ld.log.DebugWithField("Searching project...", "dir", dir)
 
-	file, err := os.Open(filepath.Join(dir, projectConfigFile))
+	manifest, err := os.Open(filepath.Join(dir, models.ProjectManifestFile))
 
-	// Return all errors but non existing file ones
-	if err != nil && !os.IsNotExist(err) {
+	// Found manifest without errors, return it !
+	if err == nil {
+		return manifest, nil
+	}
+
+	// Encounter serious error, return it !
+	if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
 
-	if file != nil || traverse == false {
-		return file, nil
+	// Not found manifest...
+	if traverse == false {
+		return nil, nil
 	}
 
-	// Traversal mode
 	abs, err := filepath.Abs(dir)
 	if err != nil {
 		return nil, err
@@ -74,32 +81,34 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	return ld.Find(parentDir, true)
 }
 
-func (ld *projectLoader) Load(file *os.File, withRepositorySrc string, withRecipeName string) (models.ProjectInterface, error) {
+func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, withRecipeName string) (models.ProjectInterface, error) {
 	// Get dir
-	dir := filepath.Dir(file.Name())
+	dir := filepath.Dir(manifest.Name())
 
 	ld.log.DebugWithField("Loading project...", "dir", dir)
 
-	// Reset file pointer
-	_, err := file.Seek(0, io.SeekStart)
+	// Reset manifest pointer
+	_, err := manifest.Seek(0, io.SeekStart)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parse config file
+	// Parse manifest
 	var vars map[string]interface{}
-	if err := yaml.NewDecoder(file).Decode(&vars); err != nil {
+	if err := yaml.NewDecoder(manifest).Decode(&vars); err != nil {
 		if err == io.EOF {
-			return nil, fmt.Errorf("empty project config \"%s\"", file.Name())
+			return nil, fmt.Errorf("empty project manifest \"%s\"", manifest.Name())
 		}
-		return nil, fmt.Errorf("invalid project config \"%s\" (%w)", file.Name(), err)
+		return nil, fmt.Errorf("invalid project manifest \"%s\" (%w)", manifest.Name(), err)
 	}
 
 	// See: https://github.com/go-yaml/yaml/issues/139
 	vars = cleaner.Clean(vars)
 
 	// Map config
-	cfg := projectConfig{}
+	cfg := projectConfig{
+		Repository: ld.conf.Repository(),
+	}
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result: &cfg,
 	})
@@ -107,15 +116,12 @@ func (ld *projectLoader) Load(file *os.File, withRepositorySrc string, withRecip
 		return nil, err
 	}
 
-	// Validate config
-	validate := validator.New()
-	if err := validate.Struct(cfg); err != nil {
-		return nil, err
-	}
+	// Cleanup vars
+	delete(vars, "manala")
 
 	// With repository
-	if withRepositorySrc != "" {
-		cfg.Repository = withRepositorySrc
+	if withRepositorySource != "" {
+		cfg.Repository = withRepositorySource
 	}
 
 	// With recipe
@@ -123,8 +129,11 @@ func (ld *projectLoader) Load(file *os.File, withRepositorySrc string, withRecip
 		cfg.Recipe = withRecipeName
 	}
 
-	// Cleanup vars
-	delete(vars, "manala")
+	// Validate config
+	validate := validator.New()
+	if err := validate.Struct(cfg); err != nil {
+		return nil, err
+	}
 
 	ld.log.InfoWithFields("Project loaded", logger.Fields{
 		"recipe":     cfg.Recipe,
@@ -146,11 +155,9 @@ func (ld *projectLoader) Load(file *os.File, withRepositorySrc string, withRecip
 
 	ld.log.Info("Recipe loaded")
 
-	prj := models.NewProject(
+	return models.NewProject(
 		dir,
 		rec,
-	)
-	prj.MergeVars(&vars)
-
-	return prj, nil
+		vars,
+	), nil
 }

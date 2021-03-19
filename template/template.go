@@ -1,30 +1,45 @@
 package template
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
 	"gopkg.in/yaml.v3"
 	"io"
+	"manala/fs"
 	"strings"
 	textTemplate "text/template"
 )
 
-type Template struct {
-	tmpl *textTemplate.Template
+/***********/
+/* Manager */
+/***********/
+
+// Create a template manager
+func NewManager() *manager {
+	return &manager{}
 }
 
-func New() *Template {
-	// Text template
+type ManagerInterface interface {
+	NewFsTemplate(fs fs.ReadInterface) *Template
+}
+
+type manager struct {
+}
+
+// Create a fs template
+func (manager *manager) NewFsTemplate(fs fs.ReadInterface) *Template {
+	// Template
 	tmpl := &Template{
-		tmpl: textTemplate.New(""),
+		txtTmpl: textTemplate.New(""),
+		fs:      fs,
 	}
 
 	// Execution stops immediately with an error.
-	tmpl.tmpl.Option("missingkey=error")
+	tmpl.txtTmpl.Option("missingkey=error")
 
-	tmpl.tmpl.Funcs(sprig.TxtFuncMap())
-	tmpl.tmpl.Funcs(textTemplate.FuncMap{
+	// Functions
+	tmpl.txtTmpl.Funcs(sprig.TxtFuncMap())
+	tmpl.txtTmpl.Funcs(textTemplate.FuncMap{
 		"toYaml":  tmpl.funcToYaml(),
 		"include": tmpl.funcInclude(),
 	})
@@ -32,55 +47,78 @@ func New() *Template {
 	return tmpl
 }
 
-func (tmpl *Template) ParseFiles(filenames ...string) error {
-	_, err := tmpl.tmpl.ParseFiles(filenames...)
+/************/
+/* Template */
+/************/
 
-	return err
+type Interface interface {
+	Parse(text string) error
+	ParseFile(filename string) error
+	ParseFiles(filenames ...string) error
+	Execute(writer io.Writer, vars map[string]interface{}) error
+}
+
+type Template struct {
+	txtTmpl *textTemplate.Template
+	fs      fs.ReadInterface
 }
 
 func (tmpl *Template) Parse(text string) error {
-	_, err := tmpl.tmpl.Parse(text)
+	_, err := tmpl.txtTmpl.Parse(
+		text,
+	)
 
 	return err
 }
 
-func (tmpl *Template) Execute(wr io.Writer, data interface{}) error {
-	return tmpl.tmpl.Execute(wr, data)
+func (tmpl *Template) ParseFile(filename string) error {
+	text, err := tmpl.fs.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	return tmpl.Parse(string(text))
+}
+
+func (tmpl *Template) ParseFiles(filenames ...string) error {
+	_, err := tmpl.txtTmpl.ParseFS(tmpl.fs, filenames...)
+
+	return err
+}
+
+func (tmpl *Template) Execute(writer io.Writer, vars map[string]interface{}) error {
+	return tmpl.txtTmpl.Execute(
+		writer,
+		vars,
+	)
 }
 
 // As seen in helm
 func (tmpl *Template) funcToYaml() func(value interface{}) string {
 	return func(value interface{}) string {
-		var buf bytes.Buffer
-
-		enc := yaml.NewEncoder(&buf)
-
-		if err := enc.Encode(value); err != nil {
+		data, err := yaml.Marshal(value)
+		if err != nil {
 			// Swallow errors inside of a template.
 			return ""
 		}
-
-		return strings.TrimSuffix(buf.String(), "\n")
+		return strings.TrimSuffix(string(data), "\n")
 	}
 }
 
 // As seen in helm
 func (tmpl *Template) funcInclude() func(name string, data interface{}) (string, error) {
-	includedNames := make([]string, 0)
+	includedNames := make(map[string]int)
 	return func(name string, data interface{}) (string, error) {
 		var buf strings.Builder
-		includedCount := 0
-		for _, n := range includedNames {
-			if n == name {
-				includedCount += 1
+		if v, ok := includedNames[name]; ok {
+			if v > 1000 {
+				return "", fmt.Errorf("rendering template has a nested reference name: %s", name)
 			}
+			includedNames[name]++
+		} else {
+			includedNames[name] = 1
 		}
-		if includedCount >= 16 {
-			return "", fmt.Errorf("rendering template has reached the maximum nested reference name level: %s", name)
-		}
-		includedNames = append(includedNames, name)
-		err := tmpl.tmpl.ExecuteTemplate(&buf, name, data)
-		includedNames = includedNames[:len(includedNames)-1]
+		err := tmpl.txtTmpl.ExecuteTemplate(&buf, name, data)
 		return buf.String(), err
 	}
 }

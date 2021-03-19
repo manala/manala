@@ -1,5 +1,5 @@
 manala:
-    description: Load sync units
+    description: Load sync
     sync:
       - foo
       - foo bar

@@ -13,7 +13,7 @@ import (
 
 type RecipeFormBinderTestSuite struct {
 	suite.Suite
-	recipe models.RecipeInterface
+	repository models.RepositoryInterface
 }
 
 func TestRecipeOptionFormItemBindTestSuite(t *testing.T) {
@@ -22,14 +22,10 @@ func TestRecipeOptionFormItemBindTestSuite(t *testing.T) {
 }
 
 func (s *RecipeFormBinderTestSuite) SetupTest() {
-	s.recipe = models.NewRecipe(
+	s.repository = models.NewRepository(
 		"foo",
 		"bar",
-		"baz",
-		models.NewRepository(
-			"foo",
-			"bar",
-		),
+		false,
 	)
 }
 
@@ -38,21 +34,31 @@ func (s *RecipeFormBinderTestSuite) SetupTest() {
 /*****************************/
 
 func (s *RecipeFormBinderTestSuite) TestNewEnum() {
-	s.recipe.AddOptions([]models.RecipeOption{
-		{
-			Label:  "Foo bar",
-			Path:   "/foo",
-			Schema: map[string]interface{}{"enum": []interface{}{true, false, nil, "foo", 123, "7.0", 7.1}},
+	recipe := models.NewRecipe(
+		"foo",
+		"bar",
+		"",
+		"baz",
+		s.repository,
+		nil,
+		nil,
+		nil,
+		[]models.RecipeOption{
+			{
+				Label:  "Foo bar",
+				Path:   "/foo",
+				Schema: map[string]interface{}{"enum": []interface{}{true, false, nil, "foo", 123, "7.0", 7.1}},
+			},
 		},
-	})
+	)
 
-	bndr, err := NewRecipeFormBinder(s.recipe)
+	bndr, err := NewRecipeFormBinder(recipe)
 	s.NoError(err)
 	s.Len(bndr.Binds(), 1)
 
 	bind := bndr.Binds()[0]
 	s.IsType((*cview.DropDown)(nil), bind.Item)
-	s.Equal(s.recipe.Options()[0].Label, bind.Item.GetLabel())
+	s.Equal(recipe.Options()[0].Label, bind.Item.GetLabel())
 
 	item := bind.Item.(*cview.DropDown)
 
@@ -93,21 +99,31 @@ func (s *RecipeFormBinderTestSuite) TestNewEnum() {
 }
 
 func (s *RecipeFormBinderTestSuite) TestNewTypeString() {
-	s.recipe.AddOptions([]models.RecipeOption{
-		{
-			Label:  "Foo bar",
-			Path:   "/foo",
-			Schema: map[string]interface{}{"type": "string"},
+	recipe := models.NewRecipe(
+		"foo",
+		"bar",
+		"",
+		"baz",
+		s.repository,
+		nil,
+		nil,
+		nil,
+		[]models.RecipeOption{
+			{
+				Label:  "Foo bar",
+				Path:   "/foo",
+				Schema: map[string]interface{}{"type": "string"},
+			},
 		},
-	})
+	)
 
-	bndr, err := NewRecipeFormBinder(s.recipe)
+	bndr, err := NewRecipeFormBinder(recipe)
 	s.NoError(err)
 	s.Len(bndr.Binds(), 1)
 
 	bind := bndr.Binds()[0]
 	s.IsType((*cview.InputField)(nil), bind.Item)
-	s.Equal(s.recipe.Options()[0].Label, bind.Item.GetLabel())
+	s.Equal(recipe.Options()[0].Label, bind.Item.GetLabel())
 
 	item := bind.Item.(*cview.InputField)
 

@@ -1,0 +1,16 @@
+####################################################################
+# !!! REMINDER !!!                                                 #
+# Don't forget to run `manala up` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: {{ .Recipe.Name }}
+    {{- if not .Recipe.Repository.Main }}
+    repository: {{ .Recipe.Repository.Source }}
+    {{- end }}
+
+{{- if .Vars }}
+
+# Default vars
+{{ .Vars | toYaml }}
+{{- end }}

@@ -101,14 +101,14 @@ func (bndr *RecipeFormBinder) BindForm(form *cview.Form) {
 	}
 }
 
-func (bndr *RecipeFormBinder) ApplyValues(values map[string]interface{}) error {
+func (bndr *RecipeFormBinder) Apply(vars map[string]interface{}) error {
 	for _, bind := range bndr.binds {
 		// Json pointer
 		pointer, err := gojsonpointer.NewJsonPointer(bind.Option.Path)
 		if err != nil {
 			return err
 		}
-		_, err = pointer.Set(values, bind.Value)
+		_, err = pointer.Set(vars, bind.Value)
 		if err != nil {
 			return err
 		}

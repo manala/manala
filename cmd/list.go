@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io"
+	"manala/config"
 	"manala/loaders"
 	"manala/models"
 )
 
 type ListCmd struct {
+	Conf             *config.Config
 	RepositoryLoader loaders.RepositoryLoaderInterface
 	RecipeLoader     loaders.RecipeLoaderInterface
 	Out              io.Writer
@@ -28,9 +30,9 @@ Example: manala list -> resulting in a recipes list display`,
 		RunE: func(command *cobra.Command, args []string) error {
 			flags := command.Flags()
 
-			repoSrc, _ := flags.GetString("repository")
+			cmd.Conf.BindRepositoryFlag(flags.Lookup("repository"))
 
-			return cmd.Run(repoSrc)
+			return cmd.Run()
 		},
 	}
 
@@ -41,16 +43,16 @@ Example: manala list -> resulting in a recipes list display`,
 	return command
 }
 
-func (cmd *ListCmd) Run(repoSrc string) error {
+func (cmd *ListCmd) Run() error {
 	// Load repository
-	repo, err := cmd.RepositoryLoader.Load(repoSrc)
+	repo, err := cmd.RepositoryLoader.Load(cmd.Conf.Repository())
 	if err != nil {
 		return err
 	}
 
 	// Walk into recipes
 	if err := cmd.RecipeLoader.Walk(repo, func(rec models.RecipeInterface) {
-		fmt.Fprintf(cmd.Out, "%s: %s\n", rec.Name(), rec.Description())
+		_, _ = fmt.Fprintf(cmd.Out, "%s: %s\n", rec.Name(), rec.Description())
 	}); err != nil {
 		return err
 	}

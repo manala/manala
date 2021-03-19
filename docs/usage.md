@@ -6,17 +6,18 @@
 
 ### Config
 
-A recipe config file is made of two parts:
+A recipe manifest file is made of two parts:
 
-* a describing manifest (description, files to sync,...) handled by a fixed `manala` map key
+* a config block (description, project manifest template, files to sync,...) handled by a fixed `manala` map key
 * some custom variables serving two purposes:
     * provide default values
     * scaffold validation schema
 
 ```yaml
-# Manifest
+# Config
 manala:
     description: Saucerful of secrets # Mandatory description
+    template: .manala.yaml.tmpl       # Optional project manifest template 
     sync:
       - .manala                       # ".manala" path will be synchronized on project
 
@@ -28,7 +29,7 @@ bar:        # Scaffold "bar" validation schema as an object
 
 ### Validation
 
-As seen before, a validation schema is scaffolded from custom variables provided in recipe config file, using [JSON Schema](https://json-schema.org/).
+As seen before, a validation schema is scaffolded from custom variables provided in recipe manifest file, using [JSON Schema](https://json-schema.org/).
 
 ```yaml
 foo:

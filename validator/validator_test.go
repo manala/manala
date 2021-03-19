@@ -46,7 +46,7 @@ func (s *ValidateValueTestSuite) TestValidateValueError() {
 
 type ValidateProjectTestSuite struct {
 	suite.Suite
-	project models.ProjectInterface
+	recipe models.RecipeInterface
 }
 
 func TestValidateProjectTestSuite(t *testing.T) {
@@ -55,17 +55,27 @@ func TestValidateProjectTestSuite(t *testing.T) {
 }
 
 func (s *ValidateProjectTestSuite) SetupTest() {
-	s.project = models.NewProject(
+	s.recipe = models.NewRecipe(
 		"foo",
-		models.NewRecipe(
+		"bar",
+		"",
+		"baz",
+		models.NewRepository(
 			"foo",
 			"bar",
-			"baz",
-			models.NewRepository(
-				"foo",
-				"bar",
-			),
+			false,
 		),
+		nil,
+		nil,
+		map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"foo": map[string]interface{}{
+					"type": "string",
+				},
+			},
+		},
+		nil,
 	)
 }
 
@@ -74,44 +84,24 @@ func (s *ValidateProjectTestSuite) SetupTest() {
 /****************************/
 
 func (s *ValidateProjectTestSuite) TestValidateProject() {
-	s.project.Recipe().MergeSchema(
-		&map[string]interface{}{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"foo": map[string]interface{}{
-					"type": "string",
-				},
-			},
-		},
-	)
-	s.project.MergeVars(
-		&map[string]interface{}{
-			"foo": "bar",
-		},
-	)
-	err := ValidateProject(s.project)
-	s.NoError(err)
-}
+	dir := "foo"
 
-func (s *ValidateProjectTestSuite) TestValidateProjectError() {
-	s.project.Recipe().MergeSchema(
-		&map[string]interface{}{
-			"type": "object",
-			"properties": map[string]interface{}{
-				"foo": map[string]interface{}{
-					"type": "string",
-				},
-			},
-		},
-	)
-	s.project.MergeVars(
-		&map[string]interface{}{
+	s.Run("Success", func() {
+		prj := models.NewProject(dir, s.recipe, map[string]interface{}{
+			"foo": "bar",
+		})
+		err := ValidateProject(prj)
+		s.NoError(err)
+	})
+
+	s.Run("Error", func() {
+		prj := models.NewProject(dir, s.recipe, map[string]interface{}{
 			"foo": 123,
-		},
-	)
-	err := ValidateProject(s.project)
-	s.Error(err)
-	s.Equal("project config errors:\n- foo: Invalid type. Expected: string, given: integer", err.Error())
+		})
+		err := ValidateProject(prj)
+		s.Error(err)
+		s.Equal("project config errors:\n- foo: Invalid type. Expected: string, given: integer", err.Error())
+	})
 }
 
 /**************************/

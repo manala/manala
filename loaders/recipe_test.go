@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/config"
+	"manala/fs"
 	"manala/logger"
 	"manala/models"
 	"testing"
@@ -30,19 +31,22 @@ func TestRecipeTestSuite(t *testing.T) {
 }
 
 func (s *RecipeTestSuite) SetupTest() {
-	s.repository = models.NewRepository("testdata/recipe/_repository", "testdata/recipe/_repository")
-	s.repositoryEmpty = models.NewRepository("testdata/recipe/_repository_empty", "testdata/recipe/_repository_empty")
-	s.repositoryInvalid = models.NewRepository("testdata/recipe/_repository_invalid", "testdata/recipe/_repository_invalid")
-	s.repositoryIncorrect = models.NewRepository("testdata/recipe/_repository_incorrect", "testdata/recipe/_repository_incorrect")
-	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description")
-	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid")
+	s.repository = models.NewRepository("testdata/recipe/_repository", "testdata/recipe/_repository", false)
+	s.repositoryEmpty = models.NewRepository("testdata/recipe/_repository_empty", "testdata/recipe/_repository_empty", false)
+	s.repositoryInvalid = models.NewRepository("testdata/recipe/_repository_invalid", "testdata/recipe/_repository_invalid", false)
+	s.repositoryIncorrect = models.NewRepository("testdata/recipe/_repository_incorrect", "testdata/recipe/_repository_incorrect", false)
+	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description", false)
+	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid", false)
 
 	conf := config.New("test", "foo")
 
 	log := logger.New(conf)
 	log.SetOut(bytes.NewBufferString(""))
 
-	s.ld = NewRecipeLoader(log)
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+
+	s.ld = NewRecipeLoader(log, modelFsManager)
 }
 
 /******************/
@@ -53,42 +57,12 @@ func (s *RecipeTestSuite) TestRecipe() {
 	s.Implements((*RecipeLoaderInterface)(nil), s.ld)
 }
 
-func (s *RecipeTestSuite) TestRecipeFind() {
-	for _, t := range []struct {
-		test        string
-		dir         string
-		recFileName string
-	}{
-		{
-			test:        "Default",
-			dir:         "testdata/recipe/find/default",
-			recFileName: "testdata/recipe/find/default/.manala.yaml",
-		},
-		{
-			test: "Invalid",
-			dir:  "testdata/recipe/find/invalid",
-		},
-	} {
-		s.Run(t.test, func() {
-			recFile, err := s.ld.Find(t.dir)
-			s.NoError(err)
-			if t.recFileName != "" {
-				s.NotNil(recFile)
-				s.Equal(t.recFileName, recFile.Name())
-			} else {
-				s.Nil(recFile)
-			}
-		})
-	}
-}
-
 func (s *RecipeTestSuite) TestRecipeLoad() {
 	rec, err := s.ld.Load("load", s.repository)
 	s.NoError(err)
 	s.Implements((*models.RecipeInterface)(nil), rec)
 	s.Equal("load", rec.Name())
 	s.Equal("Load", rec.Description())
-	s.Equal("testdata/recipe/_repository/load", rec.Dir())
 	s.Equal(s.repository, rec.Repository())
 }
 
@@ -102,21 +76,21 @@ func (s *RecipeTestSuite) TestRecipeLoadNotFound() {
 func (s *RecipeTestSuite) TestRecipeLoadEmpty() {
 	rec, err := s.ld.Load("load", s.repositoryEmpty)
 	s.Error(err)
-	s.Equal("empty recipe config \"testdata/recipe/_repository_empty/load/.manala.yaml\"", err.Error())
+	s.Equal("empty recipe manifest \"load\"", err.Error())
 	s.Nil(rec)
 }
 
 func (s *RecipeTestSuite) TestRecipeLoadInvalid() {
 	rec, err := s.ld.Load("load", s.repositoryInvalid)
 	s.Error(err)
-	s.Equal("invalid recipe config \"testdata/recipe/_repository_invalid/load/.manala.yaml\" (yaml: mapping values are not allowed in this context)", err.Error())
+	s.Equal("invalid recipe manifest \"load\" (yaml: mapping values are not allowed in this context)", err.Error())
 	s.Nil(rec)
 }
 
 func (s *RecipeTestSuite) TestRecipeLoadIncorrect() {
 	rec, err := s.ld.Load("load", s.repositoryIncorrect)
 	s.Error(err)
-	s.Equal("incorrect recipe config \"testdata/recipe/_repository_incorrect/load/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
+	s.Equal("incorrect recipe manifest \"load\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
 	s.Nil(rec)
 }
 
@@ -140,15 +114,15 @@ func (s *RecipeTestSuite) TestRecipeLoadVars() {
 	)
 }
 
-func (s *RecipeTestSuite) TestRecipeLoadSyncUnits() {
-	rec, err := s.ld.Load("load_sync_units", s.repository)
+func (s *RecipeTestSuite) TestRecipeLoadSync() {
+	rec, err := s.ld.Load("load_sync", s.repository)
 	s.NoError(err)
 	s.Equal(
 		[]models.RecipeSyncUnit{
 			{Source: "foo", Destination: "foo"},
 			{Source: "foo", Destination: "bar"},
 		},
-		rec.SyncUnits(),
+		rec.Sync(),
 	)
 }
 
@@ -244,7 +218,7 @@ func (s *RecipeTestSuite) TestRecipeLoadOptions() {
 }
 
 func (s *RecipeTestSuite) TestRecipeWalk() {
-	repo := models.NewRepository("testdata/recipe/walk", "testdata/recipe/walk")
+	repo := models.NewRepository("testdata/recipe/walk", "testdata/recipe/walk", false)
 	results := make(map[string]string)
 	err := s.ld.Walk(repo, func(rec models.RecipeInterface) {
 		results[rec.Name()] = rec.Description()

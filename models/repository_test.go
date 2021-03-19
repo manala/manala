@@ -11,8 +11,6 @@ import (
 
 type RepositoryTestSuite struct {
 	suite.Suite
-	src string
-	dir string
 }
 
 func TestRepositoryTestSuite(t *testing.T) {
@@ -20,18 +18,20 @@ func TestRepositoryTestSuite(t *testing.T) {
 	suite.Run(t, new(RepositoryTestSuite))
 }
 
-func (s *RepositoryTestSuite) SetupTest() {
-	s.src = "foo"
-	s.dir = "bar"
-}
-
 /**********************/
 /* Repository - Tests */
 /**********************/
 
 func (s *RepositoryTestSuite) TestRepository() {
-	repo := NewRepository(s.src, s.dir)
-	s.Implements((*RepositoryInterface)(nil), repo)
-	s.Equal(s.src, repo.Src())
-	s.Equal(s.dir, repo.Dir())
+	source := "foo"
+	dir := "bar"
+	main := true
+
+	s.Run("New", func() {
+		repo := NewRepository(source, dir, main)
+		s.Implements((*RepositoryInterface)(nil), repo)
+		s.Equal(source, repo.Source())
+		s.Equal(dir, repo.getDir())
+		s.Equal(main, repo.Main())
+	})
 }
