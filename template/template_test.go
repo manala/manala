@@ -148,12 +148,12 @@ qux: true
 		},
 	} {
 		s.Run(t.test, func() {
-			fs := s.fsManager.NewDirFs("testdata")
-			template := s.manager.NewFsTemplate(fs)
+			fsys := s.fsManager.NewDirFs("testdata")
+			template := s.manager.NewFsTemplate(fsys)
 			if t.helpers != "" {
 				_ = template.ParseFiles(t.helpers)
 			}
-			tmplContent, _ := fs.ReadFile(t.file)
+			tmplContent, _ := fsys.ReadFile(t.file)
 			_ = template.Parse(string(tmplContent))
 			var tmplOut bytes.Buffer
 			err := template.Execute(&tmplOut, t.data)

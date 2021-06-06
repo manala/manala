@@ -1,8 +1,8 @@
 package binder
 
 import (
+	"code.rocketnine.space/tslocum/cview"
 	"github.com/stretchr/testify/suite"
-	"gitlab.com/tslocum/cview"
 	"manala/models"
 	"testing"
 )

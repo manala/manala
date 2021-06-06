@@ -8,7 +8,7 @@ import (
 	"manala/config"
 )
 
-// Create a logger
+// New creates a logger
 func New(opts ...func(logger *logger)) Logger {
 	logger := &logger{
 		log: &log.Logger{

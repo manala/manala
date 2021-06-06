@@ -6,7 +6,7 @@ import (
 
 const ProjectManifestFile = ".manala.yaml"
 
-// Create a project
+// NewProject creates a project
 func NewProject(dir string, recipe RecipeInterface, vars map[string]interface{}) ProjectInterface {
 	project := &project{
 		dir:    dir,

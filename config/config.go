@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// Create a config
+// New creates a config
 func New(opts ...func(config *config)) Config {
 	// Viper
 	v := viper.New()
