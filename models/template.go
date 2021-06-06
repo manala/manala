@@ -9,7 +9,7 @@ import (
 /* Manager */
 /***********/
 
-// Create a model template manager
+// NewTemplateManager creates a model template manager
 func NewTemplateManager(manager template.ManagerInterface, fsManager FsManagerInterface) *templateManager {
 	return &templateManager{
 		templateManager: manager,
@@ -30,7 +30,7 @@ type templateManager struct {
 /* Template - Recipe */
 /*********************/
 
-// Create a recipe template
+// NewRecipeTemplate creates a recipe template
 func (manager *templateManager) NewRecipeTemplate(recipe RecipeInterface) (*recipeTemplate, error) {
 	// Fs
 	fs := manager.fsManager.NewModelFs(recipe)

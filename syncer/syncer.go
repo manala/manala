@@ -45,7 +45,7 @@ type Syncer struct {
 	templateManager models.TemplateManagerInterface
 }
 
-// Sync a project from its recipe
+// SyncProject syncs a project from its recipe
 func (snc *Syncer) SyncProject(prj models.ProjectInterface) error {
 	// Recipe template
 	recTmpl, err := snc.templateManager.NewRecipeTemplate(prj.Recipe())

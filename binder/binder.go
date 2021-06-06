@@ -1,9 +1,9 @@
 package binder
 
 import (
+	"code.rocketnine.space/tslocum/cview"
 	"fmt"
 	"github.com/xeipuuv/gojsonpointer"
-	"gitlab.com/tslocum/cview"
 	"manala/models"
 )
 

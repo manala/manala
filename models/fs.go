@@ -8,7 +8,7 @@ import (
 /* Manager */
 /***********/
 
-// Create a model file system manager
+// NewFsManager creates a model file system manager
 func NewFsManager(manager fs.ManagerInterface) *fsManager {
 	return &fsManager{
 		fsManager: manager,
@@ -27,7 +27,7 @@ type fsManager struct {
 /* File System - Model */
 /***********************/
 
-// Create a model file system
+// NewModelFs creates a model file system
 func (manager *fsManager) NewModelFs(model model) fs.ReadWriteInterface {
 	return manager.fsManager.NewDirFs(model.getDir())
 }

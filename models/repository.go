@@ -1,6 +1,6 @@
 package models
 
-// Create a repository
+// NewRepository creates a repository
 func NewRepository(source string, dir string, main bool) RepositoryInterface {
 	return &repository{
 		source: source,

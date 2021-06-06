@@ -14,7 +14,7 @@ import (
 /* Manager */
 /***********/
 
-// Create a template manager
+// NewManager creates a template manager
 func NewManager() *manager {
 	return &manager{}
 }
@@ -26,7 +26,7 @@ type ManagerInterface interface {
 type manager struct {
 }
 
-// Create a fs template
+// NewFsTemplate creates a fs template
 func (manager *manager) NewFsTemplate(fs fs.ReadInterface) *Template {
 	// Template
 	tmpl := &Template{

@@ -12,7 +12,7 @@ import (
 /* Manager */
 /***********/
 
-// Create a model watcher manager
+// NewWatcherManager creates a model watcher manager
 func NewWatcherManager(log logger.Logger) *watcherManager {
 	return &watcherManager{
 		log: log,
@@ -31,7 +31,7 @@ type watcherManager struct {
 /* Watcher */
 /***********/
 
-// Create a watcher
+// NewWatcher creates a watcher
 func (manager *watcherManager) NewWatcher() (*watcher, error) {
 	// Fsnotify watcher
 	fsnotifyWatcher, err := fsnotify.NewWatcher()

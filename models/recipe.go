@@ -6,7 +6,7 @@ import (
 
 const RecipeManifestFile = ".manala.yaml"
 
-// Create a recipe
+// NewRecipe creates a recipe
 func NewRecipe(name string, description string, template string, dir string, repository RepositoryInterface, vars map[string]interface{}, sync []RecipeSyncUnit, schema map[string]interface{}, options []RecipeOption) *recipe {
 	return &recipe{
 		name:        name,

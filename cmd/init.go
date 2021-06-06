@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"code.rocketnine.space/tslocum/cview"
 	"errors"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
-	"gitlab.com/tslocum/cview"
 	"io/fs"
 	"manala/binder"
 	"manala/config"
