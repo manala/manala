@@ -29,7 +29,7 @@ jobs:
           key: ${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ matrix.os }}-
       - name: Lint
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'macos-10.15'
         uses: golangci/golangci-lint-action@v2
         with:
           version: v${{ matrix.golangci-lint-version }}
@@ -38,14 +38,16 @@ jobs:
           go install github.com/kyoh86/richgo@v${{ matrix.richgo-version }}
           richgo test -v ./...
       - name: Build
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'macos-10.15'
         uses: goreleaser/goreleaser-action@v2
+        env:
+          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         with:
           version: v${{ matrix.goreleaser-version }}
           args: >
             build --snapshot
       - name: Upload artifacts
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'macos-10.15'
         uses: actions/upload-artifact@v2
         with:
           name: dist
