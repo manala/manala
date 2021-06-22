@@ -8,5 +8,5 @@ docs:
 		--rm \
 		--volume $(CURDIR):/docs \
 		--publish 8000:${or ${PORT},${PORT},8000} \
-		squidfunk/mkdocs-material:5.5.12 \
+		squidfunk/mkdocs-material:7.0.0 \
 		serve -a 0.0.0.0:8000

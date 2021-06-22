@@ -4,7 +4,6 @@ repo_name: Manala
 
 plugins:
   - search
-  - git-revision-date-localized
 
 markdown_extensions:
   - admonition
