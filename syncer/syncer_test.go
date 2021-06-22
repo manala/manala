@@ -119,6 +119,14 @@ func (s *SyncTestSuite) TestSync() {
 		content, _ := os.ReadFile(dstDir + "/dir/foo")
 		s.Equal("baz", string(content))
 	})
+
+	s.Run("Destination file directory not exists", func() {
+		err := s.sync.Sync(srcFs, "foo", nil, "baz/foo", dstFs, nil)
+		s.NoError(err)
+		s.FileExists(dstDir + "/baz/foo")
+		content, _ := os.ReadFile(dstDir + "/baz/foo")
+		s.Equal("bar", string(content))
+	})
 }
 
 func (s *SyncTestSuite) TestSyncExecutable() {

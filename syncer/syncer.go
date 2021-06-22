@@ -155,18 +155,26 @@ func (snc *Syncer) syncNode(node *node) error {
 			snc.log.WithField("dst", node.Dst.Path),
 		)
 
-		// Destination is a directory; remove
-		if node.Dst.IsExist && node.Dst.IsDir {
-			if err := node.Dst.Fs.RemoveAll(node.Dst.Path); err != nil {
-				return err
+		if node.Dst.IsExist {
+			// Destination is a directory; remove
+			if node.Dst.IsDir {
+				if err := node.Dst.Fs.RemoveAll(node.Dst.Path); err != nil {
+					return err
+				}
+				node.Dst.IsExist = false
+				node.Dst.IsDir = false
 			}
-			node.Dst.IsExist = false
-			node.Dst.IsDir = false
-		}
-
-		// Node is a dist and destination already exists (or was a directory); exit
-		if node.Dst.IsExist && node.IsDist {
-			return nil
+			// Node is a dist and destination already exists (or was a directory); exit
+			if node.IsDist {
+				return nil
+			}
+		} else {
+			// Ensure destination parents directories exists
+			if dir := filepath.Dir(node.Dst.Path); dir != "." {
+				if err := node.Dst.Fs.MkdirAll(dir, 0755); err != nil {
+					return err
+				}
+			}
 		}
 
 		equal := false
