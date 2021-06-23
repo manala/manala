@@ -17,6 +17,6 @@ jobs:
           fetch-depth: 0
       - name: Deploy
         # See: https://github.com/mhausenblas/mkdocs-deploy-gh-pages
-        uses: mhausenblas/mkdocs-deploy-gh-pages@1.17
+        uses: mhausenblas/mkdocs-deploy-gh-pages@1.20
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
