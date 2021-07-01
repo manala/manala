@@ -179,7 +179,7 @@ func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 	s.NoError(err)
 	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
-	s.Equal("invalid project manifest \"testdata/project/load_incorrect/.manala.yaml\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
+	s.Equal("incorrect project manifest \"testdata/project/load_incorrect/.manala.yaml\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
 	s.Nil(prj)
 }
 

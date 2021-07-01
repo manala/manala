@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/goccy/go-yaml"
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v3"
 	"io"
 	"manala/config"
 	"manala/logger"
 	"manala/models"
-	"manala/yaml/cleaner"
 	"os"
 	"path/filepath"
 )
@@ -99,11 +98,8 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 		if err == io.EOF {
 			return nil, fmt.Errorf("empty project manifest \"%s\"", manifest.Name())
 		}
-		return nil, fmt.Errorf("invalid project manifest \"%s\" (%w)", manifest.Name(), err)
+		return nil, fmt.Errorf("incorrect project manifest \"%s\" %s", manifest.Name(), yaml.FormatError(err, true, true))
 	}
-
-	// See: https://github.com/go-yaml/yaml/issues/139
-	vars = cleaner.Clean(vars)
 
 	// Map config
 	cfg := projectConfig{
