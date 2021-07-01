@@ -98,7 +98,7 @@ func (s *UpdateTestSuite) Test() {
 			test: "Default",
 			dir:  "testdata/update/project/default",
 			args: []string{},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -111,7 +111,7 @@ func (s *UpdateTestSuite) Test() {
 			test: "Default with repository",
 			dir:  "testdata/update/project/default",
 			args: []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom")},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/custom
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -132,7 +132,7 @@ func (s *UpdateTestSuite) Test() {
 			test: "Default with recipe",
 			dir:  "testdata/update/project/default",
 			args: []string{"--recipe", "bar"},
-			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
+			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -146,7 +146,7 @@ func (s *UpdateTestSuite) Test() {
 			dir:  "testdata/update/project/default",
 			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
-			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}testdata/update/repository/default
+			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
 `,
 		},
@@ -156,7 +156,7 @@ func (s *UpdateTestSuite) Test() {
 			args:   []string{"--repository", filepath.Join(s.wd, "testdata/update/repository/custom"), "--recipe", "bar"},
 			err:    "",
 			stdOut: "",
-			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/custom
+			stdErr: `   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -184,7 +184,7 @@ func (s *UpdateTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -210,7 +210,7 @@ func (s *UpdateTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -272,7 +272,7 @@ func (s *UpdateTestSuite) TestTraverse() {
 		s.NoError(err)
 		s.Equal("", stdOut.String())
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -294,7 +294,7 @@ func (s *UpdateTestSuite) TestTraverse() {
 		s.NoError(err)
 		s.Equal("", stdOut.String())
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -322,26 +322,26 @@ func (s *UpdateTestSuite) TestRecursive() {
 		s.NoError(err)
 		s.Equal("", stdOut.String())
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(
-				`   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(
+				`   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_foo
    • Project synced           
-   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -368,25 +368,25 @@ func (s *UpdateTestSuite) TestRecursive() {
 		s.NoError(err)
 		s.Equal("", stdOut.String())
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_foo
    • Project synced           
-   • Project loaded            recipe=bar repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=bar repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
    • Synced file               path=file_default_bar
    • Project synced           
-   • Project loaded            recipe=foo repository={{ wd }}testdata/update/repository/default
+   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        

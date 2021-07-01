@@ -3,7 +3,7 @@ package fs
 import (
 	ioFs "io/fs"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 /***********/
@@ -58,7 +58,7 @@ type Fs struct {
 }
 
 func (fs *Fs) path(name string) string {
-	return path.Join(
+	return filepath.Join(
 		fs.dir,
 		name,
 	)

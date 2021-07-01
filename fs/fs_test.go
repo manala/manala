@@ -3,6 +3,7 @@ package fs
 import (
 	"github.com/stretchr/testify/suite"
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -107,7 +108,11 @@ func (s *FsTestSuite) TestWrite() {
 		err := fs.Chmod("file_chmod", 0777)
 		s.NoError(err)
 		stat, _ := os.Stat(dir + "/file_chmod")
-		s.Equal("-rwxrwxrwx", stat.Mode().String())
+		if runtime.GOOS == "windows" {
+			s.Equal("-rw-rw-rw-", stat.Mode().String())
+		} else {
+			s.Equal("-rwxrwxrwx", stat.Mode().String())
+		}
 	})
 
 	s.Run("Remove", func() {
@@ -121,7 +126,11 @@ func (s *FsTestSuite) TestWrite() {
 		s.NoError(err)
 		s.DirExists(dir + "/dir")
 		stat, _ := os.Stat(dir + "/dir")
-		s.Equal("drwxr-xr-x", stat.Mode().String())
+		if runtime.GOOS == "windows" {
+			s.Equal("drwxrwxrwx", stat.Mode().String())
+		} else {
+			s.Equal("drwxr-xr-x", stat.Mode().String())
+		}
 	})
 
 	s.Run("RemoveAll", func() {
