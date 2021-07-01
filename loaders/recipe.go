@@ -15,6 +15,7 @@ import (
 	"manala/yaml/cleaner"
 	"manala/yaml/doc"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -164,14 +165,14 @@ func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.
 	), nil
 }
 
-func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.RecipeOption, path string) (map[string]interface{}, error) {
+func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.RecipeOption, root string) (map[string]interface{}, error) {
 	var nodeKey *yaml.Node = nil
 	schemaProperties := map[string]interface{}{}
 
 	for _, nodeChild := range node.Content {
 		// Do we have a current node key ?
 		if nodeKey != nil {
-			nodePath := filepath.Join(path, nodeKey.Value)
+			nodePath := path.Join(root, nodeKey.Value)
 
 			// Exclude "manala" config
 			if nodePath == "/manala" {
