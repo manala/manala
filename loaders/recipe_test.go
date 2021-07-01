@@ -75,24 +75,24 @@ func (s *RecipeTestSuite) TestRecipeLoadEmpty() {
 	s.Nil(rec)
 }
 
-func (s *RecipeTestSuite) TestRecipeLoadInvalid() {
-	rec, err := s.ld.Load("load", s.repositoryInvalid)
-	s.Error(err)
-	s.Equal("invalid recipe manifest \"load\" (yaml: mapping values are not allowed in this context)", err.Error())
-	s.Nil(rec)
-}
-
 func (s *RecipeTestSuite) TestRecipeLoadIncorrect() {
 	rec, err := s.ld.Load("load", s.repositoryIncorrect)
 	s.Error(err)
-	s.Equal("incorrect recipe manifest \"load\" (yaml: unmarshal errors:\n  line 1: cannot unmarshal !!str `foo` into map[string]interface {})", err.Error())
+	s.Equal("incorrect recipe manifest \"load\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
+	s.Nil(rec)
+}
+
+func (s *RecipeTestSuite) TestRecipeLoadInvalid() {
+	rec, err := s.ld.Load("load", s.repositoryInvalid)
+	s.Error(err)
+	s.Equal("invalid recipe manifest config \"load\" (Key: 'recipeConfig.Description' Error:Field validation for 'Description' failed on the 'required' tag)", err.Error())
 	s.Nil(rec)
 }
 
 func (s *RecipeTestSuite) TestRecipeLoadNoDescription() {
 	rec, err := s.ld.Load("load", s.repositoryNoDescription)
 	s.Error(err)
-	s.Equal("Key: 'recipeConfig.Description' Error:Field validation for 'Description' failed on the 'required' tag", err.Error())
+	s.Equal("invalid recipe manifest config \"load\" (Key: 'recipeConfig.Description' Error:Field validation for 'Description' failed on the 'required' tag)", err.Error())
 	s.Nil(rec)
 }
 

@@ -5,20 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/goccy/go-yaml"
+	yamlAst "github.com/goccy/go-yaml/ast"
+	yamlParser "github.com/goccy/go-yaml/parser"
 	"github.com/imdario/mergo"
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v3"
 	"io"
 	"io/fs"
 	"manala/logger"
 	"manala/models"
-	"manala/yaml/cleaner"
-	"manala/yaml/doc"
+	yamlDoc "manala/yaml/doc"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -109,22 +109,23 @@ func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.
 	ld.log.Debug("Loading recipe...", ld.log.WithField("dir", dir))
 
 	// Parse manifest
-	node := yaml.Node{}
+	manifestContent, err := io.ReadAll(manifest)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := yaml.NewDecoder(manifest).Decode(&node); err != nil {
-		if err == io.EOF {
-			return nil, fmt.Errorf("empty recipe manifest \"%s\"", dir)
-		}
-		return nil, fmt.Errorf("invalid recipe manifest \"%s\" (%w)", dir, err)
+	manifestNode, err := yamlParser.ParseBytes(manifestContent, yamlParser.ParseComments)
+	if err != nil {
+		return nil, err
 	}
 
 	var vars map[string]interface{}
-	if err := node.Decode(&vars); err != nil {
-		return nil, fmt.Errorf("incorrect recipe manifest \"%s\" (%w)", dir, err)
+	if err := yaml.NewDecoder(manifestNode).Decode(&vars); err != nil {
+		if err == io.EOF {
+			return nil, fmt.Errorf("empty recipe manifest \"%s\"", dir)
+		}
+		return nil, fmt.Errorf("incorrect recipe manifest \"%s\" %s", dir, yaml.FormatError(err, true, true))
 	}
-
-	// See: https://github.com/go-yaml/yaml/issues/139
-	vars = cleaner.Clean(vars)
 
 	// Map config
 	cfg := recipeConfig{}
@@ -139,15 +140,15 @@ func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.
 	// Validate
 	validate := validator.New()
 	if err := validate.Struct(cfg); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid recipe manifest config \"%s\" (%w)", dir, err)
 	}
 
 	// Cleanup vars
 	delete(vars, "manala")
 
-	// Parse config node
+	// Parse manifest node
 	var options []models.RecipeOption
-	schema, err := ld.parseConfigNode(&node, &options, "")
+	schema, err := ld.parseManifestNode(manifestNode.Docs[0], &options, "")
 	if err != nil {
 		return nil, err
 	}
@@ -165,100 +166,86 @@ func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.
 	), nil
 }
 
-func (ld *recipeLoader) parseConfigNode(node *yaml.Node, options *[]models.RecipeOption, root string) (map[string]interface{}, error) {
-	var nodeKey *yaml.Node = nil
+func (ld *recipeLoader) parseManifestNode(node yamlAst.Node, options *[]models.RecipeOption, root string) (map[string]interface{}, error) {
+	var nodes []*yamlAst.MappingValueNode
+
+	switch node.(type) {
+	case *yamlAst.DocumentNode:
+		schema, err := ld.parseManifestNode(node.(*yamlAst.DocumentNode).Body, options, "/")
+		if err != nil {
+			return nil, err
+		}
+		return schema, nil
+	case *yamlAst.MappingValueNode:
+		nodes = []*yamlAst.MappingValueNode{node.(*yamlAst.MappingValueNode)}
+	case *yamlAst.MappingNode:
+		nodes = node.(*yamlAst.MappingNode).Values
+	}
+
 	schemaProperties := map[string]interface{}{}
 
-	for _, nodeChild := range node.Content {
-		// Do we have a current node key ?
-		if nodeKey != nil {
-			nodePath := path.Join(root, nodeKey.Value)
+	for _, n := range nodes {
+		nPath := path.Join(root, n.Key.String())
 
-			// Exclude "manala" config
-			if nodePath == "/manala" {
-				nodeKey = nil
-				continue
+		// Exclude "manala" config
+		if nPath == "/manala" {
+			continue
+		}
+
+		var schema map[string]interface{} = nil
+
+		switch n.Value.(type) {
+		case yamlAst.ScalarNode:
+			schema = map[string]interface{}{}
+		case *yamlAst.MappingValueNode, *yamlAst.MappingNode:
+			var err error
+			schema, err = ld.parseManifestNode(n.Value, options, nPath)
+			if err != nil {
+				return nil, err
 			}
-
-			var schema map[string]interface{} = nil
-
-			switch nodeChild.Kind {
-			case yaml.ScalarNode:
-				// Both key/value node are scalars
-				schema = map[string]interface{}{}
-			case yaml.MappingNode:
-				var err error
-				schema, err = ld.parseConfigNode(nodeChild, options, nodePath)
-				if err != nil {
-					return nil, err
-				}
-			case yaml.SequenceNode:
-				schema = map[string]interface{}{
-					"type": "array",
-				}
-			default:
-				return nil, fmt.Errorf("unknown node kind: %s", strconv.Itoa(int(nodeChild.Kind)))
+		case *yamlAst.SequenceNode:
+			schema = map[string]interface{}{
+				"type": "array",
 			}
+		default:
+			return nil, fmt.Errorf("unknown node type: %s", reflect.TypeOf(n))
+		}
 
-			if nodeKey.HeadComment != "" {
-				tags := doc.ParseCommentTags(nodeKey.HeadComment)
-				// Handle schema tags
-				for _, tag := range tags.Filter("schema") {
-					var tagSchema map[string]interface{}
-					if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
-						return nil, fmt.Errorf("invalid recipe schema tag at \"%s\": %w", nodePath, err)
-					}
-					if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
-						return nil, fmt.Errorf("unable to merge recipe schema tag at \"%s\": %w", nodePath, err)
-					}
+		if comment := n.GetComment(); comment != nil {
+			tags := yamlDoc.ParseCommentTags(comment.Value)
+			// Handle schema tags
+			for _, tag := range tags.Filter("schema") {
+				var tagSchema map[string]interface{}
+				if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
+					return nil, fmt.Errorf("invalid recipe schema tag at \"%s\": %w", nPath, err)
 				}
-				// Handle option tags
-				for _, tag := range tags.Filter("option") {
-					option := &models.RecipeOption{
-						Path:   nodePath,
-						Schema: schema,
-					}
-					if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
-						return nil, fmt.Errorf("invalid recipe option tag at \"%s\": %w", nodePath, err)
-					}
-					validate := validator.New()
-					if err := validate.Struct(option); err != nil {
-						return nil, fmt.Errorf("incorrect recipe option tag at \"%s\": %w", nodePath, err)
-					}
-					*options = append(*options, *option)
+				if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
+					return nil, fmt.Errorf("unable to merge recipe schema tag at \"%s\": %w", nPath, err)
 				}
 			}
-
-			schemaProperties[nodeKey.Value] = schema
-
-			// Reset node key
-			nodeKey = nil
-		} else {
-			switch nodeChild.Kind {
-			case yaml.ScalarNode:
-				// Now we have a node key \o/
-				nodeKey = nodeChild
-			case yaml.MappingNode:
-				// This could only be the root node
-				schema, err := ld.parseConfigNode(nodeChild, options, "/")
-				if err != nil {
-					return nil, err
+			// Handle option tags
+			for _, tag := range tags.Filter("option") {
+				option := &models.RecipeOption{
+					Path:   nPath,
+					Schema: schema,
 				}
-				return schema, nil
-			case yaml.SequenceNode:
-				// This could only be the root node
-				return map[string]interface{}{
-					"type": "array",
-				}, nil
-			default:
-				return nil, fmt.Errorf("unknown node kind: %s", strconv.Itoa(int(nodeChild.Kind)))
+				if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
+					return nil, fmt.Errorf("invalid recipe option tag at \"%s\": %w", nPath, err)
+				}
+				validate := validator.New()
+				if err := validate.Struct(option); err != nil {
+					return nil, fmt.Errorf("incorrect recipe option tag at \"%s\": %w", nPath, err)
+				}
+				*options = append(*options, *option)
 			}
 		}
+
+		schemaProperties[n.Key.String()] = schema
 	}
 
 	// Allow additional properties for empty mappings only
 	schemaAdditionalProperties := false
-	if node.Content == nil {
+	if len(nodes) == 0 {
 		schemaAdditionalProperties = true
 	}
 

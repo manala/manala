@@ -3,7 +3,7 @@ package template
 import (
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 	"io"
 	"manala/fs"
 	"strings"
@@ -96,7 +96,7 @@ func (tmpl *Template) Execute(writer io.Writer, vars map[string]interface{}) err
 // As seen in helm
 func (tmpl *Template) funcToYaml() func(value interface{}) string {
 	return func(value interface{}) string {
-		data, err := yaml.Marshal(value)
+		data, err := yaml.MarshalWithOptions(value, yaml.Indent(4), yaml.IndentSequence(true))
 		if err != nil {
 			// Swallow errors inside of a template.
 			return ""
