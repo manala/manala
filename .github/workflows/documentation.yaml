@@ -1,14 +1,12 @@
 name: Documentation
-
 on:
   push:
     branches:
       - master
-
 jobs:
   documentation:
     name: Documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -16,7 +14,6 @@ jobs:
           # See: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin/issues/10
           fetch-depth: 0
       - name: Deploy
-        # See: https://github.com/mhausenblas/mkdocs-deploy-gh-pages
         uses: mhausenblas/mkdocs-deploy-gh-pages@1.20
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
