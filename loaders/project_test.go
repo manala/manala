@@ -7,6 +7,7 @@ import (
 	"manala/logger"
 	"manala/models"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -62,7 +63,7 @@ func (s *ProjectTestSuite) TestProjectFind() {
 		{
 			test:            "Default",
 			dir:             "testdata/project/find/default",
-			prjManifestName: "testdata/project/find/default/.manala.yaml",
+			prjManifestName: filepath.Join("testdata", "project", "find", "default", ".manala.yaml"),
 		},
 		{
 			test: "Not found",
@@ -91,7 +92,7 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 		{
 			test:            "Default",
 			dir:             "testdata/project/find_traverse/default",
-			prjManifestName: "testdata/project/find_traverse/default/.manala.yaml",
+			prjManifestName: filepath.Join("testdata", "project", "find_traverse", "default", ".manala.yaml"),
 		},
 		{
 			test: "Not found",
@@ -100,7 +101,7 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 		{
 			test:            "Level one",
 			dir:             "testdata/project/find_traverse/traverse/level",
-			prjManifestName: "testdata/project/find_traverse/traverse/.manala.yaml",
+			prjManifestName: filepath.Join("testdata", "project", "find_traverse", "traverse", ".manala.yaml"),
 		},
 	} {
 		s.Run(t.test, func() {
@@ -170,7 +171,7 @@ func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 	s.NoError(err)
 	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
-	s.Equal("empty project manifest \"testdata/project/load_empty/.manala.yaml\"", err.Error())
+	s.Equal("empty project manifest \""+filepath.Join("testdata", "project", "load_empty", ".manala.yaml")+"\"", err.Error())
 	s.Nil(prj)
 }
 
@@ -179,7 +180,7 @@ func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 	s.NoError(err)
 	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
-	s.Equal("incorrect project manifest \"testdata/project/load_incorrect/.manala.yaml\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
+	s.Equal("incorrect project manifest \""+filepath.Join("testdata", "project", "load_incorrect", ".manala.yaml")+"\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
 	s.Nil(prj)
 }
 

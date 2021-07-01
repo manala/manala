@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/stretchr/testify/suite"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
@@ -60,7 +60,7 @@ func (s *RecipeTestSuite) TestRecipe() {
 		s.Equal(name, rec.Name())
 		s.Equal(description, rec.Description())
 		s.Equal(template, rec.Template())
-		s.Equal(path.Join(s.repository.getDir(), dir), rec.getDir())
+		s.Equal(filepath.Join(s.repository.getDir(), dir), rec.getDir())
 		s.Equal(s.repository, rec.Repository())
 		s.Equal(vars, rec.Vars())
 		s.Equal(sync, rec.Sync())
