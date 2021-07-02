@@ -57,7 +57,7 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	}
 
 	// Not found manifest...
-	if traverse == false {
+	if !traverse {
 		return nil, nil
 	}
 

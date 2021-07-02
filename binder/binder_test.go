@@ -68,32 +68,32 @@ func (s *RecipeFormBinderTestSuite) TestNewEnum() {
 	s.Equal(true, bind.Value)
 
 	item.SetCurrentOption(1)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("<False>", itemOption.GetText())
 	s.Equal(false, bind.Value)
 
 	item.SetCurrentOption(2)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("<None>", itemOption.GetText())
 	s.Equal(nil, bind.Value)
 
 	item.SetCurrentOption(3)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("foo", itemOption.GetText())
 	s.Equal("foo", bind.Value)
 
 	item.SetCurrentOption(4)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("123", itemOption.GetText())
 	s.Equal(123, bind.Value)
 
 	item.SetCurrentOption(5)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("7.0", itemOption.GetText())
 	s.Equal("7.0", bind.Value)
 
 	item.SetCurrentOption(6)
-	itemIndex, itemOption = item.GetCurrentOption()
+	_, itemOption = item.GetCurrentOption()
 	s.Equal("7.1", itemOption.GetText())
 	s.Equal(7.1, bind.Value)
 }
