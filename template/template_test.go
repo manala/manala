@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/fs"
+	"strings"
 	"testing"
 )
 
@@ -163,7 +164,11 @@ qux: true
 			} else {
 				s.NoError(err)
 			}
-			s.Equal(t.out, tmplOut.String())
+			s.Equal(
+				t.out,
+				// Ensure windows CRLF conversion
+				strings.NewReplacer("\r\n", "\n").Replace(tmplOut.String()),
+			)
 		})
 	}
 }

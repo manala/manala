@@ -109,7 +109,7 @@ func (s *WatchTestSuite) Test() {
 			dir:  "testdata/watch/project/default",
 			args: []string{"--recipe", "invalid"},
 			err:  "recipe not found",
-			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}testdata/update/repository/default
+			stdErr: `   • Project loaded            recipe=invalid repository={{ wd }}{{ ps }}testdata{{ ps }}update{{ ps }}repository{{ ps }}default
    • Repository loaded        
 `,
 		},
@@ -132,7 +132,7 @@ func (s *WatchTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File
@@ -158,7 +158,7 @@ func (s *WatchTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Stderr
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// File

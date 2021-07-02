@@ -110,7 +110,7 @@ func (s *InitTestSuite) Test() {
 			test: "Use recipe",
 			dir:  "testdata/init/project/default",
 			args: []string{"--recipe", "foo"},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/default
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -119,7 +119,7 @@ func (s *InitTestSuite) Test() {
 `,
 			manifest: `manala:
    recipe: foo
-   repository: {{ wd }}testdata/init/repository/default
+   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
 `,
 			file: "file_default_foo",
 		},
@@ -133,7 +133,7 @@ func (s *InitTestSuite) Test() {
 			test: "Use recipe and repository",
 			dir:  "testdata/init/project/default",
 			args: []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/custom
+			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -142,7 +142,7 @@ func (s *InitTestSuite) Test() {
 `,
 			manifest: `manala:
    recipe: foo
-   repository: {{ wd }}testdata/init/repository/custom
+   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
 `,
 			file: "file_custom_foo",
 		},
@@ -172,7 +172,7 @@ func (s *InitTestSuite) Test() {
 			s.Equal(t.stdOut, stdOut.String())
 			// Tests - Std
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// Tests - Manifest
@@ -180,7 +180,7 @@ func (s *InitTestSuite) Test() {
 				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
 				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
 				s.Equal(
-					strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.manifest),
+					strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.manifest),
 					string(content),
 				)
 			}
@@ -208,7 +208,7 @@ func (s *InitTestSuite) Test() {
 			// Tests - Std
 			s.Equal(t.stdOut, stdOut.String())
 			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.stdErr),
+				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
 				stdErr.String(),
 			)
 			// Tests - Manifest
@@ -216,7 +216,7 @@ func (s *InitTestSuite) Test() {
 				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
 				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
 				s.Equal(
-					strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(t.manifest),
+					strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.manifest),
 					string(content),
 				)
 			}
@@ -272,7 +272,7 @@ func (s *InitTestSuite) TestTemplate() {
 		// Tests - Std
 		s.Equal("", stdOut.String())
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`   • Project loaded            recipe=foo repository={{ wd }}testdata/init/repository/template
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}template
    • Repository loaded        
    • Recipe loaded            
    • Project validated        
@@ -284,15 +284,16 @@ func (s *InitTestSuite) TestTemplate() {
 		s.FileExists("testdata/init/project/default/.manala.yaml")
 		content, _ := os.ReadFile("testdata/init/project/default/.manala.yaml")
 		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd+"/").Replace(`manala:
+			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`manala:
    recipe: foo
-   repository: {{ wd }}testdata/init/repository/template
+   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}template
 
 # Foo
 foo:
     bar: baz
 `),
-			string(content),
+			// Ensure windows CRLF conversion
+			strings.NewReplacer("\r\n", "\n").Replace(string(content)),
 		)
 	})
 }
