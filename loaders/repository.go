@@ -102,7 +102,7 @@ Load:
 	case git.ErrRepositoryNotExists:
 		ld.log.Debug("Cloning git repository cache...")
 
-		gitRepository, err = git.PlainClone(dir, false, &git.CloneOptions{
+		_, err = git.PlainClone(dir, false, &git.CloneOptions{
 			URL:               src,
 			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 		})

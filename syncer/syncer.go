@@ -201,7 +201,7 @@ func (snc *Syncer) syncNode(node *node) error {
 				if _, err := io.Copy(hash, &buffer); err != nil {
 					return err
 				}
-				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
+				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
 			}
 		} else {
 			// Node is not a template, let's go buffering \o/
@@ -225,7 +225,7 @@ func (snc *Syncer) syncNode(node *node) error {
 				if _, err := io.Copy(hash, srcFileHash); err != nil {
 					return err
 				}
-				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
+				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
 			}
 
 			srcReader = srcFile
