@@ -169,17 +169,17 @@ func (ld *recipeLoader) loadDir(dir string, manifest fs.File, repository models.
 func (ld *recipeLoader) parseManifestNode(node yamlAst.Node, options *[]models.RecipeOption, root string) (map[string]interface{}, error) {
 	var nodes []*yamlAst.MappingValueNode
 
-	switch node.(type) {
+	switch node := node.(type) {
 	case *yamlAst.DocumentNode:
-		schema, err := ld.parseManifestNode(node.(*yamlAst.DocumentNode).Body, options, "/")
+		schema, err := ld.parseManifestNode(node.Body, options, "/")
 		if err != nil {
 			return nil, err
 		}
 		return schema, nil
 	case *yamlAst.MappingValueNode:
-		nodes = []*yamlAst.MappingValueNode{node.(*yamlAst.MappingValueNode)}
+		nodes = []*yamlAst.MappingValueNode{node}
 	case *yamlAst.MappingNode:
-		nodes = node.(*yamlAst.MappingNode).Values
+		nodes = node.Values
 	}
 
 	schemaProperties := map[string]interface{}{}
