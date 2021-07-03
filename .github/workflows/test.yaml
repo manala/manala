@@ -1,0 +1,52 @@
+name: Test
+on: [workflow_dispatch, pull_request]
+jobs:
+  test:
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: [1.16.5]
+        goreleaser-version: [0.172.1]
+        golangci-lint-version: [1.41.1]
+        richgo-version: [0.3.9]
+        os: [ubuntu-20.04, macos-10.15, windows-2019]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # See: https://github.com/goreleaser/goreleaser-action#workflow
+          fetch-depth: 0
+      - name: Set up go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ matrix.os }}-
+      - name: Lint
+        if: matrix.os == 'ubuntu-20.04'
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v${{ matrix.golangci-lint-version }}
+      - name: Test
+        run: |
+          go install github.com/kyoh86/richgo@v${{ matrix.richgo-version }}
+          richgo test -v ./...
+      - name: Build
+        if: matrix.os == 'ubuntu-20.04'
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v${{ matrix.goreleaser-version }}
+          args: >
+            build --snapshot
+      - name: Upload artifacts
+        if: matrix.os == 'ubuntu-20.04'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: dist/*
