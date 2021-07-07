@@ -12,7 +12,7 @@ import (
 func New(opts ...func(logger *logger)) Logger {
 	logger := &logger{
 		log: &log.Logger{
-			Handler: cli.Default,
+			Handler: discard.Default,
 			Level:   log.DebugLevel,
 		},
 	}
@@ -47,12 +47,6 @@ func WithDebug(debug bool) func(logger *logger) {
 func WithWriter(writer io.Writer) func(logger *logger) {
 	return func(logger *logger) {
 		logger.log.Handler = cli.New(writer)
-	}
-}
-
-func WithDiscardment() func(logger *logger) {
-	return func(logger *logger) {
-		logger.log.Handler = discard.New()
 	}
 }
 

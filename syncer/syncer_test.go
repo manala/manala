@@ -29,7 +29,7 @@ func TestSyncTestSuite(t *testing.T) {
 }
 
 func (s *SyncTestSuite) SetupTest() {
-	log := logger.New(logger.WithDiscardment())
+	log := logger.New()
 
 	s.fsManager = fs.NewManager()
 	modelFsManager := models.NewFsManager(s.fsManager)

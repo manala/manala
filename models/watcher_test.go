@@ -21,7 +21,7 @@ func TestWatcherTestSuite(t *testing.T) {
 }
 
 func (s *WatcherTestSuite) SetupTest() {
-	log := logger.New(logger.WithDiscardment())
+	log := logger.New()
 
 	s.manager = NewWatcherManager(log)
 }
