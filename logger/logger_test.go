@@ -28,8 +28,8 @@ func TestLoggerTestSuite(t *testing.T) {
 func (s *LoggerTestSuite) TestWithConfig() {
 	s.Run("Debug true", func() {
 		conf := config.New(config.WithDebug(true))
-		out := bytes.NewBufferString("")
-		log := New(WithConfig(conf), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithConfig(conf), WithWriter(buf))
 
 		log.Info("info")
 		log.Debug("debug")
@@ -38,13 +38,13 @@ func (s *LoggerTestSuite) TestWithConfig() {
 		s.Equal(`   • info                     
    • debug                    
    ⨯ error                    
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Debug false", func() {
 		conf := config.New(config.WithDebug(false))
-		out := bytes.NewBufferString("")
-		log := New(WithConfig(conf), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithConfig(conf), WithWriter(buf))
 
 		log.Info("info")
 		log.Debug("debug")
@@ -52,14 +52,14 @@ func (s *LoggerTestSuite) TestWithConfig() {
 
 		s.Equal(`   • info                     
    ⨯ error                    
-`, out.String())
+`, buf.String())
 	})
 }
 
 func (s *LoggerTestSuite) TestWithDebug() {
 	s.Run("True", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithDebug(true), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithDebug(true), WithWriter(buf))
 
 		log.Info("info")
 		log.Debug("debug")
@@ -68,12 +68,12 @@ func (s *LoggerTestSuite) TestWithDebug() {
 		s.Equal(`   • info                     
    • debug                    
    ⨯ error                    
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("False", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithDebug(false), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithDebug(false), WithWriter(buf))
 
 		log.Info("info")
 		log.Debug("debug")
@@ -81,92 +81,92 @@ func (s *LoggerTestSuite) TestWithDebug() {
 
 		s.Equal(`   • info                     
    ⨯ error                    
-`, out.String())
+`, buf.String())
 	})
 }
 
 func (s *LoggerTestSuite) TestDebug() {
 	s.Run("Message", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithDebug(true), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithDebug(true), WithWriter(buf))
 
 		log.Debug("debug")
 
 		s.Equal(`   • debug                    
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Message with field", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithDebug(true), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithDebug(true), WithWriter(buf))
 
 		log.Debug("debug", log.WithField("bar", "baz"))
 
 		s.Equal(`   • debug                     bar=baz
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Message with fields", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithDebug(true), WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithDebug(true), WithWriter(buf))
 
 		log.Debug("debug", log.WithField("bar", "baz"), log.WithField("qux", "quux"))
 
 		s.Equal(`   • debug                     bar=baz qux=quux
-`, out.String())
+`, buf.String())
 	})
 }
 
 func (s *LoggerTestSuite) TestInfo() {
 	s.Run("Message", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithWriter(buf))
 
 		log.Info("info")
 
 		s.Equal(`   • info                     
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Message with field", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithWriter(buf))
 
 		log.Info("info", log.WithField("bar", "baz"))
 
 		s.Equal(`   • info                      bar=baz
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Message with fields", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithWriter(buf))
 
 		log.Info("info", log.WithField("bar", "baz"), log.WithField("qux", "quux"))
 
 		s.Equal(`   • info                      bar=baz qux=quux
-`, out.String())
+`, buf.String())
 	})
 }
 
 func (s *LoggerTestSuite) TestError() {
 	s.Run("Message", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithWriter(buf))
 
 		log.Error("error")
 
 		s.Equal(`   ⨯ error                    
-`, out.String())
+`, buf.String())
 	})
 
 	s.Run("Message with error", func() {
-		out := bytes.NewBufferString("")
-		log := New(WithWriter(out))
+		buf := bytes.NewBufferString("")
+		log := New(WithWriter(buf))
 
 		log.Error("error", errors.New("foo"))
 
 		s.Equal(`   ⨯ error                     error=foo
-`, out.String())
+`, buf.String())
 	})
 }

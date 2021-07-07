@@ -35,7 +35,7 @@ func (s *ProjectTestSuite) SetupTest() {
 		config.WithCacheDir(cacheDir),
 	)
 
-	log := logger.New(logger.WithDiscardment())
+	log := logger.New()
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)
