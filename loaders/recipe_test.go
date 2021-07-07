@@ -36,7 +36,7 @@ func (s *RecipeTestSuite) SetupTest() {
 	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description", false)
 	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid", false)
 
-	log := logger.New(logger.WithDiscardment())
+	log := logger.New()
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)

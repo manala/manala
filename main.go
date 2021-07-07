@@ -32,6 +32,7 @@ func main() {
 	// Logger
 	log := logger.New(
 		logger.WithConfig(conf),
+		logger.WithWriter(os.Stderr),
 	)
 
 	// Managers

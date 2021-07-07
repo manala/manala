@@ -31,7 +31,7 @@ func (s *RepositoryTestSuite) SetupTest() {
 
 	conf := config.New(config.WithCacheDir(cacheDir))
 
-	log := logger.New(logger.WithDiscardment())
+	log := logger.New()
 
 	s.ld = NewRepositoryLoader(log, conf)
 }
