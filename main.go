@@ -56,6 +56,7 @@ func main() {
 		(&cmd.ListCmd{Conf: conf, RepositoryLoader: repositoryLoader, RecipeLoader: recipeLoader, Out: rootCommand.OutOrStdout()}).Command(),
 		(&cmd.UpdateCmd{Log: log, ProjectLoader: projectLoader, Sync: sync}).Command(),
 		(&cmd.WatchCmd{Log: log, ProjectLoader: projectLoader, WatcherManager: modelWatcherManager, Sync: sync}).Command(),
+		(&cmd.MascotCmd{Assets: assets}).Command(),
 	)
 
 	// Docs generation command
