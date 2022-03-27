@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"manala/app"
 	"manala/cmd"
 	"manala/config"
 	"manala/fs"
@@ -50,13 +51,24 @@ func main() {
 	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 	projectLoader := loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader)
 
+	// App
+	manala := &app.App{
+		RepositoryLoader: repositoryLoader,
+		RecipeLoader:     recipeLoader,
+		ProjectLoader:    projectLoader,
+		TemplateManager:  modelTemplateManager,
+		WatcherManager:   modelWatcherManager,
+		Sync:             sync,
+		Log:              log,
+	}
+
 	// Commands
 	rootCommand := (&cmd.RootCmd{Conf: conf}).Command()
 	rootCommand.AddCommand(
-		(&cmd.InitCmd{Log: log, Conf: conf, RepositoryLoader: repositoryLoader, RecipeLoader: recipeLoader, ProjectLoader: projectLoader, TemplateManager: modelTemplateManager, Sync: sync, Assets: assets}).Command(),
-		(&cmd.ListCmd{Conf: conf, RepositoryLoader: repositoryLoader, RecipeLoader: recipeLoader, Out: rootCommand.OutOrStdout()}).Command(),
-		(&cmd.UpdateCmd{Log: log, ProjectLoader: projectLoader, Sync: sync}).Command(),
-		(&cmd.WatchCmd{Log: log, ProjectLoader: projectLoader, WatcherManager: modelWatcherManager, Sync: sync}).Command(),
+		(&cmd.InitCmd{App: manala, Conf: conf, Assets: assets}).Command(),
+		(&cmd.ListCmd{App: manala, Conf: conf, Out: rootCommand.OutOrStdout()}).Command(),
+		(&cmd.UpdateCmd{App: manala}).Command(),
+		(&cmd.WatchCmd{App: manala}).Command(),
 		(&cmd.MascotCmd{Assets: assets}).Command(),
 	)
 

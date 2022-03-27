@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
+	"manala/app"
 	"manala/config"
 	"manala/fs"
 	"manala/loaders"
@@ -59,13 +60,15 @@ func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &InitCmd{
-		Log:              log,
-		Conf:             conf,
-		RepositoryLoader: repositoryLoader,
-		RecipeLoader:     recipeLoader,
-		ProjectLoader:    loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
-		TemplateManager:  modelTemplateManager,
-		Sync:             syncer.New(log, modelFsManager, modelTemplateManager),
+		App: &app.App{
+			RepositoryLoader: repositoryLoader,
+			RecipeLoader:     recipeLoader,
+			ProjectLoader:    loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
+			TemplateManager:  modelTemplateManager,
+			Sync:             syncer.New(log, modelFsManager, modelTemplateManager),
+			Log:              log,
+		},
+		Conf: conf,
 		Assets: fstest.MapFS{
 			"assets/.manala.yaml.tmpl": {Data: []byte(`manala:
    recipe: {{ .Recipe.Name }}

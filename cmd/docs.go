@@ -16,13 +16,9 @@ func (cmd *DocsCmd) Command() *cobra.Command {
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(command *cobra.Command, args []string) error {
-			return cmd.Run()
+			return doc.GenMarkdownTree(cmd.RootCommand, cmd.Dir)
 		},
 	}
 
 	return command
-}
-
-func (cmd *DocsCmd) Run() error {
-	return doc.GenMarkdownTree(cmd.RootCommand, cmd.Dir)
 }

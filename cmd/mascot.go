@@ -16,38 +16,34 @@ func (cmd *MascotCmd) Command() *cobra.Command {
 		Use:    "duck",
 		Hidden: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			return cmd.Run()
+			var wg sync.WaitGroup
+			errs := make(chan error)
+
+			for _, run := range mascotRun {
+				// Increment the WaitGroup counter
+				wg.Add(1)
+				// Run
+				go run(cmd, &wg, errs)
+			}
+
+			// Wait for all runs to complete
+			go func() {
+				wg.Wait()
+				close(errs)
+			}()
+
+			// Handle errors
+			for err := range errs {
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
 		},
 	}
 
 	return command
-}
-
-func (cmd *MascotCmd) Run() error {
-	var wg sync.WaitGroup
-	errs := make(chan error)
-
-	for _, run := range mascotRun {
-		// Increment the WaitGroup counter
-		wg.Add(1)
-		// Run
-		go run(cmd, &wg, errs)
-	}
-
-	// Wait for all runs to complete
-	go func() {
-		wg.Wait()
-		close(errs)
-	}()
-
-	// Handle errors
-	for err := range errs {
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 type mascotFunc = func(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error)

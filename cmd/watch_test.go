@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
+	"manala/app"
 	"manala/config"
 	"manala/fs"
 	"manala/loaders"
@@ -59,10 +60,12 @@ func (s *WatchTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, *
 	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &WatchCmd{
-		Log:            log,
-		ProjectLoader:  loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
-		WatcherManager: modelWatcherManager,
-		Sync:           syncer.New(log, modelFsManager, modelTemplateManager),
+		App: &app.App{
+			ProjectLoader:  loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
+			WatcherManager: modelWatcherManager,
+			Sync:           syncer.New(log, modelFsManager, modelTemplateManager),
+			Log:            log,
+		},
 	}
 
 	// Command

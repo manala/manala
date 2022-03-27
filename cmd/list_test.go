@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
+	"manala/app"
 	"manala/config"
 	"manala/fs"
 	"manala/loaders"
@@ -53,10 +54,12 @@ func (s *ListTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
 
 	cmd := &ListCmd{
-		Conf:             conf,
-		RepositoryLoader: repositoryLoader,
-		RecipeLoader:     recipeLoader,
-		Out:              stdOut,
+		App: &app.App{
+			RepositoryLoader: repositoryLoader,
+			RecipeLoader:     recipeLoader,
+		},
+		Conf: conf,
+		Out:  stdOut,
 	}
 
 	// Command
