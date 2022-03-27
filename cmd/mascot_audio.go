@@ -37,6 +37,6 @@ func mascotRunAudio(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
 func init() {
 	mascotRun = append(
 		[]mascotFunc{mascotRunAudio},
-		mascotRun...
+		mascotRun...,
 	)
 }
