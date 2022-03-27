@@ -1,4 +1,4 @@
-// +build darwin windows
+//go:build darwin || windows
 
 package cmd
 
