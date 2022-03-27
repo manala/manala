@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.16.5]
+        go-version: [1.18]
         goreleaser-version: [0.172.1]
         golangci-lint-version: [1.41.1]
         richgo-version: [0.3.9]
@@ -19,7 +19,7 @@ jobs:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
       - name: Set up go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
       - name: Cache

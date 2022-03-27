@@ -14,9 +14,9 @@ jobs:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16.5
+          go-version: 1.18
       - name: Set up snapcraft
         uses: samuelmeuli/action-snapcraft@v1
         with:
