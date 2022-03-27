@@ -28,5 +28,5 @@ jobs:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
         with:
-          version: v0.172.1
+          version: v1.7.0
           args: release
