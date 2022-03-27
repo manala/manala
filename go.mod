@@ -3,12 +3,12 @@ module manala
 go 1.18
 
 require (
-	code.rocketnine.space/tslocum/cview v1.5.5
+	code.rocketnine.space/tslocum/cview v1.5.7
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/apex/log v1.9.0
 	github.com/faiface/beep v1.0.2
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/gdamore/tcell/v2 v2.3.11
+	github.com/gdamore/tcell/v2 v2.4.1-0.20210828201608-73703f7ed490
 	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-playground/validator/v10 v10.6.1
@@ -56,7 +56,7 @@ require (
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-runewidth v0.0.14-0.20210830053702-dc8fe66265af // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -80,9 +80,9 @@ require (
 	golang.org/x/image v0.0.0-20210628002857-a66eb6448b8d // indirect
 	golang.org/x/mobile v0.0.0-20210701032007-93619952ba7f // indirect
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
