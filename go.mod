@@ -9,7 +9,7 @@ require (
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210828201608-73703f7ed490
-	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
+	github.com/gen2brain/beeep v0.0.0-20220322123227-629384b5779c
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-playground/validator/v10 v10.6.1
 	github.com/goccy/go-yaml v1.8.10
@@ -41,9 +41,9 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
-	github.com/godbus/dbus/v5 v5.0.4 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20210621113107-84c6004145de // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20220221023154-0b2280d3ff96 // indirect
 	github.com/gopherjs/gopherwasm v1.1.0 // indirect
 	github.com/hajimehoshi/oto v0.7.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
