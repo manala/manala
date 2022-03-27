@@ -212,7 +212,7 @@ func (ld *recipeLoader) parseManifestNode(node yamlAst.Node, options *[]models.R
 		}
 
 		if comment := n.GetComment(); comment != nil {
-			tags := yamlDoc.ParseCommentTags(comment.Value)
+			tags := yamlDoc.ParseCommentTags(comment.String())
 			// Handle schema tags
 			for _, tag := range tags.Filter("schema") {
 				var tagSchema map[string]interface{}
