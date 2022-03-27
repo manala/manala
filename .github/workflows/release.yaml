@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-10.15
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0

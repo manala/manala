@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
@@ -23,7 +23,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/go/pkg/mod
           key: ${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
@@ -48,7 +48,7 @@ jobs:
             build --snapshot
       - name: Upload artifacts
         if: matrix.os == 'macos-10.15'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: dist/*
