@@ -15,7 +15,7 @@ require (
 	github.com/goccy/go-yaml v1.9.5
 	github.com/imdario/mergo v0.3.12
 	github.com/mingrammer/commonregex v1.0.1
-	github.com/mitchellh/mapstructure v1.4.1
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
