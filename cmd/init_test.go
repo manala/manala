@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-	"testing/fstest"
 )
 
 /****************/
@@ -45,12 +44,6 @@ func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 			),
 			app.WithLogWriter(stdErr),
 		),
-		Assets: fstest.MapFS{
-			"assets/.manala.yaml.tmpl": {Data: []byte(`manala:
-   recipe: {{ .Recipe.Name }}
-   repository: {{ .Recipe.Repository.Source }}
-`)},
-		},
 	}
 
 	// Command
@@ -96,9 +89,14 @@ func (s *InitTestSuite) Test() {
    • Synced file               path=file_default_foo
    • Project synced           
 `,
-			manifest: `manala:
-   recipe: foo
-   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
+			manifest: `####################################################################
+#                         !!! REMINDER !!!                         #
+# Don't forget to run ` + "`manala up`" + ` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: foo
+    repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
 `,
 			file: "file_default_foo",
 		},
@@ -119,9 +117,14 @@ func (s *InitTestSuite) Test() {
    • Synced file               path=file_custom_foo
    • Project synced           
 `,
-			manifest: `manala:
-   recipe: foo
-   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
+			manifest: `####################################################################
+#                         !!! REMINDER !!!                         #
+# Don't forget to run ` + "`manala up`" + ` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: foo
+    repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
 `,
 			file: "file_custom_foo",
 		},

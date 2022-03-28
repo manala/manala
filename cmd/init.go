@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
-	"io/fs"
 	"manala/app"
 	"manala/binder"
 	"manala/loaders"
@@ -14,8 +13,7 @@ import (
 )
 
 type InitCmd struct {
-	App    *app.App
-	Assets fs.ReadFileFS
+	App *app.App
 }
 
 func (cmd *InitCmd) Command() *cobra.Command {
@@ -41,7 +39,6 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 			// App
 			return cmd.App.Init(
-				cmd.Assets,
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
 				dir,

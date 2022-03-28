@@ -3,6 +3,8 @@
 package cmd
 
 import (
+	"bytes"
+	_ "embed"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
@@ -10,14 +12,11 @@ import (
 	"time"
 )
 
-func mascotRunAudio(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
-	audio, err := cmd.Assets.Open("assets/mascot.wav")
-	if err != nil {
-		errs <- err
-		return
-	}
+//go:embed embed/mascot.wav
+var mascotAudio []byte
 
-	streamer, format, err := wav.Decode(audio)
+func mascotAudioRun(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
+	streamer, format, err := wav.Decode(bytes.NewReader(mascotAudio))
 	if err != nil {
 		errs <- err
 		return
@@ -36,7 +35,7 @@ func mascotRunAudio(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
 
 func init() {
 	mascotRun = append(
-		[]mascotFunc{mascotRunAudio},
+		[]mascotFunc{mascotAudioRun},
 		mascotRun...,
 	)
 }

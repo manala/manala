@@ -1,21 +1,17 @@
 package main
 
 import (
-	"embed"
 	"manala/app"
 	"manala/cmd"
 	"os"
 	"path/filepath"
 )
 
-// Default repository source
+// Default repository
 var defaultRepository = "https://github.com/manala/manala-recipes.git"
 
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
-
-//go:embed assets/*
-var assets embed.FS
 
 func main() {
 	// App
@@ -44,11 +40,11 @@ func main() {
 
 	// Commands
 	rootCommand.AddCommand(
-		(&cmd.InitCmd{App: manala, Assets: assets}).Command(),
+		(&cmd.InitCmd{App: manala}).Command(),
 		(&cmd.ListCmd{App: manala, Out: rootCommand.OutOrStdout()}).Command(),
 		(&cmd.UpdateCmd{App: manala}).Command(),
 		(&cmd.WatchCmd{App: manala}).Command(),
-		(&cmd.MascotCmd{Assets: assets}).Command(),
+		(&cmd.MascotCmd{}).Command(),
 	)
 
 	// Docs generation command

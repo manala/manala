@@ -1,9 +1,9 @@
 package app
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
-	"io/fs"
 	"manala/loaders"
 	"manala/models"
 	"manala/validator"
@@ -11,8 +11,10 @@ import (
 	"path/filepath"
 )
 
+//go:embed embed/.manala.yaml.tmpl
+var recipeTemplate string
+
 func (app *App) Init(
-	assets fs.ReadFileFS,
 	recipeListApplication func(recipeLoader loaders.RecipeLoaderInterface, repo models.RepositoryInterface) (models.RecipeInterface, error),
 	recipeOptionsFormApplication func(rec models.RecipeInterface, vars map[string]interface{}) error,
 	dir string,
@@ -89,9 +91,8 @@ func (app *App) Init(
 			return err
 		}
 	} else {
-		// Load default template from embedded assets
-		text, _ := assets.ReadFile("assets/" + models.ProjectManifestFile + ".tmpl")
-		if err := template.Parse(string(text)); err != nil {
+		// Load default template
+		if err := template.Parse(recipeTemplate); err != nil {
 			return err
 		}
 	}

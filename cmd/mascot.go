@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/spf13/cobra"
-	"io/fs"
 	"sync"
 )
 
-type MascotCmd struct {
-	Assets fs.ReadFileFS
-}
+//go:embed embed/mascot.txt
+var mascotText string
+
+type MascotCmd struct{}
 
 func (cmd *MascotCmd) Command() *cobra.Command {
 	command := &cobra.Command{
@@ -48,18 +49,11 @@ func (cmd *MascotCmd) Command() *cobra.Command {
 
 type mascotFunc = func(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error)
 
-func mascotRunText(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
-	text, err := cmd.Assets.ReadFile("assets/mascot.txt")
-	if err != nil {
-		errs <- err
-		return
-	}
-
-	fmt.Println(string(text))
-
+func mascotTextRun(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
+	fmt.Println(mascotText)
 	wg.Done()
 }
 
 var mascotRun = []mascotFunc{
-	mascotRunText,
+	mascotTextRun,
 }
