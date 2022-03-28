@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"io"
 	"manala/app"
@@ -24,9 +25,16 @@ Example: manala list -> resulting in a recipes list display`,
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			// App
-			return cmd.App.List(
-				cmd.Out,
-			)
+			recipes, err := cmd.App.List()
+			if err != nil {
+				return err
+			}
+
+			for _, recipe := range recipes {
+				_, _ = fmt.Fprintf(cmd.Out, "%s: %s\n", recipe.Name(), recipe.Description())
+			}
+
+			return nil
 		},
 	}
 
