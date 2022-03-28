@@ -4,18 +4,12 @@ import (
 	"embed"
 	"manala/app"
 	"manala/cmd"
-	"manala/config"
-	"manala/fs"
-	"manala/loaders"
-	"manala/logger"
-	"manala/models"
-	"manala/syncer"
-	"manala/template"
 	"os"
+	"path/filepath"
 )
 
-// Main repository source
-var mainRepository = "https://github.com/manala/manala-recipes.git"
+// Default repository source
+var defaultRepository = "https://github.com/manala/manala-recipes.git"
 
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
@@ -24,64 +18,48 @@ var version = "dev"
 var assets embed.FS
 
 func main() {
-	// Config
-	conf := config.New(
-		config.WithVersion(version),
-		config.WithMainRepository(mainRepository),
-	)
-
-	// Logger
-	log := logger.New(
-		logger.WithConfig(conf),
-		logger.WithWriter(os.Stderr),
-	)
-
-	// Managers
-	fsManager := fs.NewManager()
-	modelFsManager := models.NewFsManager(fsManager)
-	templateManager := template.NewManager()
-	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
-	modelWatcherManager := models.NewWatcherManager(log)
-
-	// Syncer
-	sync := syncer.New(log, modelFsManager, modelTemplateManager)
-
-	// Loaders
-	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
-	projectLoader := loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader)
-
 	// App
-	manala := &app.App{
-		RepositoryLoader: repositoryLoader,
-		RecipeLoader:     recipeLoader,
-		ProjectLoader:    projectLoader,
-		TemplateManager:  modelTemplateManager,
-		WatcherManager:   modelWatcherManager,
-		Sync:             sync,
-		Log:              log,
+	manala := app.New(
+		app.WithVersion(version),
+		app.WithDefaultRepository(defaultRepository),
+		app.WithLogWriter(os.Stderr),
+	)
+
+	// Config
+	manala.Config.SetEnvPrefix("manala")
+	manala.Config.AutomaticEnv()
+
+	// Cache dir
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		manala.Log.Fatal(err.Error())
 	}
+	manala.Config.SetDefault("cache-dir", filepath.Join(cacheDir, "manala"))
+
+	// Root command
+	rootCommand := (&cmd.RootCmd{
+		App:          manala,
+		OnInitialize: manala.ApplyConfig,
+	}).Command()
 
 	// Commands
-	rootCommand := (&cmd.RootCmd{Conf: conf}).Command()
 	rootCommand.AddCommand(
-		(&cmd.InitCmd{App: manala, Conf: conf, Assets: assets}).Command(),
-		(&cmd.ListCmd{App: manala, Conf: conf, Out: rootCommand.OutOrStdout()}).Command(),
+		(&cmd.InitCmd{App: manala, Assets: assets}).Command(),
+		(&cmd.ListCmd{App: manala, Out: rootCommand.OutOrStdout()}).Command(),
 		(&cmd.UpdateCmd{App: manala}).Command(),
 		(&cmd.WatchCmd{App: manala}).Command(),
 		(&cmd.MascotCmd{Assets: assets}).Command(),
 	)
 
 	// Docs generation command
-	if conf.Version() == "dev" {
+	if manala.Config.GetString("version") == "dev" {
 		rootCommand.AddCommand(
 			(&cmd.DocsCmd{RootCommand: rootCommand, Dir: "docs/commands"}).Command(),
 		)
 	}
 
-	// Execute command
+	// Execute
 	if err := rootCommand.Execute(); err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
+		manala.Log.Fatal(err.Error())
 	}
 }

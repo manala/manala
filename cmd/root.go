@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"manala/config"
+	"manala/app"
 )
 
 type RootCmd struct {
-	Conf config.Config
+	App          *app.App
+	OnInitialize func()
 }
 
 func (cmd *RootCmd) Command() *cobra.Command {
@@ -19,7 +20,7 @@ such as makefile targets, virtualization and provisioning files...
 Recipes are pulled from a git repository, or a local directory.`,
 		SilenceErrors:     true,
 		SilenceUsage:      true,
-		Version:           cmd.Conf.Version(),
+		Version:           cmd.App.Config.GetString("version"),
 		DisableAutoGenTag: true,
 	}
 
@@ -27,11 +28,14 @@ Recipes are pulled from a git repository, or a local directory.`,
 
 	// Cache dir
 	pFlags.StringP("cache-dir", "c", "", "use cache directory")
-	cmd.Conf.BindCacheDirFlag(pFlags.Lookup("cache-dir"))
+	cmd.App.Config.BindPFlag("cache-dir", pFlags.Lookup("cache-dir"))
 
 	// Debug
 	pFlags.BoolP("debug", "d", false, "set debug mode")
-	cmd.Conf.BindDebugFlag(pFlags.Lookup("debug"))
+	cmd.App.Config.BindPFlag("debug", pFlags.Lookup("debug"))
+
+	// Initialize
+	cobra.OnInitialize(cmd.OnInitialize)
 
 	return command
 }

@@ -11,7 +11,6 @@ import (
 
 func (app *App) Watch(
 	dir string,
-	withRepositorySource string,
 	withRecipeName string,
 	watchAll bool,
 	useNotify bool,
@@ -24,7 +23,7 @@ func (app *App) Watch(
 	}
 
 	// Find project manifest
-	prjManifest, err := app.ProjectLoader.Find(dir, true)
+	prjManifest, err := app.projectLoader.Find(dir, true)
 	if err != nil {
 		return err
 	}
@@ -36,13 +35,14 @@ func (app *App) Watch(
 	// Sync function
 	syncFunc := app.getSyncFunc(
 		prjManifest,
-		withRepositorySource,
+		app.Config.GetString("repository"),
 		withRecipeName,
+		app.Config.GetString("cache-dir"),
 		watchAll,
 	)
 
 	// Watcher
-	watcher, err := app.WatcherManager.NewWatcher()
+	watcher, err := app.watcherManager.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("error creating watcher: %v", err)
 	}
@@ -74,13 +74,14 @@ func (app *App) Watch(
 
 func (app *App) getSyncFunc(
 	prjManifest *os.File,
-	withRepositorySource string,
+	defaultRepository string,
 	withRecipeName string,
+	cacheDir string,
 	watchAll bool,
 ) func(watcher models.WatcherInterface) error {
 	return func(watcher models.WatcherInterface) error {
 		// Load project
-		prj, err := app.ProjectLoader.Load(prjManifest, withRepositorySource, withRecipeName)
+		prj, err := app.projectLoader.Load(prjManifest, defaultRepository, withRecipeName, cacheDir)
 		if err != nil {
 			return err
 		}
@@ -105,7 +106,7 @@ func (app *App) getSyncFunc(
 		}
 
 		// Sync project
-		if err := app.Sync.SyncProject(prj); err != nil {
+		if err := app.sync.SyncProject(prj); err != nil {
 			return err
 		}
 

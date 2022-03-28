@@ -29,7 +29,6 @@ Example: manala update -> resulting in an update in a directory (default to the 
 
 			flags := command.Flags()
 
-			withRepositorySource, _ := flags.GetString("repository")
 			withRecipeName, _ := flags.GetString("recipe")
 
 			recursive, _ := flags.GetBool("recursive")
@@ -37,7 +36,6 @@ Example: manala update -> resulting in an update in a directory (default to the 
 			// App
 			return cmd.App.Update(
 				dir,
-				withRepositorySource,
 				withRecipeName,
 				recursive,
 			)
@@ -46,7 +44,11 @@ Example: manala update -> resulting in an update in a directory (default to the 
 
 	flags := command.Flags()
 
+	// Repository
 	flags.StringP("repository", "o", "", "with repository source")
+	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
+
+	// Recipe
 	flags.StringP("recipe", "i", "", "with recipe name")
 
 	flags.BoolP("recursive", "r", false, "set recursive mode")

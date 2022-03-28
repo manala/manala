@@ -63,7 +63,6 @@ func (s *ValidateProjectTestSuite) SetupTest() {
 		models.NewRepository(
 			"foo",
 			"bar",
-			false,
 		),
 		nil,
 		nil,

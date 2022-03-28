@@ -11,7 +11,6 @@ import (
 
 func (app *App) Update(
 	dir string,
-	withRepositorySource string,
 	withRecipeName string,
 	recursive bool,
 ) error {
@@ -36,7 +35,7 @@ func (app *App) Update(
 			}
 
 			// Find project manifest
-			prjManifest, err := app.ProjectLoader.Find(path, false)
+			prjManifest, err := app.projectLoader.Find(path, false)
 			if err != nil {
 				return err
 			}
@@ -45,8 +44,9 @@ func (app *App) Update(
 			if prjManifest != nil {
 				if err := app.syncProject(
 					prjManifest,
-					withRepositorySource,
+					app.Config.GetString("repository"),
 					withRecipeName,
+					app.Config.GetString("cache-dir"),
 				); err != nil {
 					return err
 				}
@@ -59,7 +59,7 @@ func (app *App) Update(
 		}
 	} else {
 		// Find project manifest
-		prjManifest, err := app.ProjectLoader.Find(dir, true)
+		prjManifest, err := app.projectLoader.Find(dir, true)
 		if err != nil {
 			return err
 		}
@@ -71,8 +71,9 @@ func (app *App) Update(
 		// Sync
 		if err = app.syncProject(
 			prjManifest,
-			withRepositorySource,
+			app.Config.GetString("repository"),
 			withRecipeName,
+			app.Config.GetString("cache-dir"),
 		); err != nil {
 			return err
 		}
@@ -83,11 +84,17 @@ func (app *App) Update(
 
 func (app *App) syncProject(
 	prjManifest *os.File,
-	withRepositorySource string,
+	defaultRepository string,
 	withRecipeName string,
+	cacheDir string,
 ) error {
 	// Load project
-	prj, err := app.ProjectLoader.Load(prjManifest, withRepositorySource, withRecipeName)
+	prj, err := app.projectLoader.Load(
+		prjManifest,
+		defaultRepository,
+		withRecipeName,
+		cacheDir,
+	)
 	if err != nil {
 		return err
 	}
@@ -100,7 +107,7 @@ func (app *App) syncProject(
 	app.Log.Info("Project validated")
 
 	// Sync project
-	if err := app.Sync.SyncProject(prj); err != nil {
+	if err := app.sync.SyncProject(prj); err != nil {
 		return err
 	}
 

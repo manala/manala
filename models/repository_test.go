@@ -25,13 +25,11 @@ func TestRepositoryTestSuite(t *testing.T) {
 func (s *RepositoryTestSuite) TestRepository() {
 	source := "foo"
 	dir := "bar"
-	main := true
 
 	s.Run("New", func() {
-		repo := NewRepository(source, dir, main)
+		repo := NewRepository(source, dir)
 		s.Implements((*RepositoryInterface)(nil), repo)
 		s.Equal(source, repo.Source())
 		s.Equal(dir, repo.getDir())
-		s.Equal(main, repo.Main())
 	})
 }

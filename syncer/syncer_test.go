@@ -1,9 +1,10 @@
 package syncer
 
 import (
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/discard"
 	"github.com/stretchr/testify/suite"
 	"manala/fs"
-	"manala/logger"
 	"manala/models"
 	"manala/template"
 	"os"
@@ -29,14 +30,16 @@ func TestSyncTestSuite(t *testing.T) {
 }
 
 func (s *SyncTestSuite) SetupTest() {
-	log := logger.New()
+	logger := &log.Logger{
+		Handler: discard.Default,
+	}
 
 	s.fsManager = fs.NewManager()
 	modelFsManager := models.NewFsManager(s.fsManager)
 	s.templateManager = template.NewManager()
 	modelTemplateManager := models.NewTemplateManager(s.templateManager, modelFsManager)
 
-	s.sync = New(log, modelFsManager, modelTemplateManager)
+	s.sync = New(logger, modelFsManager, modelTemplateManager)
 }
 
 /****************/

@@ -3,21 +3,19 @@ package loaders
 import (
 	"errors"
 	"fmt"
+	"github.com/apex/log"
 	"github.com/go-playground/validator/v10"
 	"github.com/goccy/go-yaml"
 	"github.com/mitchellh/mapstructure"
 	"io"
-	"manala/config"
-	"manala/logger"
 	"manala/models"
 	"os"
 	"path/filepath"
 )
 
-func NewProjectLoader(log logger.Logger, conf config.Config, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
+func NewProjectLoader(log log.Interface, repositoryLoader RepositoryLoaderInterface, recipeLoader RecipeLoaderInterface) ProjectLoaderInterface {
 	return &projectLoader{
 		log:              log,
-		conf:             conf,
 		repositoryLoader: repositoryLoader,
 		recipeLoader:     recipeLoader,
 	}
@@ -25,7 +23,7 @@ func NewProjectLoader(log logger.Logger, conf config.Config, repositoryLoader Re
 
 type ProjectLoaderInterface interface {
 	Find(dir string, traverse bool) (*os.File, error)
-	Load(manifest *os.File, withRepositorySource string, withRecipeName string) (models.ProjectInterface, error)
+	Load(manifest *os.File, defaultRepository string, withRecipeName string, cacheDir string) (models.ProjectInterface, error)
 }
 
 type projectConfig struct {
@@ -34,14 +32,13 @@ type projectConfig struct {
 }
 
 type projectLoader struct {
-	log              logger.Logger
-	conf             config.Config
+	log              log.Interface
 	repositoryLoader RepositoryLoaderInterface
 	recipeLoader     RecipeLoaderInterface
 }
 
 func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
-	ld.log.Debug("Searching project...", ld.log.WithField("dir", dir))
+	ld.log.WithField("dir", dir).Debug("Searching project...")
 
 	manifest, err := os.Open(filepath.Join(dir, models.ProjectManifestFile))
 
@@ -80,11 +77,11 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	return ld.Find(parentDir, true)
 }
 
-func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, withRecipeName string) (models.ProjectInterface, error) {
+func (ld *projectLoader) Load(manifest *os.File, defaultRepository string, withRecipeName string, cacheDir string) (models.ProjectInterface, error) {
 	// Get dir
 	dir := filepath.Dir(manifest.Name())
 
-	ld.log.Debug("Loading project...", ld.log.WithField("dir", dir))
+	ld.log.WithField("dir", dir).Debug("Loading project...")
 
 	// Reset manifest pointer
 	_, err := manifest.Seek(0, io.SeekStart)
@@ -103,7 +100,7 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 
 	// Map config
 	cfg := projectConfig{
-		Repository: ld.conf.Repository(),
+		Repository: defaultRepository,
 	}
 	decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result: &cfg,
@@ -114,11 +111,6 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 
 	// Cleanup vars
 	delete(vars, "manala")
-
-	// With repository
-	if withRepositorySource != "" {
-		cfg.Repository = withRepositorySource
-	}
 
 	// With recipe
 	if withRecipeName != "" {
@@ -131,13 +123,13 @@ func (ld *projectLoader) Load(manifest *os.File, withRepositorySource string, wi
 		return nil, err
 	}
 
-	ld.log.Info("Project loaded",
-		ld.log.WithField("recipe", cfg.Recipe),
-		ld.log.WithField("repository", cfg.Repository),
-	)
+	ld.log.WithFields(log.Fields{
+		"recipe":     cfg.Recipe,
+		"repository": cfg.Repository,
+	}).Info("Project loaded")
 
 	// Load repository
-	repo, err := ld.repositoryLoader.Load(cfg.Repository)
+	repo, err := ld.repositoryLoader.Load(cfg.Repository, cacheDir)
 	if err != nil {
 		return nil, err
 	}

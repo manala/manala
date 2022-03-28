@@ -5,9 +5,9 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"github.com/apex/log"
 	"io"
 	"manala/fs"
-	"manala/logger"
 	"manala/models"
 	"manala/template"
 	"os"
@@ -31,7 +31,7 @@ func (e *SourceNotExistError) Error() string {
 /* Syncer */
 /**********/
 
-func New(log logger.Logger, fsManager models.FsManagerInterface, templateManager models.TemplateManagerInterface) *Syncer {
+func New(log log.Interface, fsManager models.FsManagerInterface, templateManager models.TemplateManagerInterface) *Syncer {
 	return &Syncer{
 		log:             log,
 		fsManager:       fsManager,
@@ -40,7 +40,7 @@ func New(log logger.Logger, fsManager models.FsManagerInterface, templateManager
 }
 
 type Syncer struct {
-	log             logger.Logger
+	log             log.Interface
 	fsManager       models.FsManagerInterface
 	templateManager models.TemplateManagerInterface
 }
@@ -87,10 +87,10 @@ func (snc *Syncer) Sync(srcFs fs.ReadInterface, src string, srcTmpl template.Int
 func (snc *Syncer) syncNode(node *node) error {
 	if node.Src.IsDir {
 
-		snc.log.Debug("Syncing directory...",
-			snc.log.WithField("src", node.Src.Path),
-			snc.log.WithField("dst", node.Dst.Path),
-		)
+		snc.log.WithFields(log.Fields{
+			"src": node.Src.Path,
+			"dst": node.Dst.Path,
+		}).Debug("Syncing directory...")
 
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
@@ -100,13 +100,13 @@ func (snc *Syncer) syncNode(node *node) error {
 			node.Dst.IsExist = false
 		}
 
-		// Destination does not exists; create
+		// Destination does not exist; create
 		if !node.Dst.IsExist {
 			if err := node.Dst.Fs.MkdirAll(node.Dst.Path, 0755); err != nil {
 				return err
 			}
 
-			snc.log.Info("Synced directory", snc.log.WithField("path", node.Dst.Path))
+			snc.log.WithField("path", node.Dst.Path).Info("Synced directory")
 		}
 
 		// Iterate over source files
@@ -150,10 +150,10 @@ func (snc *Syncer) syncNode(node *node) error {
 
 	} else {
 
-		snc.log.Debug("Syncing file...",
-			snc.log.WithField("src", node.Src.Path),
-			snc.log.WithField("dst", node.Dst.Path),
-		)
+		snc.log.WithFields(log.Fields{
+			"src": node.Src.Path,
+			"dst": node.Dst.Path,
+		}).Debug("Syncing file...")
 
 		if node.Dst.IsExist {
 			// Destination is a directory; remove
@@ -252,7 +252,7 @@ func (snc *Syncer) syncNode(node *node) error {
 				return err
 			}
 
-			snc.log.Info("Synced file", snc.log.WithField("path", node.Dst.Path))
+			snc.log.WithField("path", node.Dst.Path).Info("Synced file")
 		} else {
 			dstMode := node.Dst.Mode &^ 0111
 			if node.Src.IsExecutable {

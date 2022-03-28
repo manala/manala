@@ -28,7 +28,6 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 			flags := command.Flags()
 
-			withRepositorySource, _ := flags.GetString("repository")
 			withRecipeName, _ := flags.GetString("recipe")
 
 			watchAll, _ := flags.GetBool("all")
@@ -37,7 +36,6 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 			// App
 			return cmd.App.Watch(
 				dir,
-				withRepositorySource,
 				withRecipeName,
 				watchAll,
 				useNotify,
@@ -47,7 +45,11 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 	flags := command.Flags()
 
+	// Repository
 	flags.StringP("repository", "o", "", "with repository source")
+	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
+
+	// Recipe
 	flags.StringP("recipe", "i", "", "with recipe name")
 
 	flags.BoolP("all", "a", false, "watch recipe too")

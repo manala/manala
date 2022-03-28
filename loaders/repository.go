@@ -5,34 +5,31 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/apex/log"
 	"github.com/go-git/go-git/v5"
 	"github.com/mingrammer/commonregex"
-	"manala/config"
-	"manala/logger"
 	"manala/models"
 	"os"
 	"path/filepath"
 )
 
-func NewRepositoryLoader(log logger.Logger, conf config.Config) RepositoryLoaderInterface {
+func NewRepositoryLoader(log log.Interface) RepositoryLoaderInterface {
 	return &repositoryLoader{
 		log:   log,
-		conf:  conf,
 		cache: make(map[string]models.RepositoryInterface),
 	}
 }
 
 type RepositoryLoaderInterface interface {
-	Load(src string) (models.RepositoryInterface, error)
+	Load(src string, cacheDir string) (models.RepositoryInterface, error)
 }
 
 type repositoryLoader struct {
-	log   logger.Logger
-	conf  config.Config
+	log   log.Interface
 	cache map[string]models.RepositoryInterface
 }
 
-func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error) {
+func (ld *repositoryLoader) Load(src string, cacheDir string) (models.RepositoryInterface, error) {
 	// Check if repository already in cache
 	if repo, ok := ld.cache[src]; ok {
 		return repo, nil
@@ -43,7 +40,7 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 
 	// Is source a git repo ?
 	if commonregex.GitRepoRegex.MatchString(src) {
-		repo, err = ld.loadGit(src)
+		repo, err = ld.loadGit(src, cacheDir)
 	} else {
 		repo, err = ld.loadDir(src)
 	}
@@ -59,7 +56,7 @@ func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error)
 }
 
 func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, error) {
-	ld.log.Debug("Loading dir repository...", ld.log.WithField("source", src))
+	ld.log.WithField("source", src).Debug("Loading dir repository...")
 
 	stat, err := os.Stat(src)
 	if err != nil {
@@ -71,23 +68,19 @@ func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, err
 		return nil, fmt.Errorf("\"%s\" is not a directory", src)
 	}
 
-	return models.NewRepository(src, src, src == ld.conf.MainRepository()), nil
+	return models.NewRepository(src, src), nil
 }
 
-func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, error) {
+func (ld *repositoryLoader) loadGit(src string, cacheDir string) (models.RepositoryInterface, error) {
 	hash := md5.New()
 	hash.Write([]byte(src))
 
-	ld.log.Debug("Loading git repository...", ld.log.WithField("source", src))
+	ld.log.WithField("source", src).Debug("Loading git repository...")
 
 	// Repository cache directory should be unique
-	cacheDir, err := ld.conf.CacheDir()
-	if err != nil {
-		return nil, err
-	}
 	dir := filepath.Join(cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
 
-	ld.log.Debug("Opening repository cache...", ld.log.WithField("dir", dir))
+	ld.log.WithField("dir", dir).Debug("Opening repository cache...")
 
 Load:
 	if err := os.MkdirAll(dir, os.FileMode(0700)); err != nil {
@@ -142,5 +135,5 @@ Load:
 		return nil, fmt.Errorf("unable to open repository: %w", err)
 	}
 
-	return models.NewRepository(src, dir, src == ld.conf.MainRepository()), nil
+	return models.NewRepository(src, dir), nil
 }

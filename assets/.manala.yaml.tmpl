@@ -5,9 +5,7 @@
 
 manala:
     recipe: {{ .Recipe.Name }}
-    {{- if not .Recipe.Repository.Main }}
     repository: {{ .Recipe.Repository.Source }}
-    {{- end }}
 
 {{- if .Vars }}
 

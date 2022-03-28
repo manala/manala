@@ -1,8 +1,9 @@
 package models
 
 import (
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/discard"
 	"github.com/stretchr/testify/suite"
-	"manala/logger"
 	"testing"
 )
 
@@ -21,9 +22,11 @@ func TestWatcherTestSuite(t *testing.T) {
 }
 
 func (s *WatcherTestSuite) SetupTest() {
-	log := logger.New()
+	logger := &log.Logger{
+		Handler: discard.Default,
+	}
 
-	s.manager = NewWatcherManager(log)
+	s.manager = NewWatcherManager(logger)
 }
 
 /*********/

@@ -7,17 +7,19 @@ import (
 )
 
 func (app *App) List(
-	repository string,
 	out io.Writer,
 ) error {
 	// Load repository
-	repo, err := app.RepositoryLoader.Load(repository)
+	repo, err := app.repositoryLoader.Load(
+		app.Config.GetString("repository"),
+		app.Config.GetString("cache-dir"),
+	)
 	if err != nil {
 		return err
 	}
 
 	// Walk into recipes
-	if err := app.RecipeLoader.Walk(repo, func(rec models.RecipeInterface) {
+	if err := app.recipeLoader.Walk(repo, func(rec models.RecipeInterface) {
 		_, _ = fmt.Fprintf(out, "%s: %s\n", rec.Name(), rec.Description())
 	}); err != nil {
 		return err

@@ -4,11 +4,6 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/app"
-	"manala/config"
-	"manala/fs"
-	"manala/loaders"
-	"manala/logger"
-	"manala/models"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,25 +36,14 @@ func (s *ListTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	stdOut := bytes.NewBufferString("")
 	stdErr := bytes.NewBufferString("")
 
-	conf := config.New(
-		config.WithMainRepository(filepath.Join(s.wd, "testdata/list/repository/default")),
-	)
-
-	log := logger.New(logger.WithWriter(stdErr))
-
-	fsManager := fs.NewManager()
-	modelFsManager := models.NewFsManager(fsManager)
-
-	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
-
 	cmd := &ListCmd{
-		App: &app.App{
-			RepositoryLoader: repositoryLoader,
-			RecipeLoader:     recipeLoader,
-		},
-		Conf: conf,
-		Out:  stdOut,
+		App: app.New(
+			app.WithDefaultRepository(
+				filepath.Join(s.wd, "testdata/list/repository/default"),
+			),
+			app.WithLogWriter(stdErr),
+		),
+		Out: stdOut,
 	}
 
 	// Command

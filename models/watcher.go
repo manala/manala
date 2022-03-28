@@ -2,8 +2,8 @@ package models
 
 import (
 	"fmt"
+	"github.com/apex/log"
 	"github.com/fsnotify/fsnotify"
-	"manala/logger"
 	"os"
 	"path/filepath"
 )
@@ -13,7 +13,7 @@ import (
 /***********/
 
 // NewWatcherManager creates a model watcher manager
-func NewWatcherManager(log logger.Logger) *watcherManager {
+func NewWatcherManager(log log.Interface) *watcherManager {
 	return &watcherManager{
 		log: log,
 	}
@@ -24,7 +24,7 @@ type WatcherManagerInterface interface {
 }
 
 type watcherManager struct {
-	log logger.Logger
+	log log.Interface
 }
 
 /***********/
@@ -53,7 +53,7 @@ type WatcherInterface interface {
 }
 
 type watcher struct {
-	log        logger.Logger
+	log        log.Interface
 	watcher    *fsnotify.Watcher
 	projectDir string
 	recipeDir  string
@@ -113,7 +113,7 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					return
 				}
 
-				watcher.log.Debug("Watch event", watcher.log.WithField("event", event))
+				watcher.log.WithField("event", event).Debug("Watch event")
 
 				// Ignore chmod events
 				if event.Op != fsnotify.Chmod {
@@ -121,11 +121,11 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					dir := filepath.Dir(file)
 					if (dir == watcher.projectDir) && (filepath.Base(file) == ProjectManifestFile) {
 						// Project manifest
-						watcher.log.Info("Project manifest modified", watcher.log.WithField("file", file))
+						watcher.log.WithField("file", file).Info("Project manifest modified")
 						callback(watcher)
 					} else if dir != watcher.projectDir {
 						// Recipe dir
-						watcher.log.Info("Recipe modified", watcher.log.WithField("path", file))
+						watcher.log.WithField("path", file).Info("Recipe modified")
 						callback(watcher)
 					}
 				}
@@ -134,7 +134,7 @@ func (watcher *watcher) Watch(callback func(watcher WatcherInterface)) {
 					return
 				}
 
-				watcher.log.Error("Watch error", err)
+				watcher.log.WithError(err).Error("Watch error")
 			}
 		}
 	}()

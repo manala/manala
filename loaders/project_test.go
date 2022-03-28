@@ -1,10 +1,10 @@
 package loaders
 
 import (
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/discard"
 	"github.com/stretchr/testify/suite"
-	"manala/config"
 	"manala/fs"
-	"manala/logger"
 	"manala/models"
 	"os"
 	"path/filepath"
@@ -17,7 +17,8 @@ import (
 
 type ProjectTestSuite struct {
 	suite.Suite
-	ld ProjectLoaderInterface
+	cacheDir string
+	ld       ProjectLoaderInterface
 }
 
 func TestProjectTestSuite(t *testing.T) {
@@ -26,24 +27,21 @@ func TestProjectTestSuite(t *testing.T) {
 }
 
 func (s *ProjectTestSuite) SetupTest() {
-	cacheDir := "testdata/project/.cache"
-	_ = os.RemoveAll(cacheDir)
-	_ = os.Mkdir(cacheDir, 0755)
+	s.cacheDir = "testdata/project/.cache"
+	_ = os.RemoveAll(s.cacheDir)
+	_ = os.Mkdir(s.cacheDir, 0755)
 
-	conf := config.New(
-		config.WithMainRepository("testdata/project/_repository_default"),
-		config.WithCacheDir(cacheDir),
-	)
-
-	log := logger.New()
+	logger := &log.Logger{
+		Handler: discard.Default,
+	}
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)
 
-	repositoryLoader := NewRepositoryLoader(log, conf)
-	recipeLoader := NewRecipeLoader(log, modelFsManager)
+	repositoryLoader := NewRepositoryLoader(logger)
+	recipeLoader := NewRecipeLoader(logger, modelFsManager)
 
-	s.ld = NewProjectLoader(log, conf, repositoryLoader, recipeLoader)
+	s.ld = NewProjectLoader(logger, repositoryLoader, recipeLoader)
 }
 
 /*******************/
@@ -119,45 +117,31 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 
 func (s *ProjectTestSuite) TestProjectLoad() {
 	for _, t := range []struct {
-		test                 string
-		withRepositorySource string
-		withRecipeName       string
-		recipeName           string
-		recipeDescription    string
+		test              string
+		defaultRepository string
+		withRecipeName    string
+		recipeName        string
+		recipeDescription string
 	}{
 		{
-			test:                 "Default",
-			withRepositorySource: "",
-			withRecipeName:       "",
-			recipeName:           "foo",
-			recipeDescription:    "Default foo",
+			test:              "With default repository",
+			defaultRepository: "testdata/project/_repository_with",
+			withRecipeName:    "",
+			recipeName:        "foo",
+			recipeDescription: "With foo",
 		},
 		{
-			test:                 "With repository",
-			withRepositorySource: "testdata/project/_repository_with",
-			withRecipeName:       "",
-			recipeName:           "foo",
-			recipeDescription:    "With foo",
-		},
-		{
-			test:                 "With recipe",
-			withRepositorySource: "",
-			withRecipeName:       "bar",
-			recipeName:           "bar",
-			recipeDescription:    "Default bar",
-		},
-		{
-			test:                 "With repository with recipe",
-			withRepositorySource: "testdata/project/_repository_with",
-			withRecipeName:       "bar",
-			recipeName:           "bar",
-			recipeDescription:    "With bar",
+			test:              "With default repository and recipe",
+			defaultRepository: "testdata/project/_repository_with",
+			withRecipeName:    "bar",
+			recipeName:        "bar",
+			recipeDescription: "With bar",
 		},
 	} {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.withRepositorySource, t.withRecipeName)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName, s.cacheDir)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal(t.recipeName, prj.Recipe().Name())
@@ -169,7 +153,7 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 	prjManifest, err := s.ld.Find("testdata/project/load_empty", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "")
+	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
 	s.Error(err)
 	s.Equal("empty project manifest \""+filepath.Join("testdata", "project", "load_empty", ".manala.yaml")+"\"", err.Error())
 	s.Nil(prj)
@@ -178,7 +162,7 @@ func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 	prjManifest, err := s.ld.Find("testdata/project/load_incorrect", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "")
+	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
 	s.Error(err)
 	s.Equal("incorrect project manifest \""+filepath.Join("testdata", "project", "load_incorrect", ".manala.yaml")+"\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
 	s.Nil(prj)
@@ -187,7 +171,7 @@ func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 	prjManifest, err := s.ld.Find("testdata/project/load_no_recipe", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "")
+	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
 	s.Error(err)
 	s.Equal("Key: 'projectConfig.Recipe' Error:Field validation for 'Recipe' failed on the 'required' tag", err.Error())
 	s.Nil(prj)
@@ -195,45 +179,31 @@ func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 
 func (s *ProjectTestSuite) TestProjectLoadRepository() {
 	for _, t := range []struct {
-		test                 string
-		withRepositorySource string
-		withRecipeName       string
-		recipeName           string
-		recipeDescription    string
+		test              string
+		defaultRepository string
+		withRecipeName    string
+		recipeName        string
+		recipeDescription string
 	}{
 		{
-			test:                 "Default",
-			withRepositorySource: "",
-			withRecipeName:       "",
-			recipeName:           "foo",
-			recipeDescription:    "Custom foo",
+			test:              "With default repository",
+			defaultRepository: "testdata/project/_repository_with",
+			withRecipeName:    "",
+			recipeName:        "foo",
+			recipeDescription: "Custom foo",
 		},
 		{
-			test:                 "With repository",
-			withRepositorySource: "testdata/project/_repository_with",
-			withRecipeName:       "",
-			recipeName:           "foo",
-			recipeDescription:    "With foo",
-		},
-		{
-			test:                 "With recipe",
-			withRepositorySource: "",
-			withRecipeName:       "bar",
-			recipeName:           "bar",
-			recipeDescription:    "Custom bar",
-		},
-		{
-			test:                 "With repository with recipe",
-			withRepositorySource: "testdata/project/_repository_with",
-			withRecipeName:       "bar",
-			recipeName:           "bar",
-			recipeDescription:    "With bar",
+			test:              "With default repository and recipe",
+			defaultRepository: "testdata/project/_repository_with",
+			withRecipeName:    "bar",
+			recipeName:        "bar",
+			recipeDescription: "Custom bar",
 		},
 	} {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load_repository", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.withRepositorySource, t.withRecipeName)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName, s.cacheDir)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal(t.recipeName, prj.Recipe().Name())
@@ -245,7 +215,7 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 func (s *ProjectTestSuite) TestProjectLoadVars() {
 	prjManifest, err := s.ld.Find("testdata/project/load_vars", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "")
+	prj, err := s.ld.Load(prjManifest, "testdata/project/_repository_default", "", s.cacheDir)
 	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{

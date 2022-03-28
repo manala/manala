@@ -4,13 +4,6 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
 	"manala/app"
-	"manala/config"
-	"manala/fs"
-	"manala/loaders"
-	"manala/logger"
-	"manala/models"
-	"manala/syncer"
-	"manala/template"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,30 +38,13 @@ func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	stdOut := bytes.NewBufferString("")
 	stdErr := bytes.NewBufferString("")
 
-	conf := config.New(
-		config.WithMainRepository(filepath.Join(s.wd, "testdata/init/repository/default")),
-	)
-
-	log := logger.New(logger.WithWriter(stdErr))
-
-	fsManager := fs.NewManager()
-	modelFsManager := models.NewFsManager(fsManager)
-	templateManager := template.NewManager()
-	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
-
-	repositoryLoader := loaders.NewRepositoryLoader(log, conf)
-	recipeLoader := loaders.NewRecipeLoader(log, modelFsManager)
-
 	cmd := &InitCmd{
-		App: &app.App{
-			RepositoryLoader: repositoryLoader,
-			RecipeLoader:     recipeLoader,
-			ProjectLoader:    loaders.NewProjectLoader(log, conf, repositoryLoader, recipeLoader),
-			TemplateManager:  modelTemplateManager,
-			Sync:             syncer.New(log, modelFsManager, modelTemplateManager),
-			Log:              log,
-		},
-		Conf: conf,
+		App: app.New(
+			app.WithDefaultRepository(
+				filepath.Join(s.wd, "testdata/init/repository/default"),
+			),
+			app.WithLogWriter(stdErr),
+		),
 		Assets: fstest.MapFS{
 			"assets/.manala.yaml.tmpl": {Data: []byte(`manala:
    recipe: {{ .Recipe.Name }}

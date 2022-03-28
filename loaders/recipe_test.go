@@ -1,9 +1,10 @@
 package loaders
 
 import (
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/discard"
 	"github.com/stretchr/testify/suite"
 	"manala/fs"
-	"manala/logger"
 	"manala/models"
 	"testing"
 )
@@ -29,19 +30,21 @@ func TestRecipeTestSuite(t *testing.T) {
 }
 
 func (s *RecipeTestSuite) SetupTest() {
-	s.repository = models.NewRepository("testdata/recipe/_repository", "testdata/recipe/_repository", false)
-	s.repositoryEmpty = models.NewRepository("testdata/recipe/_repository_empty", "testdata/recipe/_repository_empty", false)
-	s.repositoryInvalid = models.NewRepository("testdata/recipe/_repository_invalid", "testdata/recipe/_repository_invalid", false)
-	s.repositoryIncorrect = models.NewRepository("testdata/recipe/_repository_incorrect", "testdata/recipe/_repository_incorrect", false)
-	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description", false)
-	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid", false)
+	s.repository = models.NewRepository("testdata/recipe/_repository", "testdata/recipe/_repository")
+	s.repositoryEmpty = models.NewRepository("testdata/recipe/_repository_empty", "testdata/recipe/_repository_empty")
+	s.repositoryInvalid = models.NewRepository("testdata/recipe/_repository_invalid", "testdata/recipe/_repository_invalid")
+	s.repositoryIncorrect = models.NewRepository("testdata/recipe/_repository_incorrect", "testdata/recipe/_repository_incorrect")
+	s.repositoryNoDescription = models.NewRepository("testdata/recipe/_repository_no_description", "testdata/recipe/_repository_no_description")
+	s.repositorySchemaInvalid = models.NewRepository("testdata/recipe/_repository_schema_invalid", "testdata/recipe/_repository_schema_invalid")
 
-	log := logger.New()
+	logger := &log.Logger{
+		Handler: discard.Default,
+	}
 
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)
 
-	s.ld = NewRecipeLoader(log, modelFsManager)
+	s.ld = NewRecipeLoader(logger, modelFsManager)
 }
 
 /******************/
@@ -213,7 +216,7 @@ func (s *RecipeTestSuite) TestRecipeLoadOptions() {
 }
 
 func (s *RecipeTestSuite) TestRecipeWalk() {
-	repo := models.NewRepository("testdata/recipe/walk", "testdata/recipe/walk", false)
+	repo := models.NewRepository("testdata/recipe/walk", "testdata/recipe/walk")
 	results := make(map[string]string)
 	err := s.ld.Walk(repo, func(rec models.RecipeInterface) {
 		results[rec.Name()] = rec.Description()

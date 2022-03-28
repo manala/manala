@@ -33,7 +33,6 @@ func (s *ProjectTestSuite) SetupTest() {
 		NewRepository(
 			"foo",
 			"bar",
-			false,
 		),
 		s.recipeVars,
 		nil,

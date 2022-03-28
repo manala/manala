@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"manala/app"
 	"manala/binder"
-	"manala/config"
 	"manala/loaders"
 	"manala/models"
 	"manala/validator"
@@ -16,7 +15,6 @@ import (
 
 type InitCmd struct {
 	App    *app.App
-	Conf   config.Config
 	Assets fs.ReadFileFS
 }
 
@@ -39,13 +37,10 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 			flags := command.Flags()
 
-			cmd.Conf.BindRepositoryFlag(flags.Lookup("repository"))
-
 			recName, _ := flags.GetString("recipe")
 
 			// App
 			return cmd.App.Init(
-				cmd.Conf.Repository(),
 				cmd.Assets,
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
@@ -57,7 +52,11 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 	flags := command.Flags()
 
+	// Repository
 	flags.StringP("repository", "o", "", "use repository source")
+	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
+
+	// Recipe
 	flags.StringP("recipe", "i", "", "use recipe name")
 
 	return command

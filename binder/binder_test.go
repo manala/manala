@@ -25,7 +25,6 @@ func (s *RecipeFormBinderTestSuite) SetupTest() {
 	s.repository = models.NewRepository(
 		"foo",
 		"bar",
-		false,
 	)
 }
 

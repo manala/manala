@@ -33,7 +33,7 @@ func (s *TemplateTestSuite) SetupTest() {
 /*********/
 
 func (s *TemplateTestSuite) Test() {
-	repository := NewRepository("foo", "foo", false)
+	repository := NewRepository("foo", "foo")
 	recipe := NewRecipe("foo", "foo", "foo", "foo", repository, nil, nil, nil, nil)
 	tmpl, err := s.manager.NewRecipeTemplate(recipe)
 	s.NoError(err)

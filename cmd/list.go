@@ -4,13 +4,11 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"manala/app"
-	"manala/config"
 )
 
 type ListCmd struct {
-	App  *app.App
-	Conf config.Config
-	Out  io.Writer
+	App *app.App
+	Out io.Writer
 }
 
 func (cmd *ListCmd) Command() *cobra.Command {
@@ -25,13 +23,8 @@ Example: manala list -> resulting in a recipes list display`,
 		Args:              cobra.NoArgs,
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			flags := command.Flags()
-
-			cmd.Conf.BindRepositoryFlag(flags.Lookup("repository"))
-
 			// App
 			return cmd.App.List(
-				cmd.Conf.Repository(),
 				cmd.Out,
 			)
 		},
@@ -39,7 +32,9 @@ Example: manala list -> resulting in a recipes list display`,
 
 	flags := command.Flags()
 
+	// Repository
 	flags.StringP("repository", "o", "", "use repository source")
+	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
 
 	return command
 }

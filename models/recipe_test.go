@@ -24,7 +24,6 @@ func (s *RecipeTestSuite) SetupTest() {
 	s.repository = NewRepository(
 		"foo",
 		"bar",
-		false,
 	)
 }
 
