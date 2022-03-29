@@ -1,17 +1,18 @@
 ## manala completion fish
 
-generate the autocompletion script for fish
+Generate the autocompletion script for fish
 
 ### Synopsis
-
 
 Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
-$ manala completion fish | source
+
+	manala completion fish | source
 
 To load completions for every new session, execute once:
-$ manala completion fish > ~/.config/fish/completions/manala.fish
+
+	manala completion fish > ~/.config/fish/completions/manala.fish
 
 You will need to start a new shell for this setup to take effect.
 
@@ -36,5 +37,5 @@ manala completion fish [flags]
 
 ### SEE ALSO
 
-* [manala completion](manala_completion.md)	 - generate the autocompletion script for the specified shell
+* [manala completion](manala_completion.md)	 - Generate the autocompletion script for the specified shell
 

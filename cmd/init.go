@@ -27,14 +27,17 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
+			// Config
+			cmd.App.Config.BindPFlags(command.PersistentFlags())
+
 			// Get directory from first command arg
 			dir := "."
 			if len(args) != 0 {
 				dir = args[0]
 			}
 
+			// Flags
 			flags := command.Flags()
-
 			recName, _ := flags.GetString("recipe")
 
 			// App
@@ -47,13 +50,12 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		},
 	}
 
+	// Persistent flags
+	pFlags := command.PersistentFlags()
+	pFlags.StringP("repository", "o", "", "use repository source")
+
+	// Flags
 	flags := command.Flags()
-
-	// Repository
-	flags.StringP("repository", "o", "", "use repository source")
-	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
-
-	// Recipe
 	flags.StringP("recipe", "i", "", "use recipe name")
 
 	return command

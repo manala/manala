@@ -19,7 +19,7 @@ Recipes are pulled from a git repository, or a local directory.
 
 ### SEE ALSO
 
-* [manala completion](manala_completion.md)	 - generate the autocompletion script for the specified shell
+* [manala completion](manala_completion.md)	 - Generate the autocompletion script for the specified shell
 * [manala init](manala_init.md)	 - Init project
 * [manala list](manala_list.md)	 - List recipes
 * [manala update](manala_update.md)	 - Update project

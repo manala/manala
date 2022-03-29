@@ -24,6 +24,9 @@ Example: manala list -> resulting in a recipes list display`,
 		Args:              cobra.NoArgs,
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
+			// Config
+			cmd.App.Config.BindPFlags(command.PersistentFlags())
+
 			// App
 			recipes, err := cmd.App.List()
 			if err != nil {
@@ -38,11 +41,9 @@ Example: manala list -> resulting in a recipes list display`,
 		},
 	}
 
-	flags := command.Flags()
-
-	// Repository
-	flags.StringP("repository", "o", "", "use repository source")
-	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
+	// Persistent flags
+	pFlags := command.PersistentFlags()
+	pFlags.StringP("repository", "o", "", "use repository source")
 
 	return command
 }

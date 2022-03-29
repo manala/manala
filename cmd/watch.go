@@ -20,16 +20,18 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
+			// Config
+			cmd.App.Config.BindPFlags(command.PersistentFlags())
+
 			// Get directory from first command arg
 			dir := "."
 			if len(args) != 0 {
 				dir = args[0]
 			}
 
+			// Flags
 			flags := command.Flags()
-
 			withRecipeName, _ := flags.GetString("recipe")
-
 			watchAll, _ := flags.GetBool("all")
 			useNotify, _ := flags.GetBool("notify")
 
@@ -43,15 +45,13 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 		},
 	}
 
+	// Persistent flags
+	pFlags := command.PersistentFlags()
+	pFlags.StringP("repository", "o", "", "with repository source")
+
+	// Flags
 	flags := command.Flags()
-
-	// Repository
-	flags.StringP("repository", "o", "", "with repository source")
-	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
-
-	// Recipe
 	flags.StringP("recipe", "i", "", "with recipe name")
-
 	flags.BoolP("all", "a", false, "watch recipe too")
 	flags.BoolP("notify", "n", false, "use system notifications")
 

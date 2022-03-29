@@ -24,15 +24,12 @@ Recipes are pulled from a git repository, or a local directory.`,
 		DisableAutoGenTag: true,
 	}
 
+	// Persistent flags
 	pFlags := command.PersistentFlags()
-
-	// Cache dir
 	pFlags.StringP("cache-dir", "c", "", "use cache directory")
-	cmd.App.Config.BindPFlag("cache-dir", pFlags.Lookup("cache-dir"))
-
-	// Debug
 	pFlags.BoolP("debug", "d", false, "set debug mode")
-	cmd.App.Config.BindPFlag("debug", pFlags.Lookup("debug"))
+
+	cmd.App.Config.BindPFlags(pFlags)
 
 	// Initialize
 	cobra.OnInitialize(cmd.OnInitialize)

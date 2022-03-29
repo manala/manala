@@ -21,16 +21,18 @@ Example: manala update -> resulting in an update in a directory (default to the 
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
+			// Config
+			cmd.App.Config.BindPFlags(command.PersistentFlags())
+
 			// Get directory from first command arg
 			dir := "."
 			if len(args) != 0 {
 				dir = args[0]
 			}
 
+			// Flags
 			flags := command.Flags()
-
 			withRecipeName, _ := flags.GetString("recipe")
-
 			recursive, _ := flags.GetBool("recursive")
 
 			// App
@@ -42,15 +44,13 @@ Example: manala update -> resulting in an update in a directory (default to the 
 		},
 	}
 
+	// Persistent flags
+	pFlags := command.PersistentFlags()
+	pFlags.StringP("repository", "o", "", "with repository source")
+
+	// Flags
 	flags := command.Flags()
-
-	// Repository
-	flags.StringP("repository", "o", "", "with repository source")
-	cmd.App.Config.BindPFlag("repository", flags.Lookup("repository"))
-
-	// Recipe
 	flags.StringP("recipe", "i", "", "with recipe name")
-
 	flags.BoolP("recursive", "r", false, "set recursive mode")
 
 	return command
