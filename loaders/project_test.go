@@ -116,35 +116,35 @@ func (s *ProjectTestSuite) TestProjectFindTraverse() {
 
 func (s *ProjectTestSuite) TestProjectLoad() {
 	for _, t := range []struct {
-		test              string
-		defaultRepository string
-		withRecipeName    string
-		recipeName        string
-		recipeDescription string
+		test                      string
+		defaultRepository         string
+		recipeName                string
+		expectedRecipeName        string
+		expectedRecipeDescription string
 	}{
 		{
-			test:              "With default repository",
-			defaultRepository: "testdata/project/_repository_with",
-			withRecipeName:    "",
-			recipeName:        "foo",
-			recipeDescription: "With foo",
+			test:                      "With default repository",
+			defaultRepository:         "testdata/project/_repository_with",
+			recipeName:                "",
+			expectedRecipeName:        "foo",
+			expectedRecipeDescription: "With foo",
 		},
 		{
-			test:              "With default repository and recipe",
-			defaultRepository: "testdata/project/_repository_with",
-			withRecipeName:    "bar",
-			recipeName:        "bar",
-			recipeDescription: "With bar",
+			test:                      "With default repository and recipe",
+			defaultRepository:         "testdata/project/_repository_with",
+			recipeName:                "bar",
+			expectedRecipeName:        "bar",
+			expectedRecipeDescription: "With bar",
 		},
 	} {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.recipeName)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
-			s.Equal(t.recipeName, prj.Recipe().Name())
-			s.Equal(t.recipeDescription, prj.Recipe().Description())
+			s.Equal(t.expectedRecipeName, prj.Recipe().Name())
+			s.Equal(t.expectedRecipeDescription, prj.Recipe().Description())
 		})
 	}
 }
@@ -178,35 +178,35 @@ func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 
 func (s *ProjectTestSuite) TestProjectLoadRepository() {
 	for _, t := range []struct {
-		test              string
-		defaultRepository string
-		withRecipeName    string
-		recipeName        string
-		recipeDescription string
+		test                      string
+		defaultRepository         string
+		recipeName                string
+		expectedRecipeName        string
+		expectedRecipeDescription string
 	}{
 		{
-			test:              "With default repository",
-			defaultRepository: "testdata/project/_repository_with",
-			withRecipeName:    "",
-			recipeName:        "foo",
-			recipeDescription: "Custom foo",
+			test:                      "With default repository",
+			defaultRepository:         "testdata/project/_repository_with",
+			recipeName:                "",
+			expectedRecipeName:        "foo",
+			expectedRecipeDescription: "Custom foo",
 		},
 		{
-			test:              "With default repository and recipe",
-			defaultRepository: "testdata/project/_repository_with",
-			withRecipeName:    "bar",
-			recipeName:        "bar",
-			recipeDescription: "Custom bar",
+			test:                      "With default repository and recipe",
+			defaultRepository:         "testdata/project/_repository_with",
+			recipeName:                "bar",
+			expectedRecipeName:        "bar",
+			expectedRecipeDescription: "Custom bar",
 		},
 	} {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load_repository", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.recipeName)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
-			s.Equal(t.recipeName, prj.Recipe().Name())
-			s.Equal(t.recipeDescription, prj.Recipe().Description())
+			s.Equal(t.expectedRecipeName, prj.Recipe().Name())
+			s.Equal(t.expectedRecipeDescription, prj.Recipe().Description())
 		})
 	}
 }

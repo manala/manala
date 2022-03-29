@@ -44,14 +44,14 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 			// Flags
 			flags := command.Flags()
-			recName, _ := flags.GetString("recipe")
+			recipe, _ := flags.GetString("recipe")
 
 			// Command
 			return manala.Init(
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
 				dir,
-				recName,
+				recipe,
 			)
 		},
 	}
@@ -124,7 +124,7 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 	application := cview.NewApplication()
 	application.EnableMouse(true)
 
-	appPanels := cview.NewPanels()
+	applicationPanels := cview.NewPanels()
 
 	var err error
 
@@ -141,7 +141,7 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 	frame.SetBorders(1, 1, 1, 1, 1, 1)
 	frame.AddText("Please, enter \""+rec.Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
 
-	appPanels.AddPanel("form", frame, true, true)
+	applicationPanels.AddPanel("form", frame, true, true)
 
 	// Modal panel
 	modal := cview.NewModal()
@@ -149,10 +149,10 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 	modal.SetTextColor(tcell.ColorWhite)
 	modal.AddButtons([]string{"Ok"})
 	modal.SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		appPanels.HidePanel("modal")
+		applicationPanels.HidePanel("modal")
 	})
 
-	appPanels.AddPanel("modal", modal, false, false)
+	applicationPanels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
 	bndr, err2 := binder.NewRecipeFormBinder(rec)
@@ -171,7 +171,7 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 				if err3, ok := err2.(*validator.ValueValidationError); ok {
 					valid = false
 					modal.SetText(bnd.Option.Label + err3.Error())
-					appPanels.ShowPanel("modal")
+					applicationPanels.ShowPanel("modal")
 					form.SetFocus(bnd.ItemIndex)
 				} else {
 					err = err2
@@ -187,8 +187,8 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 		}
 	})
 
-	application.SetRoot(appPanels, true)
-	application.SetFocus(appPanels)
+	application.SetRoot(applicationPanels, true)
+	application.SetFocus(applicationPanels)
 	if err3 := application.Run(); err3 != nil {
 		return err3
 	}

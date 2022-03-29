@@ -11,7 +11,7 @@ import (
 
 func (app *App) Update(
 	dir string,
-	withRecipeName string,
+	recName string,
 	recursive bool,
 ) error {
 	// Check directory
@@ -45,7 +45,7 @@ func (app *App) Update(
 				if err := app.syncProject(
 					prjManifest,
 					app.config.GetString("repository"),
-					withRecipeName,
+					recName,
 				); err != nil {
 					return err
 				}
@@ -71,7 +71,7 @@ func (app *App) Update(
 		if err = app.syncProject(
 			prjManifest,
 			app.config.GetString("repository"),
-			withRecipeName,
+			recName,
 		); err != nil {
 			return err
 		}
@@ -83,13 +83,13 @@ func (app *App) Update(
 func (app *App) syncProject(
 	prjManifest *os.File,
 	defaultRepository string,
-	withRecipeName string,
+	recName string,
 ) error {
 	// Load project
 	prj, err := app.projectLoader.Load(
 		prjManifest,
 		defaultRepository,
-		withRecipeName,
+		recName,
 	)
 	if err != nil {
 		return err

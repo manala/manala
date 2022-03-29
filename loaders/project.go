@@ -23,7 +23,7 @@ func NewProjectLoader(log log.Interface, repositoryLoader RepositoryLoaderInterf
 
 type ProjectLoaderInterface interface {
 	Find(dir string, traverse bool) (*os.File, error)
-	Load(manifest *os.File, defaultRepository string, withRecipeName string) (models.ProjectInterface, error)
+	Load(manifest *os.File, defaultRepository string, recName string) (models.ProjectInterface, error)
 }
 
 type projectConfig struct {
@@ -77,7 +77,7 @@ func (ld *projectLoader) Find(dir string, traverse bool) (*os.File, error) {
 	return ld.Find(parentDir, true)
 }
 
-func (ld *projectLoader) Load(manifest *os.File, defaultRepository string, withRecipeName string) (models.ProjectInterface, error) {
+func (ld *projectLoader) Load(manifest *os.File, defaultRepository string, recName string) (models.ProjectInterface, error) {
 	// Get dir
 	dir := filepath.Dir(manifest.Name())
 
@@ -113,8 +113,8 @@ func (ld *projectLoader) Load(manifest *os.File, defaultRepository string, withR
 	delete(vars, "manala")
 
 	// With recipe
-	if withRecipeName != "" {
-		cfg.Recipe = withRecipeName
+	if recName != "" {
+		cfg.Recipe = recName
 	}
 
 	// Validate config

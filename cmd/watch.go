@@ -37,16 +37,16 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 			// Flags
 			flags := command.Flags()
-			withRecipeName, _ := flags.GetString("recipe")
-			watchAll, _ := flags.GetBool("all")
-			useNotify, _ := flags.GetBool("notify")
+			recipe, _ := flags.GetString("recipe")
+			all, _ := flags.GetBool("all")
+			notify, _ := flags.GetBool("notify")
 
 			// Command
 			return manala.Watch(
 				dir,
-				withRecipeName,
-				watchAll,
-				useNotify,
+				recipe,
+				all,
+				notify,
 			)
 		},
 	}

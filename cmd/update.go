@@ -38,13 +38,13 @@ Example: manala update -> resulting in an update in a directory (default to the 
 
 			// Flags
 			flags := command.Flags()
-			withRecipeName, _ := flags.GetString("recipe")
+			recipe, _ := flags.GetString("recipe")
 			recursive, _ := flags.GetBool("recursive")
 
 			// Command
 			return manala.Update(
 				dir,
-				withRecipeName,
+				recipe,
 				recursive,
 			)
 		},

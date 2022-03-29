@@ -11,7 +11,7 @@ import (
 
 func (app *App) Watch(
 	dir string,
-	withRecipeName string,
+	recName string,
 	watchAll bool,
 	useNotify bool,
 ) error {
@@ -36,7 +36,7 @@ func (app *App) Watch(
 	syncFunc := app.getSyncFunc(
 		prjManifest,
 		app.config.GetString("repository"),
-		withRecipeName,
+		recName,
 		watchAll,
 	)
 
@@ -74,12 +74,12 @@ func (app *App) Watch(
 func (app *App) getSyncFunc(
 	prjManifest *os.File,
 	defaultRepository string,
-	withRecipeName string,
+	recName string,
 	watchAll bool,
 ) func(watcher models.WatcherInterface) error {
 	return func(watcher models.WatcherInterface) error {
 		// Load project
-		prj, err := app.projectLoader.Load(prjManifest, defaultRepository, withRecipeName)
+		prj, err := app.projectLoader.Load(prjManifest, defaultRepository, recName)
 		if err != nil {
 			return err
 		}
