@@ -2,17 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
-	"io"
+	"github.com/spf13/viper"
 	"manala/app"
 )
 
-type ListCmd struct {
-	App *app.App
-	Out io.Writer
-}
+type ListCmd struct{}
 
-func (cmd *ListCmd) Command() *cobra.Command {
+func (cmd *ListCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -25,16 +23,22 @@ Example: manala list -> resulting in a recipes list display`,
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			// Config
-			cmd.App.Config.BindPFlags(command.PersistentFlags())
+			_ = config.BindPFlags(command.PersistentFlags())
 
 			// App
-			recipes, err := cmd.App.List()
+			manala := app.New(
+				app.WithConfig(config),
+				app.WithLogger(logger),
+			)
+
+			// Command
+			recipes, err := manala.List()
 			if err != nil {
 				return err
 			}
 
 			for _, recipe := range recipes {
-				_, _ = fmt.Fprintf(cmd.Out, "%s: %s\n", recipe.Name(), recipe.Description())
+				_, _ = fmt.Printf("%s: %s\n", recipe.Name(), recipe.Description())
 			}
 
 			return nil

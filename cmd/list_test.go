@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"bytes"
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"manala/app"
 	"os"
 	"path/filepath"
 	"testing"
@@ -36,18 +38,16 @@ func (s *ListTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer
 	stdOut := bytes.NewBufferString("")
 	stdErr := bytes.NewBufferString("")
 
-	cmd := &ListCmd{
-		App: app.New(
-			app.WithDefaultRepository(
-				filepath.Join(s.wd, "testdata/list/repository/default"),
-			),
-			app.WithLogWriter(stdErr),
-		),
-		Out: stdOut,
+	config := viper.New()
+	config.SetDefault("repository", filepath.Join(s.wd, "testdata/list/repository/default"))
+
+	logger := &log.Logger{
+		Handler: cli.New(stdErr),
+		Level:   log.InfoLevel,
 	}
 
 	// Command
-	command := cmd.Command()
+	command := (&ListCmd{}).Command(config, logger)
 	command.SetArgs(args)
 	command.SilenceErrors = true
 	command.SilenceUsage = true
@@ -73,21 +73,14 @@ func (s *ListTestSuite) Test() {
 		args   []string
 		err    string
 		stdErr string
-		stdOut string
 	}{
 		{
 			test: "Default repository",
 			args: []string{},
-			stdOut: `bar: Default bar recipe
-foo: Default foo recipe
-`,
 		},
 		{
 			test: "Custom repository",
 			args: []string{"--repository", "testdata/list/repository/custom"},
-			stdOut: `bar: Custom bar recipe
-foo: Custom foo recipe
-`,
 		},
 		{
 			test: "Nonexistent repository",
@@ -97,7 +90,7 @@ foo: Custom foo recipe
 	} {
 		s.Run(t.test, func() {
 			// Execute
-			stdOut, stdErr, err := s.ExecuteCommand(
+			_, stdErr, err := s.ExecuteCommand(
 				"",
 				t.args,
 			)
@@ -108,7 +101,6 @@ foo: Custom foo recipe
 			} else {
 				s.NoError(err)
 			}
-			s.Equal(t.stdOut, stdOut.String())
 			s.Equal(t.stdErr, stdErr.String())
 		})
 	}

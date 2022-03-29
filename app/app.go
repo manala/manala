@@ -2,10 +2,8 @@ package app
 
 import (
 	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
 	"github.com/apex/log/handlers/discard"
 	"github.com/spf13/viper"
-	"io"
 	"manala/fs"
 	"manala/loaders"
 	"manala/models"
@@ -15,68 +13,49 @@ import (
 
 // New creates an app
 func New(opts ...func(app *App)) *App {
-
-	// Logger
+	// Default logger
 	logger := &log.Logger{
 		Handler: discard.Default,
 	}
 
-	// Managers
-	fsManager := fs.NewManager()
-	modelFsManager := models.NewFsManager(fsManager)
-	templateManager := template.NewManager()
-	modelTemplateManager := models.NewTemplateManager(templateManager, modelFsManager)
-	modelWatcherManager := models.NewWatcherManager(logger)
-
-	// Syncer
-	sync := syncer.New(logger, modelFsManager, modelTemplateManager)
-
-	// Loaders
-	repositoryLoader := loaders.NewRepositoryLoader(logger)
-	recipeLoader := loaders.NewRecipeLoader(logger, modelFsManager)
-	projectLoader := loaders.NewProjectLoader(logger, repositoryLoader, recipeLoader)
-
 	// App
 	app := &App{
-		Config:           viper.New(),
-		Log:              logger,
-		repositoryLoader: repositoryLoader,
-		recipeLoader:     recipeLoader,
-		projectLoader:    projectLoader,
-		templateManager:  modelTemplateManager,
-		watcherManager:   modelWatcherManager,
-		sync:             sync,
+		Config: viper.New(),
+		Log:    logger,
 	}
-
-	// Config
-	app.Config.SetDefault("debug", false)
 
 	// Options
 	for _, opt := range opts {
 		opt(app)
 	}
 
-	// Apply config
-	app.ApplyConfig()
+	// Managers
+	fsManager := fs.NewManager()
+	modelFsManager := models.NewFsManager(fsManager)
+	templateManager := template.NewManager()
+	app.templateManager = models.NewTemplateManager(templateManager, modelFsManager)
+	app.watcherManager = models.NewWatcherManager(app.Log)
+
+	// Syncer
+	app.sync = syncer.New(app.Log, modelFsManager, app.templateManager)
+
+	// Loaders
+	app.repositoryLoader = loaders.NewRepositoryLoader(app.Log)
+	app.recipeLoader = loaders.NewRecipeLoader(app.Log, modelFsManager)
+	app.projectLoader = loaders.NewProjectLoader(app.Log, app.repositoryLoader, app.recipeLoader)
 
 	return app
 }
 
-func WithVersion(version string) func(app *App) {
+func WithConfig(config *viper.Viper) func(app *App) {
 	return func(app *App) {
-		app.Config.Set("version", version)
+		app.Config = config
 	}
 }
 
-func WithDefaultRepository(repository string) func(app *App) {
+func WithLogger(logger *log.Logger) func(app *App) {
 	return func(app *App) {
-		app.Config.SetDefault("repository", repository)
-	}
-}
-
-func WithLogWriter(writer io.Writer) func(app *App) {
-	return func(app *App) {
-		app.Log.Handler = cli.New(writer)
+		app.Log = logger
 	}
 }
 
@@ -89,13 +68,4 @@ type App struct {
 	templateManager  models.TemplateManagerInterface
 	watcherManager   models.WatcherManagerInterface
 	sync             *syncer.Syncer
-}
-
-func (app *App) ApplyConfig() {
-	// Log level
-	if app.Config.GetBool("debug") {
-		app.Log.Level = log.DebugLevel
-	} else {
-		app.Log.Level = log.InfoLevel
-	}
 }

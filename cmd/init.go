@@ -3,8 +3,10 @@ package cmd
 import (
 	"code.rocketnine.space/tslocum/cview"
 	"fmt"
+	"github.com/apex/log"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"manala/app"
 	"manala/binder"
 	"manala/loaders"
@@ -12,11 +14,9 @@ import (
 	"manala/validator"
 )
 
-type InitCmd struct {
-	App *app.App
-}
+type InitCmd struct{}
 
-func (cmd *InitCmd) Command() *cobra.Command {
+func (cmd *InitCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "init [dir]",
 		Aliases: []string{"in"},
@@ -28,7 +28,13 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			// Config
-			cmd.App.Config.BindPFlags(command.PersistentFlags())
+			_ = config.BindPFlags(command.PersistentFlags())
+
+			// App
+			manala := app.New(
+				app.WithConfig(config),
+				app.WithLogger(logger),
+			)
 
 			// Get directory from first command arg
 			dir := "."
@@ -40,8 +46,8 @@ Example: manala init -> resulting in a project init in a directory (default to t
 			flags := command.Flags()
 			recName, _ := flags.GetString("recipe")
 
-			// App
-			return cmd.App.Init(
+			// Command
+			return manala.Init(
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
 				dir,

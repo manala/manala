@@ -5,18 +5,15 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-type DocsCmd struct {
-	RootCommand *cobra.Command
-	Dir         string
-}
+type DocsCmd struct{}
 
-func (cmd *DocsCmd) Command() *cobra.Command {
+func (cmd *DocsCmd) Command(rootCommand *cobra.Command, dir string) *cobra.Command {
 	command := &cobra.Command{
 		Use:    "docs",
 		Hidden: true,
 		Args:   cobra.NoArgs,
 		RunE: func(command *cobra.Command, args []string) error {
-			return doc.GenMarkdownTree(cmd.RootCommand, cmd.Dir)
+			return doc.GenMarkdownTree(rootCommand, dir)
 		},
 	}
 

@@ -1,61 +1,61 @@
 package main
 
 import (
-	"manala/app"
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/spf13/viper"
 	"manala/cmd"
 	"os"
 	"path/filepath"
 )
 
-// Default repository
-var defaultRepository = "https://github.com/manala/manala-recipes.git"
-
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
 
+// Default repository
+var defaultRepository = "https://github.com/manala/manala-recipes.git"
+
 func main() {
-	// App
-	manala := app.New(
-		app.WithVersion(version),
-		app.WithDefaultRepository(defaultRepository),
-		app.WithLogWriter(os.Stderr),
-	)
+	// Logger
+	logger := &log.Logger{
+		Handler: cli.New(os.Stderr),
+		Level:   log.InfoLevel,
+	}
 
 	// Config
-	manala.Config.SetEnvPrefix("manala")
-	manala.Config.AutomaticEnv()
+	config := viper.New()
+	config.SetEnvPrefix("manala")
+	config.AutomaticEnv()
+	config.SetDefault("debug", false)
+	config.Set("version", version)
+	config.SetDefault("repository", defaultRepository)
 
 	// Cache dir
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		manala.Log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
-	manala.Config.SetDefault("cache-dir", filepath.Join(cacheDir, "manala"))
-
-	// Root command
-	rootCommand := (&cmd.RootCmd{
-		App:          manala,
-		OnInitialize: manala.ApplyConfig,
-	}).Command()
+	config.SetDefault("cache-dir", filepath.Join(cacheDir, "manala"))
 
 	// Commands
+	rootCommand := (&cmd.RootCmd{}).Command(config, logger)
 	rootCommand.AddCommand(
-		(&cmd.InitCmd{App: manala}).Command(),
-		(&cmd.ListCmd{App: manala, Out: rootCommand.OutOrStdout()}).Command(),
-		(&cmd.UpdateCmd{App: manala}).Command(),
-		(&cmd.WatchCmd{App: manala}).Command(),
+		(&cmd.InitCmd{}).Command(config, logger),
+		(&cmd.ListCmd{}).Command(config, logger),
+		(&cmd.UpdateCmd{}).Command(config, logger),
+		(&cmd.WatchCmd{}).Command(config, logger),
 		(&cmd.MascotCmd{}).Command(),
 	)
 
 	// Docs generation command
-	if manala.Config.GetString("version") == "dev" {
+	if config.GetString("version") == "dev" {
 		rootCommand.AddCommand(
-			(&cmd.DocsCmd{RootCommand: rootCommand, Dir: "docs/commands"}).Command(),
+			(&cmd.DocsCmd{}).Command(rootCommand, "docs/commands"),
 		)
 	}
 
 	// Execute
 	if err := rootCommand.Execute(); err != nil {
-		manala.Log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
 }

@@ -1,15 +1,15 @@
 package cmd
 
 import (
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"manala/app"
 )
 
-type WatchCmd struct {
-	App *app.App
-}
+type WatchCmd struct{}
 
-func (cmd *WatchCmd) Command() *cobra.Command {
+func (cmd *WatchCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "watch [dir]",
 		Aliases: []string{"Watch project"},
@@ -21,7 +21,13 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
 			// Config
-			cmd.App.Config.BindPFlags(command.PersistentFlags())
+			_ = config.BindPFlags(command.PersistentFlags())
+
+			// App
+			manala := app.New(
+				app.WithConfig(config),
+				app.WithLogger(logger),
+			)
 
 			// Get directory from first command arg
 			dir := "."
@@ -35,8 +41,8 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 			watchAll, _ := flags.GetBool("all")
 			useNotify, _ := flags.GetBool("notify")
 
-			// App
-			return cmd.App.Watch(
+			// Command
+			return manala.Watch(
 				dir,
 				withRecipeName,
 				watchAll,

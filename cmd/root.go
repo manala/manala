@@ -1,16 +1,14 @@
 package cmd
 
 import (
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
-	"manala/app"
+	"github.com/spf13/viper"
 )
 
-type RootCmd struct {
-	App          *app.App
-	OnInitialize func()
-}
+type RootCmd struct{}
 
-func (cmd *RootCmd) Command() *cobra.Command {
+func (cmd *RootCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:   "manala",
 		Short: "Let your project's plumbing up to date",
@@ -20,7 +18,7 @@ such as makefile targets, virtualization and provisioning files...
 Recipes are pulled from a git repository, or a local directory.`,
 		SilenceErrors:     true,
 		SilenceUsage:      true,
-		Version:           cmd.App.Config.GetString("version"),
+		Version:           config.GetString("version"),
 		DisableAutoGenTag: true,
 	}
 
@@ -29,10 +27,14 @@ Recipes are pulled from a git repository, or a local directory.`,
 	pFlags.StringP("cache-dir", "c", "", "use cache directory")
 	pFlags.BoolP("debug", "d", false, "set debug mode")
 
-	cmd.App.Config.BindPFlags(pFlags)
+	_ = config.BindPFlags(pFlags)
 
-	// Initialize
-	cobra.OnInitialize(cmd.OnInitialize)
+	// Debug
+	cobra.OnInitialize(func() {
+		if config.GetBool("debug") {
+			logger.Level = log.DebugLevel
+		}
+	})
 
 	return command
 }
