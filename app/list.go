@@ -7,8 +7,8 @@ import (
 func (app *App) List() ([]models.RecipeInterface, error) {
 	// Load repository
 	repo, err := app.repositoryLoader.Load(
-		app.Config.GetString("repository"),
-		app.Config.GetString("cache-dir"),
+		app.config.GetString("repository"),
+		app.config.GetString("cache-dir"),
 	)
 	if err != nil {
 		return nil, err

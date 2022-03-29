@@ -20,8 +20,8 @@ func New(opts ...func(app *App)) *App {
 
 	// App
 	app := &App{
-		Config: viper.New(),
-		Log:    logger,
+		config: viper.New(),
+		log:    logger,
 	}
 
 	// Options
@@ -34,34 +34,34 @@ func New(opts ...func(app *App)) *App {
 	modelFsManager := models.NewFsManager(fsManager)
 	templateManager := template.NewManager()
 	app.templateManager = models.NewTemplateManager(templateManager, modelFsManager)
-	app.watcherManager = models.NewWatcherManager(app.Log)
+	app.watcherManager = models.NewWatcherManager(app.log)
 
 	// Syncer
-	app.sync = syncer.New(app.Log, modelFsManager, app.templateManager)
+	app.sync = syncer.New(app.log, modelFsManager, app.templateManager)
 
 	// Loaders
-	app.repositoryLoader = loaders.NewRepositoryLoader(app.Log)
-	app.recipeLoader = loaders.NewRecipeLoader(app.Log, modelFsManager)
-	app.projectLoader = loaders.NewProjectLoader(app.Log, app.repositoryLoader, app.recipeLoader)
+	app.repositoryLoader = loaders.NewRepositoryLoader(app.log)
+	app.recipeLoader = loaders.NewRecipeLoader(app.log, modelFsManager)
+	app.projectLoader = loaders.NewProjectLoader(app.log, app.repositoryLoader, app.recipeLoader)
 
 	return app
 }
 
 func WithConfig(config *viper.Viper) func(app *App) {
 	return func(app *App) {
-		app.Config = config
+		app.config = config
 	}
 }
 
 func WithLogger(logger *log.Logger) func(app *App) {
 	return func(app *App) {
-		app.Log = logger
+		app.log = logger
 	}
 }
 
 type App struct {
-	Config           *viper.Viper
-	Log              *log.Logger
+	config           *viper.Viper
+	log              *log.Logger
 	repositoryLoader loaders.RepositoryLoaderInterface
 	recipeLoader     loaders.RecipeLoaderInterface
 	projectLoader    loaders.ProjectLoaderInterface

@@ -44,9 +44,9 @@ func (app *App) Update(
 			if prjManifest != nil {
 				if err := app.syncProject(
 					prjManifest,
-					app.Config.GetString("repository"),
+					app.config.GetString("repository"),
 					withRecipeName,
-					app.Config.GetString("cache-dir"),
+					app.config.GetString("cache-dir"),
 				); err != nil {
 					return err
 				}
@@ -71,9 +71,9 @@ func (app *App) Update(
 		// Sync
 		if err = app.syncProject(
 			prjManifest,
-			app.Config.GetString("repository"),
+			app.config.GetString("repository"),
 			withRecipeName,
-			app.Config.GetString("cache-dir"),
+			app.config.GetString("cache-dir"),
 		); err != nil {
 			return err
 		}
@@ -104,14 +104,14 @@ func (app *App) syncProject(
 		return err
 	}
 
-	app.Log.Info("Project validated")
+	app.log.Info("Project validated")
 
 	// Sync project
 	if err := app.sync.SyncProject(prj); err != nil {
 		return err
 	}
 
-	app.Log.Info("Project synced")
+	app.log.Info("Project synced")
 
 	return nil
 }

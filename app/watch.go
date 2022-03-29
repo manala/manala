@@ -35,9 +35,9 @@ func (app *App) Watch(
 	// Sync function
 	syncFunc := app.getSyncFunc(
 		prjManifest,
-		app.Config.GetString("repository"),
+		app.config.GetString("repository"),
 		withRecipeName,
-		app.Config.GetString("cache-dir"),
+		app.config.GetString("cache-dir"),
 		watchAll,
 	)
 
@@ -53,12 +53,12 @@ func (app *App) Watch(
 		return err
 	}
 
-	app.Log.Info("Start watching...")
+	app.log.Info("Start watching...")
 
 	// Watch
 	watcher.Watch(func(watcher models.WatcherInterface) {
 		if err := syncFunc(watcher); err != nil {
-			app.Log.Error(err.Error())
+			app.log.Error(err.Error())
 			if useNotify {
 				_ = beeep.Alert("Manala", strings.Replace(err.Error(), `"`, `\"`, -1), "")
 			}
@@ -91,7 +91,7 @@ func (app *App) getSyncFunc(
 			return err
 		}
 
-		app.Log.Info("Project validated")
+		app.log.Info("Project validated")
 
 		// Watch project
 		if err := watcher.SetProject(prj); err != nil {
@@ -110,7 +110,7 @@ func (app *App) getSyncFunc(
 			return err
 		}
 
-		app.Log.Info("Project synced")
+		app.log.Info("Project synced")
 
 		return nil
 	}

@@ -25,11 +25,11 @@ func (app *App) Init(
 		stat, err := os.Stat(dir)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
-				app.Log.WithField("dir", dir).Debug("Creating project directory...")
+				app.log.WithField("dir", dir).Debug("Creating project directory...")
 				if err := os.MkdirAll(dir, 0755); err != nil {
 					return fmt.Errorf("error creating project directory: %v", err)
 				}
-				app.Log.WithField("dir", dir).Debug("Project directory created")
+				app.log.WithField("dir", dir).Debug("Project directory created")
 			} else {
 				return fmt.Errorf("error getting project directory stat: %v", err)
 			}
@@ -46,8 +46,8 @@ func (app *App) Init(
 
 	// Load repository
 	repo, err := app.repositoryLoader.Load(
-		app.Config.GetString("repository"),
-		app.Config.GetString("cache-dir"),
+		app.config.GetString("repository"),
+		app.config.GetString("cache-dir"),
 	)
 	if err != nil {
 		return err
@@ -110,9 +110,9 @@ func (app *App) Init(
 
 	prj, err := app.projectLoader.Load(
 		prjManifest,
-		app.Config.GetString("repository"),
+		app.config.GetString("repository"),
 		"",
-		app.Config.GetString("cache-dir"),
+		app.config.GetString("cache-dir"),
 	)
 	if err != nil {
 		return err
@@ -123,14 +123,14 @@ func (app *App) Init(
 		return err
 	}
 
-	app.Log.Info("Project validated")
+	app.log.Info("Project validated")
 
 	// Sync project
 	if err := app.sync.SyncProject(prj); err != nil {
 		return err
 	}
 
-	app.Log.Info("Project synced")
+	app.log.Info("Project synced")
 
 	return nil
 }
