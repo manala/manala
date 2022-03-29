@@ -40,7 +40,7 @@ func New(opts ...func(app *App)) *App {
 	app.sync = syncer.New(app.log, modelFsManager, app.templateManager)
 
 	// Loaders
-	app.repositoryLoader = loaders.NewRepositoryLoader(app.log)
+	app.repositoryLoader = loaders.NewRepositoryLoader(app.log, app.config.GetString("cache-dir"))
 	app.recipeLoader = loaders.NewRecipeLoader(app.log, modelFsManager)
 	app.projectLoader = loaders.NewProjectLoader(app.log, app.repositoryLoader, app.recipeLoader)
 

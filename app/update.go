@@ -46,7 +46,6 @@ func (app *App) Update(
 					prjManifest,
 					app.config.GetString("repository"),
 					withRecipeName,
-					app.config.GetString("cache-dir"),
 				); err != nil {
 					return err
 				}
@@ -73,7 +72,6 @@ func (app *App) Update(
 			prjManifest,
 			app.config.GetString("repository"),
 			withRecipeName,
-			app.config.GetString("cache-dir"),
 		); err != nil {
 			return err
 		}
@@ -86,14 +84,12 @@ func (app *App) syncProject(
 	prjManifest *os.File,
 	defaultRepository string,
 	withRecipeName string,
-	cacheDir string,
 ) error {
 	// Load project
 	prj, err := app.projectLoader.Load(
 		prjManifest,
 		defaultRepository,
 		withRecipeName,
-		cacheDir,
 	)
 	if err != nil {
 		return err

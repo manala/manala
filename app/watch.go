@@ -37,7 +37,6 @@ func (app *App) Watch(
 		prjManifest,
 		app.config.GetString("repository"),
 		withRecipeName,
-		app.config.GetString("cache-dir"),
 		watchAll,
 	)
 
@@ -76,12 +75,11 @@ func (app *App) getSyncFunc(
 	prjManifest *os.File,
 	defaultRepository string,
 	withRecipeName string,
-	cacheDir string,
 	watchAll bool,
 ) func(watcher models.WatcherInterface) error {
 	return func(watcher models.WatcherInterface) error {
 		// Load project
-		prj, err := app.projectLoader.Load(prjManifest, defaultRepository, withRecipeName, cacheDir)
+		prj, err := app.projectLoader.Load(prjManifest, defaultRepository, withRecipeName)
 		if err != nil {
 			return err
 		}

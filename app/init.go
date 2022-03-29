@@ -47,7 +47,6 @@ func (app *App) Init(
 	// Load repository
 	repo, err := app.repositoryLoader.Load(
 		app.config.GetString("repository"),
-		app.config.GetString("cache-dir"),
 	)
 	if err != nil {
 		return err
@@ -112,7 +111,6 @@ func (app *App) Init(
 		prjManifest,
 		app.config.GetString("repository"),
 		"",
-		app.config.GetString("cache-dir"),
 	)
 	if err != nil {
 		return err

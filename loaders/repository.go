@@ -13,23 +13,25 @@ import (
 	"path/filepath"
 )
 
-func NewRepositoryLoader(log log.Interface) RepositoryLoaderInterface {
+func NewRepositoryLoader(log log.Interface, cacheDir string) RepositoryLoaderInterface {
 	return &repositoryLoader{
-		log:   log,
-		cache: make(map[string]models.RepositoryInterface),
+		log:      log,
+		cacheDir: cacheDir,
+		cache:    make(map[string]models.RepositoryInterface),
 	}
 }
 
 type RepositoryLoaderInterface interface {
-	Load(src string, cacheDir string) (models.RepositoryInterface, error)
+	Load(src string) (models.RepositoryInterface, error)
 }
 
 type repositoryLoader struct {
-	log   log.Interface
-	cache map[string]models.RepositoryInterface
+	log      log.Interface
+	cacheDir string
+	cache    map[string]models.RepositoryInterface
 }
 
-func (ld *repositoryLoader) Load(src string, cacheDir string) (models.RepositoryInterface, error) {
+func (ld *repositoryLoader) Load(src string) (models.RepositoryInterface, error) {
 	// Check if repository already in cache
 	if repo, ok := ld.cache[src]; ok {
 		return repo, nil
@@ -40,7 +42,7 @@ func (ld *repositoryLoader) Load(src string, cacheDir string) (models.Repository
 
 	// Is source a git repo ?
 	if commonregex.GitRepoRegex.MatchString(src) {
-		repo, err = ld.loadGit(src, cacheDir)
+		repo, err = ld.loadGit(src)
 	} else {
 		repo, err = ld.loadDir(src)
 	}
@@ -71,14 +73,14 @@ func (ld *repositoryLoader) loadDir(src string) (models.RepositoryInterface, err
 	return models.NewRepository(src, src), nil
 }
 
-func (ld *repositoryLoader) loadGit(src string, cacheDir string) (models.RepositoryInterface, error) {
+func (ld *repositoryLoader) loadGit(src string) (models.RepositoryInterface, error) {
 	hash := md5.New()
 	hash.Write([]byte(src))
 
 	ld.log.WithField("source", src).Debug("Loading git repository...")
 
 	// Repository cache directory should be unique
-	dir := filepath.Join(cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
+	dir := filepath.Join(ld.cacheDir, "repositories", hex.EncodeToString(hash.Sum(nil)))
 
 	ld.log.WithField("dir", dir).Debug("Opening repository cache...")
 

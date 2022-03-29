@@ -17,8 +17,7 @@ import (
 
 type ProjectTestSuite struct {
 	suite.Suite
-	cacheDir string
-	ld       ProjectLoaderInterface
+	ld ProjectLoaderInterface
 }
 
 func TestProjectTestSuite(t *testing.T) {
@@ -27,9 +26,9 @@ func TestProjectTestSuite(t *testing.T) {
 }
 
 func (s *ProjectTestSuite) SetupTest() {
-	s.cacheDir = "testdata/project/.cache"
-	_ = os.RemoveAll(s.cacheDir)
-	_ = os.Mkdir(s.cacheDir, 0755)
+	cacheDir := "testdata/project/.cache"
+	_ = os.RemoveAll(cacheDir)
+	_ = os.Mkdir(cacheDir, 0755)
 
 	logger := &log.Logger{
 		Handler: discard.Default,
@@ -38,7 +37,7 @@ func (s *ProjectTestSuite) SetupTest() {
 	fsManager := fs.NewManager()
 	modelFsManager := models.NewFsManager(fsManager)
 
-	repositoryLoader := NewRepositoryLoader(logger)
+	repositoryLoader := NewRepositoryLoader(logger, cacheDir)
 	recipeLoader := NewRecipeLoader(logger, modelFsManager)
 
 	s.ld = NewProjectLoader(logger, repositoryLoader, recipeLoader)
@@ -141,7 +140,7 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName, s.cacheDir)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal(t.recipeName, prj.Recipe().Name())
@@ -153,7 +152,7 @@ func (s *ProjectTestSuite) TestProjectLoad() {
 func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 	prjManifest, err := s.ld.Find("testdata/project/load_empty", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
+	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
 	s.Equal("empty project manifest \""+filepath.Join("testdata", "project", "load_empty", ".manala.yaml")+"\"", err.Error())
 	s.Nil(prj)
@@ -162,7 +161,7 @@ func (s *ProjectTestSuite) TestProjectLoadEmpty() {
 func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 	prjManifest, err := s.ld.Find("testdata/project/load_incorrect", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
+	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
 	s.Equal("incorrect project manifest \""+filepath.Join("testdata", "project", "load_incorrect", ".manala.yaml")+"\" \x1b[91m[1:1] string was used where mapping is expected\x1b[0m\n>  1 | \x1b[92mfoo\x1b[0m\n       ^\n", err.Error())
 	s.Nil(prj)
@@ -171,7 +170,7 @@ func (s *ProjectTestSuite) TestProjectLoadIncorrect() {
 func (s *ProjectTestSuite) TestProjectLoadNoRecipe() {
 	prjManifest, err := s.ld.Find("testdata/project/load_no_recipe", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "", "", s.cacheDir)
+	prj, err := s.ld.Load(prjManifest, "", "")
 	s.Error(err)
 	s.Equal("Key: 'projectConfig.Recipe' Error:Field validation for 'Recipe' failed on the 'required' tag", err.Error())
 	s.Nil(prj)
@@ -203,7 +202,7 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 		s.Run(t.test, func() {
 			prjManifest, err := s.ld.Find("testdata/project/load_repository", false)
 			s.NoError(err)
-			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName, s.cacheDir)
+			prj, err := s.ld.Load(prjManifest, t.defaultRepository, t.withRecipeName)
 			s.NoError(err)
 			s.Implements((*models.ProjectInterface)(nil), prj)
 			s.Equal(t.recipeName, prj.Recipe().Name())
@@ -215,7 +214,7 @@ func (s *ProjectTestSuite) TestProjectLoadRepository() {
 func (s *ProjectTestSuite) TestProjectLoadVars() {
 	prjManifest, err := s.ld.Find("testdata/project/load_vars", false)
 	s.NoError(err)
-	prj, err := s.ld.Load(prjManifest, "testdata/project/_repository_default", "", s.cacheDir)
+	prj, err := s.ld.Load(prjManifest, "testdata/project/_repository_default", "")
 	s.NoError(err)
 	s.Equal(
 		map[string]interface{}{

@@ -16,8 +16,7 @@ import (
 
 type RepositoryTestSuite struct {
 	suite.Suite
-	cacheDir string
-	ld       RepositoryLoaderInterface
+	ld RepositoryLoaderInterface
 }
 
 func TestRepositoryTestSuite(t *testing.T) {
@@ -26,15 +25,15 @@ func TestRepositoryTestSuite(t *testing.T) {
 }
 
 func (s *RepositoryTestSuite) SetupTest() {
-	s.cacheDir = "testdata/repository/.cache"
-	_ = os.RemoveAll(s.cacheDir)
-	_ = os.Mkdir(s.cacheDir, 0755)
+	cacheDir := "testdata/repository/.cache"
+	_ = os.RemoveAll(cacheDir)
+	_ = os.Mkdir(cacheDir, 0755)
 
 	logger := &log.Logger{
 		Handler: discard.Default,
 	}
 
-	s.ld = NewRepositoryLoader(logger)
+	s.ld = NewRepositoryLoader(logger, cacheDir)
 }
 
 /**********************/
@@ -46,28 +45,28 @@ func (s *RepositoryTestSuite) TestRepository() {
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDir() {
-	repo, err := s.ld.Load("testdata/repository/load_dir", s.cacheDir)
+	repo, err := s.ld.Load("testdata/repository/load_dir")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("testdata/repository/load_dir", repo.Source())
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirNotFound() {
-	repo, err := s.ld.Load("testdata/repository/load_dir_not_found", s.cacheDir)
+	repo, err := s.ld.Load("testdata/repository/load_dir_not_found")
 	s.Error(err)
 	s.Equal("\"testdata/repository/load_dir_not_found\" directory does not exists", err.Error())
 	s.Nil(repo)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadDirFile() {
-	repo, err := s.ld.Load("testdata/repository/load_dir_file", s.cacheDir)
+	repo, err := s.ld.Load("testdata/repository/load_dir_file")
 	s.Error(err)
 	s.Equal("\"testdata/repository/load_dir_file\" is not a directory", err.Error())
 	s.Nil(repo)
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
-	repo, err := s.ld.Load("https://github.com/octocat/Hello-World.git", s.cacheDir)
+	repo, err := s.ld.Load("https://github.com/octocat/Hello-World.git")
 	s.NoError(err)
 	s.Implements((*models.RepositoryInterface)(nil), repo)
 	s.Equal("https://github.com/octocat/Hello-World.git", repo.Source())
@@ -90,7 +89,7 @@ func (s *RepositoryTestSuite) TestRepositoryLoadGit() {
 }
 
 func (s *RepositoryTestSuite) TestRepositoryLoadGitNotExist() {
-	repo, err := s.ld.Load("https://github.com/octocat/Foo-Bar.git", s.cacheDir)
+	repo, err := s.ld.Load("https://github.com/octocat/Foo-Bar.git")
 	s.Error(err)
 	s.Equal("unable to clone repository: authentication required", err.Error())
 	s.Nil(repo)
