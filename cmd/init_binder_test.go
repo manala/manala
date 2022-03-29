@@ -1,4 +1,4 @@
-package binder
+package cmd
 
 import (
 	"code.rocketnine.space/tslocum/cview"
@@ -51,11 +51,11 @@ func (s *RecipeFormBinderTestSuite) TestNewEnum() {
 		},
 	)
 
-	bndr, err := NewRecipeFormBinder(recipe)
+	binder, err := NewRecipeFormBinder(recipe)
 	s.NoError(err)
-	s.Len(bndr.Binds(), 1)
+	s.Len(binder.Binds(), 1)
 
-	bind := bndr.Binds()[0]
+	bind := binder.Binds()[0]
 	s.IsType((*cview.DropDown)(nil), bind.Item)
 	s.Equal(recipe.Options()[0].Label, bind.Item.GetLabel())
 
@@ -116,11 +116,11 @@ func (s *RecipeFormBinderTestSuite) TestNewTypeString() {
 		},
 	)
 
-	bndr, err := NewRecipeFormBinder(recipe)
+	binder, err := NewRecipeFormBinder(recipe)
 	s.NoError(err)
-	s.Len(bndr.Binds(), 1)
+	s.Len(binder.Binds(), 1)
 
-	bind := bndr.Binds()[0]
+	bind := binder.Binds()[0]
 	s.IsType((*cview.InputField)(nil), bind.Item)
 	s.Equal(recipe.Options()[0].Label, bind.Item.GetLabel())
 

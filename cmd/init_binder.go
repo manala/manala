@@ -1,4 +1,4 @@
-package binder
+package cmd
 
 import (
 	"code.rocketnine.space/tslocum/cview"
@@ -8,7 +8,7 @@ import (
 )
 
 func NewRecipeFormBinder(rec models.RecipeInterface) (*RecipeFormBinder, error) {
-	bndr := &RecipeFormBinder{
+	binder := &RecipeFormBinder{
 		recipe: &rec,
 	}
 
@@ -79,10 +79,10 @@ func NewRecipeFormBinder(rec models.RecipeInterface) (*RecipeFormBinder, error) 
 			return nil, fmt.Errorf("unable to bind recipe option into a form item: " + option.Label)
 		}
 
-		bndr.binds = append(bndr.binds, bind)
+		binder.binds = append(binder.binds, bind)
 	}
 
-	return bndr, nil
+	return binder, nil
 }
 
 type RecipeFormBinder struct {
@@ -90,19 +90,19 @@ type RecipeFormBinder struct {
 	binds  []*recipeFormBind
 }
 
-func (bndr *RecipeFormBinder) Binds() []*recipeFormBind {
-	return bndr.binds
+func (binder *RecipeFormBinder) Binds() []*recipeFormBind {
+	return binder.binds
 }
 
-func (bndr *RecipeFormBinder) BindForm(form *cview.Form) {
-	for i, bind := range bndr.binds {
+func (binder *RecipeFormBinder) BindForm(form *cview.Form) {
+	for i, bind := range binder.binds {
 		form.AddFormItem(bind.Item)
 		bind.ItemIndex = i
 	}
 }
 
-func (bndr *RecipeFormBinder) Apply(vars map[string]interface{}) error {
-	for _, bind := range bndr.binds {
+func (binder *RecipeFormBinder) Apply(vars map[string]interface{}) error {
+	for _, bind := range binder.binds {
 		// Json pointer
 		pointer, err := gojsonpointer.NewJsonPointer(bind.Option.Path)
 		if err != nil {

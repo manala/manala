@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"manala/app"
-	"manala/binder"
 	"manala/loaders"
 	"manala/models"
 	"manala/validator"
@@ -155,17 +154,17 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 	applicationPanels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
-	bndr, err2 := binder.NewRecipeFormBinder(rec)
+	binder, err2 := NewRecipeFormBinder(rec)
 	if err2 != nil {
 		return err2
 	}
 
-	bndr.BindForm(form)
+	binder.BindForm(form)
 
 	form.AddButton("Apply", func() {
 		// Validate
 		valid := true
-		for _, bnd := range bndr.Binds() {
+		for _, bnd := range binder.Binds() {
 			err2 := validator.ValidateValue(bnd.Value, bnd.Option.Schema)
 			if err2 != nil {
 				if err3, ok := err2.(*validator.ValueValidationError); ok {
@@ -182,7 +181,7 @@ func (cmd *InitCmd) runRecipeOptionsFormApplication(rec models.RecipeInterface, 
 		}
 		if valid && (err == nil) {
 			// Apply values
-			_ = bndr.Apply(vars)
+			_ = binder.Apply(vars)
 			application.Stop()
 		}
 	})
