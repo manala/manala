@@ -30,12 +30,6 @@ Example: manala update -> resulting in an update in a directory (default to the 
 				app.WithLogger(logger),
 			)
 
-			// Get directory from first command arg
-			dir := "."
-			if len(args) != 0 {
-				dir = args[0]
-			}
-
 			// Flags
 			flags := command.Flags()
 			recipe, _ := flags.GetString("recipe")
@@ -43,7 +37,7 @@ Example: manala update -> resulting in an update in a directory (default to the 
 
 			// Command
 			return manala.Update(
-				dir,
+				append(args, ".")[0],
 				recipe,
 				recursive,
 			)

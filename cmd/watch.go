@@ -29,12 +29,6 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 				app.WithLogger(logger),
 			)
 
-			// Get directory from first command arg
-			dir := "."
-			if len(args) != 0 {
-				dir = args[0]
-			}
-
 			// Flags
 			flags := command.Flags()
 			recipe, _ := flags.GetString("recipe")
@@ -43,7 +37,7 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 			// Command
 			return manala.Watch(
-				dir,
+				append(args, ".")[0],
 				recipe,
 				all,
 				notify,

@@ -35,12 +35,6 @@ Example: manala init -> resulting in a project init in a directory (default to t
 				app.WithLogger(logger),
 			)
 
-			// Get directory from first command arg
-			dir := "."
-			if len(args) != 0 {
-				dir = args[0]
-			}
-
 			// Flags
 			flags := command.Flags()
 			recipe, _ := flags.GetString("recipe")
@@ -49,7 +43,7 @@ Example: manala init -> resulting in a project init in a directory (default to t
 			return manala.Init(
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
-				dir,
+				append(args, ".")[0],
 				recipe,
 			)
 		},
