@@ -7,6 +7,7 @@ import (
 	"manala/internal/config"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Set at build time, by goreleaser, via ldflags
@@ -25,6 +26,7 @@ func main() {
 	// Conf
 	conf := config.New()
 	conf.SetEnvPrefix("manala")
+	conf.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	conf.AutomaticEnv()
 	conf.SetDefault("debug", false)
 	conf.Set("version", version)
