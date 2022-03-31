@@ -25,7 +25,7 @@ func main() {
 
 	// Conf
 	conf := config.New()
-	conf.SetEnvPrefix("manala")
+	conf.SetEnvPrefix("MANALA")
 	conf.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	conf.AutomaticEnv()
 	conf.SetDefault("debug", false)
