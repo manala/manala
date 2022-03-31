@@ -2,9 +2,8 @@ package app
 
 import (
 	"github.com/apex/log"
-	"github.com/apex/log/handlers/discard"
-	"github.com/spf13/viper"
 	"manala/fs"
+	"manala/internal/config"
 	"manala/loaders"
 	"manala/models"
 	"manala/syncer"
@@ -12,21 +11,14 @@ import (
 )
 
 // New creates an app
-func New(opts ...func(app *App)) *App {
-	// Default logger
-	logger := &log.Logger{
-		Handler: discard.Default,
-	}
+func New(conf *config.Config, logger log.Interface) *App {
+	// Debug
+	logger.WithFields(conf).Debug("create app")
 
 	// App
 	app := &App{
-		config: viper.New(),
+		config: conf,
 		log:    logger,
-	}
-
-	// Options
-	for _, opt := range opts {
-		opt(app)
 	}
 
 	// Managers
@@ -47,21 +39,9 @@ func New(opts ...func(app *App)) *App {
 	return app
 }
 
-func WithConfig(config *viper.Viper) func(app *App) {
-	return func(app *App) {
-		app.config = config
-	}
-}
-
-func WithLogger(logger *log.Logger) func(app *App) {
-	return func(app *App) {
-		app.log = logger
-	}
-}
-
 type App struct {
-	config           *viper.Viper
-	log              *log.Logger
+	config           *config.Config
+	log              log.Interface
 	repositoryLoader loaders.RepositoryLoaderInterface
 	recipeLoader     loaders.RecipeLoaderInterface
 	projectLoader    loaders.ProjectLoaderInterface

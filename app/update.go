@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
+	"github.com/apex/log"
 	"manala/validator"
 	"os"
 	"path/filepath"
@@ -14,6 +15,13 @@ func (app *App) Update(
 	recName string,
 	recursive bool,
 ) error {
+	// Debug
+	app.log.WithFields(log.Fields{
+		"dir":       dir,
+		"recipe":    recName,
+		"recursive": recursive,
+	}).Debug("run update command")
+
 	// Check directory
 	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {

@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/viper"
 	"manala/cmd"
+	"manala/internal/config"
 	"os"
 	"path/filepath"
 )
@@ -22,33 +22,33 @@ func main() {
 		Level:   log.InfoLevel,
 	}
 
-	// Config
-	config := viper.New()
-	config.SetEnvPrefix("manala")
-	config.AutomaticEnv()
-	config.SetDefault("debug", false)
-	config.Set("version", version)
-	config.SetDefault("repository", defaultRepository)
+	// Conf
+	conf := config.New()
+	conf.SetEnvPrefix("manala")
+	conf.AutomaticEnv()
+	conf.SetDefault("debug", false)
+	conf.Set("version", version)
+	conf.SetDefault("repository", defaultRepository)
 
 	// Cache dir
 	cacheDir, err := os.UserCacheDir()
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	config.SetDefault("cache-dir", filepath.Join(cacheDir, "manala"))
+	conf.SetDefault("cache-dir", filepath.Join(cacheDir, "manala"))
 
 	// Commands
-	rootCommand := (&cmd.RootCmd{}).Command(config, logger)
+	rootCommand := (&cmd.RootCmd{}).Command(conf, logger)
 	rootCommand.AddCommand(
-		(&cmd.InitCmd{}).Command(config, logger),
-		(&cmd.ListCmd{}).Command(config, logger),
-		(&cmd.UpdateCmd{}).Command(config, logger),
-		(&cmd.WatchCmd{}).Command(config, logger),
+		(&cmd.InitCmd{}).Command(conf, logger),
+		(&cmd.ListCmd{}).Command(conf, logger),
+		(&cmd.UpdateCmd{}).Command(conf, logger),
+		(&cmd.WatchCmd{}).Command(conf, logger),
 		(&cmd.MascotCmd{}).Command(),
 	)
 
 	// Docs generation command
-	if config.GetString("version") == "dev" {
+	if conf.GetString("version") == "dev" {
 		rootCommand.AddCommand(
 			(&cmd.DocsCmd{}).Command(rootCommand, "docs/commands"),
 		)

@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/apex/log"
 	"manala/loaders"
 	"manala/models"
 	"manala/validator"
@@ -20,6 +21,12 @@ func (app *App) Init(
 	dir string,
 	recName string,
 ) error {
+	// Debug
+	app.log.WithFields(log.Fields{
+		"dir":    dir,
+		"recipe": recName,
+	}).Debug("run init command")
+
 	// Ensure directory exists
 	if dir != "." {
 		stat, err := os.Stat(dir)

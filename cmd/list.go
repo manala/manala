@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/app"
+	"manala/internal/config"
 )
 
 type ListCmd struct{}
 
-func (cmd *ListCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
+func (cmd *ListCmd) Command(conf *config.Config, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -22,14 +22,9 @@ Example: manala list -> resulting in a recipes list display`,
 		Args:              cobra.NoArgs,
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			// Config
-			_ = config.BindPFlags(command.PersistentFlags())
-
 			// App
-			manala := app.New(
-				app.WithConfig(config),
-				app.WithLogger(logger),
-			)
+			_ = conf.BindPFlags(command.PersistentFlags())
+			manala := app.New(conf, logger)
 
 			// Command
 			recipes, err := manala.List()

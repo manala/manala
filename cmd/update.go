@@ -3,13 +3,13 @@ package cmd
 import (
 	"github.com/apex/log"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/app"
+	"manala/internal/config"
 )
 
 type UpdateCmd struct{}
 
-func (cmd *UpdateCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
+func (cmd *UpdateCmd) Command(conf *config.Config, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "update [dir]",
 		Aliases: []string{"up"},
@@ -21,25 +21,17 @@ Example: manala update -> resulting in an update in a directory (default to the 
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			// Config
-			_ = config.BindPFlags(command.PersistentFlags())
-
 			// App
-			manala := app.New(
-				app.WithConfig(config),
-				app.WithLogger(logger),
-			)
-
-			// Flags
-			flags := command.Flags()
-			recipe, _ := flags.GetString("recipe")
-			recursive, _ := flags.GetBool("recursive")
+			_ = conf.BindPFlags(command.PersistentFlags())
+			manala := app.New(conf, logger)
 
 			// Command
+			flags := config.New()
+			_ = flags.BindPFlags(command.Flags())
 			return manala.Update(
 				append(args, ".")[0],
-				recipe,
-				recursive,
+				flags.GetString("recipe"),
+				flags.GetBool("recursive"),
 			)
 		},
 	}

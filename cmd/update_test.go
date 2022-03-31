@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"manala/internal/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,8 +39,8 @@ func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, 
 	stdOut := bytes.NewBufferString("")
 	stdErr := bytes.NewBufferString("")
 
-	config := viper.New()
-	config.SetDefault("repository", filepath.Join(s.wd, "testdata/update/repository/default"))
+	conf := config.New()
+	conf.SetDefault("repository", filepath.Join(s.wd, "testdata/update/repository/default"))
 
 	logger := &log.Logger{
 		Handler: cli.New(stdErr),
@@ -48,7 +48,7 @@ func (s *UpdateTestSuite) ExecuteCmd(dir string, args []string) (*bytes.Buffer, 
 	}
 
 	// Command
-	command := (&UpdateCmd{}).Command(config, logger)
+	command := (&UpdateCmd{}).Command(conf, logger)
 	command.SetArgs(args)
 	command.SilenceErrors = true
 	command.SilenceUsage = true

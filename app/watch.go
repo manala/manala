@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/apex/log"
 	"github.com/gen2brain/beeep"
 	"manala/models"
 	"manala/validator"
@@ -15,6 +16,14 @@ func (app *App) Watch(
 	watchAll bool,
 	useNotify bool,
 ) error {
+	// Debug
+	app.log.WithFields(log.Fields{
+		"dir":    dir,
+		"recipe": recName,
+		"all":    watchAll,
+		"notify": useNotify,
+	}).Debug("run watch command")
+
 	// Check directory
 	if dir != "." {
 		if _, err := os.Stat(dir); err != nil {

@@ -6,8 +6,8 @@ import (
 	"github.com/apex/log"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"manala/app"
+	"manala/internal/config"
 	"manala/loaders"
 	"manala/models"
 	"manala/validator"
@@ -15,7 +15,7 @@ import (
 
 type InitCmd struct{}
 
-func (cmd *InitCmd) Command(config *viper.Viper, logger *log.Logger) *cobra.Command {
+func (cmd *InitCmd) Command(conf *config.Config, logger *log.Logger) *cobra.Command {
 	command := &cobra.Command{
 		Use:     "init [dir]",
 		Aliases: []string{"in"},
@@ -26,25 +26,18 @@ Example: manala init -> resulting in a project init in a directory (default to t
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		RunE: func(command *cobra.Command, args []string) error {
-			// Config
-			_ = config.BindPFlags(command.PersistentFlags())
-
 			// App
-			manala := app.New(
-				app.WithConfig(config),
-				app.WithLogger(logger),
-			)
-
-			// Flags
-			flags := command.Flags()
-			recipe, _ := flags.GetString("recipe")
+			_ = conf.BindPFlags(command.PersistentFlags())
+			manala := app.New(conf, logger)
 
 			// Command
+			flags := config.New()
+			_ = flags.BindPFlags(command.Flags())
 			return manala.Init(
 				cmd.runRecipeListApplication,
 				cmd.runRecipeOptionsFormApplication,
 				append(args, ".")[0],
-				recipe,
+				flags.GetString("recipe"),
 			)
 		},
 	}

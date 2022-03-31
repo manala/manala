@@ -5,6 +5,9 @@ import (
 )
 
 func (app *App) List() ([]models.RecipeInterface, error) {
+	// Debug
+	app.log.Debug("run list command")
+
 	// Load repository
 	repo, err := app.repositoryLoader.Load(
 		app.config.GetString("repository"),
