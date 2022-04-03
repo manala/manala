@@ -13,7 +13,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"io/fs"
-	yamlDoc "manala/internal/yaml/doc"
+	internalYaml "manala/internal/yaml"
 	"manala/models"
 	"os"
 	"path"
@@ -212,29 +212,30 @@ func (ld *recipeLoader) parseManifestNode(node yamlAst.Node, options *[]models.R
 		}
 
 		if comment := n.GetComment(); comment != nil {
-			tags := yamlDoc.ParseCommentTags(comment.String())
-			// Handle schema tags
-			for _, tag := range tags.Filter("schema") {
-				var tagSchema map[string]interface{}
-				if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
-					return nil, fmt.Errorf("invalid recipe schema tag at \"%s\": %w", nPath, err)
+			docTags := &internalYaml.DocTags{}
+			internalYaml.ParseComment(comment.String(), docTags)
+			// Handle schema doc tags
+			for _, docTag := range *docTags.Filter("schema") {
+				var docTagSchema map[string]interface{}
+				if err := json.Unmarshal([]byte(docTag.Value), &docTagSchema); err != nil {
+					return nil, fmt.Errorf("invalid recipe schema doc tag at \"%s\": %w", nPath, err)
 				}
-				if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
-					return nil, fmt.Errorf("unable to merge recipe schema tag at \"%s\": %w", nPath, err)
+				if err := mergo.Merge(&schema, docTagSchema, mergo.WithOverride); err != nil {
+					return nil, fmt.Errorf("unable to merge recipe schema doc tag at \"%s\": %w", nPath, err)
 				}
 			}
-			// Handle option tags
-			for _, tag := range tags.Filter("option") {
+			// Handle option doc tags
+			for _, docTag := range *docTags.Filter("option") {
 				option := &models.RecipeOption{
 					Path:   nPath,
 					Schema: schema,
 				}
-				if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
-					return nil, fmt.Errorf("invalid recipe option tag at \"%s\": %w", nPath, err)
+				if err := json.Unmarshal([]byte(docTag.Value), &option); err != nil {
+					return nil, fmt.Errorf("invalid recipe option doc tag at \"%s\": %w", nPath, err)
 				}
 				validate := validator.New()
 				if err := validate.Struct(option); err != nil {
-					return nil, fmt.Errorf("incorrect recipe option tag at \"%s\": %w", nPath, err)
+					return nil, fmt.Errorf("incorrect recipe option doc tag at \"%s\": %w", nPath, err)
 				}
 				*options = append(*options, *option)
 			}
