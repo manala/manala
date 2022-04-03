@@ -44,11 +44,11 @@ Example: manala init -> resulting in a project init in a directory (default to t
 
 	// Persistent flags
 	pFlags := command.PersistentFlags()
-	pFlags.StringP("repository", "o", "", "use repository source")
+	pFlags.StringP("repository", "o", "", "use repository")
 
 	// Flags
 	flags := command.Flags()
-	flags.StringP("recipe", "i", "", "use recipe name")
+	flags.StringP("recipe", "i", "", "use recipe")
 
 	return command
 }

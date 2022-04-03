@@ -42,7 +42,7 @@ Example: manala list -> resulting in a recipes list display`,
 
 	// Persistent flags
 	pFlags := command.PersistentFlags()
-	pFlags.StringP("repository", "o", "", "use repository source")
+	pFlags.StringP("repository", "o", "", "use repository")
 
 	return command
 }

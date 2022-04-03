@@ -38,11 +38,11 @@ Example: manala watch -> resulting in a watch in a directory (default to the cur
 
 	// Persistent flags
 	pFlags := command.PersistentFlags()
-	pFlags.StringP("repository", "o", "", "with repository source")
+	pFlags.StringP("repository", "o", "", "with repository")
 
 	// Flags
 	flags := command.Flags()
-	flags.StringP("recipe", "i", "", "with recipe name")
+	flags.StringP("recipe", "i", "", "with recipe")
 	flags.BoolP("all", "a", false, "watch recipe too")
 	flags.BoolP("notify", "n", false, "use system notifications")
 
