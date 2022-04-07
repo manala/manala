@@ -1,4 +1,0 @@
-manala:
-    description: Custom foo recipe
-    sync:
-        - file_custom_foo

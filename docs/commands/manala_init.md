@@ -6,18 +6,18 @@ Init project
 
 Init (manala init) will init a project.
 
-Example: manala init -> resulting in a project init in a directory (default to the current directory)
+Example: manala init -> resulting in a project init in a path (default to the current directory)
 
 ```
-manala init [dir] [flags]
+manala init [path] [flags]
 ```
 
 ### Options
 
 ```
   -h, --help                help for init
-  -i, --recipe string       use recipe name
-  -o, --repository string   use repository source
+  -i, --recipe string       use recipe
+  -o, --repository string   use repository
 ```
 
 ### Options inherited from parent commands

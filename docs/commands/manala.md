@@ -22,6 +22,6 @@ Recipes are pulled from a git repository, or a local directory.
 * [manala completion](manala_completion.md)	 - Generate the autocompletion script for the specified shell
 * [manala init](manala_init.md)	 - Init project
 * [manala list](manala_list.md)	 - List recipes
-* [manala update](manala_update.md)	 - Update project
-* [manala watch](manala_watch.md)	 - Watch project
+* [manala update](manala_update.md)	 - Synchronize project(s)
+* [manala watch](manala_watch.md)	 - List recipes
 

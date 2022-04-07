@@ -1,0 +1,8 @@
+manala:
+    description: Default recipe
+    template: .manala.yaml.tmpl
+    sync:
+        - file
+        - template.tmpl
+foo: foo
+bar: bar

@@ -1,8 +1,0 @@
-manala:
-    description: Foo bar
-    sync:
-      - foo
-      - foo bar
-
-# @schema {"required": ["foo", "bar"
-foo: bar

@@ -1,7 +1,0 @@
-manala:
-    description: Load options
-
-foo:
-    # @schema {"enum": [null, "baz"]}
-    # @option {"label": "Foo bar"}
-    bar: baz

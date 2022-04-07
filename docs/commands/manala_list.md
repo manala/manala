@@ -17,7 +17,7 @@ manala list [flags]
 
 ```
   -h, --help                help for list
-  -o, --repository string   use repository source
+  -o, --repository string   use repository
 ```
 
 ### Options inherited from parent commands

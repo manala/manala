@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "manala": {
+      "type": "object",
+      "properties": {
+        "recipe": { "type":  "string" },
+        "repository": { "type":  "string" }
+      },
+      "additionalProperties": true,
+      "required": [ "recipe" ]
+    }
+  },
+  "required": [ "manala" ]
+}

@@ -1,0 +1,4 @@
+manala:
+    description: Custom recipe
+    sync:
+        - file

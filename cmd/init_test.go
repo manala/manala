@@ -2,281 +2,215 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	"manala/internal/config"
+	"io/ioutil"
+	internalConfig "manala/internal/config"
+	internalLog "manala/internal/log"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
-/****************/
-/* Init - Suite */
-/****************/
-
-type InitTestSuite struct {
+type InitSuite struct {
 	suite.Suite
-	wd string
+	config   *internalConfig.Config
+	executor *cmdExecutor
 }
 
-func TestInitTestSuite(t *testing.T) {
-	// Run
-	suite.Run(t, new(InitTestSuite))
+func TestInitSuite(t *testing.T) {
+	suite.Run(t, new(InitSuite))
 }
 
-func (s *InitTestSuite) SetupSuite() {
-	// Current working directory
-	s.wd, _ = os.Getwd()
-}
-
-func (s *InitTestSuite) ExecuteCommand(dir string, args []string) (*bytes.Buffer, *bytes.Buffer, error) {
-	if dir != "" {
-		_ = os.Chdir(dir)
-	}
-
-	stdOut := bytes.NewBufferString("")
-	stdErr := bytes.NewBufferString("")
-
-	conf := config.New()
-	conf.SetDefault("repository", filepath.Join(s.wd, "testdata/init/repository/default"))
-
-	logger := &log.Logger{
-		Handler: cli.New(stdErr),
-		Level:   log.InfoLevel,
-	}
-
-	// Command
-	command := (&InitCmd{}).Command(conf, logger)
-	command.SetArgs(args)
-	command.SilenceErrors = true
-	command.SilenceUsage = true
-	command.SetOut(stdOut)
-	command.SetErr(stdErr)
-
-	err := command.Execute()
-
-	if dir != "" {
-		_ = os.Chdir(s.wd)
-	}
-
-	return stdOut, stdErr, err
-}
-
-/****************/
-/* Init - Tests */
-/****************/
-
-func (s *InitTestSuite) Test() {
-	for _, t := range []struct {
-		test     string
-		dir      string
-		args     []string
-		err      string
-		stdErr   string
-		stdOut   string
-		manifest string
-		file     string
-	}{
-		{
-			test: "Use recipe",
-			dir:  "testdata/init/project/default",
-			args: []string{"--recipe", "foo"},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=file_default_foo
-   • Project synced           
-`,
-			manifest: `####################################################################
-#                         !!! REMINDER !!!                         #
-# Don't forget to run ` + "`manala up`" + ` each time you update this file ! #
-####################################################################
-
-manala:
-    recipe: foo
-    repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}default
-`,
-			file: "file_default_foo",
-		},
-		{
-			test: "Use invalid recipe",
-			dir:  "testdata/init/project/default",
-			args: []string{"--recipe", "invalid"},
-			err:  "recipe not found",
-		},
-		{
-			test: "Use recipe and repository",
-			dir:  "testdata/init/project/default",
-			args: []string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/custom")},
-			stdErr: `   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Synced file               path=file_custom_foo
-   • Project synced           
-`,
-			manifest: `####################################################################
-#                         !!! REMINDER !!!                         #
-# Don't forget to run ` + "`manala up`" + ` each time you update this file ! #
-####################################################################
-
-manala:
-    recipe: foo
-    repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}custom
-`,
-			file: "file_custom_foo",
-		},
-		{
-			test: "Use recipe and invalid repository",
-			dir:  "testdata/init/project/default",
-			args: []string{"--recipe", "foo", "--repository", "testdata/init/repository/invalid"},
-			err:  "\"testdata/init/repository/invalid\" directory does not exists",
-		},
-	} {
-		s.Run(t.test+"/relative", func() {
-			// Clean
-			_ = os.RemoveAll(t.dir)
-			_ = os.Mkdir(t.dir, 0755)
-			// Execute
-			stdOut, stdErr, err := s.ExecuteCommand(
-				t.dir,
-				t.args,
-			)
-			// Tests - Error
-			if t.err != "" {
-				s.Error(err)
-				s.Equal(t.err, err.Error())
-			} else {
-				s.NoError(err)
-			}
-			s.Equal(t.stdOut, stdOut.String())
-			// Tests - Std
-			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
-				stdErr.String(),
-			)
-			// Tests - Manifest
-			if t.manifest != "" {
-				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
-				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
-				s.Equal(
-					strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.manifest),
-					string(content),
-				)
-			}
-			// Tests - File
-			if t.file != "" {
-				s.FileExists(filepath.Join(t.dir, t.file))
-			}
-		})
-		s.Run(t.test+"/dir", func() {
-			// Clean
-			_ = os.RemoveAll(t.dir)
-			_ = os.Mkdir(t.dir, 0755)
-			// Execute
-			stdOut, stdErr, err := s.ExecuteCommand(
-				"",
-				append([]string{t.dir}, t.args...),
-			)
-			// Tests - Error
-			if t.err != "" {
-				s.Error(err)
-				s.Equal(t.err, err.Error())
-			} else {
-				s.NoError(err)
-			}
-			// Tests - Std
-			s.Equal(t.stdOut, stdOut.String())
-			s.Equal(
-				strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.stdErr),
-				stdErr.String(),
-			)
-			// Tests - Manifest
-			if t.manifest != "" {
-				s.FileExists(filepath.Join(t.dir, ".manala.yaml"))
-				content, _ := os.ReadFile(filepath.Join(t.dir, ".manala.yaml"))
-				s.Equal(
-					strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(t.manifest),
-					string(content),
-				)
-			}
-			// Tests - File
-			if t.file != "" {
-				s.FileExists(filepath.Join(t.dir, t.file))
-			}
-		})
-	}
-}
-
-func (s *InitTestSuite) TestProjectAlreadyExists() {
-	s.Run("relative", func() {
-		// Execute
-		stdOut, stdErr, err := s.ExecuteCommand(
-			"testdata/init/project/already_exists",
-			[]string{},
+func (s *InitSuite) SetupTest() {
+	s.config = internalConfig.New()
+	s.executor = newCmdExecutor(func(stderr *bytes.Buffer) *cobra.Command {
+		return newInitCmd(
+			s.config,
+			internalLog.New(stderr),
 		)
-		// Tests - Error
-		s.Error(err)
-		s.Equal("project already exists: .", err.Error())
-		// Tests - Std
-		s.Equal("", stdOut.String())
-		s.Equal("", stdErr.String())
-	})
-	s.Run("dir", func() {
-		// Execute
-		stdOut, stdErr, err := s.ExecuteCommand(
-			"",
-			[]string{"testdata/init/project/already_exists"},
-		)
-		// Tests - Error
-		s.Error(err)
-		s.Equal("project already exists: testdata/init/project/already_exists", err.Error())
-		// Tests - Std
-		s.Equal("", stdOut.String())
-		s.Equal("", stdErr.String())
 	})
 }
 
-func (s *InitTestSuite) TestTemplate() {
-	s.Run("default", func() {
-		// Clean
-		_ = os.RemoveAll("testdata/init/project/default")
-		_ = os.Mkdir("testdata/init/project/default", 0755)
-		// Execute
-		stdOut, stdErr, err := s.ExecuteCommand(
-			"testdata/init/project/default",
-			[]string{"--recipe", "foo", "--repository", filepath.Join(s.wd, "testdata/init/repository/template")},
-		)
-		// Tests - Error
+var initTestRepositoryPath = filepath.Join("testdata", "init", "repository")
+var initTestProjectPath = filepath.Join("testdata", "init", "project")
+
+func (s *InitSuite) TestProjectError() {
+
+	s.Run("Already Existing Empty Project", func() {
+		err := s.executor.execute([]string{
+			filepath.Join(initTestProjectPath, "already_existing_empty"),
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("empty project manifest", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Already Existing Project", func() {
+		err := s.executor.execute([]string{
+			filepath.Join(initTestProjectPath, "already_existing"),
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("already existing project", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+}
+
+func (s *InitSuite) TestRepositoryError() {
+
+	s.Run("No Repository", func() {
+		err := s.executor.execute([]string{})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("unsupported repository", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Repository Not Found", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "not_found"),
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("repository not found", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Empty Repository", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "empty"),
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("empty repository", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Wrong Repository", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "wrong"),
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("wrong repository", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+}
+
+func (s *InitSuite) TestRecipeError() {
+
+	s.Run("Recipe Not Found", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "default"),
+			"--recipe", "not_found",
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("recipe manifest not found", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Wrong Recipe Manifest", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "wrong_recipe"),
+			"--recipe", "recipe",
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("wrong recipe manifest", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+
+	s.Run("Invalid Recipe Manifest", func() {
+		err := s.executor.execute([]string{
+			"--repository", filepath.Join(initTestRepositoryPath, "invalid_recipe"),
+			"--recipe", "recipe",
+		})
+
+		s.ErrorAs(err, &internalError)
+		s.Equal("recipe validation error", internalError.Message)
+		s.Empty(s.executor.stdout.String())
+		s.Empty(s.executor.stderr.String())
+	})
+}
+
+func (s *InitSuite) Test() {
+
+	s.config.Set("default-repository", filepath.Join(initTestRepositoryPath, "default"))
+
+	s.Run("Custom Repository", func() {
+		_ = os.RemoveAll(filepath.Join(initTestProjectPath, "custom"))
+
+		err := s.executor.execute([]string{
+			filepath.Join(initTestProjectPath, "custom"),
+			"--repository", filepath.Join(initTestRepositoryPath, "custom"),
+			"--recipe", "recipe",
+		})
+
 		s.NoError(err)
-		// Tests - Std
-		s.Equal("", stdOut.String())
-		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`   • Project loaded            recipe=foo repository={{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}template
-   • Repository loaded        
-   • Recipe loaded            
-   • Project validated        
-   • Project synced           
-`),
-			stdErr.String(),
-		)
-		// Tests - Manifest
-		s.FileExists("testdata/init/project/default/.manala.yaml")
-		content, _ := os.ReadFile("testdata/init/project/default/.manala.yaml")
-		s.Equal(
-			strings.NewReplacer("{{ wd }}", s.wd, "{{ ps }}", string(os.PathSeparator)).Replace(`manala:
-   recipe: foo
-   repository: {{ wd }}{{ ps }}testdata{{ ps }}init{{ ps }}repository{{ ps }}template
+		s.Empty(s.executor.stdout.String())
+		s.Equal(`      • sync project              dst=`+filepath.Join(initTestProjectPath, "custom")+` src=`+filepath.Join(initTestRepositoryPath, "custom", "recipe")+`
+         • file synced               path=file
+`, s.executor.stderr.String())
 
-# Foo
-foo:
-    bar: baz
-`),
-			// Ensure windows CRLF conversion
-			strings.NewReplacer("\r\n", "\n").Replace(string(content)),
-		)
+		s.DirExists(filepath.Join(initTestProjectPath, "custom"))
+		s.FileExists(filepath.Join(initTestProjectPath, "custom", ".manala.yaml"))
+		s.FileExists(filepath.Join(initTestProjectPath, "custom", "file"))
+		manifestContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "custom", ".manala.yaml"))
+		s.Equal(`####################################################################
+#                         !!! REMINDER !!!                         #
+# Don't forget to run `+"`manala up`"+` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: recipe
+    repository: `+filepath.Join(initTestRepositoryPath, "custom")+`
+`, string(manifestContent))
+		fileContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "custom", "file"))
+		s.Equal(`Custom recipe file`, string(fileContent))
+	})
+
+	s.Run("Default Repository", func() {
+		_ = os.RemoveAll(filepath.Join(initTestProjectPath, "default"))
+
+		err := s.executor.execute([]string{
+			filepath.Join(initTestProjectPath, "default"),
+			"--recipe", "recipe",
+		})
+
+		s.NoError(err)
+		s.Empty(s.executor.stdout.String())
+		s.Equal(`      • sync project              dst=`+filepath.Join(initTestProjectPath, "default")+` src=`+filepath.Join(initTestRepositoryPath, "default", "recipe")+`
+         • file synced               path=file
+         • file synced               path=template
+`, s.executor.stderr.String())
+
+		s.DirExists(filepath.Join(initTestProjectPath, "default"))
+		s.FileExists(filepath.Join(initTestProjectPath, "default", ".manala.yaml"))
+		manifestContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", ".manala.yaml"))
+		s.Equal(`manala:
+    recipe: recipe
+    repository: `+filepath.Join(initTestRepositoryPath, "default")+`
+foo: bar
+bar: foo
+`, string(manifestContent))
+		s.FileExists(filepath.Join(initTestProjectPath, "default", "file"))
+		fileContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", "file"))
+		s.Equal(`Default recipe file`, string(fileContent))
+		s.FileExists(filepath.Join(initTestProjectPath, "default", "template"))
+		templateContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", "template"))
+		s.Equal(`Default recipe template
+foo: bar
+bar: foo`, string(templateContent))
 	})
 }

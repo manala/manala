@@ -1,25 +1,25 @@
 ## manala update
 
-Update project
+Synchronize project(s)
 
 ### Synopsis
 
-Update (manala update) will update project, based on
-recipe and related variables defined in manala.yaml.
+Update (manala update) will synchronize project(s), based on
+repository's recipe and related variables defined in manifest (.manala.yaml).
 
-Example: manala update -> resulting in an update in a directory (default to the current directory)
+Example: manala update -> resulting in an update in a path (default to the current directory)
 
 ```
-manala update [dir] [flags]
+manala update [path] [flags]
 ```
 
 ### Options
 
 ```
   -h, --help                help for update
-  -i, --recipe string       with recipe name
+  -i, --recipe string       use recipe
   -r, --recursive           set recursive mode
-  -o, --repository string   with repository source
+  -o, --repository string   use repository
 ```
 
 ### Options inherited from parent commands

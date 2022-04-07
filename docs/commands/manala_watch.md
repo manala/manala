@@ -1,15 +1,15 @@
 ## manala watch
 
-Watch project
+List recipes
 
 ### Synopsis
 
 Watch (manala watch) will watch project, and launch update on changes.
 
-Example: manala watch -> resulting in a watch in a directory (default to the current directory)
+Example: manala watch -> resulting in a watch in a path (default to the current directory)
 
 ```
-manala watch [dir] [flags]
+manala watch [path] [flags]
 ```
 
 ### Options
@@ -18,8 +18,8 @@ manala watch [dir] [flags]
   -a, --all                 watch recipe too
   -h, --help                help for watch
   -n, --notify              use system notifications
-  -i, --recipe string       with recipe name
-  -o, --repository string   with repository source
+  -i, --recipe string       use recipe
+  -o, --repository string   use repository
 ```
 
 ### Options inherited from parent commands

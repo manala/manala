@@ -1,5 +1,0 @@
-manala:
-    description: Load sync
-    sync:
-      - foo
-      - foo bar

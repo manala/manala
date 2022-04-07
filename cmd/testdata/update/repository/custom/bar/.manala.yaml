@@ -1,4 +1,0 @@
-manala:
-    description: Custom bar recipe
-    sync:
-        - file_custom_bar

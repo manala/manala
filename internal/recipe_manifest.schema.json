@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "manala": {
+      "type": "object",
+      "properties": {
+        "description": { "type":  "string" },
+        "template": { "type":  "string" },
+        "sync": {
+          "type":  "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true,
+      "required": [ "description" ]
+    }
+  },
+  "required": [ "manala" ]
+}

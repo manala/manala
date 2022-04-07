@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "label": { "type":  "string" },
+    "path": { "type":  "string" },
+    "schema": {"type": "object"}
+  },
+  "additionalProperties": false,
+  "required": [ "label" ]
+}
