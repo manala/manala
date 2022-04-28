@@ -1,0 +1,2 @@
+# Keep LF endings, even on Windows
+*.tmpl text eol=lf

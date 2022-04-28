@@ -1,0 +1,6 @@
+manala:
+   recipe: {{ .Recipe.Name }}
+   repository: {{ .Recipe.Repository.Path }}
+
+# {{ include "foo" . }}
+{{ .Vars | toYaml }}

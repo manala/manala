@@ -1,49 +1,69 @@
 package cmd
 
 import (
-	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"manala/app"
-	"manala/internal/config"
+	"manala/internal"
+	internalConfig "manala/internal/config"
+	internalLog "manala/internal/log"
+	"path/filepath"
 )
 
-type UpdateCmd struct{}
-
-func (cmd *UpdateCmd) Command(conf *config.Config, logger *log.Logger) *cobra.Command {
-	command := &cobra.Command{
-		Use:     "update [dir]",
-		Aliases: []string{"up"},
-		Short:   "Update project",
-		Long: `Update (manala update) will update project, based on
-recipe and related variables defined in manala.yaml.
-
-Example: manala update -> resulting in an update in a directory (default to the current directory)`,
+func newUpdateCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "update [path]",
+		Aliases:           []string{"up"},
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
-		RunE: func(command *cobra.Command, args []string) error {
-			// App
-			_ = conf.BindPFlags(command.PersistentFlags())
-			manala := app.New(conf, logger)
+		Short:             "Synchronize project(s)",
+		Long: `Update (manala update) will synchronize project(s), based on
+repository's recipe and related variables defined in manifest (.manala.yaml).
 
-			// Command
-			flags := config.New()
-			_ = flags.BindPFlags(command.Flags())
-			return manala.Update(
-				append(args, ".")[0],
-				flags.GetString("recipe"),
-				flags.GetBool("recursive"),
-			)
+Example: manala update -> resulting in an update in a path (default to the current directory)`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// App
+			manala := app.New(config, logger)
+
+			// Get flags
+			repositoryPath, _ := cmd.Flags().GetString("repository")
+			recipeName, _ := cmd.Flags().GetString("recipe")
+			recursive, _ := cmd.Flags().GetBool("recursive")
+
+			// Get args
+			path := filepath.Clean(append(args, "")[0])
+
+			if recursive {
+				// Recursively load projects
+				return manala.WalkProjects(
+					path,
+					repositoryPath,
+					recipeName,
+					func(project *internal.Project) error {
+						// Sync project
+						return manala.SyncProject(project)
+					},
+				)
+			} else {
+				// Load project
+				project, err := manala.ProjectFrom(
+					path,
+					repositoryPath,
+					recipeName,
+				)
+				if err != nil {
+					return err
+				}
+
+				// Sync project
+				return manala.SyncProject(project)
+			}
 		},
 	}
 
-	// Persistent flags
-	pFlags := command.PersistentFlags()
-	pFlags.StringP("repository", "o", "", "with repository source")
-
 	// Flags
-	flags := command.Flags()
-	flags.StringP("recipe", "i", "", "with recipe name")
-	flags.BoolP("recursive", "r", false, "set recursive mode")
+	cmd.Flags().StringP("repository", "o", "", "use repository")
+	cmd.Flags().StringP("recipe", "i", "", "use recipe")
+	cmd.Flags().BoolP("recursive", "r", false, "set recursive mode")
 
-	return command
+	return cmd
 }

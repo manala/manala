@@ -1,6 +1,0 @@
-manala:
-    description: Template foo recipe
-    template: .manala.yaml.tmpl
-
-foo:
-    bar: baz

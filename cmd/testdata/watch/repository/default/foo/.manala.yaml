@@ -1,4 +1,0 @@
-manala:
-    description: Default foo recipe
-    sync:
-        - file_default_foo

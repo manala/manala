@@ -1,0 +1,10 @@
+manala:
+  description: description
+  template: template
+  sync:
+    - sync
+
+foo:
+  # @schema {"type": "string", "minLength": 1}
+  # @option {"label": "Bar"}
+  bar: baz

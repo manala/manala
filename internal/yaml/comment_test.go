@@ -5,33 +5,50 @@ import (
 	"testing"
 )
 
-/*******************/
-/* Comment - Suite */
-/*******************/
+type CommentSuite struct{ suite.Suite }
 
-type CommentTestSuite struct{ suite.Suite }
-
-func TestCommentTestSuite(t *testing.T) {
-	// Run
-	suite.Run(t, new(CommentTestSuite))
+func TestCommentSuite(t *testing.T) {
+	suite.Run(t, new(CommentSuite))
 }
 
-/*******************/
-/* Comment - Tests */
-/*******************/
-
-func (s *CommentTestSuite) TestParse() {
-	docTags := &DocTags{}
-	ParseComment(`
+func (s *CommentSuite) TestParseCommentTags() {
+	docTags := &Tags{}
+	ParseCommentTags(`
 	  # @foo bar
 	  # @bar baz
       # qux
 	`, docTags)
 	s.Equal(
-		&DocTags{
+		&Tags{
 			{Name: "foo", Value: "bar"},
 			{Name: "bar", Value: "baz\nqux"},
 		},
 		docTags,
+	)
+}
+
+func (s *CommentSuite) TestTagsFilter() {
+	tags := &Tags{
+		&Tag{Name: "foo", Value: "bar"},
+		&Tag{Name: "bar", Value: "baz"},
+		&Tag{Name: "foo", Value: "baz"},
+	}
+
+	s.Equal(
+		&Tags{
+			{Name: "foo", Value: "bar"},
+			{Name: "foo", Value: "baz"},
+		},
+		tags.Filter("foo"),
+	)
+	s.Equal(
+		&Tags{
+			{Name: "bar", Value: "baz"},
+		},
+		tags.Filter("bar"),
+	)
+	s.Equal(
+		&Tags{},
+		tags.Filter("baz"),
 	)
 }

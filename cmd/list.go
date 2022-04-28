@@ -2,47 +2,48 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"manala/app"
-	"manala/internal/config"
+	"manala/internal"
+	internalConfig "manala/internal/config"
+	internalLog "manala/internal/log"
 )
 
-type ListCmd struct{}
-
-func (cmd *ListCmd) Command(conf *config.Config, logger *log.Logger) *cobra.Command {
-	command := &cobra.Command{
-		Use:     "list",
-		Aliases: []string{"ls"},
-		Short:   "List recipes",
+func newListCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "list",
+		Aliases:           []string{"ls"},
+		Args:              cobra.NoArgs,
+		DisableAutoGenTag: true,
+		Short:             "List recipes",
 		Long: `List (manala list) will list recipes available on
 repository.
 
 Example: manala list -> resulting in a recipes list display`,
-		Args:              cobra.NoArgs,
-		DisableAutoGenTag: true,
-		RunE: func(command *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// App
-			_ = conf.BindPFlags(command.PersistentFlags())
-			manala := app.New(conf, logger)
+			manala := app.New(config, logger)
 
-			// Command
-			recipes, err := manala.List()
+			// Get flags
+			repositoryPath, _ := cmd.Flags().GetString("repository")
+
+			// Load repository
+			repository, err := manala.Repository(
+				repositoryPath,
+			)
 			if err != nil {
 				return err
 			}
 
-			for _, recipe := range recipes {
-				_, _ = fmt.Printf("%s: %s\n", recipe.Name(), recipe.Description())
-			}
-
-			return nil
+			// Walk repository recipes
+			return repository.WalkRecipes(func(recipe *internal.Recipe) {
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", recipe.Name(), recipe.Description())
+			})
 		},
 	}
 
-	// Persistent flags
-	pFlags := command.PersistentFlags()
-	pFlags.StringP("repository", "o", "", "use repository")
+	// Flags
+	cmd.Flags().StringP("repository", "o", "", "use repository")
 
-	return command
+	return cmd
 }

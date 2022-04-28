@@ -8,34 +8,43 @@ import (
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
-	"sync"
+	"math/rand"
 	"time"
 )
 
-//go:embed embed/mascot.wav
-var mascotAudio []byte
+//go:embed mascot/mascot_yell.wav
+var mascotAudioYell []byte
 
-func mascotAudioRun(cmd *MascotCmd, wg *sync.WaitGroup, errs chan<- error) {
-	streamer, format, err := wav.Decode(bytes.NewReader(mascotAudio))
-	if err != nil {
-		errs <- err
-		return
+var mascotAudioStreamer beep.StreamSeekCloser
+
+func (model *mascotModel) yellAudio() error {
+	// Lazy load streamer and init speaker at the same time
+	if mascotAudioStreamer == nil {
+		var format beep.Format
+		var err error
+		mascotAudioStreamer, format, err = wav.Decode(bytes.NewReader(mascotAudioYell))
+		if err != nil {
+			return err
+		}
+
+		if err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/25)); err != nil {
+			return err
+		}
 	}
-	defer streamer.Close()
 
-	if err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/25)); err != nil {
-		errs <- err
-		return
+	if err := mascotAudioStreamer.Seek(0); err != nil {
+		return err
 	}
 
+	// Random resampling ratio
+	streamer := beep.ResampleRatio(4, rand.Float64()+0.5, mascotAudioStreamer)
+
+	// Play
+	done := make(chan bool)
 	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
-		wg.Done()
+		done <- true
 	})))
-}
+	<-done
 
-func init() {
-	mascotRun = append(
-		[]mascotFunc{mascotAudioRun},
-		mascotRun...,
-	)
+	return nil
 }
