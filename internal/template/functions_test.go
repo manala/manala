@@ -153,6 +153,18 @@ qux: true`, content)
 		s.Equal(`'\'single\' "double"'`, content)
 	})
 
+	s.Run("Block Scalar", func() {
+		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
+			"scalar": `foo
+bar\baz
+`,
+		})
+
+		s.Equal(`scalar: |
+  foo
+  bar\baz`, content)
+	})
+
 	s.Run("Indent", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"mapping": map[string]interface{}{

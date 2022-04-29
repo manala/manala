@@ -20,6 +20,7 @@ func functionToYaml(value interface{}) string {
 	marshalOptions := []yaml.EncodeOption{
 		yaml.Indent(4),
 		yaml.UseSingleQuote(true),
+		yaml.UseLiteralStyleIfMultiline(true),
 	}
 
 	// Root sequences should not be indented
