@@ -3,6 +3,7 @@ package template
 import (
 	"fmt"
 	"github.com/goccy/go-yaml"
+	"reflect"
 	"strings"
 	textTemplate "text/template"
 )
@@ -16,7 +17,15 @@ func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
 
 // As seen in helm
 func functionToYaml(value interface{}) string {
-	data, err := yaml.MarshalWithOptions(value, yaml.Indent(4), yaml.IndentSequence(true))
+	marshalOptions := []yaml.EncodeOption{yaml.Indent(4)}
+
+	// Root sequences should not be indented
+	// see: https://github.com/goccy/go-yaml/issues/287
+	if reflect.ValueOf(value).Kind() != reflect.Slice {
+		marshalOptions = append(marshalOptions, yaml.IndentSequence(true))
+	}
+
+	data, err := yaml.MarshalWithOptions(value, marshalOptions...)
 	if err != nil {
 		// Swallow errors inside a template.
 		return ""

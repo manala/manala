@@ -120,6 +120,33 @@ func (s *FunctionsSuite) TestToYaml() {
 qux: true`, content)
 	})
 
+	s.Run("Root Sequence", func() {
+		content := s.execute(`{{ . | toYaml }}`, []string{
+			"foo",
+			"bar",
+			"baz",
+		})
+
+		s.Equal(`- foo
+- bar
+- baz`, content)
+	})
+
+	s.Run("Nested Sequence", func() {
+		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
+			"nested": []string{
+				"foo",
+				"bar",
+				"baz",
+			},
+		})
+
+		s.Equal(`nested:
+    - foo
+    - bar
+    - baz`, content)
+	})
+
 	s.Run("Indent", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"mapping": map[string]interface{}{
