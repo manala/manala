@@ -83,7 +83,7 @@ func (s *FunctionsSuite) TestToYaml() {
         - bar
     quux: true
     qux: 123
-    thud: "123"
+    thud: '123'
     waldo:
         bar: baz
         foo: bar
