@@ -30,12 +30,9 @@ func (template *Template) Write(writer io.Writer) error {
 	// Execution stops immediately with an error.
 	_template.Option("missingkey=error")
 
-	// Funcs
+	// Functions
 	_template.Funcs(sprig.TxtFuncMap())
-	_template.Funcs(textTemplate.FuncMap{
-		"toYaml":  funcToYaml(_template),
-		"include": funcInclude(_template),
-	})
+	_template.Funcs(FuncMap(_template))
 
 	// Default files
 	if len(template.defaultFiles) > 0 {
