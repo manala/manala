@@ -17,7 +17,10 @@ func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
 
 // As seen in helm
 func functionToYaml(value interface{}) string {
-	marshalOptions := []yaml.EncodeOption{yaml.Indent(4)}
+	marshalOptions := []yaml.EncodeOption{
+		yaml.Indent(4),
+		yaml.UseSingleQuote(true),
+	}
 
 	// Root sequences should not be indented
 	// see: https://github.com/goccy/go-yaml/issues/287

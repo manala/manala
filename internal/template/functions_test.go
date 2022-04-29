@@ -147,6 +147,12 @@ qux: true`, content)
     - baz`, content)
 	})
 
+	s.Run("Quotes", func() {
+		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
+
+		s.Equal(`'\'single\' "double"'`, content)
+	})
+
 	s.Run("Indent", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"mapping": map[string]interface{}{
