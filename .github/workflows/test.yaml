@@ -8,7 +8,7 @@ jobs:
       matrix:
         go-version: [1.18.3]
         goreleaser-version: [1.9.2]
-        golangci-lint-version: [1.45.2]
+        golangci-lint-version: [1.46.2]
         richgo-version: [0.3.10]
         os: [ubuntu-20.04, macos-11, windows-2022]
     runs-on: ${{ matrix.os }}
