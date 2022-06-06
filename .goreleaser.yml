@@ -1,6 +1,17 @@
 before:
   hooks:
     - go mod download
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^typo:'
+      - '^misc:'
+      - Merge pull request
+      - Merge branch
 builds:
   - id: linux
     goos:
@@ -40,16 +51,6 @@ checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^typo:'
-      - '^misc:'
-      - Merge pull request
-      - Merge branch
 brews:
   - tap:
       owner: manala
