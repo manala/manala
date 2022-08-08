@@ -237,20 +237,3 @@ func initRecipeOptionsFormApplication(recipe *internal.Recipe, manifest *interna
 
 	return nil
 }
-
-func init() {
-	cview.Styles = cview.Theme{
-		PrimitiveBackgroundColor:    tcell.ColorBlack,
-		ContrastBackgroundColor:     tcell.ColorBlack,
-		MoreContrastBackgroundColor: tcell.ColorWhite,
-		BorderColor:                 tcell.ColorRed,
-		TitleColor:                  tcell.ColorAqua,
-		GraphicsColor:               tcell.ColorWhite,
-		PrimaryTextColor:            tcell.ColorLime,
-		SecondaryTextColor:          tcell.ColorWhite,
-		TertiaryTextColor:           tcell.ColorWhite,
-		InverseTextColor:            tcell.ColorYellow,
-		ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
-		ScrollBarColor:              tcell.ColorWhite,
-	}
-}
