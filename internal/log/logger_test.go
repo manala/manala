@@ -60,7 +60,7 @@ func (s *LoggerSuite) TestCaptureError() {
 	err := logger.CaptureError(fmt.Errorf("error"))
 	s.Empty(out.String())
 	s.Equal(`   ⨯ error                    
-`, err)
+`, string(err))
 }
 
 func (s *LoggerSuite) TestPadding() {

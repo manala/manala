@@ -47,7 +47,7 @@ func (logger *Logger) LogError(err error) {
 
 var ansiCodesRegex = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007|(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~])")
 
-func (logger *Logger) CaptureError(err error) string {
+func (logger *Logger) CaptureError(err error) []byte {
 	// Capture writer
 	writer := logger.handler.Writer
 	buffer := bytes.NewBufferString("")
@@ -58,7 +58,7 @@ func (logger *Logger) CaptureError(err error) string {
 	// Restore writer
 	logger.handler.Writer = writer
 
-	return ansiCodesRegex.ReplaceAllString(buffer.String(), "")
+	return ansiCodesRegex.ReplaceAll(buffer.Bytes(), []byte{})
 }
 
 func (logger *Logger) logError(err error) {

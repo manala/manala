@@ -285,7 +285,7 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 
 			if err != nil {
 				if notify {
-					_ = beeep.Alert("Manala", app.log.CaptureError(err), "")
+					_ = beeep.Alert("Manala", string(app.log.CaptureError(err)), "")
 				}
 				app.log.LogError(err)
 				return
@@ -303,7 +303,7 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 
 			if err != nil {
 				if notify {
-					_ = beeep.Alert("Manala", strings.Replace(app.log.CaptureError(err), `"`, `\"`, -1), "")
+					_ = beeep.Alert("Manala", strings.Replace(string(app.log.CaptureError(err)), `"`, `\"`, -1), "")
 				}
 				app.log.LogError(err)
 				return
