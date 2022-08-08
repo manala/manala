@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	"os"
@@ -166,7 +165,7 @@ func (s *InitSuite) Test() {
 		s.DirExists(filepath.Join(initTestProjectPath, "custom"))
 		s.FileExists(filepath.Join(initTestProjectPath, "custom", ".manala.yaml"))
 		s.FileExists(filepath.Join(initTestProjectPath, "custom", "file"))
-		manifestContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "custom", ".manala.yaml"))
+		manifestContent, _ := os.ReadFile(filepath.Join(initTestProjectPath, "custom", ".manala.yaml"))
 		s.Equal(`####################################################################
 #                         !!! REMINDER !!!                         #
 # Don't forget to run `+"`manala up`"+` each time you update this file ! #
@@ -176,7 +175,7 @@ manala:
     recipe: recipe
     repository: `+filepath.Join(initTestRepositoryPath, "custom")+`
 `, string(manifestContent))
-		fileContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "custom", "file"))
+		fileContent, _ := os.ReadFile(filepath.Join(initTestProjectPath, "custom", "file"))
 		s.Equal(`Custom recipe file`, string(fileContent))
 	})
 
@@ -197,7 +196,7 @@ manala:
 
 		s.DirExists(filepath.Join(initTestProjectPath, "default"))
 		s.FileExists(filepath.Join(initTestProjectPath, "default", ".manala.yaml"))
-		manifestContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", ".manala.yaml"))
+		manifestContent, _ := os.ReadFile(filepath.Join(initTestProjectPath, "default", ".manala.yaml"))
 		s.Equal(`manala:
     recipe: recipe
     repository: `+filepath.Join(initTestRepositoryPath, "default")+`
@@ -205,10 +204,10 @@ foo: bar
 bar: foo
 `, string(manifestContent))
 		s.FileExists(filepath.Join(initTestProjectPath, "default", "file"))
-		fileContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", "file"))
+		fileContent, _ := os.ReadFile(filepath.Join(initTestProjectPath, "default", "file"))
 		s.Equal(`Default recipe file`, string(fileContent))
 		s.FileExists(filepath.Join(initTestProjectPath, "default", "template"))
-		templateContent, _ := ioutil.ReadFile(filepath.Join(initTestProjectPath, "default", "template"))
+		templateContent, _ := os.ReadFile(filepath.Join(initTestProjectPath, "default", "template"))
 		s.Equal(`Default recipe template
 foo: bar
 bar: foo`, string(templateContent))

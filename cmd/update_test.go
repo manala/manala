@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	"os"
@@ -235,7 +234,7 @@ func (s *UpdateSuite) Test() {
          • file synced               path=file
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
-		fileContent, _ := ioutil.ReadFile(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
+		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
 		s.Equal(`Custom recipe file`, string(fileContent))
 	})
 
@@ -254,7 +253,7 @@ func (s *UpdateSuite) Test() {
          • file synced               path=file
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
-		fileContent, _ := ioutil.ReadFile(filepath.Join(updateTestProjectPath, "custom_recipe", "file"))
+		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "custom_recipe", "file"))
 		s.Equal(`Default custom file`, string(fileContent))
 	})
 
@@ -274,10 +273,10 @@ func (s *UpdateSuite) Test() {
          • file synced               path=template
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "default_repository", "file"))
-		fileContent, _ := ioutil.ReadFile(filepath.Join(updateTestProjectPath, "default_repository", "file"))
+		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "default_repository", "file"))
 		s.Equal(`Default recipe file`, string(fileContent))
 		s.FileExists(filepath.Join(updateTestProjectPath, "default_repository", "template"))
-		templateContent, _ := ioutil.ReadFile(filepath.Join(updateTestProjectPath, "default_repository", "template"))
+		templateContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "default_repository", "template"))
 		s.Equal(`Default recipe template
 foo: foo
 bar: bar`, string(templateContent))

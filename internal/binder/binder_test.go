@@ -9,7 +9,6 @@ import (
 
 type RecipeFormBinderSuite struct {
 	suite.Suite
-	repository *internal.Repository
 }
 
 func TestRecipeOptionFormItemBindSuite(t *testing.T) {

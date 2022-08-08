@@ -170,7 +170,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 					return err
 				}
 
-				equal = bytes.Compare(hash.Sum(nil), node.Dst.Hash) == 0
+				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
 
 				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
 					return err

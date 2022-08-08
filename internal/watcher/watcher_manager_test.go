@@ -26,9 +26,9 @@ func (s *WatcherManagerSuite) SetupTest() {
 
 func (s *WatcherManagerSuite) TestNewWatcher() {
 	watcher, err := s.watcherManager.NewWatcher(
-		func(watcher *Watcher) { return },
-		func(watcher *Watcher) { return },
-		func(watcher *Watcher) { return },
+		func(watcher *Watcher) {},
+		func(watcher *Watcher) {},
+		func(watcher *Watcher) {},
 	)
 	s.NoError(err)
 	s.IsType(&Watcher{}, watcher)
