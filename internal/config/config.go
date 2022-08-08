@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/spf13/viper"
 )
 
@@ -13,7 +13,7 @@ type Config struct {
 	*viper.Viper
 }
 
-// Fields implements apex log Fielder
+// Fields implements caarlos0 log Fielder
 func (config *Config) Fields() log.Fields {
 	return config.AllSettings()
 }

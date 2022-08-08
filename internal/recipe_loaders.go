@@ -2,7 +2,7 @@ package internal
 
 import (
 	"errors"
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"io"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
 	"testing"

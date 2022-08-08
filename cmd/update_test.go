@@ -19,6 +19,7 @@ type UpdateSuite struct {
 }
 
 func TestUpdateSuite(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(UpdateSuite))
 }
 
@@ -92,7 +93,7 @@ func (s *UpdateSuite) TestRecursiveProjectError() {
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • load projects from        path=`+filepath.Join(updateTestProjectPath, "not_found")+`
+		s.Equal(`  • load projects from                               path=`+filepath.Join(updateTestProjectPath, "not_found")+`
 `, s.executor.stderr.String())
 	})
 
@@ -105,7 +106,7 @@ func (s *UpdateSuite) TestRecursiveProjectError() {
 		s.True(errors.As(err, &internalError))
 		s.Equal("wrong project manifest", internalError.Message)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • load projects from        path=`+filepath.Join(updateTestProjectPath, "wrong_manifest")+`
+		s.Equal(`  • load projects from                               path=`+filepath.Join(updateTestProjectPath, "wrong_manifest")+`
 `, s.executor.stderr.String())
 	})
 
@@ -118,7 +119,7 @@ func (s *UpdateSuite) TestRecursiveProjectError() {
 		s.True(errors.As(err, &internalError))
 		s.Equal("empty project manifest", internalError.Message)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • load projects from        path=`+filepath.Join(updateTestProjectPath, "empty_manifest")+`
+		s.Equal(`  • load projects from                               path=`+filepath.Join(updateTestProjectPath, "empty_manifest")+`
 `, s.executor.stderr.String())
 	})
 
@@ -131,7 +132,7 @@ func (s *UpdateSuite) TestRecursiveProjectError() {
 		s.True(errors.As(err, &internalError))
 		s.Equal("project validation error", internalError.Message)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • load projects from        path=`+filepath.Join(updateTestProjectPath, "invalid_manifest")+`
+		s.Equal(`  • load projects from                               path=`+filepath.Join(updateTestProjectPath, "invalid_manifest")+`
 `, s.executor.stderr.String())
 	})
 }
@@ -229,9 +230,9 @@ func (s *UpdateSuite) Test() {
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • project loaded            path=`+filepath.Join(updateTestProjectPath, "custom_repository")+` recipe=recipe repository=`+filepath.Join(updateTestRepositoryPath, "custom")+`
-      • sync project              dst=`+filepath.Join(updateTestProjectPath, "custom_repository")+` src=`+filepath.Join(updateTestRepositoryPath, "custom", "recipe")+`
-         • file synced               path=file
+		s.Equal(`  • project loaded                                   path=`+filepath.Join(updateTestProjectPath, "custom_repository")+` recipe=recipe repository=`+filepath.Join(updateTestRepositoryPath, "custom")+`
+    • sync project                                   dst=`+filepath.Join(updateTestProjectPath, "custom_repository")+` src=`+filepath.Join(updateTestRepositoryPath, "custom", "recipe")+`
+      • file synced                                  path=file
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
 		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
@@ -248,9 +249,9 @@ func (s *UpdateSuite) Test() {
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • project loaded            path=`+filepath.Join(updateTestProjectPath, "custom_recipe")+` recipe=custom repository=`+filepath.Join(updateTestRepositoryPath, "default")+`
-      • sync project              dst=`+filepath.Join(updateTestProjectPath, "custom_recipe")+` src=`+filepath.Join(updateTestRepositoryPath, "default", "custom")+`
-         • file synced               path=file
+		s.Equal(`  • project loaded                                   path=`+filepath.Join(updateTestProjectPath, "custom_recipe")+` recipe=custom repository=`+filepath.Join(updateTestRepositoryPath, "default")+`
+    • sync project                                   dst=`+filepath.Join(updateTestProjectPath, "custom_recipe")+` src=`+filepath.Join(updateTestRepositoryPath, "default", "custom")+`
+      • file synced                                  path=file
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "custom_repository", "file"))
 		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "custom_recipe", "file"))
@@ -267,10 +268,10 @@ func (s *UpdateSuite) Test() {
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`   • project loaded            path=`+filepath.Join(updateTestProjectPath, "default_repository")+` recipe=recipe repository=`+filepath.Join(updateTestRepositoryPath, "default")+`
-      • sync project              dst=`+filepath.Join(updateTestProjectPath, "default_repository")+` src=`+filepath.Join(updateTestRepositoryPath, "default", "recipe")+`
-         • file synced               path=file
-         • file synced               path=template
+		s.Equal(`  • project loaded                                   path=`+filepath.Join(updateTestProjectPath, "default_repository")+` recipe=recipe repository=`+filepath.Join(updateTestRepositoryPath, "default")+`
+    • sync project                                   dst=`+filepath.Join(updateTestProjectPath, "default_repository")+` src=`+filepath.Join(updateTestRepositoryPath, "default", "recipe")+`
+      • file synced                                  path=file
+      • file synced                                  path=template
 `, s.executor.stderr.String())
 		s.FileExists(filepath.Join(updateTestProjectPath, "default_repository", "file"))
 		fileContent, _ := os.ReadFile(filepath.Join(updateTestProjectPath, "default_repository", "file"))

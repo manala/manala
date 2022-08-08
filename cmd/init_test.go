@@ -18,6 +18,7 @@ type InitSuite struct {
 }
 
 func TestInitSuite(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(InitSuite))
 }
 
@@ -158,8 +159,8 @@ func (s *InitSuite) Test() {
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`      • sync project              dst=`+filepath.Join(initTestProjectPath, "custom")+` src=`+filepath.Join(initTestRepositoryPath, "custom", "recipe")+`
-         • file synced               path=file
+		s.Equal(`    • sync project                                   dst=`+filepath.Join(initTestProjectPath, "custom")+` src=`+filepath.Join(initTestRepositoryPath, "custom", "recipe")+`
+      • file synced                                  path=file
 `, s.executor.stderr.String())
 
 		s.DirExists(filepath.Join(initTestProjectPath, "custom"))
@@ -189,9 +190,9 @@ manala:
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout.String())
-		s.Equal(`      • sync project              dst=`+filepath.Join(initTestProjectPath, "default")+` src=`+filepath.Join(initTestRepositoryPath, "default", "recipe")+`
-         • file synced               path=file
-         • file synced               path=template
+		s.Equal(`    • sync project                                   dst=`+filepath.Join(initTestProjectPath, "default")+` src=`+filepath.Join(initTestRepositoryPath, "default", "recipe")+`
+      • file synced                                  path=file
+      • file synced                                  path=template
 `, s.executor.stderr.String())
 
 		s.DirExists(filepath.Join(initTestProjectPath, "default"))

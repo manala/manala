@@ -2,7 +2,7 @@ package internal
 
 import (
 	"errors"
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"io"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -90,7 +90,7 @@ func (loader *ProjectDirLoader) LoadProject(path string, repositoryPath string, 
 		"path":          repositoryPath,
 		"manifest.path": project.manifest.Repository,
 	}).Debug("load repository")
-	loader.Log.PaddingUp()
+	loader.Log.IncreasePadding()
 
 	// Load repository
 	repository, err := loader.RepositoryLoader.LoadRepository([]string{
@@ -102,12 +102,12 @@ func (loader *ProjectDirLoader) LoadProject(path string, repositoryPath string, 
 	}
 
 	// Log
-	loader.Log.PaddingDown()
+	loader.Log.DecreasePadding()
 	loader.Log.WithFields(log.Fields{
 		"name":          recipeName,
 		"manifest.name": project.manifest.Recipe,
 	}).Debug("load recipe")
-	loader.Log.PaddingUp()
+	loader.Log.IncreasePadding()
 
 	// Load recipe
 	if recipeName == "" {
@@ -119,7 +119,7 @@ func (loader *ProjectDirLoader) LoadProject(path string, repositoryPath string, 
 	}
 
 	// Log
-	loader.Log.PaddingDown()
+	loader.Log.DecreasePadding()
 
 	// Validate vars against recipe
 	if err, errs, ok := internalValidator.Validate(project.recipe.Schema(), project.Vars(), internalValidator.WithYamlContent(manifest.content)); !ok {

@@ -4,7 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/go-git/go-git/v5"
 	internalGit "manala/internal/git"
 	internalLog "manala/internal/log"
