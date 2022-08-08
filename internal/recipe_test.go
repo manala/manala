@@ -90,49 +90,55 @@ func (s *RecipeSuite) TestManifest() {
 }
 
 func (s *RecipeSuite) TestManifestLoad() {
-	recipeManifest := NewRecipeManifest("")
-
 	path := filepath.Join(recipeTestPath, "manifest_load")
 
-	file, _ := os.Open(filepath.Join(path, "manifest.yaml"))
-	_, _ = io.Copy(recipeManifest, file)
-	err := recipeManifest.Load()
+	s.Run("Valid", func() {
+		recipeManifest := NewRecipeManifest("")
 
-	s.NoError(err)
-	s.Equal("description", recipeManifest.Description)
-	s.Equal("template", recipeManifest.Template)
-	s.Equal(map[string]interface{}{
-		"foo": map[string]interface{}{
-			"bar": "baz",
-		},
-	}, recipeManifest.Vars)
-	s.Equal([]RecipeManifestSyncUnit{
-		{Source: "sync", Destination: "sync"},
-	}, recipeManifest.Sync)
-	s.Equal(map[string]interface{}{
-		"type":                 "object",
-		"additionalProperties": false,
-		"properties": map[string]interface{}{
+		file, _ := os.Open(filepath.Join(path, "manifest_valid.yaml"))
+		_, _ = io.Copy(recipeManifest, file)
+		err := recipeManifest.Load()
+
+		s.NoError(err)
+		s.Equal("description", recipeManifest.Description)
+		s.Equal("template", recipeManifest.Template)
+		s.Equal(map[string]interface{}{
 			"foo": map[string]interface{}{
-				"properties": map[string]interface{}{
-					"bar": map[string]interface{}{
-						"type":      "string",
-						"minLength": float64(1),
+				"bar": "baz",
+			},
+			"underscore_key": "ok",
+		}, recipeManifest.Vars)
+		s.Equal([]RecipeManifestSyncUnit{
+			{Source: "sync", Destination: "sync"},
+		}, recipeManifest.Sync)
+		s.Equal(map[string]interface{}{
+			"type":                 "object",
+			"additionalProperties": false,
+			"properties": map[string]interface{}{
+				"foo": map[string]interface{}{
+					"properties": map[string]interface{}{
+						"bar": map[string]interface{}{
+							"type":      "string",
+							"minLength": float64(1),
+						},
 					},
 				},
+				"underscore_key": map[string]interface{}{
+					"type": "string",
+				},
 			},
-		},
-	}, recipeManifest.Schema)
-	s.Equal([]RecipeManifestOption{
-		{
-			Label: "Bar",
-			Path:  "$.foo.bar",
-			Schema: map[string]interface{}{
-				"type":      "string",
-				"minLength": float64(1),
+		}, recipeManifest.Schema)
+		s.Equal([]RecipeManifestOption{
+			{
+				Label: "Bar",
+				Path:  "$.foo.bar",
+				Schema: map[string]interface{}{
+					"type":      "string",
+					"minLength": float64(1),
+				},
 			},
-		},
-	}, recipeManifest.Options)
+		}, recipeManifest.Options)
+	})
 
 	s.Run("Invalid Yaml", func() {
 		recipeManifest := NewRecipeManifest("")
