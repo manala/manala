@@ -3,20 +3,27 @@ package internal
 import (
 	"bytes"
 	_ "embed"
+	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
 	"io"
+	internalTesting "manala/internal/testing"
 	"os"
 	"path/filepath"
 	"testing"
 )
 
-type ProjectSuite struct{ suite.Suite }
+type ProjectSuite struct {
+	suite.Suite
+	goldie *goldie.Goldie
+}
 
 func TestProjectSuite(t *testing.T) {
 	suite.Run(t, new(ProjectSuite))
 }
 
-var projectTestPath = filepath.Join("testdata", "project")
+func (s *ProjectSuite) SetupTest() {
+	s.goldie = goldie.New(s.T())
+}
 
 func (s *ProjectSuite) Test() {
 	repository := &Repository{path: "repository"}
@@ -62,9 +69,7 @@ func (s *ProjectSuite) Test() {
 			Write(out)
 
 		s.NoError(err)
-		s.Equal(`bar: project
-baz: project
-foo: recipe`, out.String())
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "template"), out.Bytes())
 	})
 
 	s.Run("ManifestTemplate", func() {
@@ -75,20 +80,7 @@ foo: recipe`, out.String())
 			Write(out)
 
 		s.NoError(err)
-		s.Equal(`####################################################################
-#                         !!! REMINDER !!!                         #
-# Don't forget to run `+"`manala up`"+` each time you update this file ! #
-####################################################################
-
-manala:
-    recipe: recipe
-    repository: repository
-
-# Default vars
-bar: project
-baz: project
-foo: recipe
-`, out.String())
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "manifest"), out.Bytes())
 	})
 }
 
@@ -106,7 +98,7 @@ func (s *ProjectSuite) TestManifest() {
 }
 
 func (s *ProjectSuite) TestManifestLoad() {
-	path := filepath.Join(projectTestPath, "manifest_load")
+	path := internalTesting.DataPath(s)
 
 	s.Run("Valid", func() {
 		projectManifest := NewProjectManifest("")
@@ -170,7 +162,7 @@ func (s *ProjectSuite) TestManifestLoad() {
 }
 
 func (s *ProjectSuite) TestManifestSave() {
-	path := filepath.Join(projectTestPath, "manifest_save")
+	path := internalTesting.DataPath(s)
 
 	_ = os.Remove(filepath.Join(path, ".manala.yaml"))
 	_ = os.RemoveAll(filepath.Join(path, "directory"))

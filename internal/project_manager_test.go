@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	internalLog "manala/internal/log"
-	"path/filepath"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
@@ -13,8 +13,6 @@ type ProjectManagerSuite struct{ suite.Suite }
 func TestProjectManagerSuite(t *testing.T) {
 	suite.Run(t, new(ProjectManagerSuite))
 }
-
-var projectManagerTestPath = filepath.Join("testdata", "project_manager")
 
 func (s *ProjectManagerSuite) Test() {
 	log := internalLog.New(io.Discard)
@@ -31,7 +29,7 @@ func (s *ProjectManagerSuite) Test() {
 	)
 
 	s.Run("LoadProjectManifest", func() {
-		projectManifest, err := manager.LoadProjectManifest(filepath.Join(projectManagerTestPath, "project"))
+		projectManifest, err := manager.LoadProjectManifest(internalTesting.DataPath(s, "project"))
 
 		s.NoError(err)
 		s.Equal("recipe", projectManifest.Recipe)
@@ -41,14 +39,14 @@ func (s *ProjectManagerSuite) Test() {
 
 	s.Run("LoadProject", func() {
 		project, err := manager.LoadProject(
-			filepath.Join(projectManagerTestPath, "project"),
-			filepath.Join(projectManagerTestPath, "repository"),
+			internalTesting.DataPath(s, "project"),
+			internalTesting.DataPath(s, "repository"),
 			"recipe",
 		)
 
 		s.NoError(err)
-		s.Equal(filepath.Join(projectManagerTestPath, "project"), project.Path())
-		s.Equal(filepath.Join(projectManagerTestPath, "repository"), project.Recipe().Repository().Path())
-		s.Equal(filepath.Join(projectManagerTestPath, "repository", "recipe"), project.Recipe().Path())
+		s.Equal(internalTesting.DataPath(s, "project"), project.Path())
+		s.Equal(internalTesting.DataPath(s, "repository"), project.Recipe().Repository().Path())
+		s.Equal(internalTesting.DataPath(s, "repository", "recipe"), project.Recipe().Path())
 	})
 }

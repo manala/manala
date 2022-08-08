@@ -2,6 +2,7 @@ package filepath
 
 import (
 	"github.com/stretchr/testify/suite"
+	internalTesting "manala/internal/testing"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,24 +14,22 @@ func TestBackwalkSuite(t *testing.T) {
 	suite.Run(t, new(BackwalkSuite))
 }
 
-var backwalkTestPath = filepath.Join("testdata", "backwalk")
-
 func (s *BackwalkSuite) Test() {
 	i := 0
 	err := Backwalk(
-		filepath.Join(backwalkTestPath, "foo", "bar"),
+		internalTesting.DataPath(s, "foo", "bar"),
 		func(path string, file os.DirEntry, err error) error {
 			s.NoError(err)
 			s.Equal(
 				[]string{
-					filepath.Join(backwalkTestPath, "foo", "bar"),
-					filepath.Join(backwalkTestPath, "foo"),
-					backwalkTestPath,
+					internalTesting.DataPath(s, "foo", "bar"),
+					internalTesting.DataPath(s, "foo"),
+					internalTesting.DataPath(s),
 				}[i],
 				path,
 			)
 			i = i + 1
-			if path == backwalkTestPath {
+			if path == internalTesting.DataPath(s) {
 				return filepath.SkipDir
 			}
 			return nil

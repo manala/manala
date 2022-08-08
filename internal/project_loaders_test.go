@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	internalLog "manala/internal/log"
-	"path/filepath"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
@@ -14,8 +14,6 @@ func TestProjectLoadersSuite(t *testing.T) {
 	suite.Run(t, new(ProjectLoadersSuite))
 }
 
-var projectLoadersTestPath = filepath.Join("testdata", "project_loaders")
-
 func (s *ProjectLoadersSuite) TestDir() {
 	log := internalLog.New(io.Discard)
 	loader := &ProjectDirLoader{
@@ -24,7 +22,7 @@ func (s *ProjectLoadersSuite) TestDir() {
 	}
 
 	s.Run("LoadProjectManifest Not Found", func() {
-		projectManifest, err := loader.LoadProjectManifest(filepath.Join(projectLoadersTestPath, "project_not_found"))
+		projectManifest, err := loader.LoadProjectManifest(internalTesting.DataPath(s, "project"))
 
 		var _err *NotFoundProjectManifestError
 		s.ErrorAs(err, &_err)
@@ -35,7 +33,7 @@ func (s *ProjectLoadersSuite) TestDir() {
 	})
 
 	s.Run("LoadProjectManifest Wrong", func() {
-		projectManifest, err := loader.LoadProjectManifest(filepath.Join(projectLoadersTestPath, "project_wrong"))
+		projectManifest, err := loader.LoadProjectManifest(internalTesting.DataPath(s, "project"))
 
 		s.ErrorAs(err, &internalError)
 		s.Equal("wrong project manifest", internalError.Message)
@@ -43,7 +41,7 @@ func (s *ProjectLoadersSuite) TestDir() {
 	})
 
 	s.Run("LoadProjectManifest", func() {
-		projectManifest, err := loader.LoadProjectManifest(filepath.Join(projectLoadersTestPath, "project"))
+		projectManifest, err := loader.LoadProjectManifest(internalTesting.DataPath(s, "project"))
 
 		s.NoError(err)
 		s.Equal("recipe", projectManifest.Recipe)
@@ -53,14 +51,14 @@ func (s *ProjectLoadersSuite) TestDir() {
 
 	s.Run("LoadProject", func() {
 		project, err := loader.LoadProject(
-			filepath.Join(projectLoadersTestPath, "project"),
-			filepath.Join(projectLoadersTestPath, "repository"),
+			internalTesting.DataPath(s, "project"),
+			internalTesting.DataPath(s, "repository"),
 			"recipe",
 		)
 
 		s.NoError(err)
-		s.Equal(filepath.Join(projectLoadersTestPath, "project"), project.Path())
-		s.Equal(filepath.Join(projectLoadersTestPath, "repository"), project.Recipe().Repository().Path())
-		s.Equal(filepath.Join(projectLoadersTestPath, "repository", "recipe"), project.Recipe().Path())
+		s.Equal(internalTesting.DataPath(s, "project"), project.Path())
+		s.Equal(internalTesting.DataPath(s, "repository"), project.Recipe().Repository().Path())
+		s.Equal(internalTesting.DataPath(s, "repository", "recipe"), project.Recipe().Path())
 	})
 }
