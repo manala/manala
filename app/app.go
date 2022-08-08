@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/apex/log"
 	"github.com/gen2brain/beeep"
-	ioFs "io/fs"
+	"io/fs"
 	"manala/internal"
 	internalConfig "manala/internal/config"
 	internalFilepath "manala/internal/filepath"
@@ -322,7 +322,7 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 		func(watcher *internalWatcher.Watcher) {
 			if all && project != nil {
 				// Watch recipe directories
-				_ = filepath.WalkDir(project.Recipe().Path(), func(path string, file ioFs.DirEntry, err error) error {
+				_ = filepath.WalkDir(project.Recipe().Path(), func(path string, file fs.DirEntry, err error) error {
 					if file.IsDir() {
 						_ = watcher.AddTemporary(path)
 					}
