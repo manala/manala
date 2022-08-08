@@ -31,4 +31,10 @@ nav:
     - manala list: commands/manala_list.md
     - manala update: commands/manala_update.md
     - manala watch: commands/manala_watch.md
+  - Completion:
+      - help: commands/manala_completion.md
+      - bash: commands/manala_completion_bash.md
+      - zsh: commands/manala_completion_zsh.md
+      - fish: commands/manala_completion_fish.md
+      - powershell: commands/manala_completion_powershell.md
   - Contributing: contributing.md
