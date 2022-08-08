@@ -10,6 +10,7 @@ import (
 type LoggerSuite struct{ suite.Suite }
 
 func TestLoggerSuite(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(LoggerSuite))
 }
 
@@ -22,9 +23,9 @@ func (s *LoggerSuite) Test() {
 	logger.Warn("warn")
 	logger.Error("error")
 
-	s.Equal(`   • info                     
-   • warn                     
-   ⨯ error                    
+	s.Equal(`  • info
+  • warn
+  ⨯ error
 `, out.String())
 }
 
@@ -38,7 +39,7 @@ func (s *LoggerSuite) TestLevelDebug() {
 	logger.LevelDebug()
 
 	logger.Debug("debug")
-	s.Equal(`   • debug                    
+	s.Equal(`  • debug
 `, out.String())
 }
 
@@ -46,9 +47,9 @@ func (s *LoggerSuite) TestLogError() {
 	out := &bytes.Buffer{}
 	logger := New(out)
 
-	logger.PaddingUp()
+	logger.IncreasePadding()
 	logger.LogError(fmt.Errorf("error"))
-	s.Equal(`   ⨯ error                    
+	s.Equal(`  ⨯ error
 `, out.String())
 }
 
@@ -56,10 +57,10 @@ func (s *LoggerSuite) TestCaptureError() {
 	out := &bytes.Buffer{}
 	logger := New(out)
 
-	logger.PaddingUp()
+	logger.IncreasePadding()
 	err := logger.CaptureError(fmt.Errorf("error"))
 	s.Empty(out.String())
-	s.Equal(`   ⨯ error                    
+	s.Equal(`  ⨯ error
 `, string(err))
 }
 
@@ -68,19 +69,19 @@ func (s *LoggerSuite) TestPadding() {
 	logger := New(out)
 
 	logger.Info("info")
-	s.Equal(`   • info                     
+	s.Equal(`  • info
 `, out.String())
 
-	logger.PaddingUp()
+	logger.IncreasePadding()
 	logger.Info("info")
-	s.Equal(`   • info                     
-      • info                     
+	s.Equal(`  • info
+    • info
 `, out.String())
 
-	logger.PaddingDown()
+	logger.DecreasePadding()
 	logger.Info("info")
-	s.Equal(`   • info                     
-      • info                     
-   • info                     
+	s.Equal(`  • info
+    • info
+  • info
 `, out.String())
 }

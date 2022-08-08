@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 )
 
 func New(message string) *InternalError {

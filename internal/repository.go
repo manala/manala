@@ -2,7 +2,7 @@ package internal
 
 import (
 	"errors"
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	internalFilepath "manala/internal/filepath"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -65,12 +65,12 @@ func (repository *Repository) WalkRecipes(walker func(recipe *Recipe)) error {
 		repository.log.WithFields(log.Fields{
 			"name": file.Name(),
 		}).Debug("load recipe")
-		repository.log.PaddingUp()
+		repository.log.IncreasePadding()
 
 		recipe, err := repository.LoadRecipe(file.Name())
 
 		// Log
-		repository.log.PaddingDown()
+		repository.log.DecreasePadding()
 
 		if err != nil {
 			var _err *NotFoundRecipeManifestError

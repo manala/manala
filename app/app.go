@@ -2,7 +2,7 @@ package app
 
 import (
 	"errors"
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/gen2brain/beeep"
 	"io/fs"
 	"manala/internal"
@@ -80,14 +80,14 @@ func (app *App) Repository(path string) (*internal.Repository, error) {
 	app.log.WithFields(log.Fields{
 		"path": path,
 	}).Debug("load repository")
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 
 	repository, err := app.repositoryManager.LoadRepository(
 		[]string{path},
 	)
 
 	// Log
-	app.log.PaddingDown()
+	app.log.DecreasePadding()
 
 	return repository, err
 }
@@ -107,7 +107,7 @@ func (app *App) ProjectFrom(path string, repositoryPath string, recipeName strin
 		"repository": repositoryPath,
 		"recipe":     recipeName,
 	}).Debug("load project from")
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 
 	var project *internal.Project
 
@@ -134,7 +134,7 @@ func (app *App) ProjectFrom(path string, repositoryPath string, recipeName strin
 		})
 
 	// Log
-	app.log.PaddingDown()
+	app.log.DecreasePadding()
 
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (app *App) WalkProjects(path string, repositoryPath string, recipeName stri
 	app.log.WithFields(log.Fields{
 		"path": path,
 	}).Info("load projects from")
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 
 	err := filepath.WalkDir(path, func(path string, file os.DirEntry, err error) error {
 		if err != nil {
@@ -184,13 +184,13 @@ func (app *App) WalkProjects(path string, repositoryPath string, recipeName stri
 			"repository": repositoryPath,
 			"recipe":     recipeName,
 		}).Debug("load project")
-		app.log.PaddingUp()
+		app.log.IncreasePadding()
 
 		// Load project
 		project, err := app.Project(path, repositoryPath, recipeName)
 
 		// Log
-		app.log.PaddingDown()
+		app.log.DecreasePadding()
 
 		if err != nil {
 			var _err *internal.NotFoundProjectManifestError
@@ -211,19 +211,19 @@ func (app *App) WalkProjects(path string, repositoryPath string, recipeName stri
 	})
 
 	// Log
-	app.log.PaddingDown()
+	app.log.DecreasePadding()
 
 	return err
 }
 
 func (app *App) SyncProject(project *internal.Project) error {
 	// Log
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
 		"src": project.Recipe().Path(),
 		"dst": project.Path(),
 	}).Info("sync project")
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 
 	// Loop over project recipe sync nodes
 	for _, node := range project.Recipe().Sync() {
@@ -234,27 +234,27 @@ func (app *App) SyncProject(project *internal.Project) error {
 			node.Destination,
 			project,
 		); err != nil {
-			app.log.PaddingDown()
-			app.log.PaddingDown()
+			app.log.DecreasePadding()
+			app.log.DecreasePadding()
 
 			return err
 		}
 	}
 
-	app.log.PaddingDown()
-	app.log.PaddingDown()
+	app.log.DecreasePadding()
+	app.log.DecreasePadding()
 
 	return nil
 }
 
 func (app *App) WatchProject(project *internal.Project, repositoryPath string, recipeName string, all bool, notify bool) error {
 	// Log
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
 		"src": project.Recipe().Path(),
 		"dst": project.Path(),
 	}).Info("watch project")
-	app.log.PaddingUp()
+	app.log.IncreasePadding()
 
 	path := project.Path()
 
@@ -274,14 +274,14 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 				"repository": repositoryPath,
 				"recipe":     recipeName,
 			}).Debug("load project")
-			app.log.PaddingUp()
+			app.log.IncreasePadding()
 
 			// Load project
 			var err error
 			project, err = app.Project(path, repositoryPath, recipeName)
 
 			// Log
-			app.log.PaddingDown()
+			app.log.DecreasePadding()
 
 			if err != nil {
 				if notify {
@@ -338,8 +338,8 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 	defer watcher.Close()
 	watcher.Watch()
 
-	app.log.PaddingDown()
-	app.log.PaddingDown()
+	app.log.DecreasePadding()
+	app.log.DecreasePadding()
 
 	return nil
 }

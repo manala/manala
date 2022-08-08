@@ -4,29 +4,19 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
+	"github.com/caarlos0/log"
 	"io"
 	internalErrors "manala/internal/errors"
 	"regexp"
 )
 
 func New(out io.Writer) *Logger {
-	logger := &Logger{
-		handler: cli.New(out),
+	return &Logger{
+		Logger: log.New(out),
 	}
-	logger.padding = logger.handler.Padding
-	logger.Logger = &log.Logger{
-		Handler: logger.handler,
-		Level:   log.InfoLevel,
-	}
-
-	return logger
 }
 
 type Logger struct {
-	handler *cli.Handler
-	padding int
 	*log.Logger
 }
 
@@ -36,27 +26,27 @@ func (logger *Logger) LevelDebug() {
 
 func (logger *Logger) LogError(err error) {
 	// Reset padding
-	padding := logger.handler.Padding
-	logger.handler.Padding = logger.padding
+	_padding := logger.Padding
+	logger.ResetPadding()
 
 	logger.logError(err)
 
 	// Restore padding
-	logger.handler.Padding = padding
+	logger.Padding = _padding
 }
 
 var ansiCodesRegex = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007|(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~])")
 
 func (logger *Logger) CaptureError(err error) []byte {
 	// Capture writer
-	writer := logger.handler.Writer
+	_writer := logger.Writer
 	buffer := &bytes.Buffer{}
-	logger.handler.Writer = buffer
+	logger.Writer = buffer
 
 	logger.LogError(err)
 
 	// Restore writer
-	logger.handler.Writer = writer
+	logger.Writer = _writer
 
 	return ansiCodesRegex.ReplaceAll(buffer.Bytes(), []byte{})
 }
@@ -81,23 +71,15 @@ func (logger *Logger) logError(err error) {
 
 	// Errors
 	if len(_err.Errs) != 0 {
-		logger.PaddingUp()
+		logger.IncreasePadding()
 		for _, err := range _err.Errs {
 			logger.logError(err)
 		}
-		logger.PaddingDown()
+		logger.DecreasePadding()
 	}
 
 	// Trace
 	if _err.Trace != "" {
-		_, _ = fmt.Fprint(logger.handler.Writer, "\n", _err.Trace, "\n")
+		_, _ = fmt.Fprint(logger.Writer, "\n", _err.Trace, "\n")
 	}
-}
-
-func (logger *Logger) PaddingUp() {
-	logger.handler.Padding = logger.handler.Padding + 3
-}
-
-func (logger *Logger) PaddingDown() {
-	logger.handler.Padding = logger.handler.Padding - 3
 }
