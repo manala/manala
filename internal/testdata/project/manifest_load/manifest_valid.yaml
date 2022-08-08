@@ -3,3 +3,4 @@ manala:
   repository: repository
 
 foo: bar
+underscore_key: ok

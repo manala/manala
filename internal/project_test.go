@@ -106,18 +106,23 @@ func (s *ProjectSuite) TestManifest() {
 }
 
 func (s *ProjectSuite) TestManifestLoad() {
-	projectManifest := NewProjectManifest("")
-
 	path := filepath.Join(projectTestPath, "manifest_load")
 
-	file, _ := os.Open(filepath.Join(path, "manifest.yaml"))
-	_, _ = io.Copy(projectManifest, file)
-	err := projectManifest.Load()
+	s.Run("Valid", func() {
+		projectManifest := NewProjectManifest("")
 
-	s.NoError(err)
-	s.Equal("recipe", projectManifest.Recipe)
-	s.Equal("repository", projectManifest.Repository)
-	s.Equal(map[string]interface{}{"foo": "bar"}, projectManifest.Vars)
+		file, _ := os.Open(filepath.Join(path, "manifest_valid.yaml"))
+		_, _ = io.Copy(projectManifest, file)
+		err := projectManifest.Load()
+
+		s.NoError(err)
+		s.Equal("recipe", projectManifest.Recipe)
+		s.Equal("repository", projectManifest.Repository)
+		s.Equal(map[string]interface{}{
+			"foo":            "bar",
+			"underscore_key": "ok",
+		}, projectManifest.Vars)
+	})
 
 	s.Run("Invalid Yaml", func() {
 		projectManifest := NewProjectManifest("")

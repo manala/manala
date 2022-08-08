@@ -8,3 +8,4 @@ foo:
   # @schema {"type": "string", "minLength": 1}
   # @option {"label": "Bar"}
   bar: baz
+underscore_key: ok
