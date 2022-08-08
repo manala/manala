@@ -15,7 +15,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/goccy/go-yaml v1.9.6-0.20220501051225-b377defabafb
 	github.com/imdario/mergo v0.3.13
-	github.com/ohler55/ojg v1.14.2
+	github.com/ohler55/ojg v1.14.3
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
