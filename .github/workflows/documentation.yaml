@@ -14,6 +14,6 @@ jobs:
           # See: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin/issues/10
           fetch-depth: 0
       - name: Deploy
-        uses: mhausenblas/mkdocs-deploy-gh-pages@1.24
+        uses: mhausenblas/mkdocs-deploy-gh-pages@1.25
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
