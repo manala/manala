@@ -11,6 +11,10 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
+To load completions in your current shell session:
+
+	source <(manala completion zsh); compdef _manala manala
+
 To load completions for every new session, execute once:
 
 #### Linux:
@@ -19,7 +23,7 @@ To load completions for every new session, execute once:
 
 #### macOS:
 
-	manala completion zsh > /usr/local/share/zsh/site-functions/_manala
+	manala completion zsh > $(brew --prefix)/share/zsh/site-functions/_manala
 
 You will need to start a new shell for this setup to take effect.
 
