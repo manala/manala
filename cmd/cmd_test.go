@@ -11,8 +11,8 @@ var internalError *internalErrors.InternalError
 func newCmdExecutor(provider func(stderr *bytes.Buffer) *cobra.Command) *cmdExecutor {
 	return &cmdExecutor{
 		provider: provider,
-		stdout:   bytes.NewBufferString(""),
-		stderr:   bytes.NewBufferString(""),
+		stdout:   &bytes.Buffer{},
+		stderr:   &bytes.Buffer{},
 	}
 }
 

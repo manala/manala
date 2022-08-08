@@ -14,7 +14,7 @@ func TestLoggerSuite(t *testing.T) {
 }
 
 func (s *LoggerSuite) Test() {
-	out := bytes.NewBufferString("")
+	out := &bytes.Buffer{}
 	logger := New(out)
 
 	logger.Debug("debug")
@@ -29,7 +29,7 @@ func (s *LoggerSuite) Test() {
 }
 
 func (s *LoggerSuite) TestLevelDebug() {
-	out := bytes.NewBufferString("")
+	out := &bytes.Buffer{}
 	logger := New(out)
 
 	logger.Debug("debug")
@@ -43,7 +43,7 @@ func (s *LoggerSuite) TestLevelDebug() {
 }
 
 func (s *LoggerSuite) TestLogError() {
-	out := bytes.NewBufferString("")
+	out := &bytes.Buffer{}
 	logger := New(out)
 
 	logger.PaddingUp()
@@ -53,7 +53,7 @@ func (s *LoggerSuite) TestLogError() {
 }
 
 func (s *LoggerSuite) TestCaptureError() {
-	out := bytes.NewBufferString("")
+	out := &bytes.Buffer{}
 	logger := New(out)
 
 	logger.PaddingUp()
@@ -64,7 +64,7 @@ func (s *LoggerSuite) TestCaptureError() {
 }
 
 func (s *LoggerSuite) TestPadding() {
-	out := bytes.NewBufferString("")
+	out := &bytes.Buffer{}
 	logger := New(out)
 
 	logger.Info("info")

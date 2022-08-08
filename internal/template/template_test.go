@@ -10,7 +10,7 @@ import (
 type TemplateSuite struct {
 	suite.Suite
 	provider ProviderInterface
-	buffer   bytes.Buffer
+	buffer   *bytes.Buffer
 }
 
 func TestTemplateSuite(t *testing.T) {
@@ -22,14 +22,14 @@ func (s *TemplateSuite) SetupSuite() {
 }
 
 func (s *TemplateSuite) SetupTest() {
-	s.buffer.Reset()
+	s.buffer = &bytes.Buffer{}
 }
 
 var templateTestPath = filepath.Join("testdata", "template")
 
 func (s *TemplateSuite) TestWrite() {
 	template := s.provider.Template()
-	err := template.Write(&s.buffer)
+	err := template.Write(s.buffer)
 
 	s.NoError(err)
 	s.Equal("", s.buffer.String())
@@ -40,7 +40,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithDefaultFile(filepath.Join(templateTestPath, "default_files", "foo.tmpl"))
 		template.WithDefaultContent(`{{ template "foo" . }}`)
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -51,7 +51,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(templateTestPath, "file", "foo.tmpl"))
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -62,7 +62,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ "baz" }}`)
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.NoError(err)
 		s.Equal("baz", s.buffer.String())
@@ -74,7 +74,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(templateTestPath, "file", "foo.tmpl"))
 		template.WithDefaultContent(`{{ "baz" }}`)
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -86,7 +86,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ . }}`)
 		template.WithData("foo")
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.NoError(err)
 		s.Equal("foo", s.buffer.String())
@@ -97,7 +97,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ .foo }`)
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.ErrorAs(err, &internalError)
 		s.EqualError(internalError, "template error")
@@ -110,7 +110,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ .foo }}`)
-		err := template.Write(&s.buffer)
+		err := template.Write(s.buffer)
 
 		s.ErrorAs(err, &internalError)
 		s.EqualError(internalError, "template error")

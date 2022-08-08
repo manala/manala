@@ -10,7 +10,7 @@ import (
 
 type FunctionsSuite struct {
 	suite.Suite
-	buffer bytes.Buffer
+	buffer *bytes.Buffer
 }
 
 func TestFunctionsSuite(t *testing.T) {
@@ -18,7 +18,7 @@ func TestFunctionsSuite(t *testing.T) {
 }
 
 func (s *FunctionsSuite) SetupTest() {
-	s.buffer.Reset()
+	s.buffer = &bytes.Buffer{}
 }
 
 func (s *FunctionsSuite) execute(content string, data interface{}) string {
@@ -30,8 +30,8 @@ func (s *FunctionsSuite) execute(content string, data interface{}) string {
 	_, err := template.Parse(content)
 	s.NoError(err)
 
-	var buffer bytes.Buffer
-	err = template.Execute(&buffer, data)
+	buffer := &bytes.Buffer{}
+	err = template.Execute(buffer, data)
 	s.NoError(err)
 
 	return buffer.String()

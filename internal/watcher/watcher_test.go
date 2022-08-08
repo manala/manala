@@ -19,7 +19,7 @@ func TestWatcherSuite(t *testing.T) {
 }
 
 func (s *WatcherSuite) SetupTest() {
-	s.stderr = bytes.NewBufferString("")
+	s.stderr = &bytes.Buffer{}
 	s.logger = internalLog.New(s.stderr)
 }
 

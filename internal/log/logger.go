@@ -50,7 +50,7 @@ var ansiCodesRegex = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:[a-zA-Z
 func (logger *Logger) CaptureError(err error) []byte {
 	// Capture writer
 	writer := logger.handler.Writer
-	buffer := bytes.NewBufferString("")
+	buffer := &bytes.Buffer{}
 	logger.handler.Writer = buffer
 
 	logger.LogError(err)

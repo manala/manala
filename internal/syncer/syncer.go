@@ -140,8 +140,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 		if node.IsTmpl {
 			// Write template
-			var buffer bytes.Buffer
-			if err := node.TemplateProvider.Template().WithFile(node.Src.Path).Write(&buffer); err != nil {
+			buffer := &bytes.Buffer{}
+			if err := node.TemplateProvider.Template().WithFile(node.Src.Path).Write(buffer); err != nil {
 				return err
 			}
 
@@ -150,7 +150,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if node.Dst.IsExist {
 				// Get template hash
 				hash := sha1.New()
-				if _, err := io.Copy(hash, &buffer); err != nil {
+				if _, err := io.Copy(hash, buffer); err != nil {
 					return err
 				}
 				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)

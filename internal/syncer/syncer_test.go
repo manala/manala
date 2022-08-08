@@ -23,7 +23,7 @@ func TestSyncerSuite(t *testing.T) {
 }
 
 func (s *SyncerSuite) SetupTest() {
-	s.stderr = bytes.NewBufferString("")
+	s.stderr = &bytes.Buffer{}
 	s.syncer = &Syncer{
 		Log: internalLog.New(s.stderr),
 	}
