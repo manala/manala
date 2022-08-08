@@ -10,7 +10,7 @@ import (
 
 type WatcherSuite struct {
 	suite.Suite
-	stdErr *bytes.Buffer
+	stderr *bytes.Buffer
 	logger *internalLog.Logger
 }
 
@@ -19,8 +19,8 @@ func TestWatcherSuite(t *testing.T) {
 }
 
 func (s *WatcherSuite) SetupTest() {
-	s.stdErr = bytes.NewBufferString("")
-	s.logger = internalLog.New(s.stdErr)
+	s.stderr = bytes.NewBufferString("")
+	s.logger = internalLog.New(s.stderr)
 }
 
 func (s *WatcherSuite) TestTemporaries() {
