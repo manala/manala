@@ -1,6 +1,6 @@
 module manala
 
-go 1.18
+go 1.19
 
 require (
 	code.rocketnine.space/tslocum/cview v1.5.7
