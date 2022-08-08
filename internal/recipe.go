@@ -7,7 +7,6 @@ import (
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 	"github.com/imdario/mergo"
-	"github.com/ohler55/ojg/jp"
 	"io"
 	internalTemplate "manala/internal/template"
 	internalValidator "manala/internal/validator"
@@ -102,6 +101,11 @@ func NewRecipeManifest(dir string) *RecipeManifest {
 	return &RecipeManifest{
 		path: filepath.Join(dir, recipeManifestFile),
 		Vars: map[string]interface{}{},
+		Schema: map[string]interface{}{
+			"type":                 "object",
+			"additionalProperties": false,
+			"properties":           map[string]interface{}{},
+		},
 	}
 }
 
@@ -156,82 +160,96 @@ func (manifest *RecipeManifest) Load() error {
 	manifest.Vars = contentData
 
 	// Parse manifest (options & schema)
-	visitor := &recipeManifestVisitor{manifest: manifest}
-	ast.Walk(visitor, contentFile.Docs[0])
-	if visitor.err != nil {
+	if err := parseRecipeManifest(
+		contentFile.Docs[0].Body,
+		manifest.Schema["properties"].(map[string]interface{}),
+		&manifest.Options,
+	); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type recipeManifestVisitor struct {
-	manifest *RecipeManifest
-	err      error
-}
-
-func (visitor *recipeManifestVisitor) Visit(node ast.Node) ast.Visitor {
-	nodePath := node.GetPath()
-
-	// Exclude "manala" part
-	if strings.HasPrefix(nodePath, "$.manala") {
-		return visitor
-	}
-
+func parseRecipeManifest(node ast.Node, properties map[string]interface{}, options *[]RecipeManifestOption) error {
 	switch node := node.(type) {
-	case *ast.DocumentNode:
-		// Schema root
-		visitor.manifest.Schema = map[string]interface{}{
-			"type":                 "object",
-			"additionalProperties": false,
-			"properties":           map[string]interface{}{},
-		}
 	case *ast.MappingNode:
-		// For obscure reasons, comments of the first MappingValue node
-		// are set on its Mapping node. Let's copy them from it.
+		// Comments of the first MappingValueNode are set on its MappingNode.
+		// Work around by manually copy them from it.
+		// See: https://github.com/goccy/go-yaml/issues/311
 		if len(node.Values) > 0 {
 			node.Values[0].Comment = node.Comment
 		}
-	case *ast.MappingValueNode:
-		schema := map[string]interface{}{}
 
-		// Schema type based on node value type
-		switch nodeValue := node.Value.(type) {
+		// Range over mapping value nodes
+		for _, valueNode := range node.Values {
+			if err := parseRecipeManifest(valueNode, properties, options); err != nil {
+				return err
+			}
+		}
+	case *ast.MappingValueNode:
+		nodePath := node.GetPath()
+
+		// Exclude "manala" path
+		if strings.HasPrefix(nodePath, "$.manala") {
+			return nil
+		}
+
+		// Property name based on node key
+		propertyName := node.Key.String()
+
+		// Property schema based on node value type
+		propertySchema := map[string]interface{}{}
+
+		switch node := node.Value.(type) {
 		case *ast.StringNode, *ast.LiteralNode:
-			schema["type"] = "string"
+			propertySchema["type"] = "string"
 		case *ast.IntegerNode:
-			schema["type"] = "integer"
+			propertySchema["type"] = "integer"
 		case *ast.FloatNode:
-			schema["type"] = "number"
+			propertySchema["type"] = "number"
 		case *ast.BoolNode:
-			schema["type"] = "boolean"
+			propertySchema["type"] = "boolean"
 		case *ast.SequenceNode:
-			schema["type"] = "array"
-		case *ast.MappingNode:
-			schema["type"] = "object"
-			schema["properties"] = map[string]interface{}{}
-			schema["additionalProperties"] = false
-			// Allow additional properties for empty mappings only
-			if len(nodeValue.Values) == 0 {
-				schema["additionalProperties"] = true
+			propertySchema["type"] = "array"
+		case *ast.MappingValueNode, *ast.MappingNode:
+			// Could be either MappingNode or MappingValueNode
+			// depending on the number of their items
+			// See: https://github.com/goccy/go-yaml/issues/310
+
+			propertySchema["type"] = "object"
+
+			// Allow additional properties for empty mapping nodes only
+			if n, ok := node.(*ast.MappingNode); ok && len(n.Values) == 0 {
+				propertySchema["additionalProperties"] = true
+			} else {
+				propertySchema["additionalProperties"] = false
+				propertySchema["properties"] = map[string]interface{}{}
+
+				if err := parseRecipeManifest(
+					node,
+					propertySchema["properties"].(map[string]interface{}),
+					options,
+				); err != nil {
+					return err
+				}
 			}
 		}
 
 		// Parse comment tags
-		if node.Comment != nil {
+		nodeComment := node.GetComment()
+		if nodeComment != nil {
 			tags := &internalYaml.Tags{}
-			internalYaml.ParseCommentTags(node.Comment.String(), tags)
+			internalYaml.ParseCommentTags(nodeComment.String(), tags)
 
 			// Handle schema tags
 			for _, tag := range *tags.Filter("schema") {
-				var tagSchema map[string]interface{}
-				if err := json.Unmarshal([]byte(tag.Value), &tagSchema); err != nil {
-					visitor.err = internalYaml.CommentTagError(nodePath, err)
-					return nil
+				var tagSchemaProperties map[string]interface{}
+				if err := json.Unmarshal([]byte(tag.Value), &tagSchemaProperties); err != nil {
+					return internalYaml.CommentTagError(nodePath, err)
 				}
-				if err := mergo.Merge(&schema, tagSchema, mergo.WithOverride); err != nil {
-					visitor.err = internalYaml.CommentTagError(nodePath, err)
-					return nil
+				if err := mergo.Merge(&propertySchema, tagSchemaProperties, mergo.WithOverride); err != nil {
+					return internalYaml.CommentTagError(nodePath, err)
 				}
 			}
 
@@ -239,41 +257,22 @@ func (visitor *recipeManifestVisitor) Visit(node ast.Node) ast.Visitor {
 			for _, tag := range *tags.Filter("option") {
 				option := &RecipeManifestOption{
 					Path:   nodePath,
-					Schema: schema,
+					Schema: propertySchema,
 				}
 				if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
-					visitor.err = internalYaml.CommentTagError(nodePath, err)
-					return nil
+					return internalYaml.CommentTagError(nodePath, err)
 				}
 				if err, errs, ok := internalValidator.Validate(recipeManifestOptionSchema, option); !ok {
-					visitor.err = ValidationRecipeManifestOptionError(err, errs)
-					return nil
+					return ValidationRecipeManifestOptionError(err, errs)
 				}
-				visitor.manifest.Options = append(visitor.manifest.Options, *option)
+				*options = append(*options, *option)
 			}
 		}
 
-		// Compute schema path
-		_schemaPath, err := jp.ParseString(nodePath)
-		if err != nil {
-			visitor.err = err
-			return nil
-		}
-		schemaPath := jp.R()
-		for _, child := range _schemaPath {
-			if _, ok := child.(jp.Child); ok {
-				schemaPath = append(schemaPath, jp.Child("properties"), child)
-			}
-		}
-
-		// Apply schema
-		if err := schemaPath.SetOne(visitor.manifest.Schema, schema); err != nil {
-			visitor.err = err
-			return nil
-		}
+		properties[propertyName] = propertySchema
 	}
 
-	return visitor
+	return nil
 }
 
 type RecipeManifestSyncUnit struct {

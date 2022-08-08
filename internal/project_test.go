@@ -110,8 +110,9 @@ func (s *ProjectSuite) TestManifestLoad() {
 		s.Equal("recipe", projectManifest.Recipe)
 		s.Equal("repository", projectManifest.Repository)
 		s.Equal(map[string]interface{}{
-			"foo":            "bar",
 			"underscore_key": "ok",
+			"hyphen-key":     "ok",
+			"dot.key":        "ok",
 		}, projectManifest.Vars)
 	})
 
