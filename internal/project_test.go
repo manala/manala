@@ -98,12 +98,11 @@ func (s *ProjectSuite) TestManifest() {
 }
 
 func (s *ProjectSuite) TestManifestLoad() {
-	path := internalTesting.DataPath(s)
 
 	s.Run("Valid", func() {
 		projectManifest := NewProjectManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_valid.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(projectManifest, file)
 		err := projectManifest.Load()
 
@@ -119,7 +118,7 @@ func (s *ProjectSuite) TestManifestLoad() {
 	s.Run("Invalid Yaml", func() {
 		projectManifest := NewProjectManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_invalid_yaml.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(projectManifest, file)
 		err := projectManifest.Load()
 
@@ -130,7 +129,7 @@ func (s *ProjectSuite) TestManifestLoad() {
 	s.Run("Empty", func() {
 		projectManifest := NewProjectManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_empty.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(projectManifest, file)
 		err := projectManifest.Load()
 
@@ -141,7 +140,7 @@ func (s *ProjectSuite) TestManifestLoad() {
 	s.Run("Wrong", func() {
 		projectManifest := NewProjectManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_wrong.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(projectManifest, file)
 		err := projectManifest.Load()
 
@@ -152,7 +151,7 @@ func (s *ProjectSuite) TestManifestLoad() {
 	s.Run("Invalid", func() {
 		projectManifest := NewProjectManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_invalid.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(projectManifest, file)
 		err := projectManifest.Load()
 
