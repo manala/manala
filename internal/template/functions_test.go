@@ -3,13 +3,16 @@ package template
 import (
 	"bytes"
 	"github.com/Masterminds/sprig/v3"
+	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
+	internalTesting "manala/internal/testing"
 	"testing"
 	textTemplate "text/template"
 )
 
 type FunctionsSuite struct {
 	suite.Suite
+	goldie *goldie.Goldie
 	buffer *bytes.Buffer
 }
 
@@ -18,6 +21,7 @@ func TestFunctionsSuite(t *testing.T) {
 }
 
 func (s *FunctionsSuite) SetupTest() {
+	s.goldie = goldie.New(s.T())
 	s.buffer = &bytes.Buffer{}
 }
 
@@ -69,25 +73,7 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(`foo:
-    bar: string
-    baz:
-        foo: foo
-        bar: 123
-    corge: false
-    fred: []
-    garply: {}
-    grault: 1.23
-    plugh:
-        - foo
-        - bar
-    quux: true
-    qux: 123
-    thud: '123'
-    waldo:
-        bar: baz
-        foo: bar
-    xyzzy: null`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Cases", func() {
@@ -100,11 +86,7 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(`foo:
-    BAZ: true
-    QuuX: true
-    bar: true
-    qUx: true`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Mapping", func() {
@@ -116,8 +98,7 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(`bar: true
-qux: true`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Root Sequence", func() {
@@ -127,9 +108,7 @@ qux: true`, content)
 			"baz",
 		})
 
-		s.Equal(`- foo
-- bar
-- baz`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Nested Sequence", func() {
@@ -141,16 +120,13 @@ qux: true`, content)
 			},
 		})
 
-		s.Equal(`nested:
-    - foo
-    - bar
-    - baz`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Quotes", func() {
 		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
 
-		s.Equal(`'\'single\' "double"'`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
 	s.Run("Block Scalar", func() {
@@ -160,12 +136,10 @@ bar\baz
 `,
 		})
 
-		s.Equal(`scalar: |
-  foo
-  bar\baz`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 
-	s.Run("Indent", func() {
+	s.Run("Indentation", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"mapping": map[string]interface{}{
 				"foo": "bar",
@@ -177,12 +151,7 @@ bar\baz
 			},
 		})
 
-		s.Equal(`mapping:
-    bar: baz
-    foo: bar
-sequence:
-    - foo
-    - bar`, content)
+		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 	})
 }
 
@@ -196,5 +165,5 @@ func (s *FunctionsSuite) TestInclude() {
 		"bar",
 	)
 
-	s.Equal(`foo bar`, content)
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
 }

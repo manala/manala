@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	internalLog "manala/internal/log"
-	"path/filepath"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
@@ -14,37 +14,53 @@ func TestRepositoryManagerSuite(t *testing.T) {
 	suite.Run(t, new(RepositoryManagerSuite))
 }
 
-var repositoryManagerTestPath = filepath.Join("testdata", "repository_manager")
-
 func (s *RepositoryManagerSuite) Test() {
 	log := internalLog.New(io.Discard)
 
-	manager := NewRepositoryManager(
-		log,
-		filepath.Join(repositoryManagerTestPath, "repository_default"),
-	)
+	s.Run("AddRepositoryLoader", func() {
+		manager := NewRepositoryManager(
+			log,
+			"repository",
+		)
 
-	s.Empty(manager.RepositoryLoaders)
+		s.Empty(manager.RepositoryLoaders)
 
-	manager.AddRepositoryLoader(
-		&RepositoryDirLoader{Log: log},
-	)
+		manager.AddRepositoryLoader(
+			&RepositoryDirLoader{Log: log},
+		)
 
-	s.Len(manager.RepositoryLoaders, 1)
+		s.Len(manager.RepositoryLoaders, 1)
+	})
 
 	s.Run("LoadRepository Default", func() {
+		manager := NewRepositoryManager(
+			log,
+			internalTesting.DataPath(s, "repository"),
+		)
+		manager.AddRepositoryLoader(
+			&RepositoryDirLoader{Log: log},
+		)
+
 		repository, err := manager.LoadRepository([]string{})
 
 		s.NoError(err)
-		s.Equal(filepath.Join(repositoryManagerTestPath, "repository_default"), repository.Path())
+		s.Equal(internalTesting.DataPath(s, "repository"), repository.Path())
 	})
 
 	s.Run("LoadRepository", func() {
+		manager := NewRepositoryManager(
+			log,
+			internalTesting.DataPath(s, "repository"),
+		)
+		manager.AddRepositoryLoader(
+			&RepositoryDirLoader{Log: log},
+		)
+
 		repository, err := manager.LoadRepository([]string{
-			filepath.Join(repositoryManagerTestPath, "repository"),
+			internalTesting.DataPath(s, "repository"),
 		})
 
 		s.NoError(err)
-		s.Equal(filepath.Join(repositoryManagerTestPath, "repository"), repository.Path())
+		s.Equal(internalTesting.DataPath(s, "repository"), repository.Path())
 	})
 }

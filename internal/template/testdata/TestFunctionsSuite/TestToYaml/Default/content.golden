@@ -1,0 +1,19 @@
+foo:
+    bar: string
+    baz:
+        foo: foo
+        bar: 123
+    corge: false
+    fred: []
+    garply: {}
+    grault: 1.23
+    plugh:
+        - foo
+        - bar
+    quux: true
+    qux: 123
+    thud: '123'
+    waldo:
+        bar: baz
+        foo: bar
+    xyzzy: null

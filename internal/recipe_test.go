@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"github.com/stretchr/testify/suite"
 	"io"
+	internalTesting "manala/internal/testing"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,12 +17,10 @@ func TestRecipeSuite(t *testing.T) {
 	suite.Run(t, new(RecipeSuite))
 }
 
-var recipeTestPath = filepath.Join("testdata", "recipe")
-
 func (s *RecipeSuite) Test() {
 	repository := &Repository{path: "repository"}
-	recipeManifest := NewRecipeManifest(recipeTestPath)
-	recipeManifest.Description = "description"
+	recipeManifest := NewRecipeManifest(internalTesting.DataPath(s, "recipe"))
+	recipeManifest.Description = "Recipe"
 	recipeManifest.Vars = map[string]interface{}{"foo": "bar"}
 	recipeManifest.Sync = []RecipeManifestSyncUnit{}
 	recipeManifest.Schema = map[string]interface{}{}
@@ -32,9 +31,9 @@ func (s *RecipeSuite) Test() {
 		repository: repository,
 	}
 
-	s.Equal(recipeTestPath, recipe.Path())
+	s.Equal(internalTesting.DataPath(s, "recipe"), recipe.Path())
 	s.Equal("recipe", recipe.Name())
-	s.Equal("description", recipe.Description())
+	s.Equal("Recipe", recipe.Description())
 	s.Equal(map[string]interface{}{"foo": "bar"}, recipe.Vars())
 	s.Equal([]RecipeManifestSyncUnit{}, recipe.Sync())
 	s.Equal(map[string]interface{}{}, recipe.Schema())
@@ -50,7 +49,7 @@ func (s *RecipeSuite) Test() {
 			Write(out)
 
 		s.NoError(err)
-		s.Equal(`_helpers`, out.String())
+		s.Equal("_helpers", out.String())
 	})
 
 	s.Run("ProjectManifestTemplate", func() {
@@ -63,15 +62,15 @@ func (s *RecipeSuite) Test() {
 			Write(out)
 
 		s.NoError(err)
-		s.Equal(`bar`, out.String())
+		s.Equal("bar", out.String())
 	})
 
 	s.Run("NewProject", func() {
 		project := recipe.NewProject("dir")
 
-		s.Equal(`dir`, project.Path())
-		s.Equal(`repository`, project.Manifest().Repository)
-		s.Equal(`recipe`, project.Manifest().Recipe)
+		s.Equal("dir", project.Path())
+		s.Equal("repository", project.Manifest().Repository)
+		s.Equal("recipe", project.Manifest().Recipe)
 		s.Equal(map[string]interface{}{"foo": "bar"}, project.Manifest().Vars)
 	})
 }
@@ -90,12 +89,11 @@ func (s *RecipeSuite) TestManifest() {
 }
 
 func (s *RecipeSuite) TestManifestLoad() {
-	path := filepath.Join(recipeTestPath, "manifest_load")
 
 	s.Run("Valid", func() {
 		recipeManifest := NewRecipeManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_valid.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(recipeManifest, file)
 		err := recipeManifest.Load()
 
@@ -143,7 +141,7 @@ func (s *RecipeSuite) TestManifestLoad() {
 	s.Run("Invalid Yaml", func() {
 		recipeManifest := NewRecipeManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_invalid_yaml.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(recipeManifest, file)
 		err := recipeManifest.Load()
 
@@ -154,7 +152,7 @@ func (s *RecipeSuite) TestManifestLoad() {
 	s.Run("Empty", func() {
 		recipeManifest := NewRecipeManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_empty.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(recipeManifest, file)
 		err := recipeManifest.Load()
 
@@ -165,7 +163,7 @@ func (s *RecipeSuite) TestManifestLoad() {
 	s.Run("Wrong", func() {
 		recipeManifest := NewRecipeManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_wrong.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(recipeManifest, file)
 		err := recipeManifest.Load()
 
@@ -176,7 +174,7 @@ func (s *RecipeSuite) TestManifestLoad() {
 	s.Run("Invalid", func() {
 		recipeManifest := NewRecipeManifest("")
 
-		file, _ := os.Open(filepath.Join(path, "manifest_invalid.yaml"))
+		file, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 		_, _ = io.Copy(recipeManifest, file)
 		err := recipeManifest.Load()
 

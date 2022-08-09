@@ -3,7 +3,7 @@ package template
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
-	"path/filepath"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
@@ -25,8 +25,6 @@ func (s *TemplateSuite) SetupTest() {
 	s.buffer = &bytes.Buffer{}
 }
 
-var templateTestPath = filepath.Join("testdata", "template")
-
 func (s *TemplateSuite) TestWrite() {
 	template := s.provider.Template()
 	err := template.Write(s.buffer)
@@ -34,11 +32,11 @@ func (s *TemplateSuite) TestWrite() {
 	s.NoError(err)
 	s.Equal("", s.buffer.String())
 
-	s.Run("Default Files", func() {
+	s.Run("Default File", func() {
 		s.buffer.Reset()
 
 		template := s.provider.Template()
-		template.WithDefaultFile(filepath.Join(templateTestPath, "default_files", "foo.tmpl"))
+		template.WithDefaultFile(internalTesting.DataPath(s, "template.tmpl"))
 		template.WithDefaultContent(`{{ template "foo" . }}`)
 		err := template.Write(s.buffer)
 
@@ -50,7 +48,7 @@ func (s *TemplateSuite) TestWrite() {
 		s.buffer.Reset()
 
 		template := s.provider.Template()
-		template.WithFile(filepath.Join(templateTestPath, "file", "foo.tmpl"))
+		template.WithFile(internalTesting.DataPath(s, "template.tmpl"))
 		err := template.Write(s.buffer)
 
 		s.NoError(err)
@@ -72,7 +70,7 @@ func (s *TemplateSuite) TestWrite() {
 		s.buffer.Reset()
 
 		template := s.provider.Template()
-		template.WithFile(filepath.Join(templateTestPath, "file", "foo.tmpl"))
+		template.WithFile(internalTesting.DataPath(s, "template.tmpl"))
 		template.WithDefaultContent(`{{ "baz" }}`)
 		err := template.Write(s.buffer)
 
@@ -102,7 +100,7 @@ func (s *TemplateSuite) TestWrite() {
 		s.ErrorAs(err, &internalError)
 		s.EqualError(internalError, "template error")
 		s.Equal(1, internalError.Fields["line"])
-		s.Equal(`unexpected "}" in operand`, internalError.Fields["message"])
+		s.Equal("unexpected \"}\" in operand", internalError.Fields["message"])
 	})
 
 	s.Run("Execution Error", func() {
@@ -117,6 +115,6 @@ func (s *TemplateSuite) TestWrite() {
 		s.Equal(1, internalError.Fields["line"])
 		s.Equal(3, internalError.Fields["column"])
 		s.Equal(".foo", internalError.Fields["context"])
-		s.Equal(`nil data; no entry for key "foo"`, internalError.Fields["message"])
+		s.Equal("nil data; no entry for key \"foo\"", internalError.Fields["message"])
 	})
 }

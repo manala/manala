@@ -1,0 +1,3 @@
+    • sync project                                   dst={{ .dst }} src={{ .src }}
+      • file synced                                  path=file.txt
+      • file synced                                  path=template.txt

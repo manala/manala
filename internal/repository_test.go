@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	internalLog "manala/internal/log"
-	"path/filepath"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
@@ -14,41 +14,61 @@ func TestRepositorySuite(t *testing.T) {
 	suite.Run(t, new(RepositorySuite))
 }
 
-var repositoryTestPath = filepath.Join("testdata", "repository")
-
 func (s *RepositorySuite) Test() {
 	log := internalLog.New(io.Discard)
 
-	repository := &Repository{
-		log:  log,
-		path: "path",
-		dir:  repositoryTestPath,
-	}
-	repository.recipeLoader = &RecipeRepositoryDirLoader{
-		Log:        log,
-		Repository: repository,
-	}
+	s.Run("Path", func() {
+		repository := &Repository{
+			path: "path",
+		}
 
-	s.Equal("path", repository.Path())
-	s.Equal("path", repository.Source())
-	s.Equal(repositoryTestPath, repository.Dir())
+		s.Equal("path", repository.Path())
+	})
+
+	s.Run("Source", func() {
+		repository := &Repository{
+			path: "path",
+		}
+
+		s.Equal("path", repository.Source())
+	})
+
+	s.Run("Dir", func() {
+		repository := &Repository{
+			dir: "dir",
+		}
+
+		s.Equal("dir", repository.Dir())
+	})
 
 	s.Run("LoadRecipe", func() {
-		path := filepath.Join(repositoryTestPath, "load_recipe")
-		repository.dir = path
+		repository := &Repository{
+			log: log,
+			dir: internalTesting.DataPath(s, "repository"),
+		}
+		repository.recipeLoader = &RecipeRepositoryDirLoader{
+			Log:        log,
+			Repository: repository,
+		}
 
 		recipe, err := repository.LoadRecipe("recipe")
 
 		s.NoError(err)
-		s.Equal(filepath.Join(path, "recipe"), recipe.Path())
+		s.Equal(internalTesting.DataPath(s, "repository", "recipe"), recipe.Path())
 		s.Equal("recipe", recipe.Name())
 		s.Equal("description", recipe.Description())
 		s.Equal(map[string]interface{}{"foo": "bar"}, recipe.Vars())
 	})
 
 	s.Run("WalkRecipes Empty", func() {
-		path := filepath.Join(repositoryTestPath, "walk_recipes_empty")
-		repository.dir = path
+		repository := &Repository{
+			log: log,
+			dir: internalTesting.DataPath(s, "repository"),
+		}
+		repository.recipeLoader = &RecipeRepositoryDirLoader{
+			Log:        log,
+			Repository: repository,
+		}
 
 		err := repository.WalkRecipes(func(recipe *Recipe) {})
 
@@ -57,14 +77,32 @@ func (s *RepositorySuite) Test() {
 	})
 
 	s.Run("WalkRecipes", func() {
-		path := filepath.Join(repositoryTestPath, "walk_recipes")
-		repository.dir = path
+		repository := &Repository{
+			log: log,
+			dir: internalTesting.DataPath(s, "repository"),
+		}
+		repository.recipeLoader = &RecipeRepositoryDirLoader{
+			Log:        log,
+			Repository: repository,
+		}
+
+		count := 1
 
 		err := repository.WalkRecipes(func(recipe *Recipe) {
-			s.Equal(filepath.Join(path, "recipe"), recipe.Path())
-			s.Equal("recipe", recipe.Name())
-			s.Equal("description", recipe.Description())
-			s.Equal(map[string]interface{}{"foo": "bar"}, recipe.Vars())
+			switch count {
+			case 1:
+				s.Equal(internalTesting.DataPath(s, "repository", "bar"), recipe.Path())
+				s.Equal("bar", recipe.Name())
+				s.Equal("Bar", recipe.Description())
+				s.Equal(map[string]interface{}{"bar": "bar"}, recipe.Vars())
+			case 2:
+				s.Equal(internalTesting.DataPath(s, "repository", "foo"), recipe.Path())
+				s.Equal("foo", recipe.Name())
+				s.Equal("Foo", recipe.Description())
+				s.Equal(map[string]interface{}{"foo": "foo"}, recipe.Vars())
+			}
+
+			count++
 		})
 
 		s.NoError(err)

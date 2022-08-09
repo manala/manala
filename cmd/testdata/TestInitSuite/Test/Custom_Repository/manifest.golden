@@ -1,0 +1,8 @@
+####################################################################
+#                         !!! REMINDER !!!                         #
+# Don't forget to run `manala up` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: recipe
+    repository: {{ .repository }}

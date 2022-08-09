@@ -3,15 +3,24 @@ package log
 import (
 	"bytes"
 	"fmt"
+	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
+	internalTesting "manala/internal/testing"
 	"testing"
 )
 
-type LoggerSuite struct{ suite.Suite }
+type LoggerSuite struct {
+	suite.Suite
+	goldie *goldie.Goldie
+}
 
 func TestLoggerSuite(t *testing.T) {
 	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(LoggerSuite))
+}
+
+func (s *LoggerSuite) SetupTest() {
+	s.goldie = goldie.New(s.T())
 }
 
 func (s *LoggerSuite) Test() {
@@ -23,10 +32,7 @@ func (s *LoggerSuite) Test() {
 	logger.Warn("warn")
 	logger.Error("error")
 
-	s.Equal(`  • info
-  • warn
-  ⨯ error
-`, out.String())
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
 }
 
 func (s *LoggerSuite) TestLevelDebug() {
@@ -34,13 +40,13 @@ func (s *LoggerSuite) TestLevelDebug() {
 	logger := New(out)
 
 	logger.Debug("debug")
-	s.Empty(out.String())
+
+	s.Empty(out.Bytes())
 
 	logger.LevelDebug()
-
 	logger.Debug("debug")
-	s.Equal(`  • debug
-`, out.String())
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
 }
 
 func (s *LoggerSuite) TestLogError() {
@@ -49,8 +55,8 @@ func (s *LoggerSuite) TestLogError() {
 
 	logger.IncreasePadding()
 	logger.LogError(fmt.Errorf("error"))
-	s.Equal(`  ⨯ error
-`, out.String())
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
 }
 
 func (s *LoggerSuite) TestCaptureError() {
@@ -59,9 +65,9 @@ func (s *LoggerSuite) TestCaptureError() {
 
 	logger.IncreasePadding()
 	err := logger.CaptureError(fmt.Errorf("error"))
-	s.Empty(out.String())
-	s.Equal(`  ⨯ error
-`, string(err))
+
+	s.Empty(out.Bytes())
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "err"), err)
 }
 
 func (s *LoggerSuite) TestPadding() {
@@ -69,19 +75,16 @@ func (s *LoggerSuite) TestPadding() {
 	logger := New(out)
 
 	logger.Info("info")
-	s.Equal(`  • info
-`, out.String())
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
 
 	logger.IncreasePadding()
 	logger.Info("info")
-	s.Equal(`  • info
-    • info
-`, out.String())
+	
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_increase"), out.Bytes())
 
 	logger.DecreasePadding()
 	logger.Info("info")
-	s.Equal(`  • info
-    • info
-  • info
-`, out.String())
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_decrease"), out.Bytes())
 }

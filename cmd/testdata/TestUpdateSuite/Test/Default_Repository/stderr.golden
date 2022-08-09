@@ -1,0 +1,4 @@
+  • project loaded                                   path={{ .path }} recipe=recipe repository={{ .repository }}
+    • sync project                                   dst={{ .dst }} src={{ .src }}
+      • file synced                                  path=file.txt
+      • file synced                                  path=template.txt
