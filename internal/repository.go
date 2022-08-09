@@ -7,6 +7,7 @@ import (
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
 	"os"
+	"sort"
 )
 
 type Repository struct {
@@ -41,10 +42,13 @@ func (repository *Repository) WalkRecipes(walker func(recipe *Recipe)) error {
 	}
 	defer dir.Close()
 
-	files, err := dir.Readdir(0) // 0 to read all files and folders
+	files, err := dir.ReadDir(0) // 0 to read all files and folders
 	if err != nil {
 		return internalOs.FileSystemError(err)
 	}
+
+	// Sort alphabetically
+	sort.Slice(files, func(i, j int) bool { return files[i].Name() < files[j].Name() })
 
 	empty := true
 
