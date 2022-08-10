@@ -98,41 +98,208 @@ func (s *RecipeSuite) TestManifestLoad() {
 		err := recipeManifest.Load()
 
 		s.NoError(err)
-		s.Equal("description", recipeManifest.Description)
+		s.Equal("Description", recipeManifest.Description)
 		s.Equal("template", recipeManifest.Template)
 		s.Equal(map[string]interface{}{
-			"foo": map[string]interface{}{
-				"bar": "baz",
+			"string":      "string",
+			"string_null": nil,
+			"sequence": []interface{}{
+				"first",
 			},
+			"sequence_string_empty": []interface{}{},
+			"boolean":               true,
+			"integer":               uint64(123),
+			"float":                 1.2,
+			"map": map[string]interface{}{
+				"string": "string",
+				"map": map[string]interface{}{
+					"string": "string",
+				},
+			},
+			"map_empty": map[string]interface{}{},
+			"map_single": map[string]interface{}{
+				"first": "foo",
+			},
+			"map_multiple": map[string]interface{}{
+				"first":  "foo",
+				"second": "foo",
+			},
+			"enum":           nil,
 			"underscore_key": "ok",
+			"hyphen-key":     "ok",
+			"dot.key":        "ok",
 		}, recipeManifest.Vars)
 		s.Equal([]RecipeManifestSyncUnit{
-			{Source: "sync", Destination: "sync"},
+			{Source: "file", Destination: "file"},
+			{Source: "dir/file", Destination: "dir/file"},
+			{Source: "file", Destination: "dir/file"},
+			{Source: "dir/file", Destination: "file"},
+			{Source: "src_file", Destination: "dst_file"},
+			{Source: "src_dir/file", Destination: "dst_dir/file"},
 		}, recipeManifest.Sync)
 		s.Equal(map[string]interface{}{
 			"type":                 "object",
 			"additionalProperties": false,
 			"properties": map[string]interface{}{
-				"foo": map[string]interface{}{
+				"string": map[string]interface{}{
+					"type": "string",
+				},
+				"string_null": map[string]interface{}{
+					"type": "string",
+				},
+				"sequence": map[string]interface{}{
+					"type": "array",
+				},
+				"sequence_string_empty": map[string]interface{}{
+					"type": "array",
+					"items": map[string]interface{}{
+						"type": "string",
+					},
+				},
+				"boolean": map[string]interface{}{
+					"type": "boolean",
+				},
+				"integer": map[string]interface{}{
+					"type": "integer",
+				},
+				"float": map[string]interface{}{
+					"type": "number",
+				},
+				"map": map[string]interface{}{
+					"type":                 "object",
+					"additionalProperties": false,
 					"properties": map[string]interface{}{
-						"bar": map[string]interface{}{
+						"string": map[string]interface{}{
+							"type": "string",
+						},
+						"map": map[string]interface{}{
+							"type":                 "object",
+							"additionalProperties": false,
+							"properties": map[string]interface{}{
+								"string": map[string]interface{}{
+									"type": "string",
+								},
+							},
+						},
+					},
+				},
+				"map_empty": map[string]interface{}{
+					"type":                 "object",
+					"additionalProperties": true,
+				},
+				"map_single": map[string]interface{}{
+					"type":                 "object",
+					"additionalProperties": false,
+					"properties": map[string]interface{}{
+						"first": map[string]interface{}{
 							"type":      "string",
 							"minLength": float64(1),
 						},
 					},
 				},
+				"map_multiple": map[string]interface{}{
+					"type":                 "object",
+					"additionalProperties": false,
+					"properties": map[string]interface{}{
+						"first": map[string]interface{}{
+							"type":      "string",
+							"minLength": float64(1),
+						},
+						"second": map[string]interface{}{
+							"type":      "string",
+							"minLength": float64(1),
+						},
+					},
+				},
+				"enum": map[string]interface{}{
+					"enum": []interface{}{
+						nil,
+						float64(1),
+						1.2,
+						"2",
+					},
+				},
 				"underscore_key": map[string]interface{}{
+					"type": "string",
+				},
+				"hyphen-key": map[string]interface{}{
+					"type": "string",
+				},
+				"dot.key": map[string]interface{}{
 					"type": "string",
 				},
 			},
 		}, recipeManifest.Schema)
 		s.Equal([]RecipeManifestOption{
 			{
-				Label: "Bar",
-				Path:  "$.foo.bar",
+				Label: "String",
+				Path:  "$.string",
+				Schema: map[string]interface{}{
+					"type": "string",
+				},
+			},
+			{
+				Label: "String null",
+				Path:  "$.string_null",
+				Schema: map[string]interface{}{
+					"type": "string",
+				},
+			},
+			{
+				Label: "Map single first",
+				Path:  "$.map_single.first",
 				Schema: map[string]interface{}{
 					"type":      "string",
 					"minLength": float64(1),
+				},
+			},
+			{
+				Label: "Map multiple first",
+				Path:  "$.map_multiple.first",
+				Schema: map[string]interface{}{
+					"type":      "string",
+					"minLength": float64(1),
+				},
+			},
+			{
+				Label: "Map multiple second",
+				Path:  "$.map_multiple.second",
+				Schema: map[string]interface{}{
+					"type":      "string",
+					"minLength": float64(1),
+				},
+			},
+			{
+				Label: "Enum null",
+				Path:  "$.enum",
+				Schema: map[string]interface{}{
+					"enum": []interface{}{
+						nil,
+						float64(1),
+						1.2,
+						"2",
+					},
+				},
+			},
+			{
+				Label: "Underscore key",
+				Path:  "$.underscore_key",
+				Schema: map[string]interface{}{
+					"type": "string",
+				},
+			},
+			{
+				Label: "Hyphen key",
+				Path:  "$.hyphen-key",
+				Schema: map[string]interface{}{
+					"type": "string",
+				},
+			},
+			{
+				Label: "Dot key",
+				Path:  "$.'dot.key'",
+				Schema: map[string]interface{}{
+					"type": "string",
 				},
 			},
 		}, recipeManifest.Options)

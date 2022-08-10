@@ -3,7 +3,8 @@ package binder
 import (
 	"code.rocketnine.space/tslocum/cview"
 	"fmt"
-	"github.com/ohler55/ojg/jp"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 	"manala/internal"
 )
 
@@ -100,11 +101,36 @@ func (binder *RecipeFormBinder) BindForm(form *cview.Form) {
 
 func (binder *RecipeFormBinder) Apply(manifest *internal.ProjectManifest) error {
 	for _, bind := range binder.binds {
-		jsonPath, err := jp.ParseString(bind.Option.Path)
+		// Create yaml path object from options path string
+		path, err := yaml.PathString(bind.Option.Path)
 		if err != nil {
 			return err
 		}
-		if err := jsonPath.SetOne(manifest.Vars, bind.Value); err != nil {
+
+		// Create file node from manifest vars
+		varsNode, err := yaml.ValueToNode(manifest.Vars)
+		if err != nil {
+			return err
+		}
+		varsFileNode := &ast.File{
+			Docs: []*ast.DocumentNode{
+				ast.Document(nil, varsNode),
+			},
+		}
+
+		// Create node from bind value
+		valueNode, err := yaml.ValueToNode(bind.Value)
+		if err != nil {
+			return err
+		}
+
+		// Apply value node
+		if err := path.ReplaceWithNode(varsFileNode, valueNode); err != nil {
+			return err
+		}
+
+		// Override manifest vars
+		if err := yaml.NodeToValue(varsFileNode.Docs[0].Body, &manifest.Vars); err != nil {
 			return err
 		}
 	}
