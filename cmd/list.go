@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"manala/app"
 	"manala/internal"
@@ -35,9 +36,20 @@ Example: manala list -> resulting in a recipes list display`,
 				return err
 			}
 
+			var nameStyle = lipgloss.NewStyle().
+				Bold(true)
+
+			var descriptionStyle = lipgloss.NewStyle().
+				Italic(true)
+
 			// Walk repository recipes
 			return repository.WalkRecipes(func(recipe *internal.Recipe) {
-				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s: %s\n", recipe.Name(), recipe.Description())
+				_, _ = fmt.Fprintf(
+					cmd.OutOrStdout(),
+					"%s: %s\n",
+					nameStyle.Render(recipe.Name()),
+					descriptionStyle.Render(recipe.Description()),
+				)
 			})
 		},
 	}
