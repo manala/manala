@@ -214,9 +214,13 @@ func (s *RecipeSuite) TestManifestLoad() {
 				"enum": map[string]interface{}{
 					"enum": []interface{}{
 						nil,
-						float64(1),
-						1.2,
-						"2",
+						true,
+						false,
+						"string",
+						float64(12),
+						2.3,
+						3.0,
+						"3.0",
 					},
 				},
 				"underscore_key": map[string]interface{}{
@@ -275,9 +279,13 @@ func (s *RecipeSuite) TestManifestLoad() {
 				Schema: map[string]interface{}{
 					"enum": []interface{}{
 						nil,
-						float64(1),
-						1.2,
-						"2",
+						true,
+						false,
+						"string",
+						float64(12),
+						2.3,
+						3.0,
+						"3.0",
 					},
 				},
 			},

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/token"
 	"manala/internal"
 )
 
@@ -100,6 +101,23 @@ func (binder *RecipeFormBinder) BindForm(form *cview.Form) {
 }
 
 func (binder *RecipeFormBinder) Apply(manifest *internal.ProjectManifest) error {
+	// No binds to apply
+	if len(binder.binds) == 0 {
+		return nil
+	}
+
+	// Create file node from manifest vars
+	varsNode, err := yaml.ValueToNode(manifest.Vars)
+	if err != nil {
+		return err
+	}
+
+	varsFileNode := &ast.File{
+		Docs: []*ast.DocumentNode{
+			ast.Document(nil, varsNode),
+		},
+	}
+
 	for _, bind := range binder.binds {
 		// Create yaml path object from options path string
 		path, err := yaml.PathString(bind.Option.Path)
@@ -107,32 +125,37 @@ func (binder *RecipeFormBinder) Apply(manifest *internal.ProjectManifest) error 
 			return err
 		}
 
-		// Create file node from manifest vars
-		varsNode, err := yaml.ValueToNode(manifest.Vars)
-		if err != nil {
-			return err
-		}
-		varsFileNode := &ast.File{
-			Docs: []*ast.DocumentNode{
-				ast.Document(nil, varsNode),
-			},
-		}
-
-		// Create node from bind value
-		valueNode, err := yaml.ValueToNode(bind.Value)
-		if err != nil {
-			return err
+		// Create value node from bind value
+		var valueNode ast.Node
+		switch value := bind.Value.(type) {
+		case nil:
+			valueNode = ast.Null(token.New("null", "", &token.Position{Column: 1}))
+		case bool:
+			valueNode = ast.Bool(token.New(fmt.Sprint(value), "", &token.Position{Column: 1}))
+		case string:
+			valueNode = ast.String(token.New(value, "", &token.Position{Column: 1}))
+		case uint64:
+			valueNode = ast.Integer(token.New(fmt.Sprint(value), "", &token.Position{Column: 1}))
+		case float64:
+			// Is float actually an int ?
+			if value == float64(uint64(value)) {
+				valueNode = ast.Integer(token.New(fmt.Sprint(uint64(value)), "", &token.Position{Column: 1}))
+			} else {
+				valueNode = ast.Float(token.New(fmt.Sprint(value), "", &token.Position{Column: 1}))
+			}
+		default:
+			return fmt.Errorf("unknown binding value type: " + fmt.Sprint(value))
 		}
 
 		// Apply value node
 		if err := path.ReplaceWithNode(varsFileNode, valueNode); err != nil {
 			return err
 		}
+	}
 
-		// Override manifest vars
-		if err := yaml.NodeToValue(varsFileNode.Docs[0].Body, &manifest.Vars); err != nil {
-			return err
-		}
+	// Override manifest vars
+	if err := yaml.NodeToValue(varsFileNode.Docs[0].Body, &manifest.Vars); err != nil {
+		return err
 	}
 
 	return nil
