@@ -101,23 +101,101 @@ func (s *RecipeFormBinderSuite) TestNew() {
 }
 
 func (s *RecipeFormBinderSuite) TestApply() {
+	tests := []struct {
+		name          string
+		initialValue  interface{}
+		actualValue   interface{}
+		expectedValue interface{}
+	}{
+		{
+			name:          "Nil",
+			initialValue:  "",
+			actualValue:   nil,
+			expectedValue: nil,
+		},
+		{
+			name:          "True",
+			initialValue:  nil,
+			actualValue:   true,
+			expectedValue: true,
+		},
+		{
+			name:          "False",
+			initialValue:  nil,
+			actualValue:   false,
+			expectedValue: false,
+		},
+		{
+			name:          "String",
+			initialValue:  nil,
+			actualValue:   "string",
+			expectedValue: "string",
+		},
+		{
+			name:          "String Asterisk",
+			initialValue:  nil,
+			actualValue:   "*",
+			expectedValue: "*",
+		},
+		{
+			name:          "String Int",
+			initialValue:  nil,
+			actualValue:   "12",
+			expectedValue: "12",
+		},
+		{
+			name:          "String Float",
+			initialValue:  nil,
+			actualValue:   "2.3",
+			expectedValue: "2.3",
+		},
+		{
+			name:          "String Float Int",
+			initialValue:  nil,
+			actualValue:   "3.0",
+			expectedValue: "3.0",
+		},
+		{
+			name:          "Integer Uint64",
+			initialValue:  nil,
+			actualValue:   uint64(12),
+			expectedValue: uint64(12),
+		},
+		{
+			name:          "Integer Float64",
+			initialValue:  nil,
+			actualValue:   float64(12),
+			expectedValue: uint64(12),
+		},
+		{
+			name:          "Float",
+			initialValue:  nil,
+			actualValue:   float64(2.3),
+			expectedValue: float64(2.3),
+		},
+		{
+			name:          "Float Int",
+			initialValue:  nil,
+			actualValue:   float64(3.0),
+			expectedValue: uint64(3),
+		},
+	}
 
-	s.Run("String", func() {
-		binder, _ := NewRecipeFormBinder([]internal.RecipeManifestOption{
-			{
-				Path:   "$.foo",
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			binder, _ := NewRecipeFormBinder([]internal.RecipeManifestOption{{
+				Path:   "$.value",
 				Schema: map[string]interface{}{"type": "string"},
-			},
+			}})
+
+			manifest := internal.NewProjectManifest("dir")
+			manifest.Vars["value"] = test.initialValue
+
+			binder.Binds()[0].Value = test.actualValue
+			err := binder.Apply(manifest)
+
+			s.NoError(err)
+			s.Equal(test.expectedValue, manifest.Vars["value"])
 		})
-		binder.Binds()[0].Value = "bar"
-
-		manifest := internal.NewProjectManifest("dir")
-		manifest.Vars["foo"] = "foo"
-
-		err := binder.Apply(manifest)
-
-		s.NoError(err)
-		s.Equal("bar", manifest.Vars["foo"])
-	})
-
+	}
 }
