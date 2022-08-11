@@ -271,9 +271,9 @@ cat ./.manala/php-cs-rules.php
 
 ## Share your templates with your colleagues
 
-As previously stated, recipes are meant to be distributed. Github is of course the right place to host your recipes!
+As previously stated, recipes are meant to be distributed. GitHub is of course the right place to host your recipes!
 
-So, push your recipe to Github and don't forget to update your manala manifest (`.manala.yaml`) in the projects that consume your recipe:
+So, push your recipe to GitHub and don't forget to update your manala manifest (`.manala.yaml`) in the projects that consume your recipe:
 
 ```diff
 manala:
@@ -284,4 +284,4 @@ manala:
 +  repository: git@github.com:my-company/my-manala-recipe-repository.git
 ```
 
-From now on, each time you push updates to your Github repository, simply run `manala up` in your projects to pass on the last updates.
+From now on, each time you push updates to your GitHub repository, simply run `manala up` in your projects to pass on the last updates.
