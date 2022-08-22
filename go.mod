@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.5.1-0.20220615005615-2e17a8a06096
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.5.4
-	github.com/gdamore/tcell/v2 v2.5.2
+	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/gen2brain/beeep v0.0.0-20220518085355-d7852edf42fc
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/goccy/go-yaml v1.9.6-0.20220501051225-b377defabafb
