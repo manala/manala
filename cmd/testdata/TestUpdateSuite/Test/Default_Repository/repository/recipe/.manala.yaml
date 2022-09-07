@@ -3,6 +3,6 @@ manala:
     template: .manala.yaml.tmpl
     sync:
         - file.txt
-        - template.txt.tmpl
+        - template.tmpl
 
 foo: bar

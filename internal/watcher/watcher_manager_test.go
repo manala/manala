@@ -10,7 +10,7 @@ import (
 type WatcherManagerSuite struct {
 	suite.Suite
 	stderr         *bytes.Buffer
-	watcherManager *WatcherManager
+	watcherManager *Manager
 }
 
 func TestWatcherManagerSuite(t *testing.T) {
@@ -19,7 +19,7 @@ func TestWatcherManagerSuite(t *testing.T) {
 
 func (s *WatcherManagerSuite) SetupTest() {
 	s.stderr = &bytes.Buffer{}
-	s.watcherManager = &WatcherManager{
+	s.watcherManager = &Manager{
 		Log: internalLog.New(s.stderr),
 	}
 }

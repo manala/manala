@@ -2,62 +2,100 @@ package template
 
 import (
 	"errors"
-	internalErrors "manala/internal/errors"
+	internalReport "manala/internal/report"
 	"regexp"
 	"strconv"
 	textTemplate "text/template"
 )
 
-var errorParsingRegex = regexp.MustCompile(`template: (?P<template>.*):(?P<line>\d+): (?P<message>.*)`)
+func NewParsingError(err error) *ParsingError {
+	return &ParsingError{
+		error: err,
+	}
+}
 
-func ParsingError(err error) *internalErrors.InternalError {
-	_err := internalErrors.New("template error")
+type ParsingError struct {
+	error
+}
 
-	if match := errorParsingRegex.FindStringSubmatch(err.Error()); match != nil {
-		if line, err := strconv.Atoi(match[2]); err == nil {
-			_ = _err.WithField("line", line)
-		}
-		_ = _err.WithField("message", match[3])
-	} else {
-		_ = _err.WithError(err)
+func (err *ParsingError) Unwrap() error {
+	return err.error
+}
+
+func (err *ParsingError) Error() string {
+	if matches := parsingErrorRegex.FindStringSubmatch(err.error.Error()); matches != nil {
+		return matches[3]
 	}
 
-	return _err
+	return err.error.Error()
 }
 
-func ParsingPathError(path string, err error) *internalErrors.InternalError {
-	return ParsingError(err).
-		WithField("path", path)
+func (err *ParsingError) Report(report *internalReport.Report) {
+	if matches := parsingErrorRegex.FindStringSubmatch(err.error.Error()); matches != nil {
+		// Line
+		if line, _err := strconv.Atoi(matches[2]); _err == nil {
+			report.Compose(
+				internalReport.WithField("line", line),
+			)
+		}
+	}
 }
 
-var errorExecutionRegex = regexp.MustCompile(`template: (?P<template>.*):(?P<line>\d+):(?P<column>\d+): executing "(?P<name>.*)" at <(?P<context>.*)>: (?P<message>.*)`)
+// 1 : template
+// 2 : line
+// 3 : message
+var parsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
 
-func ExecutionError(err error) *internalErrors.InternalError {
-	_err := internalErrors.New("template error")
+func NewExecutionError(err error) *ExecutionError {
+	return &ExecutionError{
+		error: err,
+	}
+}
 
+type ExecutionError struct {
+	error
+}
+
+func (err *ExecutionError) Unwrap() error {
+	return err.error
+}
+
+func (err *ExecutionError) Error() string {
+	if matches := executionErrorRegex.FindStringSubmatch(err.error.Error()); matches != nil {
+		return matches[6]
+	}
+
+	return err.error.Error()
+}
+
+func (err *ExecutionError) Report(report *internalReport.Report) {
 	var execError textTemplate.ExecError
-	if errors.As(err, &execError) {
-		if match := errorExecutionRegex.FindStringSubmatch(execError.Error()); match != nil {
-			if line, err := strconv.Atoi(match[2]); err == nil {
-				_ = _err.WithField("line", line)
+	if errors.As(err.error, &execError) {
+		if matches := executionErrorRegex.FindStringSubmatch(err.error.Error()); matches != nil {
+			// Line
+			if line, _err := strconv.Atoi(matches[2]); _err == nil {
+				report.Compose(
+					internalReport.WithField("line", line),
+				)
 			}
-			if column, err := strconv.Atoi(match[3]); err == nil {
-				_ = _err.WithField("column", column)
+			// Column
+			if column, _err := strconv.Atoi(matches[3]); _err == nil {
+				report.Compose(
+					internalReport.WithField("column", column),
+				)
 			}
-			_ = _err.
-				WithField("context", match[5]).
-				WithField("message", match[6])
-		} else {
-			_ = _err.WithError(execError.Err)
+			// Context
+			report.Compose(
+				internalReport.WithField("context", matches[5]),
+			)
 		}
-	} else {
-		_ = _err.WithError(err)
 	}
-
-	return _err
 }
 
-func ExecutionPathError(path string, err error) *internalErrors.InternalError {
-	return ExecutionError(err).
-		WithField("path", path)
-}
+// 1 : template
+// 2 : line
+// 3 : column
+// 4 : name
+// 5 : context
+// 6 : message
+var executionErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)

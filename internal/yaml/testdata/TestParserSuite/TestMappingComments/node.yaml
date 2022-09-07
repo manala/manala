@@ -1,0 +1,14 @@
+# Empty
+empty: {}
+
+# Mapping Value
+mapping_value:
+  # Mapping Value Foo
+  foo: foo
+
+# Mapping
+mapping:
+  # Mapping Foo
+  foo: foo
+  # Mapping Bar
+  bar: bar

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"manala/app"
+	"manala/core/application"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	"path/filepath"
@@ -18,35 +18,35 @@ func newWatchCmd(config *internalConfig.Config, logger *internalLog.Logger) *cob
 
 Example: manala watch -> resulting in a watch in a path (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// App
-			manala := app.New(config, logger)
+			// Application
+			app := application.NewApplication(config, logger)
 
 			// Get flags
-			repositoryPath, _ := cmd.Flags().GetString("repository")
-			recipeName, _ := cmd.Flags().GetString("recipe")
+			repoPath, _ := cmd.Flags().GetString("repository")
+			recName, _ := cmd.Flags().GetString("recipe")
 			all, _ := cmd.Flags().GetBool("all")
 			notify, _ := cmd.Flags().GetBool("notify")
 
 			// Load project
-			project, err := manala.ProjectFrom(
+			proj, err := app.ProjectFrom(
 				filepath.Clean(append(args, "")[0]),
-				repositoryPath,
-				recipeName,
+				repoPath,
+				recName,
 			)
 			if err != nil {
 				return err
 			}
 
 			// Sync project
-			if err := manala.SyncProject(project); err != nil {
+			if err := app.SyncProject(proj); err != nil {
 				return err
 			}
 
 			// Watch project
-			return manala.WatchProject(
-				project,
-				repositoryPath,
-				recipeName,
+			return app.WatchProject(
+				proj,
+				repoPath,
+				recName,
 				all,
 				notify,
 			)

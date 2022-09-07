@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//go:embed mascot/mascot_yell.wav
+//go:embed resources/mascot_yell.wav
 var mascotAudioYell []byte
 
 var mascotAudioStreamer beep.StreamSeekCloser

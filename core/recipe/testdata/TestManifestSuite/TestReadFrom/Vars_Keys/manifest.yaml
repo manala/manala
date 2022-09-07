@@ -1,0 +1,7 @@
+manala:
+  description: description
+  template: template
+
+underscore_key: ok
+hyphen-key: ok
+dot.key: ok

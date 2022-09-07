@@ -3,12 +3,10 @@ package os
 import (
 	"fmt"
 	"github.com/stretchr/testify/suite"
-	internalErrors "manala/internal/errors"
+	internalReport "manala/internal/report"
 	"os"
 	"testing"
 )
-
-var internalError *internalErrors.InternalError
 
 type ErrorsSuite struct{ suite.Suite }
 
@@ -17,12 +15,15 @@ func TestErrorsSuite(t *testing.T) {
 }
 
 func (s *ErrorsSuite) TestFileSystemError() {
-	_err := fmt.Errorf("error")
-	err := FileSystemError(_err)
+	s.Run("Error", func() {
+		_err := fmt.Errorf("error")
+		err := NewError(_err)
 
-	s.ErrorAs(err, &internalError)
-	s.Equal("file system error", internalError.Message)
-	s.Equal(_err, internalError.Err)
+		var _error *Error
+		s.ErrorAs(err, &_error)
+
+		s.EqualError(err, "error")
+	})
 
 	s.Run("Path Error", func() {
 		_err := &os.PathError{
@@ -30,12 +31,40 @@ func (s *ErrorsSuite) TestFileSystemError() {
 			Path: "path",
 			Err:  fmt.Errorf("error"),
 		}
-		err := FileSystemError(_err)
+		err := NewError(_err)
 
-		s.ErrorAs(err, &internalError)
-		s.Equal("file system error", internalError.Message)
-		s.Equal(_err.Err, internalError.Err)
-		s.Equal("operation", internalError.Fields["operation"])
-		s.Equal("path", internalError.Fields["path"])
+		var _error *Error
+		s.ErrorAs(err, &_error)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "error",
+			Fields: map[string]interface{}{
+				"operation": "operation",
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
+	})
+
+	s.Run("SyscallError Error", func() {
+		_err := &os.SyscallError{
+			Syscall: "syscall",
+			Err:     fmt.Errorf("error"),
+		}
+		err := NewError(_err)
+
+		var _error *Error
+		s.ErrorAs(err, &_error)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "error",
+			Fields: map[string]interface{}{
+				"syscall": "syscall",
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }

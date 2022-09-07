@@ -3,6 +3,7 @@ package template
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
+	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
 	"testing"
 )
@@ -25,9 +26,9 @@ func (s *TemplateSuite) SetupTest() {
 	s.buffer = &bytes.Buffer{}
 }
 
-func (s *TemplateSuite) TestWrite() {
+func (s *TemplateSuite) TestWriteTo() {
 	template := s.provider.Template()
-	err := template.Write(s.buffer)
+	err := template.WriteTo(s.buffer)
 
 	s.NoError(err)
 	s.Equal("", s.buffer.String())
@@ -38,7 +39,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithDefaultFile(internalTesting.DataPath(s, "template.tmpl"))
 		template.WithDefaultContent(`{{ template "foo" . }}`)
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -49,7 +50,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithFile(internalTesting.DataPath(s, "template.tmpl"))
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -60,7 +61,7 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ "baz" }}`)
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
 		s.NoError(err)
 		s.Equal("baz", s.buffer.String())
@@ -72,7 +73,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithFile(internalTesting.DataPath(s, "template.tmpl"))
 		template.WithDefaultContent(`{{ "baz" }}`)
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
 		s.NoError(err)
 		s.Equal("bar", s.buffer.String())
@@ -84,7 +85,7 @@ func (s *TemplateSuite) TestWrite() {
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ . }}`)
 		template.WithData("foo")
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
 		s.NoError(err)
 		s.Equal("foo", s.buffer.String())
@@ -95,12 +96,20 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ .foo }`)
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
-		s.ErrorAs(err, &internalError)
-		s.EqualError(internalError, "template error")
-		s.Equal(1, internalError.Fields["line"])
-		s.Equal("unexpected \"}\" in operand", internalError.Fields["message"])
+		s.EqualError(err, "unexpected \"}\" in operand")
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Message: "template error",
+			Err:     "unexpected \"}\" in operand",
+			Fields: map[string]interface{}{
+				"line": 1,
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Execution Error", func() {
@@ -108,13 +117,21 @@ func (s *TemplateSuite) TestWrite() {
 
 		template := s.provider.Template()
 		template.WithDefaultContent(`{{ .foo }}`)
-		err := template.Write(s.buffer)
+		err := template.WriteTo(s.buffer)
 
-		s.ErrorAs(err, &internalError)
-		s.EqualError(internalError, "template error")
-		s.Equal(1, internalError.Fields["line"])
-		s.Equal(3, internalError.Fields["column"])
-		s.Equal(".foo", internalError.Fields["context"])
-		s.Equal("nil data; no entry for key \"foo\"", internalError.Fields["message"])
+		s.EqualError(err, "nil data; no entry for key \"foo\"")
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Message: "template error",
+			Err:     "nil data; no entry for key \"foo\"",
+			Fields: map[string]interface{}{
+				"line":    1,
+				"column":  3,
+				"context": ".foo",
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }

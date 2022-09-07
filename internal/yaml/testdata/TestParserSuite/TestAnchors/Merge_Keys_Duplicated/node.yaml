@@ -1,0 +1,20 @@
+mapping_value_anchor: &mapping_value_anchor
+  foo: foo
+
+mapping_anchor: &mapping_anchor
+  foo: foo
+  bar: bar
+
+single_mapping_alias_mapping_value_anchor:
+  <<: *mapping_value_anchor
+  foo: bar
+
+multiple_mapping_alias_mapping_value_anchor:
+  <<: *mapping_value_anchor
+  foo: bar
+  bar: bar
+
+mapping_alias_mapping_anchor:
+  <<: *mapping_anchor
+  foo: bar
+  baz: baz

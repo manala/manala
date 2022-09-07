@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
+	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
+	"path/filepath"
 	"testing"
 )
 
@@ -34,127 +35,258 @@ func (s *WatchSuite) SetupTest() {
 func (s *WatchSuite) TestProjectError() {
 
 	s.Run("Project Not Found", func() {
+		projPath := internalTesting.DataPath(s, "project")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("project manifest not found", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "project manifest not found",
+			Fields: map[string]interface{}{
+				"path": projPath,
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Project Manifest", func() {
+		projPath := internalTesting.DataPath(s, "project")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("wrong project manifest", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "project manifest is a directory",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(projPath, ".manala.yaml"),
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Empty Project Manifest", func() {
+		projPath := internalTesting.DataPath(s, "project")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("empty project manifest", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Message: "irregular project manifest",
+			Err:     "empty yaml file",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(projPath, ".manala.yaml"),
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Invalid Project Manifest", func() {
+		projPath := internalTesting.DataPath(s, "project")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("project validation error", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "invalid project manifest",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(projPath, ".manala.yaml"),
+			},
+			Reports: []internalReport.Assert{
+				{
+					Message: "missing manala recipe field",
+					Fields: map[string]interface{}{
+						"line":   2,
+						"column": 6,
+					},
+				},
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }
 
 func (s *WatchSuite) TestRepositoryError() {
 
 	s.Run("No Repository", func() {
+		projPath := internalTesting.DataPath(s, "project")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("unsupported repository", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "unsupported repository",
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Repository Not Found", func() {
+		projPath := internalTesting.DataPath(s, "project")
+		repoPath := internalTesting.DataPath(s, "repository")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
-			"--repository", internalTesting.DataPath(s, "repository"),
+			projPath,
+			"--repository", repoPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("repository not found", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "repository not found",
+			Fields: map[string]interface{}{
+				"path": repoPath,
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Repository", func() {
+		projPath := internalTesting.DataPath(s, "project")
+		repoPath := internalTesting.DataPath(s, "repository")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
-			"--repository", internalTesting.DataPath(s, "repository"),
+			projPath,
+			"--repository", repoPath,
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("wrong repository", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "wrong repository",
+			Fields: map[string]interface{}{
+				"dir": repoPath,
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }
 
 func (s *WatchSuite) TestRecipeError() {
 
 	s.Run("Recipe Not Found", func() {
-		s.config.Set("default-repository", internalTesting.DataPath(s, "repository"))
+		projPath := internalTesting.DataPath(s, "project")
+		repoPath := internalTesting.DataPath(s, "repository")
+
+		s.config.Set("default-repository", repoPath)
 
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
+			projPath,
 			"--recipe", "recipe",
 		})
 
-		s.True(errors.As(err, &internalError))
-		s.Equal("recipe manifest not found", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "recipe manifest not found",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(repoPath, "recipe"),
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Recipe Manifest", func() {
+		projPath := internalTesting.DataPath(s, "project")
+		repoPath := internalTesting.DataPath(s, "repository")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
-			"--repository", internalTesting.DataPath(s, "repository"),
+			projPath,
+			"--repository", repoPath,
 			"--recipe", "recipe",
 		})
 
-		s.ErrorAs(err, &internalError)
-		s.Equal("wrong recipe manifest", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "recipe manifest is a directory",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Invalid Recipe Manifest", func() {
+		projPath := internalTesting.DataPath(s, "project")
+		repoPath := internalTesting.DataPath(s, "repository")
+
 		err := s.executor.execute([]string{
-			internalTesting.DataPath(s, "project"),
-			"--repository", internalTesting.DataPath(s, "repository"),
+			projPath,
+			"--repository", repoPath,
 			"--recipe", "recipe",
 		})
 
-		s.ErrorAs(err, &internalError)
-		s.Equal("recipe validation error", internalError.Message)
+		s.Error(err)
 		s.Empty(s.executor.stdout)
 		s.Empty(s.executor.stderr)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "invalid recipe manifest",
+			Fields: map[string]interface{}{
+				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+			},
+			Reports: []internalReport.Assert{
+				{
+					Message: "missing manala description field",
+					Fields: map[string]interface{}{
+						"line":   2,
+						"column": 6,
+					},
+				},
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }

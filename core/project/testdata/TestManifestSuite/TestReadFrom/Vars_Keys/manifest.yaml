@@ -1,0 +1,7 @@
+manala:
+  recipe: recipe
+  repository: repository
+
+underscore_key: ok
+hyphen-key: ok
+dot.key: ok

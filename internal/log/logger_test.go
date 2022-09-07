@@ -2,9 +2,9 @@ package log
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
+	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
 	"testing"
 )
@@ -54,20 +54,10 @@ func (s *LoggerSuite) TestLogError() {
 	logger := New(out)
 
 	logger.IncreasePadding()
-	logger.LogError(fmt.Errorf("error"))
+	report := internalReport.NewReport("error")
+	logger.Report(report)
 
 	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
-}
-
-func (s *LoggerSuite) TestCaptureError() {
-	out := &bytes.Buffer{}
-	logger := New(out)
-
-	logger.IncreasePadding()
-	err := logger.CaptureError(fmt.Errorf("error"))
-
-	s.Empty(out.Bytes())
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "err"), err)
 }
 
 func (s *LoggerSuite) TestPadding() {
@@ -80,7 +70,7 @@ func (s *LoggerSuite) TestPadding() {
 
 	logger.IncreasePadding()
 	logger.Info("info")
-	
+
 	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_increase"), out.Bytes())
 
 	logger.DecreasePadding()

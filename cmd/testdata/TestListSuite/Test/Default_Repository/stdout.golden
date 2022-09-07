@@ -1,2 +1,2 @@
-bar: Bar recipe
-foo: Foo recipe
+[1mbar[0m: [3mBar[0m
+[1mfoo[0m: [3mFoo[0m

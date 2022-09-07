@@ -1,0 +1,4 @@
+   1 | manala:
+>  2 |   recipe: []
+                 ^
+   3 |   repository: repository
