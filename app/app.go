@@ -14,7 +14,6 @@ import (
 	internalWatcher "manala/internal/watcher"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // New creates an app
@@ -303,7 +302,7 @@ func (app *App) WatchProject(project *internal.Project, repositoryPath string, r
 
 			if err != nil {
 				if notify {
-					_ = beeep.Alert("Manala", strings.Replace(string(app.log.CaptureError(err)), `"`, `\"`, -1), "")
+					_ = beeep.Alert("Manala", string(app.log.CaptureError(err)), "")
 				}
 				app.log.LogError(err)
 				return
