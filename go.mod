@@ -5,9 +5,9 @@ go 1.19
 require (
 	code.rocketnine.space/tslocum/cview v1.5.8
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/caarlos0/log v0.1.6
+	github.com/caarlos0/log v0.1.8
 	github.com/charmbracelet/bubbletea v0.22.1
-	github.com/charmbracelet/lipgloss v0.6.1-0.20220911181249-6304a734e792
+	github.com/charmbracelet/lipgloss v0.6.1-0.20221011104340-92c8fa0a572b
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/gdamore/tcell/v2 v2.5.3
@@ -53,7 +53,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
-	github.com/mattn/go-runewidth v0.0.14-0.20220323023645-f9d555329d96 // indirect
+	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
