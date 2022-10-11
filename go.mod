@@ -16,7 +16,7 @@ require (
 	github.com/goccy/go-yaml v1.9.6-0.20220501051225-b377defabafb
 	github.com/imdario/mergo v0.3.13
 	github.com/sebdah/goldie/v2 v2.5.3
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.0
@@ -45,7 +45,7 @@ require (
 	github.com/hajimehoshi/oto v0.7.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
