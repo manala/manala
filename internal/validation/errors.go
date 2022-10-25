@@ -35,35 +35,31 @@ func (err *Error) Report(report *internalReport.Report) {
 	for _, result := range err.result.Errors() {
 		rep := internalReport.NewReport(result.Description())
 
+		// Special error type treatments
+		switch result.(type) {
+		case *gojsonschema.InvalidTypeError:
+			rep.Compose(
+				internalReport.WithMessage("invalid type"),
+				internalReport.WithField("expected", result.Details()["expected"]),
+				internalReport.WithField("given", result.Details()["given"]),
+			)
+		case *gojsonschema.RequiredError:
+			rep.Compose(
+				internalReport.WithMessage("missing property"),
+				internalReport.WithField("property", result.Details()["property"]),
+			)
+		case *gojsonschema.AdditionalPropertyNotAllowedError:
+			rep.Compose(
+				internalReport.WithMessage("additional property is not allowed"),
+				internalReport.WithField("property", result.Details()[gojsonschema.STRING_PROPERTY]),
+			)
+		}
+
 		// Custom messages
-		custom := false
 		for _, customMessage := range err.messages {
 			if ok, message := customMessage.Match(result); ok {
 				rep.Compose(
 					internalReport.WithMessage(message),
-				)
-				custom = true
-			}
-		}
-
-		if !custom {
-			// Special error type treatments
-			switch result.(type) {
-			case *gojsonschema.InvalidTypeError:
-				rep.Compose(
-					internalReport.WithMessage("invalid type"),
-					internalReport.WithField("expected", result.Details()["expected"]),
-					internalReport.WithField("given", result.Details()["given"]),
-				)
-			case *gojsonschema.RequiredError:
-				rep.Compose(
-					internalReport.WithMessage("missing property"),
-					internalReport.WithField("property", result.Details()["property"]),
-				)
-			case *gojsonschema.AdditionalPropertyNotAllowedError:
-				rep.Compose(
-					internalReport.WithMessage("additional property is not allowed"),
-					internalReport.WithField("property", result.Details()[gojsonschema.STRING_PROPERTY]),
 				)
 			}
 		}

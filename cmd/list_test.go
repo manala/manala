@@ -165,8 +165,9 @@ func (s *ListSuite) TestRecipeError() {
 				{
 					Message: "missing manala description field",
 					Fields: map[string]interface{}{
-						"line":   2,
-						"column": 6,
+						"line":     1,
+						"column":   9,
+						"property": "description",
 					},
 				},
 			},

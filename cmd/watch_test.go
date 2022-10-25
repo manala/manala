@@ -123,8 +123,9 @@ func (s *WatchSuite) TestProjectError() {
 				{
 					Message: "missing manala recipe field",
 					Fields: map[string]interface{}{
-						"line":   2,
-						"column": 6,
+						"line":     1,
+						"column":   9,
+						"property": "recipe",
 					},
 				},
 			},
@@ -281,8 +282,9 @@ func (s *WatchSuite) TestRecipeError() {
 				{
 					Message: "missing manala description field",
 					Fields: map[string]interface{}{
-						"line":   2,
-						"column": 6,
+						"line":     1,
+						"column":   9,
+						"property": "description",
 					},
 				},
 			},

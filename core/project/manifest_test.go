@@ -77,6 +77,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 				Reports: []internalReport.Assert{
 					{
 						Message: "yaml document must be a map",
+						Fields: map[string]interface{}{
+							"expected": "object",
+							"given":    "string",
+						},
 					},
 				},
 			},
@@ -89,6 +93,9 @@ func (s *ManifestSuite) TestReadFromErrors() {
 				Reports: []internalReport.Assert{
 					{
 						Message: "missing manala field",
+						Fields: map[string]interface{}{
+							"property": "manala",
+						},
 					},
 				},
 			},
@@ -101,8 +108,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 					{
 						Message: "manala field must be a map",
 						Fields: map[string]interface{}{
-							"line":   1,
-							"column": 9,
+							"line":     1,
+							"column":   9,
+							"expected": "object",
+							"given":    "string",
 						},
 					},
 				},
@@ -116,8 +125,9 @@ func (s *ManifestSuite) TestReadFromErrors() {
 					{
 						Message: "missing manala recipe field",
 						Fields: map[string]interface{}{
-							"line":   1,
-							"column": 9,
+							"line":     1,
+							"column":   9,
+							"property": "recipe",
 						},
 					},
 				},
@@ -132,8 +142,9 @@ func (s *ManifestSuite) TestReadFromErrors() {
 					{
 						Message: "missing manala recipe field",
 						Fields: map[string]interface{}{
-							"line":   2,
-							"column": 13,
+							"line":     2,
+							"column":   13,
+							"property": "recipe",
 						},
 					},
 				},
@@ -147,8 +158,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 					{
 						Message: "manala recipe field must be a string",
 						Fields: map[string]interface{}{
-							"line":   2,
-							"column": 11,
+							"line":     2,
+							"column":   11,
+							"expected": "string",
+							"given":    "array",
 						},
 					},
 				},
@@ -193,8 +206,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 					{
 						Message: "manala repository field must be a string",
 						Fields: map[string]interface{}{
-							"line":   3,
-							"column": 15,
+							"line":     3,
+							"column":   15,
+							"expected": "string",
+							"given":    "array",
 						},
 					},
 				},
