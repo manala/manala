@@ -150,7 +150,7 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 	if !validation.Valid() {
 		return nil, internalReport.NewError(
 			internalValidation.NewError(
-				"invalid project manifest",
+				"invalid project manifest vars",
 				validation,
 				internalValidation.WithReporter(manifest),
 			),
