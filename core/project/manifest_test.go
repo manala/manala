@@ -133,6 +133,22 @@ func (s *ManifestSuite) TestReadFromErrors() {
 				},
 			},
 		},
+		{
+			name: "Config Additional Properties",
+			report: &internalReport.Assert{
+				Err: "invalid project manifest",
+				Reports: []internalReport.Assert{
+					{
+						Message: "manala field don't support additional properties",
+						Fields: map[string]interface{}{
+							"line":     2,
+							"column":   9,
+							"property": "foo",
+						},
+					},
+				},
+			},
+		},
 		// Config - Recipe
 		{
 			name: "Config Recipe Absent",

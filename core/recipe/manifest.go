@@ -100,6 +100,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 					{Field: "(root)", Type: "required", Property: "manala", Message: "missing manala field"},
 					{Field: "manala", Type: "invalid_type", Message: "manala field must be a map"},
 					{Field: "manala", Type: "required", Property: "description", Message: "missing manala description field"},
+					{Field: "manala", Type: "additional_property_not_allowed", Message: "manala field don't support additional properties"},
 					// Description
 					{Field: "manala.description", Type: "invalid_type", Message: "manala description field must be a string"},
 					{Field: "manala.description", Type: "string_gte", Message: "empty manala description field"},

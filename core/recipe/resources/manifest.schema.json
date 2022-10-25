@@ -11,7 +11,7 @@
           "items": { "type": "string", "minLength": 1, "maxLength": 256 }
         }
       },
-      "additionalProperties": true,
+      "additionalProperties": false,
       "required": [ "description" ]
     }
   },
