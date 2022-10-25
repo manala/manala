@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/sebdah/goldie/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
@@ -228,8 +227,6 @@ func (s *InitSuite) TestRecipeError() {
 		s.Empty(s.executor.stderr)
 
 		report := internalReport.NewErrorReport(err)
-		fmt.Println(report.Reports()[0].Trace())
-		fmt.Println([]byte(report.Reports()[0].Trace()))
 
 		reportAssert := &internalReport.Assert{
 			Err: "invalid recipe manifest",
