@@ -100,8 +100,8 @@ func (repo *Repository) WalkRecipes(walker func(rec core.Recipe)) error {
 		repo.log.DecreasePadding()
 
 		if err != nil {
-			var _err *core.NotFoundRecipeManifestError
-			if errors.As(err, &_err) {
+			var _notFoundRecipeManifestError *core.NotFoundRecipeManifestError
+			if errors.As(err, &_notFoundRecipeManifestError) {
 				continue
 			}
 			return err

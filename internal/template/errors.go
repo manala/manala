@@ -69,8 +69,8 @@ func (err *ExecutionError) Error() string {
 }
 
 func (err *ExecutionError) Report(report *internalReport.Report) {
-	var execError textTemplate.ExecError
-	if errors.As(err.error, &execError) {
+	var _execError textTemplate.ExecError
+	if errors.As(err.error, &_execError) {
 		if matches := executionErrorRegex.FindStringSubmatch(err.error.Error()); matches != nil {
 			// Line
 			if line, _err := strconv.Atoi(matches[2]); _err == nil {

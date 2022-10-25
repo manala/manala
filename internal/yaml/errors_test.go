@@ -19,8 +19,8 @@ func (s *ErrorsSuite) Test() {
 		_err := fmt.Errorf("error")
 		err := NewError(_err)
 
-		var _formattedError *Error
-		s.ErrorAs(err, &_formattedError)
+		var _error *Error
+		s.ErrorAs(err, &_error)
 
 		report := internalReport.NewErrorReport(err)
 
@@ -34,8 +34,8 @@ func (s *ErrorsSuite) Test() {
 		_, _err := NewParser().ParseBytes([]byte("&foo"))
 		err := NewError(_err)
 
-		var _formattedError *Error
-		s.ErrorAs(err, &_formattedError)
+		var _error *Error
+		s.ErrorAs(err, &_error)
 
 		report := internalReport.NewErrorReport(err)
 

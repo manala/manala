@@ -42,8 +42,8 @@ Example: manala init -> resulting in a project init in a path (default to the cu
 					return internalReport.NewError(fmt.Errorf("already existing project")).
 						WithField("path", path)
 				}
-				var _err *core.NotFoundProjectManifestError
-				if !errors.As(err, &_err) {
+				var _notFoundProjectManifestError *core.NotFoundProjectManifestError
+				if !errors.As(err, &_notFoundProjectManifestError) {
 					return err
 				}
 			}

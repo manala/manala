@@ -148,8 +148,8 @@ func (app *Application) ProjectFrom(path string, repoPath string, recName string
 			// Load project
 			proj, err = app.Project(path, repoPath, recName)
 			if err != nil {
-				var _err *core.NotFoundProjectManifestError
-				if errors.As(err, &_err) {
+				var _notFoundProjectManifestError *core.NotFoundProjectManifestError
+				if errors.As(err, &_notFoundProjectManifestError) {
 					err = nil
 				}
 				return err
@@ -222,8 +222,8 @@ func (app *Application) WalkProjects(path string, repoPath string, recName strin
 		app.log.DecreasePadding()
 
 		if err != nil {
-			var _err *core.NotFoundProjectManifestError
-			if errors.As(err, &_err) {
+			var _notFoundProjectManifestError *core.NotFoundProjectManifestError
+			if errors.As(err, &_notFoundProjectManifestError) {
 				err = nil
 			}
 			return err

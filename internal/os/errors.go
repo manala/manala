@@ -25,26 +25,26 @@ func (err *Error) Report(report *internalReport.Report) {
 		internalReport.WithErr(err.error),
 	)
 
-	var pathError *os.PathError
-	if errors.As(err.error, &pathError) {
+	var _pathError *os.PathError
+	if errors.As(err.error, &_pathError) {
 		report.Compose(
-			internalReport.WithErr(pathError.Err),
-			internalReport.WithField("operation", pathError.Op),
+			internalReport.WithErr(_pathError.Err),
+			internalReport.WithField("operation", _pathError.Op),
 		)
-		if pathError.Timeout() {
+		if _pathError.Timeout() {
 			report.Compose(
 				internalReport.WithField("timeout", true),
 			)
 		}
 	}
 
-	var syscallError *os.SyscallError
-	if errors.As(err.error, &syscallError) {
+	var _syscallError *os.SyscallError
+	if errors.As(err.error, &_syscallError) {
 		report.Compose(
-			internalReport.WithErr(syscallError.Err),
-			internalReport.WithField("syscall", syscallError.Syscall),
+			internalReport.WithErr(_syscallError.Err),
+			internalReport.WithField("syscall", _syscallError.Syscall),
 		)
-		if syscallError.Timeout() {
+		if _syscallError.Timeout() {
 			report.Compose(
 				internalReport.WithField("timeout", true),
 			)

@@ -51,8 +51,8 @@ func (manager *ChainManager) LoadRepository(paths []string) (core.Repository, er
 	for _, _manager := range manager.managers {
 		_repo, err := _manager.LoadRepository(append(paths, manager.defaultRepository))
 		if err != nil {
-			var _err *core.UnsupportedRepositoryError
-			if errors.As(err, &_err) {
+			var _unsupportedRepositoryError *core.UnsupportedRepositoryError
+			if errors.As(err, &_unsupportedRepositoryError) {
 				continue
 			}
 			return nil, err
