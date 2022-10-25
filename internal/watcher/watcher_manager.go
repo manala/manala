@@ -3,16 +3,18 @@ package watcher
 import (
 	"github.com/fsnotify/fsnotify"
 	internalLog "manala/internal/log"
+	internalReport "manala/internal/report"
 )
 
-type WatcherManager struct {
+type Manager struct {
 	Log *internalLog.Logger
 }
 
-func (manager *WatcherManager) NewWatcher(onStart func(watcher *Watcher), onChange func(watcher *Watcher), onAll func(watcher *Watcher)) (*Watcher, error) {
+func (manager *Manager) NewWatcher(onStart func(watcher *Watcher), onChange func(watcher *Watcher), onAll func(watcher *Watcher)) (*Watcher, error) {
 	fsnotifyWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, Error(err)
+		return nil, internalReport.NewError(err).
+			WithMessage("watcher error")
 	}
 
 	return &Watcher{

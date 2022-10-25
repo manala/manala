@@ -5,6 +5,7 @@ import (
 	"io"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
+	internalReport "manala/internal/report"
 	"os"
 	"path/filepath"
 	"strings"
@@ -46,7 +47,7 @@ func Execute(version string, defaultRepository string, stdout io.Writer, stderr 
 
 	// Cache dir
 	if dir, err := os.UserCacheDir(); err != nil {
-		logger.LogError(err)
+		logger.Error(err.Error())
 		os.Exit(1)
 	} else {
 		config.SetDefault("cache-dir", filepath.Join(dir, "manala"))
@@ -83,7 +84,8 @@ func Execute(version string, defaultRepository string, stdout io.Writer, stderr 
 
 	// Execute
 	if err := cmd.Execute(); err != nil {
-		logger.LogError(err)
+		report := internalReport.NewErrorReport(err)
+		logger.Report(report)
 		os.Exit(1)
 	}
 }

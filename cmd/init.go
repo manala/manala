@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
-	"manala/app"
-	"manala/internal"
+	"github.com/xeipuuv/gojsonschema"
+	"manala/core"
+	"manala/core/application"
 	internalBinder "manala/internal/binder"
 	internalConfig "manala/internal/config"
-	internalErrors "manala/internal/errors"
 	internalLog "manala/internal/log"
-	internalValidator "manala/internal/validator"
+	internalReport "manala/internal/report"
 	"path/filepath"
 )
 
@@ -26,76 +26,75 @@ func newInitCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobr
 
 Example: manala init -> resulting in a project init in a path (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// App
-			manala := app.New(config, logger)
+			// Application
+			app := application.NewApplication(config, logger)
 
 			// Get flags
-			repositoryPath, _ := cmd.Flags().GetString("repository")
-			recipeName, _ := cmd.Flags().GetString("recipe")
+			repoPath, _ := cmd.Flags().GetString("repository")
+			recName, _ := cmd.Flags().GetString("recipe")
 
 			// Get args
 			path := filepath.Clean(append(args, "")[0])
 
 			// Ensure no already existing project
-			if manifest, err := manala.ProjectManifest(path); true {
+			if manifest, err := app.ProjectManifest(path); true {
 				if manifest != nil {
-					return internalErrors.New("already existing project").WithField("path", path)
+					return internalReport.NewError(fmt.Errorf("already existing project")).
+						WithField("path", path)
 				}
-				var _err *internal.NotFoundProjectManifestError
+				var _err *core.NotFoundProjectManifestError
 				if !errors.As(err, &_err) {
 					return err
 				}
 			}
 
 			// Load repository
-			repository, err := manala.Repository(repositoryPath)
+			repo, err := app.Repository(repoPath)
 			if err != nil {
 				return err
 			}
 
-			// Load recipe...
-			var recipe *internal.Recipe
-			if recipeName != "" {
-				// ...from name if passed as argument
-				recipe, err = repository.LoadRecipe(recipeName)
-				if err != nil {
-					return err
-				}
-			} else {
-				// ...from recipe list tui
-				recipe, err = initRecipeListApplication(repository)
-				if err != nil {
-					return err
-				}
-			}
-
 			// Create project
-			project := recipe.NewProject(path)
+			proj, err := app.CreateProject(
+				path,
+				repo,
+				// Recipe selector
+				func(recWalker core.RecipeWalker) (core.Recipe, error) {
+					// From argument
+					if recName != "" {
+						var rec core.Recipe
+						if err := recWalker.WalkRecipes(func(_rec core.Recipe) {
+							if _rec.Name() == recName {
+								rec = _rec
+							}
+						}); err != nil {
+							return nil, err
+						}
+						if rec == nil {
+							return nil, fmt.Errorf("recipe not found")
+						}
+						return rec, nil
+					}
 
-			// Recipe options tui form (if any)
-			if len(recipe.Options()) > 0 {
-				if err := initRecipeOptionsFormApplication(recipe, project.Manifest()); err != nil {
-					return err
-				}
-			}
+					// From tui list
+					return initRecipeListApplication(recWalker)
+				},
+				// Options selector
+				func(rec core.Recipe, options []core.RecipeOption) error {
+					if len(options) > 0 {
+						// From tui form
+						return initRecipeOptionsFormApplication(rec, options)
+					}
 
-			// Write manifest content
-			if err := project.ManifestTemplate().Write(project.Manifest()); err != nil {
-				return err
-			}
-
-			// Load manifest
-			if err := project.Manifest().Load(); err != nil {
-				return err
-			}
-
-			// Save manifest
-			if err := project.Manifest().Save(); err != nil {
+					return nil
+				},
+			)
+			if err != nil {
 				return err
 			}
 
 			// Sync project
-			return manala.SyncProject(project)
+			return app.SyncProject(proj)
 		},
 	}
 
@@ -106,10 +105,10 @@ Example: manala init -> resulting in a project init in a path (default to the cu
 	return cmd
 }
 
-func initRecipeListApplication(recipeWalker internal.RecipeWalkerInterface) (*internal.Recipe, error) {
+func initRecipeListApplication(recWalker core.RecipeWalker) (core.Recipe, error) {
 	// Application
-	application := cview.NewApplication()
-	application.EnableMouse(true)
+	app := cview.NewApplication()
+	app.EnableMouse(true)
 
 	var err error
 
@@ -119,18 +118,18 @@ func initRecipeListApplication(recipeWalker internal.RecipeWalkerInterface) (*in
 	list.SetScrollBarVisibility(cview.ScrollBarAlways)
 	list.SetDoneFunc(func() {
 		err = fmt.Errorf("operation cancelled")
-		application.Stop()
+		app.Stop()
 	})
 
-	var recipe *internal.Recipe
+	var rec core.Recipe
 
 	// Walk into recipes
-	if err2 := recipeWalker.WalkRecipes(func(_recipe *internal.Recipe) {
-		item := cview.NewListItem(" " + _recipe.Name() + " ")
-		item.SetSecondaryText("   " + _recipe.Description())
+	if err2 := recWalker.WalkRecipes(func(_rec core.Recipe) {
+		item := cview.NewListItem(" " + _rec.Name() + " ")
+		item.SetSecondaryText("   " + _rec.Description())
 		item.SetSelectedFunc(func() {
-			recipe = _recipe
-			application.Stop()
+			rec = _rec
+			app.Stop()
 		})
 		list.AddItem(item)
 	}); err2 != nil {
@@ -141,9 +140,9 @@ func initRecipeListApplication(recipeWalker internal.RecipeWalkerInterface) (*in
 	frame.SetBorders(1, 1, 1, 1, 1, 1)
 	frame.AddText("Please, select a recipe...", true, cview.AlignLeft, tcell.ColorAqua)
 
-	application.SetRoot(frame, true)
-	application.SetFocus(frame)
-	if err2 := application.Run(); err2 != nil {
+	app.SetRoot(frame, true)
+	app.SetFocus(frame)
+	if err2 := app.Run(); err2 != nil {
 		return nil, err2
 	}
 
@@ -151,17 +150,17 @@ func initRecipeListApplication(recipeWalker internal.RecipeWalkerInterface) (*in
 		return nil, err
 	}
 
-	if recipe == nil {
+	if rec == nil {
 		return nil, fmt.Errorf("unknown error")
 	}
 
-	return recipe, nil
+	return rec, nil
 }
 
-func initRecipeOptionsFormApplication(recipe *internal.Recipe, manifest *internal.ProjectManifest) error {
+func initRecipeOptionsFormApplication(rec core.Recipe, options []core.RecipeOption) error {
 	// Application
-	application := cview.NewApplication()
-	application.EnableMouse(true)
+	app := cview.NewApplication()
+	app.EnableMouse(true)
 
 	panels := cview.NewPanels()
 
@@ -173,12 +172,12 @@ func initRecipeOptionsFormApplication(recipe *internal.Recipe, manifest *interna
 	form.SetItemPadding(0)
 	form.SetCancelFunc(func() {
 		err = fmt.Errorf("operation cancelled")
-		application.Stop()
+		app.Stop()
 	})
 
 	frame := cview.NewFrame(form)
 	frame.SetBorders(1, 1, 1, 1, 1, 1)
-	frame.AddText("Please, enter \""+recipe.Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
+	frame.AddText("Please, enter \""+rec.Name()+"\" recipe options...", true, cview.AlignLeft, tcell.ColorAqua)
 
 	panels.AddPanel("form", frame, true, true)
 
@@ -194,7 +193,7 @@ func initRecipeOptionsFormApplication(recipe *internal.Recipe, manifest *interna
 	panels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
-	binder, _err := internalBinder.NewRecipeFormBinder(recipe.Options())
+	binder, _err := internalBinder.NewRecipeFormBinder(options)
 	if _err != nil {
 		return _err
 	}
@@ -205,29 +204,35 @@ func initRecipeOptionsFormApplication(recipe *internal.Recipe, manifest *interna
 		// Validate
 		valid := true
 		for _, bind := range binder.Binds() {
-			if _err, _errs, ok := internalValidator.Validate(bind.Option.Schema, bind.Value); !ok {
-				if _err != nil {
-					err = _err
-					application.Stop()
-				} else {
-					valid = false
-					modal.SetText(bind.Option.Label + _errs[0].Error())
-					panels.ShowPanel("modal")
-					form.SetFocus(bind.ItemIndex)
-				}
+			validation, _err := gojsonschema.Validate(
+				gojsonschema.NewGoLoader(bind.Option.Schema()),
+				gojsonschema.NewGoLoader(bind.Value),
+			)
+
+			if _err != nil {
+				err = _err
+				app.Stop()
+				break
+			}
+
+			if !validation.Valid() {
+				valid = false
+				modal.SetText(bind.Option.Label() + validation.Errors()[0].String())
+				panels.ShowPanel("modal")
+				form.SetFocus(bind.ItemIndex)
 				break
 			}
 		}
 		if valid && (err == nil) {
 			// Apply values
-			_ = binder.Apply(manifest)
-			application.Stop()
+			_ = binder.Apply()
+			app.Stop()
 		}
 	})
 
-	application.SetRoot(panels, true)
-	application.SetFocus(panels)
-	if err3 := application.Run(); err3 != nil {
+	app.SetRoot(panels, true)
+	app.SetFocus(panels)
+	if err3 := app.Run(); err3 != nil {
 		return err3
 	}
 

@@ -1,13 +1,10 @@
 package log
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
 	"github.com/caarlos0/log"
 	"io"
-	internalErrors "manala/internal/errors"
-	"regexp"
+	internalReport "manala/internal/report"
 )
 
 func New(out io.Writer) *Logger {
@@ -24,62 +21,49 @@ func (logger *Logger) LevelDebug() {
 	logger.Level = log.DebugLevel
 }
 
-func (logger *Logger) LogError(err error) {
+func (logger *Logger) Report(report *internalReport.Report) {
 	// Reset padding
 	_padding := logger.Padding
 	logger.ResetPadding()
 
-	logger.logError(err)
+	logger.report(report)
 
 	// Restore padding
 	logger.Padding = _padding
 }
 
-var ansiCodesRegex = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007|(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~])")
-
-func (logger *Logger) CaptureError(err error) []byte {
-	// Capture writer
-	_writer := logger.Writer
-	buffer := &bytes.Buffer{}
-	logger.Writer = buffer
-
-	logger.LogError(err)
-
-	// Restore writer
-	logger.Writer = _writer
-
-	return ansiCodesRegex.ReplaceAll(buffer.Bytes(), []byte{})
-}
-
-func (logger *Logger) logError(err error) {
-	var _err *internalErrors.InternalError
-
-	if !errors.As(err, &_err) {
-		// Not internal error
-		logger.Error(err.Error())
-		return
+func (logger *Logger) report(report *internalReport.Report) {
+	if report.Message() != "" {
+		logger.Error(report.Message())
+		if report.Err() != nil {
+			logger.WithError(report.Err())
+		}
+	} else {
+		if report.Err() != nil {
+			logger.Error(report.Err().Error())
+		} else {
+			logger.Error("")
+		}
 	}
 
-	logger.
-		WithFields(_err.Fields).
-		Error(_err.Error())
-
-	// Error
-	if _err.Err != nil {
-		logger.WithError(_err.Err)
+	// Fields
+	fields := log.Fields{}
+	for k, v := range report.Fields() {
+		fields[k] = v
 	}
+	logger.WithFields(fields)
 
 	// Errors
-	if len(_err.Errs) != 0 {
+	if len(report.Reports()) != 0 {
 		logger.IncreasePadding()
-		for _, err := range _err.Errs {
-			logger.logError(err)
+		for _, rep := range report.Reports() {
+			logger.report(rep)
 		}
 		logger.DecreasePadding()
 	}
 
 	// Trace
-	if _err.Trace != "" {
-		_, _ = fmt.Fprint(logger.Writer, "\n", _err.Trace, "\n")
+	if report.Trace() != "" {
+		_, _ = fmt.Fprint(logger.Writer, "\n", report.Trace(), "\n")
 	}
 }

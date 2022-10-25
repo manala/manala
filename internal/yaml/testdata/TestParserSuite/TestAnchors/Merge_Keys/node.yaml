@@ -1,0 +1,29 @@
+empty_anchor: &empty_anchor {}
+
+mapping_value_anchor: &mapping_value_anchor
+  foo: foo
+
+mapping_anchor: &mapping_anchor
+  foo: foo
+  bar: bar
+
+mapping_value_alias_empty_anchor:
+  <<: *empty_anchor
+
+mapping_value_alias_mapping_value_anchor:
+  <<: *mapping_value_anchor
+
+mapping_value_alias_mapping_anchor:
+  <<: *mapping_anchor
+
+mapping_alias_empty_anchor:
+  <<: *empty_anchor
+  baz: baz
+
+mapping_alias_mapping_value_anchor:
+  <<: *mapping_value_anchor
+  baz: baz
+
+mapping_alias_mapping_anchor:
+  <<: *mapping_anchor
+  baz: baz

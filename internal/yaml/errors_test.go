@@ -2,54 +2,73 @@ package yaml
 
 import (
 	"fmt"
-	"github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
-	internalErrors "manala/internal/errors"
+	internalReport "manala/internal/report"
 	"testing"
 )
-
-var internalError *internalErrors.InternalError
 
 type ErrorsSuite struct{ suite.Suite }
 
 func TestErrorsSuite(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ErrorsSuite))
 }
 
-func (s *ErrorsSuite) TestError() {
+func (s *ErrorsSuite) Test() {
 	s.Run("Unformatted", func() {
 		_err := fmt.Errorf("error")
-		err := Error("file", _err)
+		err := NewError(_err)
 
-		s.ErrorAs(err, &internalError)
-		s.Equal("yaml processing error", internalError.Message)
-		s.Equal("file", internalError.Fields["file"])
-		s.NotContains(internalError.Fields, "line")
-		s.NotContains(internalError.Fields, "column")
-		s.NotContains(internalError.Fields, "message")
-		s.Equal(_err, internalError.Err)
+		var _formattedError *Error
+		s.ErrorAs(err, &_formattedError)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "error",
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Formatted", func() {
-		_, _err := parser.ParseBytes([]byte("&foo"), 0)
-		err := Error("file", _err)
+		_, _err := NewParser().ParseBytes([]byte("&foo"))
+		err := NewError(_err)
 
-		s.ErrorAs(err, &internalError)
-		s.Equal("yaml processing error", internalError.Message)
-		s.Equal("file", internalError.Fields["file"])
-		s.Equal(1, internalError.Fields["line"])
-		s.Equal(2, internalError.Fields["column"])
-		s.Equal("unexpected anchor. anchor value is undefined", internalError.Fields["message"])
-		s.Equal(">  1 | \x1b[93m&\x1b[0m\x1b[93mfoo\x1b[0m\n        ^\n", internalError.Trace)
+		var _formattedError *Error
+		s.ErrorAs(err, &_formattedError)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "unexpected anchor. anchor value is undefined",
+			Fields: map[string]interface{}{
+				"line":   1,
+				"column": 2,
+			},
+			Trace: ">  1 | &foo\n        ^\n",
+		}
+		reportAssert.Equal(&s.Suite, report)
 	})
 }
 
-func (s *ErrorsSuite) TestCommentTagError() {
-	_err := fmt.Errorf("error")
-	err := CommentTagError("path", _err)
+func (s *ErrorsSuite) TestNode() {
+	content := `foo: bar`
+	contentNode, _ := NewParser().ParseBytes([]byte(content))
 
-	s.ErrorAs(err, &internalError)
-	s.Equal("yaml comment tag error", internalError.Message)
-	s.Equal("path", internalError.Fields["path"])
-	s.Equal(_err, internalError.Err)
+	err := NewNodeError("message", contentNode)
+
+	var _nodeError *NodeError
+	s.ErrorAs(err, &_nodeError)
+
+	report := internalReport.NewErrorReport(err)
+
+	reportAssert := &internalReport.Assert{
+		Err: "message",
+		Fields: map[string]interface{}{
+			"line":   1,
+			"column": 4,
+		},
+		Trace: ">  1 | foo: bar\n          ^\n",
+	}
+	reportAssert.Equal(&s.Suite, report)
 }

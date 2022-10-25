@@ -1,0 +1,62 @@
+manala:
+  description: Recipe
+  template: template
+  sync:
+    - file
+    - dir/file
+    - file dir/file
+    - dir/file file
+    - src_file dst_file
+    - src_dir/file dst_dir/file
+
+# @option {"label": "String"}
+string: string
+
+# @schema {"type": "string"}
+# @option {"label": "String null"}
+string_null: ~
+
+sequence:
+  - first
+
+# @schema {"items": {"type": "string"}}
+sequence_string_empty: []
+
+boolean: true
+
+integer: 123
+
+float: 1.2
+
+map:
+  string: string
+  map:
+    string: string
+
+map_empty: {}
+
+map_single:
+  # @schema {"minLength": 1}
+  # @option {"label": "Map single first"}
+  first: foo
+
+map_multiple:
+  # @schema {"minLength": 1}
+  # @option {"label": "Map multiple first"}
+  first: foo
+  # @schema {"minLength": 1}
+  # @option {"label": "Map multiple second"}
+  second: foo
+
+# @schema {"enum": [null, true, false, "string", 12, 2.3, 3.0, "3.0"]}
+# @option {"label": "Enum null"}
+enum: ~
+
+# @option {"label": "Underscore key"}
+underscore_key: ok
+
+# @option {"label": "Hyphen key"}
+hyphen-key: ok
+
+# @option {"label": "Dot key"}
+dot.key: ok

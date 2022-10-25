@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"errors"
+	"fmt"
 	"github.com/caarlos0/log"
 	"io"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
+	internalReport "manala/internal/report"
 	internalTemplate "manala/internal/template"
 	"os"
 	"path/filepath"
@@ -16,6 +18,11 @@ import (
 
 type Syncer struct {
 	Log *internalLog.Logger
+}
+
+type UnitInterface interface {
+	Source() string
+	Destination() string
 }
 
 // Sync a source with a destination
@@ -51,7 +58,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
 			if err := os.Remove(node.Dst.Path); err != nil {
-				return internalOs.FileSystemError(err)
+				return internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 			node.Dst.IsExist = false
 		}
@@ -59,7 +67,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Destination does not exist; create
 		if !node.Dst.IsExist {
 			if err := os.MkdirAll(node.Dst.Path, 0755); err != nil {
-				return internalOs.FileSystemError(err)
+				return internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 
 			syncer.Log.WithField(
@@ -92,13 +101,15 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Delete not synced destination files
 		files, err := os.ReadDir(node.Dst.Path)
 		if err != nil {
-			return internalOs.FileSystemError(err)
+			return internalReport.NewError(internalOs.NewError(err)).
+				WithMessage("file system error")
 		}
 
 		for _, file := range files {
 			if !dstMap[file.Name()] {
 				if err := os.RemoveAll(filepath.Join(node.Dst.Path, file.Name())); err != nil {
-					return internalOs.FileSystemError(err)
+					return internalReport.NewError(internalOs.NewError(err)).
+						WithMessage("file system error")
 				}
 			}
 		}
@@ -116,7 +127,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 			// Destination is a directory; remove
 			if node.Dst.IsDir {
 				if err := os.RemoveAll(node.Dst.Path); err != nil {
-					return internalOs.FileSystemError(err)
+					return internalReport.NewError(internalOs.NewError(err)).
+						WithMessage("file system error")
 				}
 				node.Dst.IsExist = false
 				node.Dst.IsDir = false
@@ -129,7 +141,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 			// Ensure destination parents directories exists
 			if dir := filepath.Dir(node.Dst.Path); dir != "." {
 				if err := os.MkdirAll(dir, 0755); err != nil {
-					return internalOs.FileSystemError(err)
+					return internalReport.NewError(internalOs.NewError(err)).
+						WithMessage("file system error")
 				}
 			}
 		}
@@ -141,7 +154,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		if node.IsTmpl {
 			// Write template
 			buffer := &bytes.Buffer{}
-			if err := node.TemplateProvider.Template().WithFile(node.Src.Path).Write(buffer); err != nil {
+			if err := node.TemplateProvider.Template().WithFile(node.Src.Path).WriteTo(buffer); err != nil {
 				return err
 			}
 
@@ -159,7 +172,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 			// Node is not a template, let's go buffering \o/
 			srcFile, err := os.Open(node.Src.Path)
 			if err != nil {
-				return internalOs.FileSystemError(err)
+				return internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 			defer srcFile.Close()
 
@@ -191,7 +205,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 			// Create or truncate destination file
 			dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 			if err != nil {
-				return internalOs.FileSystemError(err)
+				return internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 			defer dstFile.Close()
 
@@ -212,7 +227,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 			if dstMode != node.Dst.Mode {
 				if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
-					return internalOs.FileSystemError(err)
+					return internalReport.NewError(internalOs.NewError(err)).
+						WithMessage("file system error")
 				}
 			}
 		}
@@ -259,9 +275,11 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 	if err != nil {
 		// Source does not exist
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, SourceNotExistError(srcPath)
+			return nil, internalReport.NewError(fmt.Errorf("no source file or directory")).
+				WithField("path", srcPath)
 		} else {
-			return nil, internalOs.FileSystemError(err)
+			return nil, internalReport.NewError(internalOs.NewError(err)).
+				WithMessage("file system error")
 		}
 	}
 	node.Src.IsDir = srcStat.IsDir()
@@ -269,7 +287,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 	if node.Src.IsDir {
 		files, err := os.ReadDir(srcPath)
 		if err != nil {
-			return nil, internalOs.FileSystemError(err)
+			return nil, internalReport.NewError(internalOs.NewError(err)).
+				WithMessage("file system error")
 		}
 
 		for _, file := range files {
@@ -296,7 +315,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 	if err != nil {
 		// Error other than not existing destination
 		if !errors.Is(err, os.ErrNotExist) {
-			return nil, internalOs.FileSystemError(err)
+			return nil, internalReport.NewError(internalOs.NewError(err)).
+				WithMessage("file system error")
 		}
 		node.Dst.IsExist = false
 	} else {
@@ -311,7 +331,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 		if node.Dst.IsDir {
 			files, err := os.ReadDir(dstPath)
 			if err != nil {
-				return nil, internalOs.FileSystemError(err)
+				return nil, internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 			for _, file := range files {
 				node.Dst.Files = append(node.Dst.Files, file.Name())
@@ -320,7 +341,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 			// Get destination hash
 			file, err := os.Open(dstPath)
 			if err != nil {
-				return nil, internalOs.FileSystemError(err)
+				return nil, internalReport.NewError(internalOs.NewError(err)).
+					WithMessage("file system error")
 			}
 			defer file.Close()
 

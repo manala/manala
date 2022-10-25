@@ -3,10 +3,7 @@ package cmd
 import (
 	"bytes"
 	"github.com/spf13/cobra"
-	internalErrors "manala/internal/errors"
 )
-
-var internalError *internalErrors.InternalError
 
 func newCmdExecutor(provider func(stderr *bytes.Buffer) *cobra.Command) *cmdExecutor {
 	return &cmdExecutor{

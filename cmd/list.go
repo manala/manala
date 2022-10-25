@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-	"manala/app"
-	"manala/internal"
+	"manala/core"
+	"manala/core/application"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 )
@@ -22,33 +22,28 @@ repository.
 
 Example: manala list -> resulting in a recipes list display`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// App
-			manala := app.New(config, logger)
+			// Application
+			app := application.NewApplication(config, logger)
 
 			// Get flags
-			repositoryPath, _ := cmd.Flags().GetString("repository")
+			repoPath, _ := cmd.Flags().GetString("repository")
 
 			// Load repository
-			repository, err := manala.Repository(
-				repositoryPath,
-			)
+			repo, err := app.Repository(repoPath)
 			if err != nil {
 				return err
 			}
 
-			var nameStyle = lipgloss.NewStyle().
-				Bold(true)
+			var nameStyle = lipgloss.NewStyle().Bold(true)
+			var descriptionStyle = lipgloss.NewStyle().Italic(true)
 
-			var descriptionStyle = lipgloss.NewStyle().
-				Italic(true)
-
-			// Walk repository recipes
-			return repository.WalkRecipes(func(recipe *internal.Recipe) {
+			// Walk into repository recipes
+			return repo.WalkRecipes(func(rec core.Recipe) {
 				_, _ = fmt.Fprintf(
 					cmd.OutOrStdout(),
 					"%s: %s\n",
-					nameStyle.Render(recipe.Name()),
-					descriptionStyle.Render(recipe.Description()),
+					nameStyle.Render(rec.Name()),
+					descriptionStyle.Render(rec.Description()),
 				)
 			})
 		},

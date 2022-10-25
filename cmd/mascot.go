@@ -43,10 +43,10 @@ func newMascotCmd() *cobra.Command {
 	return cmd
 }
 
-//go:embed mascot/mascot.txt
+//go:embed resources/mascot.txt
 var mascotText string
 
-//go:embed mascot/mascot_yell.txt
+//go:embed resources/mascot_yell.txt
 var mascotTextYell string
 
 type mascotModel struct {

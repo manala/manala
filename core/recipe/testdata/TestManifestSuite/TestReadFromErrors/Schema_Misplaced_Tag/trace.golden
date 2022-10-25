@@ -1,0 +1,5 @@
+   1 | manala:
+   2 |   description: description
+   3 | 
+>  4 | foo: ~  # @schema {"type": "string", "minLength": 1}
+            ^

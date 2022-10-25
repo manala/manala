@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "manala": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "template": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "sync": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        }
+      },
+      "additionalProperties": true,
+      "required": [ "description" ]
+    }
+  },
+  "required": [ "manala" ]
+}

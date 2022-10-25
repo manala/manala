@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"manala/app"
-	"manala/internal"
+	"manala/core"
+	"manala/core/application"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	"path/filepath"
@@ -21,12 +21,12 @@ repository's recipe and related variables defined in manifest (.manala.yaml).
 
 Example: manala update -> resulting in an update in a path (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// App
-			manala := app.New(config, logger)
+			// Application
+			app := application.NewApplication(config, logger)
 
 			// Get flags
-			repositoryPath, _ := cmd.Flags().GetString("repository")
-			recipeName, _ := cmd.Flags().GetString("recipe")
+			repoPath, _ := cmd.Flags().GetString("repository")
+			recName, _ := cmd.Flags().GetString("recipe")
 			recursive, _ := cmd.Flags().GetBool("recursive")
 
 			// Get args
@@ -34,28 +34,28 @@ Example: manala update -> resulting in an update in a path (default to the curre
 
 			if recursive {
 				// Recursively load projects
-				return manala.WalkProjects(
+				return app.WalkProjects(
 					path,
-					repositoryPath,
-					recipeName,
-					func(project *internal.Project) error {
+					repoPath,
+					recName,
+					func(proj core.Project) error {
 						// Sync project
-						return manala.SyncProject(project)
+						return app.SyncProject(proj)
 					},
 				)
 			} else {
 				// Load project
-				project, err := manala.ProjectFrom(
+				proj, err := app.ProjectFrom(
 					path,
-					repositoryPath,
-					recipeName,
+					repoPath,
+					recName,
 				)
 				if err != nil {
 					return err
 				}
 
 				// Sync project
-				return manala.SyncProject(project)
+				return app.SyncProject(proj)
 			}
 		},
 	}

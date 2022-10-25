@@ -1,4 +1,5 @@
 # Keep LF endings, even on Windows
+*.yaml text eol=lf
 *.tmpl text eol=lf
 *.golden text eol=lf
 *.txt text eol=lf

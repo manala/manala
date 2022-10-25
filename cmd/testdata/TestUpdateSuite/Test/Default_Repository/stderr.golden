@@ -1,4 +1,4 @@
-  • project loaded                                   path={{ .path }} recipe=recipe repository={{ .repository }}
-    • sync project                                   dst={{ .dst }} src={{ .src }}
-      • file synced                                  path=file.txt
-      • file synced                                  path=template.txt
+[1;m  •[0m project loaded                                   [1;mpath[0m={{ .path }} [1;mrecipe[0m=recipe [1;mrepository[0m={{ .repository }}
+[1;m    •[0m sync project                                   [1;mdst[0m={{ .dst }} [1;msrc[0m={{ .src }}
+[1;m      •[0m file synced                                  [1;mpath[0m=file.txt
+[1;m      •[0m file synced                                  [1;mpath[0m=template

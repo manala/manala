@@ -1,0 +1,4 @@
+manala:
+  description: description
+
+foo: ~  # @schema {"type": "string", "minLength": 1}

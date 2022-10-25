@@ -3,6 +3,7 @@ package template
 import (
 	"github.com/Masterminds/sprig/v3"
 	"io"
+	internalReport "manala/internal/report"
 	"path/filepath"
 	textTemplate "text/template"
 )
@@ -24,7 +25,7 @@ type Template struct {
 	data           any
 }
 
-func (template *Template) Write(writer io.Writer) error {
+func (template *Template) WriteTo(writer io.Writer) error {
 	_template := textTemplate.New("")
 
 	// Execution stops immediately with an error.
@@ -38,7 +39,9 @@ func (template *Template) Write(writer io.Writer) error {
 	if len(template.defaultFiles) > 0 {
 		for _, file := range template.defaultFiles {
 			if _, err := _template.ParseFiles(file); err != nil {
-				return ParsingPathError(file, err)
+				return internalReport.NewError(NewParsingError(err)).
+					WithMessage("template error").
+					WithField("path", file)
 			}
 		}
 	}
@@ -46,22 +49,28 @@ func (template *Template) Write(writer io.Writer) error {
 	// File
 	if template.file != "" {
 		if _, err := _template.ParseFiles(template.file); err != nil {
-			return ParsingPathError(template.file, err)
+			return internalReport.NewError(NewParsingError(err)).
+				WithMessage("template error").
+				WithField("path", template.file)
 		}
 
 		if err := _template.ExecuteTemplate(writer, filepath.Base(template.file), template.data); err != nil {
-			return ExecutionPathError(template.file, err)
+			return internalReport.NewError(NewExecutionError(err)).
+				WithMessage("template error").
+				WithField("path", template.file)
 		}
 
 		return nil
 	}
 
 	if _, err := _template.Parse(template.defaultContent); err != nil {
-		return ParsingError(err)
+		return internalReport.NewError(NewParsingError(err)).
+			WithMessage("template error")
 	}
 
 	if err := _template.Execute(writer, template.data); err != nil {
-		return ExecutionError(err)
+		return internalReport.NewError(NewExecutionError(err)).
+			WithMessage("template error")
 	}
 
 	return nil

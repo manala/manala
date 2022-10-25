@@ -1,1 +1,1 @@
-  • load projects from                               path={{ .path }}
+[1;m  •[0m load projects from                               [1;mpath[0m={{ .path }}
