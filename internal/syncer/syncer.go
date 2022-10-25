@@ -175,6 +175,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 				return internalReport.NewError(internalOs.NewError(err)).
 					WithMessage("file system error")
 			}
+
+			//goland:noinspection GoUnhandledErrorResult
 			defer srcFile.Close()
 
 			if node.Dst.IsExist {
@@ -208,6 +210,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 				return internalReport.NewError(internalOs.NewError(err)).
 					WithMessage("file system error")
 			}
+
+			//goland:noinspection GoUnhandledErrorResult
 			defer dstFile.Close()
 
 			// Copy from source to destination
@@ -344,6 +348,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 				return nil, internalReport.NewError(internalOs.NewError(err)).
 					WithMessage("file system error")
 			}
+
+			//goland:noinspection GoUnhandledErrorResult
 			defer file.Close()
 
 			hash := sha1.New()
