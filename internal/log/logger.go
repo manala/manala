@@ -33,25 +33,25 @@ func (logger *Logger) Report(report *internalReport.Report) {
 }
 
 func (logger *Logger) report(report *internalReport.Report) {
-	if report.Message() != "" {
-		logger.Error(report.Message())
-		if report.Err() != nil {
-			logger.WithError(report.Err())
-		}
-	} else {
-		if report.Err() != nil {
-			logger.Error(report.Err().Error())
-		} else {
-			logger.Error("")
-		}
-	}
-
 	// Fields
 	fields := log.Fields{}
 	for k, v := range report.Fields() {
 		fields[k] = v
 	}
-	logger.WithFields(fields)
+	_logger := logger.WithFields(fields)
+
+	if report.Message() != "" {
+		if report.Err() != nil {
+			_logger = _logger.WithError(report.Err())
+		}
+		_logger.Error(report.Message())
+	} else {
+		if report.Err() != nil {
+			_logger.Error(report.Err().Error())
+		} else {
+			_logger.Error("")
+		}
+	}
 
 	// Errors
 	if len(report.Reports()) != 0 {

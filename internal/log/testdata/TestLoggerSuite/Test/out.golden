@@ -1,3 +1,3 @@
-[1;m  •[0m info
-[1;m  •[0m warn
-[1;m  ⨯[0m error
+[1;m  •[0m info                                             [1;mfoo[0m=bar
+[1;m  •[0m warn                                             [1;mfoo[0m=bar
+[1;m  ⨯[0m error                                            [1;mfoo[0m=bar
