@@ -21,13 +21,14 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 	logger := internalLog.New(io.Discard)
 
 	s.Run("Not Found", func() {
-		path := internalTesting.DataPath(s, "repository")
+		repoPath := internalTesting.DataPath(s, "repository")
+		recPath := filepath.Join(repoPath, "recipe")
 
 		manager := NewRepositoryManager(
 			logger,
 			core.NewRepositoryMock().
-				WithPath(path).
-				WithDir(path),
+				WithPath(repoPath).
+				WithDir(repoPath),
 		)
 
 		manifest, err := manager.LoadRecipeManifest("recipe")
@@ -41,20 +42,21 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest not found",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(path, "recipe"),
+				"path": recPath,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Directory", func() {
-		path := internalTesting.DataPath(s, "repository")
+		repoPath := internalTesting.DataPath(s, "repository")
+		manifestPath := filepath.Join(repoPath, "recipe", ".manala.yaml")
 
 		manager := NewRepositoryManager(
 			logger,
 			core.NewRepositoryMock().
-				WithPath(path).
-				WithDir(path),
+				WithPath(repoPath).
+				WithDir(repoPath),
 		)
 
 		manifest, err := manager.LoadRecipeManifest("recipe")
@@ -67,7 +69,7 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest is a directory",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(path, "recipe", ".manala.yaml"),
+				"path": manifestPath,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
@@ -77,11 +79,13 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 func (s *ManagerSuite) TestLoadRecipeManifest() {
 	logger := internalLog.New(io.Discard)
 
+	repoPath := internalTesting.DataPath(s, "repository")
+
 	manager := NewRepositoryManager(
 		logger,
 		core.NewRepositoryMock().
-			WithPath(internalTesting.DataPath(s, "repository")).
-			WithDir(internalTesting.DataPath(s, "repository")),
+			WithPath(repoPath).
+			WithDir(repoPath),
 	)
 
 	manifest, err := manager.LoadRecipeManifest("recipe")
@@ -94,16 +98,19 @@ func (s *ManagerSuite) TestLoadRecipeManifest() {
 func (s *ManagerSuite) TestLoadRecipe() {
 	logger := internalLog.New(io.Discard)
 
+	repoPath := internalTesting.DataPath(s, "repository")
+	recPath := filepath.Join(repoPath, "recipe")
+
 	manager := NewRepositoryManager(
 		logger,
 		core.NewRepositoryMock().
-			WithPath(internalTesting.DataPath(s, "repository")).
-			WithDir(internalTesting.DataPath(s, "repository")),
+			WithPath(repoPath).
+			WithDir(repoPath),
 	)
 
 	rec, err := manager.LoadRecipe("recipe")
 
 	s.NoError(err)
-	s.Equal(internalTesting.DataPath(s, "repository", "recipe"), rec.Path())
-	s.Equal(internalTesting.DataPath(s, "repository"), rec.Repository().Path())
+	s.Equal(recPath, rec.Path())
+	s.Equal(repoPath, rec.Repository().Path())
 }
