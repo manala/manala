@@ -128,6 +128,11 @@ func (rec *RecipeMock) Sync() []internalSyncer.UnitInterface {
 	return nil
 }
 
+func (rec *RecipeMock) WithSchema(schema map[string]interface{}) *RecipeMock {
+	rec.schema = schema
+	return rec
+}
+
 func (rec *RecipeMock) Schema() map[string]interface{} {
 	return rec.schema
 }

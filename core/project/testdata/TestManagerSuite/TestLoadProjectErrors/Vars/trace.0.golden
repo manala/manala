@@ -1,0 +1,5 @@
+   2 |   recipe: recipe
+   3 |   repository: repository
+   4 | 
+>  5 | foo: bar
+            ^

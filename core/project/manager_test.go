@@ -178,6 +178,62 @@ func (s *ManagerSuite) TestCreateProject() {
 	})
 }
 
+func (s *ManagerSuite) TestLoadProjectErrors() {
+	logger := internalLog.New(io.Discard)
+
+	s.Run("Vars", func() {
+		path := internalTesting.DataPath(s, "project")
+		manifestPath := filepath.Join(path, ".manala.yaml")
+
+		manager := NewManager(
+			logger,
+			core.NewRepositoryManagerMock().WithLoadRepository(
+				core.NewRepositoryMock().WithLoadRecipe(
+					core.NewRecipeMock().
+						WithSchema(map[string]interface{}{
+							"type": "object",
+							"properties": map[string]interface{}{
+								"foo": map[string]interface{}{
+									"type": "integer",
+								},
+							},
+						}),
+				),
+			),
+		)
+
+		project, err := manager.LoadProject(
+			path,
+			"repository",
+			"recipe",
+		)
+
+		s.Nil(project)
+		s.Error(err)
+
+		report := internalReport.NewErrorReport(err)
+
+		reportAssert := &internalReport.Assert{
+			Err: "invalid project manifest vars",
+			Fields: map[string]interface{}{
+				"path": manifestPath,
+			},
+			Reports: []internalReport.Assert{
+				{
+					Message: "invalid type",
+					Fields: map[string]interface{}{
+						"line":     5,
+						"column":   6,
+						"expected": "integer",
+						"given":    "string",
+					},
+				},
+			},
+		}
+		reportAssert.Equal(&s.Suite, report)
+	})
+}
+
 func (s *ManagerSuite) TestLoadProject() {
 	logger := internalLog.New(io.Discard)
 
