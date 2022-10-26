@@ -6,17 +6,11 @@ import (
 	"regexp"
 )
 
-func NewError(message string, result *gojsonschema.Result, options ...ErrorOption) *Error {
-	err := &Error{
+func NewError(message string, result *gojsonschema.Result) *Error {
+	return &Error{
 		message: message,
 		result:  result,
 	}
-
-	for _, option := range options {
-		option(err)
-	}
-
-	return err
 }
 
 type Error struct {
@@ -72,12 +66,16 @@ func (err *Error) Report(report *internalReport.Report) {
 	}
 }
 
-type ErrorOption func(err *Error)
+func (err *Error) WithMessages(messages []ErrorMessage) *Error {
+	err.messages = append(err.messages, messages...)
 
-func WithMessages(messages []ErrorMessage) ErrorOption {
-	return func(err *Error) {
-		err.messages = append(err.messages, messages...)
-	}
+	return err
+}
+
+func (err *Error) WithReporter(reporter Reporter) *Error {
+	err.reporters = append(err.reporters, reporter)
+
+	return err
 }
 
 type ErrorMessage struct {

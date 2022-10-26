@@ -55,7 +55,7 @@ func (assert *Assert) Equal(s *suite.Suite, report *Report) {
 
 	// Reports
 	if assert.Reports != nil {
-		s.Len(report.Reports(), len(assert.Reports))
+		s.Len(report.Reports(), len(assert.Reports), "Report reports incorrect length")
 		for i, rep := range assert.Reports {
 			rep.TraceGolden = fmt.Sprintf("%s.%d", assert.TraceGolden, i)
 			rep.Equal(s, report.Reports()[i])

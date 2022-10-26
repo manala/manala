@@ -44,7 +44,21 @@ type ValidationReporter struct {
 	node yamlAst.Node
 }
 
-func (reporter *ValidationReporter) Report(result gojsonschema.ResultError, report *internalReport.Report) {
+func (reporter *ValidationReporter) Report(_ gojsonschema.ResultError, report *internalReport.Report) {
+	NewReporter(reporter.node).Report(report)
+}
+
+func NewValidationPathReporter(node yamlAst.Node) *ValidationPathReporter {
+	return &ValidationPathReporter{
+		node: node,
+	}
+}
+
+type ValidationPathReporter struct {
+	node yamlAst.Node
+}
+
+func (reporter *ValidationPathReporter) Report(result gojsonschema.ResultError, report *internalReport.Report) {
 	// Normalize json path
 	path := NewJsonPathNormalizer(result.Field()).Normalize()
 

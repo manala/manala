@@ -1,9 +1,10 @@
-package yaml
+package recipe
 
 import (
 	"encoding/json"
 	yamlAst "github.com/goccy/go-yaml/ast"
 	internalReport "manala/internal/report"
+	internalYaml "manala/internal/yaml"
 )
 
 type schemaInferrerInterface interface {
@@ -57,34 +58,33 @@ func (inferrer *SchemaTypeInferrer) Infer(node yamlAst.Node, schema map[string]i
 		case *yamlAst.NullNode:
 			// No type
 		default:
-			return NewNodeError("unable to infer schema value type", v)
+			return internalYaml.NewNodeError("unable to infer schema value type", v)
 		}
 	} else {
-		return NewNodeError("unable to infer schema type", node)
+		return internalYaml.NewNodeError("unable to infer schema type", node)
 	}
 
 	return nil
 }
 
-func NewSchemaTagsInferrer(tags *Tags) *SchemaTagsInferrer {
+func NewSchemaTagsInferrer(tags *internalYaml.Tags) *SchemaTagsInferrer {
 	return &SchemaTagsInferrer{
 		tags: tags,
 	}
 }
 
 type SchemaTagsInferrer struct {
-	tags *Tags
+	tags *internalYaml.Tags
 }
 
 func (inferrer *SchemaTagsInferrer) Infer(node yamlAst.Node, schema map[string]interface{}) error {
 	for _, tag := range *inferrer.tags {
 		if err := json.Unmarshal([]byte(tag.Value), &schema); err != nil {
 			if node != nil {
-				return internalReport.NewError(NewNodeError(err.Error(), node)).
-					WithMessage("unable to unmarshal json")
+				return internalYaml.NewNodeError(err.Error(), node.GetComment())
 			}
-			return internalReport.NewError(err).
-				WithMessage("unable to unmarshal json")
+
+			return internalReport.NewError(err)
 		}
 	}
 
@@ -116,7 +116,7 @@ type SchemaInferrer struct {
 
 func (inferrer *SchemaInferrer) Infer(node yamlAst.Node, schema map[string]interface{}) error {
 	if _, ok := interface{}(node).(yamlAst.MapNode); !ok {
-		return NewNodeError("unable to infer schema type", node)
+		return internalYaml.NewNodeError("unable to infer schema type", node)
 	}
 
 	inferrer.schema = schema
@@ -127,13 +127,13 @@ func (inferrer *SchemaInferrer) Infer(node yamlAst.Node, schema map[string]inter
 }
 
 func (inferrer *SchemaInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
-	schemaTags := &Tags{}
+	schemaTags := &internalYaml.Tags{}
 
 	// Get schema comment tags
 	comment := node.GetComment()
 	if comment != nil {
-		var tags Tags
-		ParseCommentTags(comment.String(), &tags)
+		var tags internalYaml.Tags
+		internalYaml.ParseCommentTags(comment.String(), &tags)
 		schemaTags = tags.Filter("schema")
 	}
 
@@ -155,7 +155,7 @@ func (inferrer *SchemaInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
 					return nil
 				}
 
-				return NewNodeError("unable to infer schema type", node)
+				return internalYaml.NewNodeError("unable to infer schema type", node)
 			}),
 			NewSchemaTagsInferrer(schemaTags),
 		).Infer(n, propertySchema); err != nil {
@@ -181,7 +181,7 @@ func (inferrer *SchemaInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
 	} else {
 		// Misplaced tag
 		if len(*schemaTags) > 0 {
-			inferrer.err = NewNodeError("misplaced schema tag", node)
+			inferrer.err = internalYaml.NewNodeError("misplaced schema tag", node.GetComment())
 			return nil
 		}
 	}

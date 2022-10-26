@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "label": { "type": "string", "minLength": 1, "maxLength": 100 }
+  },
+  "additionalProperties": false,
+  "required": [ "label" ]
+}

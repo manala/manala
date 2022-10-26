@@ -152,8 +152,8 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 			internalValidation.NewError(
 				"invalid project manifest vars",
 				validation,
-				internalValidation.WithReporter(manifest),
-			),
+			).
+				WithReporter(manifest),
 		).WithField("path", manifest.Path())
 	}
 

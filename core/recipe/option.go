@@ -1,13 +1,20 @@
 package recipe
 
 import (
+	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/goccy/go-yaml"
 	yamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/xeipuuv/gojsonschema"
 	"manala/core"
+	internalValidation "manala/internal/validation"
 	internalYaml "manala/internal/yaml"
 )
+
+//go:embed resources/option.schema.json
+var optionSchema string
 
 type option struct {
 	label  string
@@ -64,6 +71,25 @@ func (option *option) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
+	validation, err := gojsonschema.Validate(
+		gojsonschema.NewStringLoader(optionSchema),
+		gojsonschema.NewGoLoader(fields),
+	)
+	if err != nil {
+		return err
+	}
+
+	if !validation.Valid() {
+		return internalValidation.NewError(
+			"invalid option",
+			validation,
+		).
+			WithMessages([]internalValidation.ErrorMessage{
+				{Field: "(root)", Type: "required", Message: "missing label field"},
+				{Field: "(root)", Type: "additional_property_not_allowed", Message: "don't support additional properties"},
+			})
+	}
+
 	if _, ok := fields["label"]; ok {
 		option.label = fields["label"].(string)
 	}
@@ -109,9 +135,9 @@ func (inferrer *OptionsInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
 		if n, ok := node.(*yamlAst.MappingValueNode); ok {
 			// Infer schema
 			schema := map[string]interface{}{}
-			if err := internalYaml.NewSchemaChainInferrer(
-				internalYaml.NewSchemaTypeInferrer(),
-				internalYaml.NewSchemaTagsInferrer(schemaTags),
+			if err := NewSchemaChainInferrer(
+				NewSchemaTypeInferrer(),
+				NewSchemaTagsInferrer(schemaTags),
 			).Infer(n, schema); err != nil {
 				inferrer.err = err
 
@@ -124,8 +150,17 @@ func (inferrer *OptionsInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
 					schema: schema,
 					node:   n,
 				}
+
+				// Unmarshall
 				if err := json.Unmarshal([]byte(tag.Value), &option); err != nil {
-					inferrer.err = err
+					var _validationError *internalValidation.Error
+					switch {
+					case errors.As(err, &_validationError):
+						inferrer.err = _validationError.
+							WithReporter(internalYaml.NewValidationReporter(node.GetComment()))
+					default:
+						inferrer.err = internalYaml.NewNodeError(err.Error(), node.GetComment())
+					}
 
 					return nil
 				}
@@ -134,7 +169,7 @@ func (inferrer *OptionsInferrer) Visit(node yamlAst.Node) yamlAst.Visitor {
 			}
 		} else {
 			// Misplaced tag
-			inferrer.err = internalYaml.NewNodeError("misplaced option tag", node)
+			inferrer.err = internalYaml.NewNodeError("misplaced option tag", node.GetComment())
 			return nil
 		}
 	}

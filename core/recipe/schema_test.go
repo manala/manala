@@ -1,9 +1,10 @@
-package yaml
+package recipe
 
 import (
 	yamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 	internalReport "manala/internal/report"
+	internalYaml "manala/internal/yaml"
 	"testing"
 )
 
@@ -14,13 +15,43 @@ func TestSchemaInferrerSuite(t *testing.T) {
 	suite.Run(t, new(SchemaInferrerSuite))
 }
 
+func (s *SchemaInferrerSuite) TestSchemaChainInferrerErrors() {
+	tests := []struct {
+		name      string
+		node      string
+		inferrers []schemaInferrerInterface
+		err       string
+	}{
+		{
+			name: "Error",
+			node: `node: string`,
+			inferrers: []schemaInferrerInterface{
+				NewSchemaCallbackInferrer(func(node yamlAst.Node, _ map[string]interface{}) error {
+					return internalYaml.NewNodeError("foo", node)
+				}),
+			},
+			err: "foo",
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+
+			schema := map[string]interface{}{"foo": "bar"}
+			err := NewSchemaChainInferrer(test.inferrers...).Infer(node, schema)
+
+			s.EqualError(err, test.err)
+		})
+	}
+}
+
 func (s *SchemaInferrerSuite) TestSchemaChainInferrer() {
 	tests := []struct {
 		name      string
 		node      string
 		inferrers []schemaInferrerInterface
 		schema    map[string]interface{}
-		err       string
 	}{
 		{
 			name:      "No Inferrers",
@@ -41,34 +72,53 @@ func (s *SchemaInferrerSuite) TestSchemaChainInferrer() {
 			},
 			schema: map[string]interface{}{"foo": "baz", "type": "string"},
 		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+
+			schema := map[string]interface{}{"foo": "bar"}
+			err := NewSchemaChainInferrer(test.inferrers...).Infer(node, schema)
+
+			s.NoError(err)
+			s.Equal(test.schema, schema)
+		})
+	}
+}
+
+func (s *SchemaInferrerSuite) TestSchemaTypeInferrerErrors() {
+	tests := []struct {
+		name   string
+		node   string
+		report *internalReport.Assert
+	}{
 		{
-			name: "Error",
-			node: `node: string`,
-			inferrers: []schemaInferrerInterface{
-				NewSchemaCallbackInferrer(func(node yamlAst.Node, _ map[string]interface{}) error {
-					return NewNodeError("foo", node)
-				}),
+			name: "Uninferable Node",
+			node: `string`,
+			report: &internalReport.Assert{
+				Err: "unable to infer schema type",
+				Fields: map[string]interface{}{
+					"line":   1,
+					"column": 1,
+				},
+				Trace: ">  1 | string\n       ^\n",
 			},
-			err: "foo",
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
-			err := NewSchemaChainInferrer(test.inferrers...).Infer(node, schema)
+			err := NewSchemaTypeInferrer().Infer(node, schema)
 
-			if test.schema != nil {
-				s.Equal(test.schema, schema)
-			}
+			s.Error(err)
 
-			if test.err != "" {
-				s.EqualError(err, test.err)
-			} else {
-				s.NoError(err)
-			}
+			report := internalReport.NewErrorReport(err)
+
+			test.report.Equal(&s.Suite, report)
 		})
 	}
 }
@@ -78,7 +128,6 @@ func (s *SchemaInferrerSuite) TestSchemaTypeInferrer() {
 		name   string
 		node   string
 		schema map[string]interface{}
-		err    string
 		report *internalReport.Assert
 	}{
 		{
@@ -154,74 +203,44 @@ node:
 `,
 			schema: map[string]interface{}{"foo": "bar", "type": "object"},
 		},
-		{
-			name: "Uninferable Node",
-			node: `string`,
-			err:  "unable to infer schema type",
-			report: &internalReport.Assert{
-				Err: "unable to infer schema type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 1,
-				},
-				Trace: ">  1 | string\n       ^\n",
-			},
-		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaTypeInferrer().Infer(node, schema)
 
-			if test.schema != nil {
-				s.Equal(test.schema, schema)
-			}
-
-			if test.err != "" {
-				s.EqualError(err, test.err)
-			} else {
-				s.NoError(err)
-			}
-
-			if test.report != nil {
-				report := internalReport.NewErrorReport(err)
-
-				test.report.Equal(&s.Suite, report)
-			}
+			s.NoError(err)
+			s.Equal(test.schema, schema)
 		})
 	}
 }
 
-func (s *SchemaInferrerSuite) TestSchemaTagsInferrer() {
+func (s *SchemaInferrerSuite) TestSchemaTagsInferrerErrors() {
 	tests := []struct {
 		name   string
-		tags   *Tags
-		schema map[string]interface{}
-		err    string
+		tags   *internalYaml.Tags
+		report *internalReport.Assert
 	}{
 		{
-			name: "Extend",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `{"bar": "baz"}`},
+			name: "Syntax",
+			tags: &internalYaml.Tags{
+				&internalYaml.Tag{Name: "Tag", Value: `foo`},
 			},
-			schema: map[string]interface{}{"foo": "bar", "bar": "baz"},
+			report: &internalReport.Assert{
+				Err: "invalid character 'o' in literal false (expecting 'a')",
+			},
 		},
 		{
-			name: "Override",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `{"foo": "baz"}`},
+			name: "Type",
+			tags: &internalYaml.Tags{
+				&internalYaml.Tag{Name: "Tag", Value: `[]`},
 			},
-			schema: map[string]interface{}{"foo": "baz"},
-		},
-		{
-			name: "Error",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `foo`},
+			report: &internalReport.Assert{
+				Err: "json: cannot unmarshal array into Go value of type map[string]interface {}",
 			},
-			err: "invalid character 'o' in literal false (expecting 'a')",
 		},
 	}
 
@@ -230,15 +249,69 @@ func (s *SchemaInferrerSuite) TestSchemaTagsInferrer() {
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaTagsInferrer(test.tags).Infer(nil, schema)
 
-			if test.schema != nil {
-				s.Equal(test.schema, schema)
-			}
+			s.Error(err)
 
-			if test.err != "" {
-				s.EqualError(err, test.err)
-			} else {
-				s.NoError(err)
-			}
+			report := internalReport.NewErrorReport(err)
+
+			test.report.Equal(&s.Suite, report)
+		})
+	}
+}
+
+func (s *SchemaInferrerSuite) TestSchemaTagsInferrer() {
+	tests := []struct {
+		name   string
+		tags   *internalYaml.Tags
+		schema map[string]interface{}
+	}{
+		{
+			name: "Extend",
+			tags: &internalYaml.Tags{
+				&internalYaml.Tag{Name: "Tag", Value: `{"bar": "baz"}`},
+			},
+			schema: map[string]interface{}{"foo": "bar", "bar": "baz"},
+		},
+		{
+			name: "Override",
+			tags: &internalYaml.Tags{
+				&internalYaml.Tag{Name: "Tag", Value: `{"foo": "baz"}`},
+			},
+			schema: map[string]interface{}{"foo": "baz"},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			schema := map[string]interface{}{"foo": "bar"}
+			err := NewSchemaTagsInferrer(test.tags).Infer(nil, schema)
+
+			s.NoError(err)
+			s.Equal(test.schema, schema)
+		})
+	}
+}
+
+func (s *SchemaInferrerSuite) TestSchemaCallbackInferrerErrors() {
+	tests := []struct {
+		name     string
+		callback func(node yamlAst.Node, schema map[string]interface{}) error
+		err      string
+	}{
+		{
+			name: "Error",
+			callback: func(node yamlAst.Node, schema map[string]interface{}) error {
+				return internalYaml.NewNodeError("foo", node)
+			},
+			err: "foo",
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			schema := map[string]interface{}{"foo": "bar"}
+			err := NewSchemaCallbackInferrer(test.callback).Infer(nil, schema)
+
+			s.EqualError(err, test.err)
 		})
 	}
 }
@@ -248,7 +321,6 @@ func (s *SchemaInferrerSuite) TestSchemaCallbackInferrer() {
 		name     string
 		callback func(node yamlAst.Node, schema map[string]interface{}) error
 		schema   map[string]interface{}
-		err      string
 	}{
 		{
 			name: "Extend",
@@ -268,13 +340,6 @@ func (s *SchemaInferrerSuite) TestSchemaCallbackInferrer() {
 			},
 			schema: map[string]interface{}{"foo": "baz"},
 		},
-		{
-			name: "Error",
-			callback: func(node yamlAst.Node, schema map[string]interface{}) error {
-				return NewNodeError("foo", node)
-			},
-			err: "foo",
-		},
 	}
 
 	for _, test := range tests {
@@ -282,31 +347,21 @@ func (s *SchemaInferrerSuite) TestSchemaCallbackInferrer() {
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaCallbackInferrer(test.callback).Infer(nil, schema)
 
-			if test.schema != nil {
-				s.Equal(test.schema, schema)
-			}
-
-			if test.err != "" {
-				s.EqualError(err, test.err)
-			} else {
-				s.NoError(err)
-			}
+			s.NoError(err)
+			s.Equal(test.schema, schema)
 		})
 	}
 }
 
-func (s *SchemaInferrerSuite) TestSchemaInferrer() {
+func (s *SchemaInferrerSuite) TestSchemaInferrerErrors() {
 	tests := []struct {
 		name   string
 		node   string
-		schema map[string]interface{}
-		err    string
 		report *internalReport.Assert
 	}{
 		{
 			name: "Non Map",
 			node: `string`,
-			err:  "unable to infer schema type",
 			report: &internalReport.Assert{
 				Err: "unable to infer schema type",
 				Fields: map[string]interface{}{
@@ -316,6 +371,59 @@ func (s *SchemaInferrerSuite) TestSchemaInferrer() {
 				Trace: ">  1 | string\n       ^\n",
 			},
 		},
+		{
+			name: "Misplaced Tag",
+			node: `
+node: ~  # @schema {"type": "string", "minLength": 1}
+`,
+			report: &internalReport.Assert{
+				Err: "misplaced schema tag",
+				Fields: map[string]interface{}{
+					"line":   2,
+					"column": 10,
+				},
+				Trace: ">  2 | node: ~  # @schema {\"type\": \"string\", \"minLength\": 1}\n                ^\n",
+			},
+		},
+		{
+			name: "Tag Error",
+			node: `
+# @schema foo
+node: ~
+`,
+			report: &internalReport.Assert{
+				Err: "invalid character 'o' in literal false (expecting 'a')",
+				Fields: map[string]interface{}{
+					"line":   2,
+					"column": 1,
+				},
+				Trace: ">  2 | # @schema foo\n       ^\n   3 | node: ~",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+
+			schema := map[string]interface{}{}
+			err := NewSchemaInferrer().Infer(node, schema)
+
+			s.Error(err)
+
+			report := internalReport.NewErrorReport(err)
+
+			test.report.Equal(&s.Suite, report)
+		})
+	}
+}
+
+func (s *SchemaInferrerSuite) TestSchemaInferrer() {
+	tests := []struct {
+		name   string
+		node   string
+		schema map[string]interface{}
+	}{
 		{
 			name: "Scalars",
 			node: `
@@ -388,38 +496,6 @@ object_multiple:
 						},
 					},
 				},
-			},
-		},
-		{
-			name: "Misplaced Tag",
-			node: `
-node: ~  # @schema {"type": "string", "minLength": 1}
-`,
-			err: "misplaced schema tag",
-			report: &internalReport.Assert{
-				Err: "misplaced schema tag",
-				Fields: map[string]interface{}{
-					"line":   2,
-					"column": 7,
-				},
-				Trace: ">  2 | node: ~  # @schema {\"type\": \"string\", \"minLength\": 1}\n             ^\n",
-			},
-		},
-		{
-			name: "Tag Error",
-			node: `
-# @schema foo
-node: ~
-`,
-			err: "invalid character 'o' in literal false (expecting 'a')",
-			report: &internalReport.Assert{
-				Message: "unable to unmarshal json",
-				Err:     "invalid character 'o' in literal false (expecting 'a')",
-				Fields: map[string]interface{}{
-					"line":   3,
-					"column": 5,
-				},
-				Trace: "   2 | # @schema foo\n>  3 | node: ~\n           ^\n",
 			},
 		},
 		{
@@ -528,26 +604,13 @@ object_multiple_with_comment:
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{}
 			err := NewSchemaInferrer().Infer(node, schema)
 
-			if test.schema != nil {
-				s.Equal(test.schema, schema)
-			}
-
-			if test.err != "" {
-				s.EqualError(err, test.err)
-			} else {
-				s.NoError(err)
-			}
-
-			if test.report != nil {
-				report := internalReport.NewErrorReport(err)
-
-				test.report.Equal(&s.Suite, report)
-			}
+			s.NoError(err)
+			s.Equal(test.schema, schema)
 		})
 	}
 }

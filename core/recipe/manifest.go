@@ -94,8 +94,9 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 			internalValidation.NewError(
 				"invalid recipe manifest",
 				validation,
-				internalValidation.WithReporter(manifest),
-				internalValidation.WithMessages([]internalValidation.ErrorMessage{
+			).
+				WithReporter(manifest).
+				WithMessages([]internalValidation.ErrorMessage{
 					{Field: "(root)", Type: "invalid_type", Message: "yaml document must be a map"},
 					{Field: "(root)", Type: "required", Property: "manala", Message: "missing manala field"},
 					{Field: "manala", Type: "invalid_type", Message: "manala field must be a map"},
@@ -116,7 +117,6 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 					{FieldRegex: regexp.MustCompile(`manala\.sync\.\d+`), Type: "string_gte", Message: "empty manala sync sequence entry"},
 					{FieldRegex: regexp.MustCompile(`manala\.sync\.\d+`), Type: "string_lte", Message: "too long manala sync sequence entry"},
 				}),
-			),
 		)
 	}
 
@@ -140,7 +140,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	}
 
 	// Infer schema
-	if err := internalYaml.NewSchemaInferrer().Infer(manifest.node, manifest.schema); err != nil {
+	if err := NewSchemaInferrer().Infer(manifest.node, manifest.schema); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to infer recipe manifest schema")
 	}
@@ -155,7 +155,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 }
 
 func (manifest *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	internalYaml.NewValidationReporter(manifest.node).Report(result, report)
+	internalYaml.NewValidationPathReporter(manifest.node).Report(result, report)
 }
 
 func (manifest *Manifest) InitVars(callback func(options []core.RecipeOption) error) (map[string]interface{}, error) {

@@ -78,8 +78,9 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 			internalValidation.NewError(
 				"invalid project manifest",
 				validation,
-				internalValidation.WithReporter(manifest),
-				internalValidation.WithMessages([]internalValidation.ErrorMessage{
+			).
+				WithReporter(manifest).
+				WithMessages([]internalValidation.ErrorMessage{
 					{Field: "(root)", Type: "invalid_type", Message: "yaml document must be a map"},
 					{Field: "(root)", Type: "required", Property: "manala", Message: "missing manala field"},
 					{Field: "manala", Type: "invalid_type", Message: "manala field must be a map"},
@@ -94,7 +95,6 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 					{Field: "manala.repository", Type: "string_gte", Message: "empty manala repository field"},
 					{Field: "manala.repository", Type: "string_lte", Message: "too long manala repository field"},
 				}),
-			),
 		)
 	}
 
@@ -121,7 +121,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 }
 
 func (manifest *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	internalYaml.NewValidationReporter(manifest.node).Report(result, report)
+	internalYaml.NewValidationPathReporter(manifest.node).Report(result, report)
 }
 
 type manifestConfig struct {

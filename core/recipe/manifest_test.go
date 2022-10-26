@@ -339,18 +339,18 @@ func (s *ManifestSuite) TestReadFromErrors() {
 				Err:     "misplaced schema tag",
 				Fields: map[string]interface{}{
 					"line":   4,
-					"column": 6,
+					"column": 9,
 				},
 			},
 		},
 		{
 			name: "Schema Invalid Json",
 			report: &internalReport.Assert{
-				Message: "unable to unmarshal json",
+				Message: "unable to infer recipe manifest schema",
 				Err:     "invalid character 'o' in literal false (expecting 'a')",
 				Fields: map[string]interface{}{
-					"line":   5,
-					"column": 4,
+					"line":   4,
+					"column": 1,
 				},
 			},
 		},
