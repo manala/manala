@@ -18,11 +18,11 @@ func (manager *Manager) NewWatcher(onStart func(watcher *Watcher), onChange func
 	}
 
 	return &Watcher{
-		log:         manager.Log,
-		Watcher:     fsnotifyWatcher,
-		onStart:     onStart,
-		onChange:    onChange,
-		onAll:       onAll,
-		temporaries: []string{},
+		log:      manager.Log,
+		Watcher:  fsnotifyWatcher,
+		onStart:  onStart,
+		onChange: onChange,
+		onAll:    onAll,
+		groups:   map[string][]string{},
 	}, nil
 }

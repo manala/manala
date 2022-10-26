@@ -6,6 +6,7 @@ import (
 	internalReport "manala/internal/report"
 	internalSyncer "manala/internal/syncer"
 	internalTemplate "manala/internal/template"
+	internalWatcher "manala/internal/watcher"
 	"path/filepath"
 )
 
@@ -156,6 +157,10 @@ func (rec *RecipeMock) Template() *internalTemplate.Template {
 
 func (rec *RecipeMock) ProjectManifestTemplate() *internalTemplate.Template {
 	return rec.projectManifestTemplate
+}
+
+func (rec *RecipeMock) Watch(watcher *internalWatcher.Watcher) error {
+	return nil
 }
 
 func NewRecipeManifestMock() *RecipeManifestMock {

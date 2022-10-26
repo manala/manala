@@ -1,6 +1,7 @@
 package watcher
 
 import (
+	"github.com/caarlos0/log"
 	"github.com/fsnotify/fsnotify"
 	internalLog "manala/internal/log"
 	"path/filepath"
@@ -9,10 +10,10 @@ import (
 type Watcher struct {
 	log *internalLog.Logger
 	*fsnotify.Watcher
-	onStart     func(watcher *Watcher)
-	onChange    func(watcher *Watcher)
-	onAll       func(watcher *Watcher)
-	temporaries []string
+	onStart  func(watcher *Watcher)
+	onChange func(watcher *Watcher)
+	onAll    func(watcher *Watcher)
+	groups   map[string][]string
 }
 
 func (watcher *Watcher) Watch() {
@@ -35,10 +36,16 @@ func (watcher *Watcher) doWatch() {
 				}
 
 				// Log
-				watcher.log.WithField("event", event).Debug("watch event")
+				watcher.log.WithFields(log.Fields{
+					"operation": event.Op,
+					"path":      event.Name,
+				}).Debug("watch event")
 
 				// Ignore chmod events & empty events
-				if event.Op == fsnotify.Chmod || event.Name == "" {
+				if event.Has(fsnotify.Chmod) || event.Name == "" {
+					watcher.log.IncreasePadding()
+					watcher.log.Debug("ignore event")
+					watcher.log.DecreasePadding()
 					break
 				}
 
@@ -59,19 +66,45 @@ func (watcher *Watcher) doWatch() {
 	<-done
 }
 
-func (watcher *Watcher) AddTemporary(name string) error {
-	watcher.temporaries = append(watcher.temporaries, name)
-	return watcher.Add(name)
+func (watcher *Watcher) AddGroup(group string, name string) error {
+	if err := watcher.Add(name); err != nil {
+		return err
+	}
+
+	watcher.groups[group] = append(watcher.groups[group], name)
+
+	return nil
 }
 
-func (watcher *Watcher) RemoveTemporaries() error {
-	for _, name := range watcher.temporaries {
-		err := watcher.Remove(name)
-		if err != nil {
-			return err
+func (watcher *Watcher) ReplaceGroup(group string, names []string) error {
+	if _, ok := watcher.groups[group]; ok {
+		for i, oldName := range watcher.groups[group] {
+			found := false
+			for j, newName := range names {
+				if oldName == newName {
+					// Remove new names already present in old names
+					names = append(names[:j], names[j+1:]...)
+					found = true
+					break
+				}
+			}
+			if !found {
+				// Remove old names not present in new names
+				if err := watcher.Remove(oldName); err != nil {
+					return err
+				}
+				watcher.groups[group] = append(watcher.groups[group][:i], watcher.groups[group][i+1:]...)
+			}
 		}
 	}
-	watcher.temporaries = []string{}
+
+	for _, name := range names {
+		// Add new names not present in old names
+		if err := watcher.Add(name); err != nil {
+			return err
+		}
+		watcher.groups[group] = append(watcher.groups[group], name)
+	}
 
 	return nil
 }

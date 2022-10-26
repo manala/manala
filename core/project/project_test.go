@@ -48,7 +48,6 @@ func (s *ProjectSuite) Test() {
 	)
 
 	s.Equal("dir", proj.Path())
-	s.Equal(projManifest, proj.Manifest())
 	s.Equal(rec, proj.Recipe())
 
 	s.Run("Vars", func() {

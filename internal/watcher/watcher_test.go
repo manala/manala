@@ -5,6 +5,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/suite"
 	internalLog "manala/internal/log"
+	internalTesting "manala/internal/testing"
+	"path/filepath"
 	"testing"
 )
 
@@ -23,22 +25,27 @@ func (s *WatcherSuite) SetupTest() {
 	s.logger = internalLog.New(s.stderr)
 }
 
-func (s *WatcherSuite) TestTemporaries() {
+func (s *WatcherSuite) TestGroups() {
+	path := internalTesting.DataPath(s)
+	fooPath := filepath.Join(path, "foo")
+	barPath := filepath.Join(path, "bar")
+	bazPath := filepath.Join(path, "baz")
+
 	fsnotifyWatcher, _ := fsnotify.NewWatcher()
 	watcher := &Watcher{
-		log:         s.logger,
-		Watcher:     fsnotifyWatcher,
-		temporaries: []string{},
+		log:     s.logger,
+		Watcher: fsnotifyWatcher,
+		groups:  map[string][]string{},
 	}
 
-	s.Empty(watcher.temporaries)
+	s.Empty(watcher.groups)
 
-	_ = watcher.AddTemporary("foo")
-	_ = watcher.AddTemporary("bar")
+	_ = watcher.AddGroup("group", fooPath)
+	_ = watcher.AddGroup("group", barPath)
 
-	s.Equal([]string{"foo", "bar"}, watcher.temporaries)
+	s.Equal([]string{fooPath, barPath}, watcher.groups["group"])
 
-	_ = watcher.RemoveTemporaries()
+	_ = watcher.ReplaceGroup("group", []string{barPath, bazPath})
 
-	s.Equal([]string{"foo", "bar"}, watcher.temporaries)
+	s.Equal([]string{barPath, bazPath}, watcher.groups["group"])
 }

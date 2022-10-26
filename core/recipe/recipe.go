@@ -1,9 +1,11 @@
 package recipe
 
 import (
+	"io/fs"
 	"manala/core"
 	internalSyncer "manala/internal/syncer"
 	internalTemplate "manala/internal/template"
+	internalWatcher "manala/internal/watcher"
 	"os"
 	"path/filepath"
 )
@@ -74,4 +76,20 @@ func (rec *Recipe) ProjectManifestTemplate() *internalTemplate.Template {
 	}
 
 	return template
+}
+
+func (rec *Recipe) Watch(watcher *internalWatcher.Watcher) error {
+	dirs := []string{}
+
+	// Walk on recipe dirs
+	if err := filepath.WalkDir(rec.Path(), func(path string, file fs.DirEntry, err error) error {
+		if file.IsDir() {
+			dirs = append(dirs, path)
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return watcher.ReplaceGroup("recipe", dirs)
 }
