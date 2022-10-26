@@ -5,6 +5,7 @@ import (
 	internalSyncer "manala/internal/syncer"
 	internalTemplate "manala/internal/template"
 	internalValidation "manala/internal/validation"
+	internalWatcher "manala/internal/watcher"
 )
 
 /***********/
@@ -13,10 +14,10 @@ import (
 
 type Project interface {
 	Path() string
-	Manifest() ProjectManifest
 	Recipe() Recipe
 	Vars() map[string]interface{}
 	Template() *internalTemplate.Template
+	Watch(watcher *internalWatcher.Watcher) error
 }
 
 type ProjectManifest interface {
@@ -51,6 +52,7 @@ type Recipe interface {
 	Repository() Repository
 	Template() *internalTemplate.Template
 	ProjectManifestTemplate() *internalTemplate.Template
+	Watch(watcher *internalWatcher.Watcher) error
 }
 
 type RecipeManifest interface {

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/caarlos0/log"
 	"github.com/gen2brain/beeep"
-	"io/fs"
 	"manala/core"
 	"manala/core/project"
 	"manala/core/repository"
@@ -291,8 +290,8 @@ func (app *Application) WatchProject(proj core.Project, repoPath string, recName
 
 		// On start
 		func(watcher *internalWatcher.Watcher) {
-			// Watch project manifest
-			_ = watcher.Add(proj.Manifest().Path())
+			// Watch project
+			_ = proj.Watch(watcher)
 		},
 
 		// On change
@@ -340,10 +339,6 @@ func (app *Application) WatchProject(proj core.Project, repoPath string, recName
 				return
 			}
 
-			if all {
-				_ = watcher.RemoveTemporaries()
-			}
-
 			if notify {
 				_ = beeep.Notify("Manala", "Project synced", "")
 			}
@@ -352,13 +347,7 @@ func (app *Application) WatchProject(proj core.Project, repoPath string, recName
 		// On all
 		func(watcher *internalWatcher.Watcher) {
 			if all && proj != nil {
-				// Watch recipe directories
-				_ = filepath.WalkDir(proj.Recipe().Path(), func(path string, file fs.DirEntry, err error) error {
-					if file.IsDir() {
-						_ = watcher.AddTemporary(path)
-					}
-					return nil
-				})
+				_ = proj.Recipe().Watch(watcher)
 			}
 		},
 	)
