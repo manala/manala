@@ -24,11 +24,14 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 		repoPath := internalTesting.DataPath(s, "repository")
 		recPath := filepath.Join(repoPath, "recipe")
 
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Path").Return(repoPath).
+			On("Dir").Return(repoPath)
+
 		manager := NewRepositoryManager(
 			logger,
-			core.NewRepositoryMock().
-				WithPath(repoPath).
-				WithDir(repoPath),
+			repoMock,
 		)
 
 		manifest, err := manager.LoadRecipeManifest("recipe")
@@ -52,11 +55,14 @@ func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
 		repoPath := internalTesting.DataPath(s, "repository")
 		manifestPath := filepath.Join(repoPath, "recipe", ".manala.yaml")
 
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Path").Return(repoPath).
+			On("Dir").Return(repoPath)
+
 		manager := NewRepositoryManager(
 			logger,
-			core.NewRepositoryMock().
-				WithPath(repoPath).
-				WithDir(repoPath),
+			repoMock,
 		)
 
 		manifest, err := manager.LoadRecipeManifest("recipe")
@@ -81,11 +87,14 @@ func (s *ManagerSuite) TestLoadRecipeManifest() {
 
 	repoPath := internalTesting.DataPath(s, "repository")
 
+	repoMock := core.NewRepositoryMock()
+	repoMock.
+		On("Path").Return(repoPath).
+		On("Dir").Return(repoPath)
+
 	manager := NewRepositoryManager(
 		logger,
-		core.NewRepositoryMock().
-			WithPath(repoPath).
-			WithDir(repoPath),
+		repoMock,
 	)
 
 	manifest, err := manager.LoadRecipeManifest("recipe")
@@ -101,11 +110,14 @@ func (s *ManagerSuite) TestLoadRecipe() {
 	repoPath := internalTesting.DataPath(s, "repository")
 	recPath := filepath.Join(repoPath, "recipe")
 
+	repoMock := core.NewRepositoryMock()
+	repoMock.
+		On("Path").Return(repoPath).
+		On("Dir").Return(repoPath)
+
 	manager := NewRepositoryManager(
 		logger,
-		core.NewRepositoryMock().
-			WithPath(repoPath).
-			WithDir(repoPath),
+		repoMock,
 	)
 
 	rec, err := manager.LoadRecipe("recipe")

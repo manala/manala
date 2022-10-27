@@ -57,7 +57,7 @@ func (rec *Recipe) Repository() core.Repository {
 }
 
 func (rec *Recipe) Template() *internalTemplate.Template {
-	template := &internalTemplate.Template{}
+	template := internalTemplate.NewTemplate()
 
 	// Include template helpers if any
 	helpersPath := filepath.Join(rec.Path(), "_helpers.tmpl")

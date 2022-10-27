@@ -1,11 +1,13 @@
 package project
 
 import (
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
+	internalTemplate "manala/internal/template"
 	internalTesting "manala/internal/testing"
 	"os"
 	"path/filepath"
@@ -21,9 +23,11 @@ func TestManagerSuite(t *testing.T) {
 func (s *ManagerSuite) TestLoadProjectManifestErrors() {
 	logger := internalLog.New(io.Discard)
 
+	repoManagerMock := core.NewRepositoryManagerMock()
+
 	manager := NewManager(
 		logger,
-		core.NewRepositoryManagerMock(),
+		repoManagerMock,
 	)
 
 	s.Run("Not Found", func() {
@@ -72,9 +76,11 @@ func (s *ManagerSuite) TestLoadProjectManifest() {
 
 	path := internalTesting.DataPath(s, "project")
 
+	repoManagerMock := core.NewRepositoryManagerMock()
+
 	manager := NewManager(
 		logger,
-		core.NewRepositoryManagerMock(),
+		repoManagerMock,
 	)
 
 	manifest, err := manager.LoadProjectManifest(path)
@@ -88,22 +94,30 @@ func (s *ManagerSuite) TestLoadProjectManifest() {
 func (s *ManagerSuite) TestCreateProjectErrors() {
 	logger := internalLog.New(io.Discard)
 
+	repoManagerMock := core.NewRepositoryManagerMock()
+
 	manager := NewManager(
 		logger,
-		core.NewRepositoryManagerMock(),
+		repoManagerMock,
 	)
 
 	s.Run("File", func() {
 		path := internalTesting.DataPath(s, "project")
 
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Path").Return("repository").
+			On("Source").Return("repository")
+
+		recMock := core.NewRecipeMock()
+		recMock.
+			On("Name").Return("recipe").
+			On("Repository").Return(repoMock).
+			On("ProjectManifestTemplate").Return(internalTemplate.NewTemplate())
+
 		proj, err := manager.CreateProject(
 			path,
-			core.NewRecipeMock().
-				WithName("recipe").
-				WithRepository(
-					core.NewRepositoryMock().
-						WithPath("repository"),
-				),
+			recMock,
 			nil,
 		)
 
@@ -125,9 +139,11 @@ func (s *ManagerSuite) TestCreateProjectErrors() {
 func (s *ManagerSuite) TestCreateProject() {
 	logger := internalLog.New(io.Discard)
 
+	repoManagerMock := core.NewRepositoryManagerMock()
+
 	manager := NewManager(
 		logger,
-		core.NewRepositoryManagerMock(),
+		repoManagerMock,
 	)
 
 	s.Run("Root", func() {
@@ -136,14 +152,20 @@ func (s *ManagerSuite) TestCreateProject() {
 
 		_ = os.Remove(manifestPath)
 
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Path").Return("repository").
+			On("Source").Return("repository")
+
+		recMock := core.NewRecipeMock()
+		recMock.
+			On("Name").Return("recipe").
+			On("Repository").Return(repoMock).
+			On("ProjectManifestTemplate").Return(internalTemplate.NewTemplate())
+
 		proj, err := manager.CreateProject(
 			path,
-			core.NewRecipeMock().
-				WithName("recipe").
-				WithRepository(
-					core.NewRepositoryMock().
-						WithPath("repository"),
-				),
+			recMock,
 			nil,
 		)
 
@@ -159,14 +181,20 @@ func (s *ManagerSuite) TestCreateProject() {
 
 		_ = os.RemoveAll(path)
 
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Path").Return("repository").
+			On("Source").Return("repository")
+
+		recMock := core.NewRecipeMock()
+		recMock.
+			On("Name").Return("recipe").
+			On("Repository").Return(repoMock).
+			On("ProjectManifestTemplate").Return(internalTemplate.NewTemplate())
+
 		proj, err := manager.CreateProject(
 			path,
-			core.NewRecipeMock().
-				WithName("recipe").
-				WithRepository(
-					core.NewRepositoryMock().
-						WithPath("repository"),
-				),
+			recMock,
 			nil,
 		)
 
@@ -185,21 +213,30 @@ func (s *ManagerSuite) TestLoadProjectErrors() {
 		path := internalTesting.DataPath(s, "project")
 		manifestPath := filepath.Join(path, ".manala.yaml")
 
+		repoMock := core.NewRepositoryMock()
+
+		repoManagerMock := core.NewRepositoryManagerMock()
+		repoManagerMock.
+			On("LoadRepository", mock.Anything).Return(repoMock, nil)
+
+		recMock := core.NewRecipeMock()
+		recMock.
+			On("Vars").Return(map[string]interface{}{}).
+			On("Schema").Return(map[string]interface{}{
+			"type": "object",
+			"properties": map[string]interface{}{
+				"foo": map[string]interface{}{
+					"type": "integer",
+				},
+			},
+		})
+
+		repoMock.
+			On("LoadRecipe", mock.Anything).Return(recMock, nil)
+
 		manager := NewManager(
 			logger,
-			core.NewRepositoryManagerMock().WithLoadRepository(
-				core.NewRepositoryMock().WithLoadRecipe(
-					core.NewRecipeMock().
-						WithSchema(map[string]interface{}{
-							"type": "object",
-							"properties": map[string]interface{}{
-								"foo": map[string]interface{}{
-									"type": "integer",
-								},
-							},
-						}),
-				),
-			),
+			repoManagerMock,
 		)
 
 		project, err := manager.LoadProject(
@@ -239,16 +276,24 @@ func (s *ManagerSuite) TestLoadProject() {
 
 	path := internalTesting.DataPath(s, "project")
 
-	repo := core.NewRepositoryMock()
+	repoMock := core.NewRepositoryMock()
+
+	repoManagerMock := core.NewRepositoryManagerMock()
+	repoManagerMock.
+		On("LoadRepository", mock.Anything).Return(repoMock, nil)
+
+	recMock := core.NewRecipeMock()
+	recMock.
+		On("Vars").Return(map[string]interface{}{}).
+		On("Schema").Return(map[string]interface{}{}).
+		On("Repository").Return(repoMock)
+
+	repoMock.
+		On("LoadRecipe", mock.Anything).Return(recMock, nil)
 
 	manager := NewManager(
 		logger,
-		core.NewRepositoryManagerMock().WithLoadRepository(
-			repo.WithLoadRecipe(
-				core.NewRecipeMock().
-					WithRepository(repo),
-			),
-		),
+		repoManagerMock,
 	)
 
 	project, err := manager.LoadProject(

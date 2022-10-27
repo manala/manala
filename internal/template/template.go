@@ -15,6 +15,10 @@ type ProviderInterface interface {
 type Provider struct{}
 
 func (provider *Provider) Template() *Template {
+	return NewTemplate()
+}
+
+func NewTemplate() *Template {
 	return &Template{}
 }
 

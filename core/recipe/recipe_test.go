@@ -18,28 +18,33 @@ func TestRecipeSuite(t *testing.T) {
 }
 
 func (s *RecipeSuite) Test() {
-	repo := core.NewRepositoryMock()
+	path := internalTesting.DataPath(s, "recipe")
 
-	recManifest := core.NewRecipeManifestMock().
-		WithDir(internalTesting.DataPath(s, "recipe")).
-		WithDescription("Description").
-		WithTemplate(filepath.Join("templates", "foo.tmpl")).
-		WithVars(map[string]interface{}{"foo": "bar"}).
-		WithInitVars(map[string]interface{}{"foo": "baz"})
+	repoMock := core.NewRepositoryMock()
+
+	recManifestMock := core.NewRecipeManifestMock()
+	recManifestMock.
+		On("Path").Return(filepath.Join(path, "manifest")).
+		On("Description").Return("Description").
+		On("Template").Return(filepath.Join("templates", "foo.tmpl")).
+		On("Vars").Return(map[string]interface{}{"foo": "bar"}).
+		On("Sync").Return([]internalSyncer.UnitInterface(nil)).
+		On("Schema").Return(map[string]interface{}{}).
+		On("InitVars").Return(map[string]interface{}{"foo": "baz"})
 
 	rec := NewRecipe(
 		"recipe",
-		recManifest,
-		repo,
+		recManifestMock,
+		repoMock,
 	)
 
-	s.Equal(internalTesting.DataPath(s, "recipe"), rec.Path())
+	s.Equal(path, rec.Path())
 	s.Equal("recipe", rec.Name())
 	s.Equal("Description", rec.Description())
 	s.Equal(map[string]interface{}{"foo": "bar"}, rec.Vars())
 	s.Equal([]internalSyncer.UnitInterface(nil), rec.Sync())
 	s.Equal(map[string]interface{}{}, rec.Schema())
-	s.Equal(repo, rec.Repository())
+	s.Equal(repoMock, rec.Repository())
 
 	s.Run("Template", func() {
 		template := rec.Template()

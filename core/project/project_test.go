@@ -6,7 +6,9 @@ import (
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
 	"manala/core"
+	internalTemplate "manala/internal/template"
 	internalTesting "manala/internal/testing"
+	"path/filepath"
 	"testing"
 )
 
@@ -24,31 +26,36 @@ func (s *ProjectSuite) SetupTest() {
 }
 
 func (s *ProjectSuite) Test() {
-	repo := core.NewRepositoryMock().
-		WithPath("repository")
+	repoMock := core.NewRepositoryMock()
+	repoMock.
+		On("Path").Return("repository").
+		On("Source").Return("repository")
 
-	rec := core.NewRecipeMock().
-		WithName("recipe").
-		WithVars(map[string]interface{}{
-			"foo": "recipe",
-			"bar": "recipe",
-		}).
-		WithRepository(repo)
+	recMock := core.NewRecipeMock()
+	recMock.
+		On("Name").Return("recipe").
+		On("Vars").Return(map[string]interface{}{
+		"foo": "recipe",
+		"bar": "recipe",
+	}).
+		On("Repository").Return(repoMock).
+		On("Template").Return(internalTemplate.NewTemplate())
 
-	projManifest := core.NewProjectManifestMock().
-		WithDir("dir").
-		WithVars(map[string]interface{}{
-			"bar": "project",
-			"baz": "project",
-		})
+	projManifestMock := core.NewProjectManifestMock()
+	projManifestMock.
+		On("Path").Return(filepath.Join("dir", "manifest")).
+		On("Vars").Return(map[string]interface{}{
+		"bar": "project",
+		"baz": "project",
+	})
 
 	proj := NewProject(
-		projManifest,
-		rec,
+		projManifestMock,
+		recMock,
 	)
 
 	s.Equal("dir", proj.Path())
-	s.Equal(rec, proj.Recipe())
+	s.Equal(recMock, proj.Recipe())
 
 	s.Run("Vars", func() {
 		s.Equal(map[string]interface{}{
