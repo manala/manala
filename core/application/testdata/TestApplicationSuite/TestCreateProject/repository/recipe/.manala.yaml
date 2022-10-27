@@ -1,0 +1,13 @@
+manala:
+  description: Description
+  template: .manala.yaml.tmpl
+
+# @option {"label": "String float int"}
+# @schema {"enum": ["3.0"]}
+string_float_int: ~
+string_float_int_value: "3.0"
+
+# @option {"label": "String asterisk"}
+# @schema {"enum": ["*"]}
+string_asterisk: ~
+string_asterisk_value: "*"

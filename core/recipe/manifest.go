@@ -167,7 +167,7 @@ func (manifest *Manifest) InitVars(callback func(options []core.RecipeOption) er
 	}
 
 	// Decode vars
-	if err := yaml.NodeToValue(manifest.node, &vars); err != nil {
+	if err := yaml.NewDecoder(manifest.node).Decode(&vars); err != nil {
 		return nil, internalReport.NewError(err).
 			WithMessage("unable to decode recipe manifest init vars")
 	}

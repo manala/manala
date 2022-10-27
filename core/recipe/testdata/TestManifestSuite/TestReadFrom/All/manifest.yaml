@@ -12,8 +12,8 @@ manala:
 # @option {"label": "String"}
 string: string
 
-# @schema {"type": "string"}
 # @option {"label": "String null"}
+# @schema {"type": "string"}
 string_null: ~
 
 sequence:
@@ -36,20 +36,20 @@ map:
 map_empty: {}
 
 map_single:
-  # @schema {"minLength": 1}
   # @option {"label": "Map single first"}
+  # @schema {"minLength": 1}
   first: foo
 
 map_multiple:
-  # @schema {"minLength": 1}
   # @option {"label": "Map multiple first"}
-  first: foo
   # @schema {"minLength": 1}
+  first: foo
   # @option {"label": "Map multiple second"}
+  # @schema {"minLength": 1}
   second: foo
 
-# @schema {"enum": [null, true, false, "string", 12, 2.3, 3.0, "3.0"]}
 # @option {"label": "Enum null"}
+# @schema {"enum": [null, true, false, "string", 12, 2.3, 3.0, "3.0"]}
 enum: ~
 
 # @option {"label": "Underscore key"}

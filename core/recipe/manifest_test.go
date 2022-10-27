@@ -596,8 +596,8 @@ func (s *ManifestSuite) TestInitVars() {
 	manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 	_ = manifest.ReadFrom(manifestFile)
 
-	_, err := manifest.InitVars(func(options []core.RecipeOption) error {
-		s.Len(options, 9)
+	vars, err := manifest.InitVars(func(options []core.RecipeOption) error {
+		s.Len(options, 11)
 
 		s.Equal("String", options[0].Label())
 		s.Equal(map[string]interface{}{
@@ -609,25 +609,37 @@ func (s *ManifestSuite) TestInitVars() {
 			"type": "string",
 		}, options[1].Schema())
 
-		s.Equal("Map single first", options[2].Label())
+		s.Equal("String float int", options[2].Label())
 		s.Equal(map[string]interface{}{
-			"type":      "string",
-			"minLength": float64(1),
+			"enum": []interface{}{"3.0"},
 		}, options[2].Schema())
+		options[2].Set("3.0")
 
-		s.Equal("Map multiple first", options[3].Label())
+		s.Equal("String asterisk", options[3].Label())
 		s.Equal(map[string]interface{}{
-			"type":      "string",
-			"minLength": float64(1),
+			"enum": []interface{}{"*"},
 		}, options[3].Schema())
+		options[3].Set("*")
 
-		s.Equal("Map multiple second", options[4].Label())
+		s.Equal("Map single first", options[4].Label())
 		s.Equal(map[string]interface{}{
 			"type":      "string",
 			"minLength": float64(1),
 		}, options[4].Schema())
 
-		s.Equal("Enum null", options[5].Label())
+		s.Equal("Map multiple first", options[5].Label())
+		s.Equal(map[string]interface{}{
+			"type":      "string",
+			"minLength": float64(1),
+		}, options[5].Schema())
+
+		s.Equal("Map multiple second", options[6].Label())
+		s.Equal(map[string]interface{}{
+			"type":      "string",
+			"minLength": float64(1),
+		}, options[6].Schema())
+
+		s.Equal("Enum null", options[7].Label())
 		s.Equal(map[string]interface{}{
 			"enum": []interface{}{
 				nil,
@@ -639,25 +651,59 @@ func (s *ManifestSuite) TestInitVars() {
 				3.0,
 				"3.0",
 			},
-		}, options[5].Schema())
-
-		s.Equal("Underscore key", options[6].Label())
-		s.Equal(map[string]interface{}{
-			"type": "string",
-		}, options[6].Schema())
-
-		s.Equal("Hyphen key", options[7].Label())
-		s.Equal(map[string]interface{}{
-			"type": "string",
 		}, options[7].Schema())
 
-		s.Equal("Dot key", options[8].Label())
+		s.Equal("Underscore key", options[8].Label())
 		s.Equal(map[string]interface{}{
 			"type": "string",
 		}, options[8].Schema())
+
+		s.Equal("Hyphen key", options[9].Label())
+		s.Equal(map[string]interface{}{
+			"type": "string",
+		}, options[9].Schema())
+
+		s.Equal("Dot key", options[10].Label())
+		s.Equal(map[string]interface{}{
+			"type": "string",
+		}, options[10].Schema())
 
 		return nil
 	})
 
 	s.NoError(err)
+
+	s.Equal(map[string]interface{}{
+		"string":                 "string",
+		"string_null":            nil,
+		"string_float_int":       "3.0",
+		"string_float_int_value": "3.0",
+		"string_asterisk":        "*",
+		"string_asterisk_value":  "*",
+		"sequence": []interface{}{
+			"first",
+		},
+		"sequence_string_empty": []interface{}{},
+		"boolean":               true,
+		"integer":               uint64(123),
+		"float":                 1.2,
+		"map": map[string]interface{}{
+			"string": "string",
+			"map": map[string]interface{}{
+				"string": "string",
+			},
+		},
+		"map_empty": map[string]interface{}{},
+		"map_single": map[string]interface{}{
+			"first": "foo",
+		},
+		"map_multiple": map[string]interface{}{
+			"first":  "foo",
+			"second": "foo",
+		},
+		"enum":           nil,
+		"underscore_key": "ok",
+		"hyphen-key":     "ok",
+		"dot.key":        "ok",
+	}, vars)
 }

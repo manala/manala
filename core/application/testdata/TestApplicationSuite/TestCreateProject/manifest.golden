@@ -1,0 +1,8 @@
+manala:
+    recipe: recipe
+
+string_float_int: '3.0'
+string_float_int_value: '3.0'
+
+string_asterisk: '*'
+string_asterisk_value: '*'

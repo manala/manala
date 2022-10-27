@@ -122,8 +122,8 @@ Recipe options could be provided using doc annotation. They will be prompted to 
 ```yaml
 bar:
     baz: []
+    # @option {"label": "Qux value"}
     # @schema {"enum": [null, 123, "foo"]}
-    # @option {"label": "Qux value"} 
     qux: 123
 ```
 
