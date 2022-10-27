@@ -19,6 +19,7 @@ manala watch [dir] [flags]
   -h, --help                help for watch
   -n, --notify              use system notifications
   -i, --recipe string       use recipe
+      --ref string          use repository ref
   -o, --repository string   use repository
 ```
 

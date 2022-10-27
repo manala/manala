@@ -17,6 +17,7 @@ manala list [flags]
 
 ```
   -h, --help                help for list
+      --ref string          use repository ref
   -o, --repository string   use repository
 ```
 

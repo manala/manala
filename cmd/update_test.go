@@ -280,7 +280,7 @@ func (s *UpdateSuite) TestRepositoryError() {
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
-			Err: "repository not found",
+			Err: "unsupported repository url",
 			Fields: map[string]interface{}{
 				"url": repoUrl,
 			},
@@ -304,9 +304,9 @@ func (s *UpdateSuite) TestRepositoryError() {
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
-			Err: "wrong repository",
+			Err: "unsupported repository url",
 			Fields: map[string]interface{}{
-				"dir": repoUrl,
+				"url": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
