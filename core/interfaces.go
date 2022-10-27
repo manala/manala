@@ -78,7 +78,7 @@ type RecipeOption interface {
 /**************/
 
 type RepositoryManager interface {
-	LoadRepository(paths []string) (Repository, error)
+	LoadRepository(path string) (Repository, error)
 }
 
 type Repository interface {

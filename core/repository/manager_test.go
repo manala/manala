@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"manala/core"
@@ -11,58 +12,170 @@ import (
 	"testing"
 )
 
-type ManagerSuite struct{ suite.Suite }
+/***********/
+/* Default */
+/***********/
 
-func TestManagerSuite(t *testing.T) {
-	suite.Run(t, new(ManagerSuite))
+type DefaultManagerSuite struct{ suite.Suite }
+
+func TestDefaultManagerSuite(t *testing.T) {
+	suite.Run(t, new(DefaultManagerSuite))
 }
 
-func (s *ManagerSuite) TestChain() {
+func (s *DefaultManagerSuite) TestLoadRepository() {
 	log := internalLog.New(io.Discard)
 
-	s.Run("LoadRepository Default", func() {
-		path := internalTesting.DataPath(s, "repository")
+	s.Run("Default", func() {
+		repoMock := core.NewRepositoryMock()
 
-		manager := NewChainManager(
+		managerMock := core.NewRepositoryManagerMock()
+		managerMock.
+			On("LoadRepository", mock.Anything).Return(repoMock, nil)
+
+		manager := NewDefaultManager(
 			log,
-			path,
-			[]core.RepositoryManager{
-				NewDirManager(log),
-			},
+			"default",
+			managerMock,
 		)
 
-		repo, err := manager.LoadRepository([]string{})
+		repo, err := manager.LoadRepository("foo")
 
 		s.NoError(err)
-		s.Equal(path, repo.Path())
+		s.Equal(repoMock, repo)
+
+		managerMock.AssertCalled(s.T(), "LoadRepository", "foo")
 	})
 
-	s.Run("LoadRepository", func() {
+	s.Run("Empty", func() {
+		repoMock := core.NewRepositoryMock()
+
+		managerMock := core.NewRepositoryManagerMock()
+		managerMock.
+			On("LoadRepository", mock.Anything).Return(core.NewRepositoryMock(), nil)
+
+		manager := NewDefaultManager(
+			log,
+			"default",
+			managerMock,
+		)
+
+		repo, err := manager.LoadRepository("")
+
+		s.NoError(err)
+		s.Equal(repoMock, repo)
+
+		managerMock.AssertCalled(s.T(), "LoadRepository", "default")
+	})
+}
+
+/*********/
+/* Cache */
+/*********/
+
+type CacheManagerSuite struct{ suite.Suite }
+
+func TestCacheManagerSuite(t *testing.T) {
+	suite.Run(t, new(CacheManagerSuite))
+}
+
+func (s *CacheManagerSuite) TestLoadRepository() {
+	log := internalLog.New(io.Discard)
+
+	repoMock := core.NewRepositoryMock()
+
+	managerMock := core.NewRepositoryManagerMock()
+	managerMock.
+		On("LoadRepository", mock.Anything).Return(repoMock, nil)
+
+	manager := NewCacheManager(
+		log,
+		managerMock,
+	)
+
+	// First call should pass to embedded manager
+	repo, err := manager.LoadRepository("foo")
+
+	s.NoError(err)
+	s.Equal(repoMock, repo)
+
+	managerMock.AssertNumberOfCalls(s.T(), "LoadRepository", 1)
+
+	// Second call with same name should extract from cache, and not pass to embedded manager
+	repo, err = manager.LoadRepository("foo")
+
+	s.NoError(err)
+	s.Equal(repoMock, repo)
+
+	managerMock.AssertNumberOfCalls(s.T(), "LoadRepository", 1)
+
+	// Third call with different name should pass to embedded manager
+	repo, err = manager.LoadRepository("bar")
+
+	s.NoError(err)
+	s.Equal(repoMock, repo)
+
+	managerMock.AssertNumberOfCalls(s.T(), "LoadRepository", 2)
+}
+
+/*********/
+/* Cache */
+/*********/
+
+type ChainManagerSuite struct{ suite.Suite }
+
+func TestChainManagerSuite(t *testing.T) {
+	suite.Run(t, new(ChainManagerSuite))
+}
+
+func (s *ChainManagerSuite) TestLoadRepository() {
+	log := internalLog.New(io.Discard)
+
+	s.Run("Default", func() {
 		path := internalTesting.DataPath(s, "repository")
 
 		manager := NewChainManager(
 			log,
-			path,
 			[]core.RepositoryManager{
 				NewDirManager(log),
 			},
 		)
 
-		repo, err := manager.LoadRepository([]string{
+		repo, err := manager.LoadRepository(
 			path,
-		})
+		)
 
 		s.NoError(err)
 		s.Equal(path, repo.Path())
 	})
 }
 
-func (s *ManagerSuite) TestDir() {
+/*******/
+/* Dir */
+/*******/
+
+type DirManagerSuite struct{ suite.Suite }
+
+func TestDirManagerSuite(t *testing.T) {
+	suite.Run(t, new(DirManagerSuite))
+}
+
+func (s *DirManagerSuite) TestLoadRepository() {
 	log := internalLog.New(io.Discard)
 	loader := NewDirManager(log)
 
-	s.Run("LoadRepository Empty", func() {
-		repo, err := loader.LoadRepository([]string{})
+	s.Run("Default", func() {
+		path := internalTesting.DataPath(s, "repository")
+
+		repo, err := loader.LoadRepository(
+			path,
+		)
+
+		s.NoError(err)
+		s.Equal(path, repo.Path())
+	})
+
+	s.Run("Empty", func() {
+		repo, err := loader.LoadRepository("")
 
 		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
 		s.ErrorAs(err, &_unsupportedRepositoryError)
@@ -71,12 +184,12 @@ func (s *ManagerSuite) TestDir() {
 		s.Nil(repo)
 	})
 
-	s.Run("LoadRepository Not Found", func() {
+	s.Run("Not Found", func() {
 		path := internalTesting.DataPath(s, "repository")
 
-		repo, err := loader.LoadRepository([]string{
+		repo, err := loader.LoadRepository(
 			path,
-		})
+		)
 
 		var _notFoundRepositoryError *core.NotFoundRepositoryError
 		s.ErrorAs(err, &_notFoundRepositoryError)
@@ -85,30 +198,29 @@ func (s *ManagerSuite) TestDir() {
 		s.Nil(repo)
 	})
 
-	s.Run("LoadRepository Wrong", func() {
+	s.Run("Wrong", func() {
 		path := internalTesting.DataPath(s, "repository")
 
-		repo, err := loader.LoadRepository([]string{
+		repo, err := loader.LoadRepository(
 			path,
-		})
+		)
 
 		s.EqualError(err, "wrong repository")
 		s.Nil(repo)
 	})
-
-	s.Run("LoadRepository", func() {
-		path := internalTesting.DataPath(s, "repository")
-
-		repo, err := loader.LoadRepository([]string{
-			path,
-		})
-
-		s.NoError(err)
-		s.Equal(path, repo.Path())
-	})
 }
 
-func (s *ManagerSuite) TestGit() {
+/*******/
+/* Git */
+/*******/
+
+type GitManagerSuite struct{ suite.Suite }
+
+func TestGitManagerSuite(t *testing.T) {
+	suite.Run(t, new(GitManagerSuite))
+}
+
+func (s *GitManagerSuite) TestLoadRepository() {
 	cacheDir := internalTesting.DataPath(s, "cache")
 
 	_ = os.RemoveAll(cacheDir)
@@ -119,48 +231,48 @@ func (s *ManagerSuite) TestGit() {
 		cacheDir,
 	)
 
-	s.Run("LoadRepository Empty", func() {
-		repo, err := loader.LoadRepository([]string{})
-
-		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
-		s.ErrorAs(err, &_unsupportedRepositoryError)
-
-		s.EqualError(err, "unsupported repository")
-		s.Nil(repo)
-	})
-
-	s.Run("LoadRepository Unsupported", func() {
-		repo, err := loader.LoadRepository([]string{
-			"foo",
-		})
-
-		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
-		s.ErrorAs(err, &_unsupportedRepositoryError)
-
-		s.EqualError(err, "unsupported repository")
-		s.Nil(repo)
-	})
-
-	s.Run("LoadRepository Error", func() {
-		repo, err := loader.LoadRepository([]string{
-			"https://github.com/octocat/Foo-Bar.git",
-		})
-
-		s.EqualError(err, "authentication required")
-		s.Nil(repo)
-	})
-
-	s.Run("LoadRepository", func() {
+	s.Run("Default", func() {
 		url := "https://github.com/octocat/Hello-World.git"
 
 		repoPath := filepath.Join(cacheDir, "repositories", "3a1b4df2cfc5d2f2cc3259ef67cda77786d47f84")
 
-		repo, err := loader.LoadRepository([]string{
+		repo, err := loader.LoadRepository(
 			url,
-		})
+		)
 
 		s.NoError(err)
 		s.Equal(url, repo.Path())
 		s.DirExists(repoPath)
+	})
+
+	s.Run("Empty", func() {
+		repo, err := loader.LoadRepository("")
+
+		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
+		s.ErrorAs(err, &_unsupportedRepositoryError)
+
+		s.EqualError(err, "unsupported repository")
+		s.Nil(repo)
+	})
+
+	s.Run("Unsupported", func() {
+		repo, err := loader.LoadRepository(
+			"foo",
+		)
+
+		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
+		s.ErrorAs(err, &_unsupportedRepositoryError)
+
+		s.EqualError(err, "unsupported repository")
+		s.Nil(repo)
+	})
+
+	s.Run("Error", func() {
+		repo, err := loader.LoadRepository(
+			"https://github.com/octocat/Foo-Bar.git",
+		)
+
+		s.EqualError(err, "authentication required")
+		s.Nil(repo)
 	})
 }

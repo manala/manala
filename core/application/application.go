@@ -40,18 +40,24 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger) *App
 	}
 
 	// Repository manager
-	app.repositoryManager = repository.NewChainManager(
+	app.repositoryManager = repository.NewDefaultManager(
 		app.log,
 		app.config.GetString("default-repository"),
-		[]core.RepositoryManager{
-			repository.NewGitManager(
+		repository.NewCacheManager(
+			app.log,
+			repository.NewChainManager(
 				app.log,
-				app.config.GetString("cache-dir"),
+				[]core.RepositoryManager{
+					repository.NewGitManager(
+						app.log,
+						app.config.GetString("cache-dir"),
+					),
+					repository.NewDirManager(
+						app.log,
+					),
+				},
 			),
-			repository.NewDirManager(
-				app.log,
-			),
-		},
+		),
 	)
 
 	// Project manager
@@ -80,7 +86,7 @@ func (app *Application) Repository(path string) (core.Repository, error) {
 	app.log.IncreasePadding()
 
 	repo, err := app.repositoryManager.LoadRepository(
-		[]string{path},
+		path,
 	)
 
 	// Log

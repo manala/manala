@@ -218,8 +218,8 @@ type RepositoryManagerMock struct {
 	mock.Mock
 }
 
-func (manager *RepositoryManagerMock) LoadRepository(paths []string) (Repository, error) {
-	args := manager.Called(paths)
+func (manager *RepositoryManagerMock) LoadRepository(path string) (Repository, error) {
+	args := manager.Called(path)
 	return args.Get(0).(Repository), args.Error(1)
 }
 

@@ -103,10 +103,10 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 	manager.log.IncreasePadding()
 
 	// Load repository
-	repo, err := manager.repositoryManager.LoadRepository([]string{
-		repoPath,
-		manifest.Repository(),
-	})
+	if repoPath == "" {
+		repoPath = manifest.Repository()
+	}
+	repo, err := manager.repositoryManager.LoadRepository(repoPath)
 	if err != nil {
 		return nil, err
 	}

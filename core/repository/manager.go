@@ -13,43 +13,93 @@ import (
 	internalReport "manala/internal/report"
 	"os"
 	"path/filepath"
-	"strings"
 )
+
+/***********/
+/* Default */
+/***********/
+
+func NewDefaultManager(log *internalLog.Logger, path string, manager core.RepositoryManager) *DefaultManager {
+	return &DefaultManager{
+		log:     log,
+		path:    path,
+		manager: manager,
+	}
+}
+
+type DefaultManager struct {
+	log     *internalLog.Logger
+	path    string
+	manager core.RepositoryManager
+}
+
+func (manager *DefaultManager) LoadRepository(path string) (core.Repository, error) {
+	// Replace path by default if empty
+	if path == "" {
+		path = manager.path
+	}
+
+	return manager.manager.LoadRepository(path)
+}
+
+/*********/
+/* Cache */
+/*********/
+
+func NewCacheManager(log *internalLog.Logger, manager core.RepositoryManager) *CacheManager {
+	return &CacheManager{
+		log:     log,
+		cache:   make(map[string]core.Repository),
+		manager: manager,
+	}
+}
+
+type CacheManager struct {
+	log     *internalLog.Logger
+	cache   map[string]core.Repository
+	manager core.RepositoryManager
+}
+
+func (manager *CacheManager) LoadRepository(path string) (core.Repository, error) {
+	// Check if repository already in cache
+	if repo, ok := manager.cache[path]; ok {
+		manager.log.Debug("load from cache")
+		return repo, nil
+	}
+
+	repo, err := manager.manager.LoadRepository(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Cache repository
+	manager.cache[path] = repo
+
+	return repo, nil
+}
 
 /*********/
 /* Chain */
 /*********/
 
-func NewChainManager(log *internalLog.Logger, defaultRepository string, managers []core.RepositoryManager) *ChainManager {
+func NewChainManager(log *internalLog.Logger, managers []core.RepositoryManager) *ChainManager {
 	return &ChainManager{
-		log:               log,
-		defaultRepository: defaultRepository,
-		managers:          managers,
-		cache:             make(map[string]core.Repository),
+		log:      log,
+		managers: managers,
 	}
 }
 
 type ChainManager struct {
-	log               *internalLog.Logger
-	defaultRepository string
-	managers          []core.RepositoryManager
-	cache             map[string]core.Repository
+	log      *internalLog.Logger
+	managers []core.RepositoryManager
 }
 
-func (manager *ChainManager) LoadRepository(paths []string) (core.Repository, error) {
-	// Check if repository already in cache
-	if repo, ok := manager.cache[strings.Join(paths, "|")]; ok {
-		// Log
-		manager.log.Debug("load from cache")
-
-		return repo, nil
-	}
-
+func (manager *ChainManager) LoadRepository(path string) (core.Repository, error) {
 	var repo core.Repository
 
 	// Try managers
 	for _, _manager := range manager.managers {
-		_repo, err := _manager.LoadRepository(append(paths, manager.defaultRepository))
+		_repo, err := _manager.LoadRepository(path)
 		if err != nil {
 			var _unsupportedRepositoryError *core.UnsupportedRepositoryError
 			if errors.As(err, &_unsupportedRepositoryError) {
@@ -60,14 +110,12 @@ func (manager *ChainManager) LoadRepository(paths []string) (core.Repository, er
 		repo = _repo
 		break
 	}
+
 	if repo == nil {
 		return nil, internalReport.NewError(
 			core.NewUnsupportedRepositoryError("unsupported repository"),
 		)
 	}
-
-	// Cache repository
-	manager.cache[strings.Join(paths, "|")] = repo
 
 	return repo, nil
 }
@@ -86,16 +134,7 @@ type DirManager struct {
 	log *internalLog.Logger
 }
 
-func (manager *DirManager) LoadRepository(paths []string) (core.Repository, error) {
-	// Get path
-	var path string
-	for _, _path := range paths {
-		if _path != "" {
-			path = _path
-			break
-		}
-	}
-
+func (manager *DirManager) LoadRepository(path string) (core.Repository, error) {
 	// Is path empty ?
 	if path == "" {
 		return nil, internalReport.NewError(
@@ -147,16 +186,7 @@ type GitManager struct {
 	cacheDir string
 }
 
-func (manager *GitManager) LoadRepository(paths []string) (core.Repository, error) {
-	// Get path
-	var path string
-	for _, _path := range paths {
-		if _path != "" {
-			path = _path
-			break
-		}
-	}
-
+func (manager *GitManager) LoadRepository(path string) (core.Repository, error) {
 	// Is git repo format ?
 	if !(&core.GitRepoFormatChecker{}).IsFormat(path) {
 		return nil, internalReport.NewError(
