@@ -161,12 +161,13 @@ func TestDirManagerSuite(t *testing.T) {
 
 func (s *DirManagerSuite) TestLoadRepository() {
 	log := internalLog.New(io.Discard)
-	loader := NewDirManager(log)
+
+	manager := NewDirManager(log)
 
 	s.Run("Default", func() {
 		path := internalTesting.DataPath(s, "repository")
 
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			path,
 		)
 
@@ -175,7 +176,7 @@ func (s *DirManagerSuite) TestLoadRepository() {
 	})
 
 	s.Run("Empty", func() {
-		repo, err := loader.LoadRepository("")
+		repo, err := manager.LoadRepository("")
 
 		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
 		s.ErrorAs(err, &_unsupportedRepositoryError)
@@ -187,7 +188,7 @@ func (s *DirManagerSuite) TestLoadRepository() {
 	s.Run("Not Found", func() {
 		path := internalTesting.DataPath(s, "repository")
 
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			path,
 		)
 
@@ -201,7 +202,7 @@ func (s *DirManagerSuite) TestLoadRepository() {
 	s.Run("Wrong", func() {
 		path := internalTesting.DataPath(s, "repository")
 
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			path,
 		)
 
@@ -226,7 +227,8 @@ func (s *GitManagerSuite) TestLoadRepository() {
 	_ = os.RemoveAll(cacheDir)
 
 	log := internalLog.New(io.Discard)
-	loader := NewGitManager(
+
+	manager := NewGitManager(
 		log,
 		cacheDir,
 	)
@@ -236,7 +238,7 @@ func (s *GitManagerSuite) TestLoadRepository() {
 
 		repoPath := filepath.Join(cacheDir, "repositories", "3a1b4df2cfc5d2f2cc3259ef67cda77786d47f84")
 
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			url,
 		)
 
@@ -246,7 +248,7 @@ func (s *GitManagerSuite) TestLoadRepository() {
 	})
 
 	s.Run("Empty", func() {
-		repo, err := loader.LoadRepository("")
+		repo, err := manager.LoadRepository("")
 
 		var _unsupportedRepositoryError *core.UnsupportedRepositoryError
 		s.ErrorAs(err, &_unsupportedRepositoryError)
@@ -256,7 +258,7 @@ func (s *GitManagerSuite) TestLoadRepository() {
 	})
 
 	s.Run("Unsupported", func() {
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			"foo",
 		)
 
@@ -268,7 +270,7 @@ func (s *GitManagerSuite) TestLoadRepository() {
 	})
 
 	s.Run("Error", func() {
-		repo, err := loader.LoadRepository(
+		repo, err := manager.LoadRepository(
 			"https://github.com/octocat/Foo-Bar.git",
 		)
 
