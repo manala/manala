@@ -13,15 +13,13 @@ import (
 /***********/
 
 type Project interface {
-	Path() string
+	Dir() string
 	Recipe() Recipe
 	Vars() map[string]interface{}
 	Template() *internalTemplate.Template
-	Watch(watcher *internalWatcher.Watcher) error
 }
 
 type ProjectManifest interface {
-	Path() string
 	Recipe() string
 	Repository() string
 	Vars() map[string]interface{}
@@ -34,15 +32,13 @@ type ProjectManifest interface {
 /**********/
 
 type RecipeManager interface {
-	LoadRecipe(name string) (Recipe, error)
-}
-
-type RecipeWalker interface {
-	WalkRecipes(walker func(rec Recipe)) error
+	LoadRecipe(repo Repository, name string) (Recipe, error)
+	WalkRecipes(repo Repository, walker func(rec Recipe) error) error
+	WatchRecipe(rec Recipe, watcher *internalWatcher.Watcher) error
 }
 
 type Recipe interface {
-	Path() string
+	Dir() string
 	Name() string
 	Description() string
 	Vars() map[string]interface{}
@@ -52,11 +48,9 @@ type Recipe interface {
 	Repository() Repository
 	Template() *internalTemplate.Template
 	ProjectManifestTemplate() *internalTemplate.Template
-	Watch(watcher *internalWatcher.Watcher) error
 }
 
 type RecipeManifest interface {
-	Path() string
 	Description() string
 	Template() string
 	Vars() map[string]interface{}
@@ -78,14 +72,10 @@ type RecipeOption interface {
 /**************/
 
 type RepositoryManager interface {
-	LoadRepository(path string) (Repository, error)
+	LoadRepository(url string) (Repository, error)
 }
 
 type Repository interface {
-	Path() string
-	// Source keep backward compatibility, when "source" was used instead of "path" to define repository origin
-	Source() string
+	Url() string
 	Dir() string
-	LoadRecipe(name string) (Recipe, error)
-	WalkRecipes(walker func(rec Recipe)) error
 }

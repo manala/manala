@@ -35,10 +35,10 @@ func (s *WatchSuite) SetupTest() {
 func (s *WatchSuite) TestProjectError() {
 
 	s.Run("Project Not Found", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -50,17 +50,17 @@ func (s *WatchSuite) TestProjectError() {
 		reportAssert := &internalReport.Assert{
 			Err: "project manifest not found",
 			Fields: map[string]interface{}{
-				"path": projPath,
+				"dir": projDir,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Project Manifest", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -72,17 +72,17 @@ func (s *WatchSuite) TestProjectError() {
 		reportAssert := &internalReport.Assert{
 			Err: "project manifest is a directory",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(projPath, ".manala.yaml"),
+				"dir": filepath.Join(projDir, ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Empty Project Manifest", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -95,17 +95,17 @@ func (s *WatchSuite) TestProjectError() {
 			Message: "irregular project manifest",
 			Err:     "empty yaml file",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(projPath, ".manala.yaml"),
+				"file": filepath.Join(projDir, ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Invalid Project Manifest", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -117,7 +117,7 @@ func (s *WatchSuite) TestProjectError() {
 		reportAssert := &internalReport.Assert{
 			Err: "invalid project manifest",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(projPath, ".manala.yaml"),
+				"file": filepath.Join(projDir, ".manala.yaml"),
 			},
 			Reports: []internalReport.Assert{
 				{
@@ -137,10 +137,10 @@ func (s *WatchSuite) TestProjectError() {
 func (s *WatchSuite) TestRepositoryError() {
 
 	s.Run("No Repository", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -150,18 +150,18 @@ func (s *WatchSuite) TestRepositoryError() {
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
-			Err: "unsupported repository",
+			Err: "unable to process empty repository url",
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Repository Not Found", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			projPath,
-			"--repository", repoPath,
+			projDir,
+			"--repository", repoUrl,
 		})
 
 		s.Error(err)
@@ -173,19 +173,19 @@ func (s *WatchSuite) TestRepositoryError() {
 		reportAssert := &internalReport.Assert{
 			Err: "repository not found",
 			Fields: map[string]interface{}{
-				"path": repoPath,
+				"url": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Repository", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			projPath,
-			"--repository", repoPath,
+			projDir,
+			"--repository", repoUrl,
 		})
 
 		s.Error(err)
@@ -197,7 +197,7 @@ func (s *WatchSuite) TestRepositoryError() {
 		reportAssert := &internalReport.Assert{
 			Err: "wrong repository",
 			Fields: map[string]interface{}{
-				"dir": repoPath,
+				"dir": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
@@ -207,13 +207,13 @@ func (s *WatchSuite) TestRepositoryError() {
 func (s *WatchSuite) TestRecipeError() {
 
 	s.Run("Recipe Not Found", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
-		s.config.Set("default-repository", repoPath)
+		s.config.Set("default-repository", repoUrl)
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 			"--recipe", "recipe",
 		})
 
@@ -226,19 +226,19 @@ func (s *WatchSuite) TestRecipeError() {
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest not found",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(repoPath, "recipe"),
+				"file": filepath.Join(repoUrl, "recipe", ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Recipe Manifest", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			projPath,
-			"--repository", repoPath,
+			projDir,
+			"--repository", repoUrl,
 			"--recipe", "recipe",
 		})
 
@@ -251,19 +251,19 @@ func (s *WatchSuite) TestRecipeError() {
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest is a directory",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+				"dir": filepath.Join(repoUrl, "recipe", ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Invalid Recipe Manifest", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			projPath,
-			"--repository", repoPath,
+			projDir,
+			"--repository", repoUrl,
 			"--recipe", "recipe",
 		})
 
@@ -276,7 +276,7 @@ func (s *WatchSuite) TestRecipeError() {
 		reportAssert := &internalReport.Assert{
 			Err: "invalid recipe manifest",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+				"file": filepath.Join(repoUrl, "recipe", ".manala.yaml"),
 			},
 			Reports: []internalReport.Assert{
 				{

@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 )
 
-func newUpdateCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+func newUpdateCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "update [path]",
+		Use:               "update [dir]",
 		Aliases:           []string{"up"},
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
@@ -19,25 +19,29 @@ func newUpdateCmd(config *internalConfig.Config, logger *internalLog.Logger) *co
 		Long: `Update (manala update) will synchronize project(s), based on
 repository's recipe and related variables defined in manifest (.manala.yaml).
 
-Example: manala update -> resulting in an update in a path (default to the current directory)`,
+Example: manala update -> resulting in an update in a dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application
-			app := application.NewApplication(config, logger)
 
 			// Get flags
-			repoPath, _ := cmd.Flags().GetString("repository")
+			repoUrl, _ := cmd.Flags().GetString("repository")
 			recName, _ := cmd.Flags().GetString("recipe")
 			recursive, _ := cmd.Flags().GetBool("recursive")
 
+			// Application
+			app := application.NewApplication(
+				config,
+				log,
+				application.WithRepositoryUrl(repoUrl),
+				application.WithRecipeName(recName),
+			)
+
 			// Get args
-			path := filepath.Clean(append(args, "")[0])
+			dir := filepath.Clean(append(args, "")[0])
 
 			if recursive {
 				// Recursively load projects
 				return app.WalkProjects(
-					path,
-					repoPath,
-					recName,
+					dir,
 					func(proj core.Project) error {
 						// Sync project
 						return app.SyncProject(proj)
@@ -45,10 +49,8 @@ Example: manala update -> resulting in an update in a path (default to the curre
 				)
 			} else {
 				// Load project
-				proj, err := app.ProjectFrom(
-					path,
-					repoPath,
-					recName,
+				proj, err := app.LoadProjectFrom(
+					dir,
 				)
 				if err != nil {
 					return err

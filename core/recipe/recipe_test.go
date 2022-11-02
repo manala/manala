@@ -18,13 +18,12 @@ func TestRecipeSuite(t *testing.T) {
 }
 
 func (s *RecipeSuite) Test() {
-	path := internalTesting.DataPath(s, "recipe")
+	recDir := internalTesting.DataPath(s, "recipe")
 
 	repoMock := core.NewRepositoryMock()
 
 	recManifestMock := core.NewRecipeManifestMock()
 	recManifestMock.
-		On("Path").Return(filepath.Join(path, "manifest")).
 		On("Description").Return("Description").
 		On("Template").Return(filepath.Join("templates", "foo.tmpl")).
 		On("Vars").Return(map[string]interface{}{"foo": "bar"}).
@@ -33,12 +32,13 @@ func (s *RecipeSuite) Test() {
 		On("InitVars").Return(map[string]interface{}{"foo": "baz"})
 
 	rec := NewRecipe(
+		recDir,
 		"recipe",
 		recManifestMock,
 		repoMock,
 	)
 
-	s.Equal(path, rec.Path())
+	s.Equal(recDir, rec.Dir())
 	s.Equal("recipe", rec.Name())
 	s.Equal("Description", rec.Description())
 	s.Equal(map[string]interface{}{"foo": "bar"}, rec.Vars())

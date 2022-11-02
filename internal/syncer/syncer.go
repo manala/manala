@@ -16,8 +16,14 @@ import (
 	"regexp"
 )
 
+func New(log *internalLog.Logger) *Syncer {
+	return &Syncer{
+		log: log,
+	}
+}
+
 type Syncer struct {
-	Log *internalLog.Logger
+	log *internalLog.Logger
 }
 
 type UnitInterface interface {
@@ -50,7 +56,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 	relDstPath, _ := filepath.Rel(node.Dst.Dir, node.Dst.Path)
 	if node.Src.IsDir {
 
-		syncer.Log.WithFields(log.Fields{
+		syncer.log.WithFields(log.Fields{
 			"src": relSrcPath,
 			"dst": relDstPath,
 		}).Debug("sync dir")
@@ -71,7 +77,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 					WithMessage("file system error")
 			}
 
-			syncer.Log.WithField(
+			syncer.log.WithField(
 				"path", relDstPath,
 			).Info("dir synced")
 		}
@@ -118,7 +124,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 	} else {
 
-		syncer.Log.WithFields(log.Fields{
+		syncer.log.WithFields(log.Fields{
 			"src": relSrcPath,
 			"dst": relDstPath,
 		}).Debug("sync file")
@@ -220,7 +226,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 				return err
 			}
 
-			syncer.Log.WithField(
+			syncer.log.WithField(
 				"path", relDstPath,
 			).Info("file synced")
 		} else {

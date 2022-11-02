@@ -7,7 +7,6 @@ import (
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -34,8 +33,8 @@ Recipes are pulled from a git repository, or a local directory.`,
 
 func Execute(version string, defaultRepository string, stdout io.Writer, stderr io.Writer) {
 
-	// Logger
-	logger := internalLog.New(stderr)
+	// Log
+	log := internalLog.New(stderr)
 
 	// Config
 	config := internalConfig.New()
@@ -45,18 +44,10 @@ func Execute(version string, defaultRepository string, stdout io.Writer, stderr 
 	config.SetDefault("debug", false)
 	config.Set("default-repository", defaultRepository)
 
-	// Cache dir
-	if dir, err := os.UserCacheDir(); err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	} else {
-		config.SetDefault("cache-dir", filepath.Join(dir, "manala"))
-	}
-
 	// Debug
 	cobra.OnInitialize(func() {
 		if config.GetBool("debug") {
-			logger.LevelDebug()
+			log.LevelDebug()
 		}
 	})
 
@@ -70,11 +61,11 @@ func Execute(version string, defaultRepository string, stdout io.Writer, stderr 
 
 	// Sub commands
 	cmd.AddCommand(
-		newInitCmd(config, logger),
-		newListCmd(config, logger),
+		newInitCmd(config, log),
+		newListCmd(config, log),
 		newMascotCmd(),
-		newUpdateCmd(config, logger),
-		newWatchCmd(config, logger),
+		newUpdateCmd(config, log),
+		newWatchCmd(config, log),
 	)
 
 	// Docs generation command
@@ -85,7 +76,7 @@ func Execute(version string, defaultRepository string, stdout io.Writer, stderr 
 	// Execute
 	if err := cmd.Execute(); err != nil {
 		report := internalReport.NewErrorReport(err)
-		logger.Report(report)
+		log.Report(report)
 		os.Exit(1)
 	}
 }

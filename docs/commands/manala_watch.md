@@ -6,10 +6,10 @@ List recipes
 
 Watch (manala watch) will watch project, and launch update on changes.
 
-Example: manala watch -> resulting in a watch in a path (default to the current directory)
+Example: manala watch -> resulting in a watch in a dir (default to the current directory)
 
 ```
-manala watch [path] [flags]
+manala watch [dir] [flags]
 ```
 
 ### Options

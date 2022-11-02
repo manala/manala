@@ -13,7 +13,7 @@ import (
 type WatcherSuite struct {
 	suite.Suite
 	stderr *bytes.Buffer
-	logger *internalLog.Logger
+	log    *internalLog.Logger
 }
 
 func TestWatcherSuite(t *testing.T) {
@@ -22,7 +22,7 @@ func TestWatcherSuite(t *testing.T) {
 
 func (s *WatcherSuite) SetupTest() {
 	s.stderr = &bytes.Buffer{}
-	s.logger = internalLog.New(s.stderr)
+	s.log = internalLog.New(s.stderr)
 }
 
 func (s *WatcherSuite) TestGroups() {
@@ -33,7 +33,7 @@ func (s *WatcherSuite) TestGroups() {
 
 	fsnotifyWatcher, _ := fsnotify.NewWatcher()
 	watcher := &Watcher{
-		log:     s.logger,
+		log:     s.log,
 		Watcher: fsnotifyWatcher,
 		groups:  map[string][]string{},
 	}

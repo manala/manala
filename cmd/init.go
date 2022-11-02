@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"code.rocketnine.space/tslocum/cview"
-	"errors"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
@@ -12,70 +11,39 @@ import (
 	internalBinder "manala/internal/binder"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
-	internalReport "manala/internal/report"
 	"path/filepath"
 )
 
-func newInitCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+func newInitCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "init [path]",
+		Use:               "init [dir]",
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		Short:             "Init project",
 		Long: `Init (manala init) will init a project.
 
-Example: manala init -> resulting in a project init in a path (default to the current directory)`,
+Example: manala init -> resulting in a project init in a dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application
-			app := application.NewApplication(config, logger)
-
 			// Get flags
-			repoPath, _ := cmd.Flags().GetString("repository")
+			repoUrl, _ := cmd.Flags().GetString("repository")
 			recName, _ := cmd.Flags().GetString("recipe")
 
+			// Application
+			app := application.NewApplication(
+				config,
+				log,
+				application.WithRepositoryUrl(repoUrl),
+				application.WithRecipeName(recName),
+			)
+
 			// Get args
-			path := filepath.Clean(append(args, "")[0])
-
-			// Ensure no already existing project
-			if manifest, err := app.ProjectManifest(path); true {
-				if manifest != nil {
-					return internalReport.NewError(fmt.Errorf("already existing project")).
-						WithField("path", path)
-				}
-				var _notFoundProjectManifestError *core.NotFoundProjectManifestError
-				if !errors.As(err, &_notFoundProjectManifestError) {
-					return err
-				}
-			}
-
-			// Load repository
-			repo, err := app.Repository(repoPath)
-			if err != nil {
-				return err
-			}
+			dir := filepath.Clean(append(args, "")[0])
 
 			// Create project
 			proj, err := app.CreateProject(
-				path,
-				repo,
+				dir,
 				// Recipe selector
-				func(recWalker core.RecipeWalker) (core.Recipe, error) {
-					// From argument
-					if recName != "" {
-						var rec core.Recipe
-						if err := recWalker.WalkRecipes(func(_rec core.Recipe) {
-							if _rec.Name() == recName {
-								rec = _rec
-							}
-						}); err != nil {
-							return nil, err
-						}
-						if rec == nil {
-							return nil, fmt.Errorf("recipe not found")
-						}
-						return rec, nil
-					}
-
+				func(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
 					// From tui list
 					return initRecipeListApplication(recWalker)
 				},
@@ -105,7 +73,7 @@ Example: manala init -> resulting in a project init in a path (default to the cu
 	return cmd
 }
 
-func initRecipeListApplication(recWalker core.RecipeWalker) (core.Recipe, error) {
+func initRecipeListApplication(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)
@@ -124,7 +92,7 @@ func initRecipeListApplication(recWalker core.RecipeWalker) (core.Recipe, error)
 	var rec core.Recipe
 
 	// Walk into recipes
-	if err2 := recWalker.WalkRecipes(func(_rec core.Recipe) {
+	if err2 := recWalker(func(_rec core.Recipe) error {
 		item := cview.NewListItem(" " + _rec.Name() + " ")
 		item.SetSecondaryText("   " + _rec.Description())
 		item.SetSelectedFunc(func() {
@@ -132,6 +100,7 @@ func initRecipeListApplication(recWalker core.RecipeWalker) (core.Recipe, error)
 			app.Stop()
 		})
 		list.AddItem(item)
+		return nil
 	}); err2 != nil {
 		return nil, err2
 	}

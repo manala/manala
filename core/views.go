@@ -37,13 +37,18 @@ type RecipeView struct {
 /**************/
 
 func NewRepositoryView(repo Repository) *RepositoryView {
+	url := repo.Url()
 	return &RepositoryView{
-		Path:   repo.Path(),
-		Source: repo.Source(),
+		Url:    url,
+		Path:   url,
+		Source: url,
 	}
 }
 
 type RepositoryView struct {
-	Path   string
+	Url string
+	// Path ensure backward compatibility, when "path" was used instead of "url" to define repository origin
+	Path string
+	// Source ensure backward compatibility, when "source" was used instead of "path" to define repository origin
 	Source string
 }

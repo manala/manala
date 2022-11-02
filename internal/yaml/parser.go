@@ -7,13 +7,14 @@ import (
 	"os"
 )
 
-func NewParser(options ...ParserOption) *Parser {
+func NewParser(opts ...ParserOption) *Parser {
 	p := &Parser{
 		anchors: map[string]yamlAst.Node{},
 	}
 
-	for _, option := range options {
-		option(p)
+	// Options
+	for _, opt := range opts {
+		opt(p)
 	}
 
 	return p

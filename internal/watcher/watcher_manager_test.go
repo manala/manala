@@ -19,9 +19,9 @@ func TestWatcherManagerSuite(t *testing.T) {
 
 func (s *WatcherManagerSuite) SetupTest() {
 	s.stderr = &bytes.Buffer{}
-	s.watcherManager = &Manager{
-		Log: internalLog.New(s.stderr),
-	}
+	s.watcherManager = NewManager(
+		internalLog.New(s.stderr),
+	)
 }
 
 func (s *WatcherManagerSuite) TestNewWatcher() {

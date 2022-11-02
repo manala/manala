@@ -5,24 +5,24 @@ import (
 	"github.com/imdario/mergo"
 	"manala/core"
 	internalTemplate "manala/internal/template"
-	internalWatcher "manala/internal/watcher"
-	"path/filepath"
 )
 
-func NewProject(manifest core.ProjectManifest, rec core.Recipe) *Project {
+func NewProject(dir string, projMan core.ProjectManifest, rec core.Recipe) *Project {
 	return &Project{
-		manifest: manifest,
+		dir:      dir,
+		manifest: projMan,
 		recipe:   rec,
 	}
 }
 
 type Project struct {
+	dir      string
 	manifest core.ProjectManifest
 	recipe   core.Recipe
 }
 
-func (proj *Project) Path() string {
-	return filepath.Dir(proj.manifest.Path())
+func (proj *Project) Dir() string {
+	return proj.dir
 }
 
 func (proj *Project) Recipe() core.Recipe {
@@ -41,8 +41,4 @@ func (proj *Project) Vars() map[string]interface{} {
 func (proj *Project) Template() *internalTemplate.Template {
 	return proj.recipe.Template().
 		WithData(core.NewProjectView(proj))
-}
-
-func (proj *Project) Watch(watcher *internalWatcher.Watcher) error {
-	return watcher.AddGroup("project", proj.manifest.Path())
 }

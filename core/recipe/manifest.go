@@ -11,18 +11,14 @@ import (
 	internalSyncer "manala/internal/syncer"
 	internalValidation "manala/internal/validation"
 	internalYaml "manala/internal/yaml"
-	"path/filepath"
 	"regexp"
 )
 
 //go:embed resources/manifest.schema.json
 var manifestSchema string
 
-const manifestFile = ".manala.yaml"
-
-func NewManifest(dir string) *Manifest {
+func NewManifest() *Manifest {
 	return &Manifest{
-		path: filepath.Join(dir, manifestFile),
 		config: &manifestConfig{
 			Sync: sync{},
 		},
@@ -32,7 +28,6 @@ func NewManifest(dir string) *Manifest {
 }
 
 type Manifest struct {
-	path    string
 	node    yamlAst.Node
 	config  *manifestConfig
 	vars    map[string]interface{}
@@ -40,31 +35,27 @@ type Manifest struct {
 	options []core.RecipeOption
 }
 
-func (manifest *Manifest) Path() string {
-	return manifest.path
+func (man *Manifest) Description() string {
+	return man.config.Description
 }
 
-func (manifest *Manifest) Description() string {
-	return manifest.config.Description
+func (man *Manifest) Template() string {
+	return man.config.Template
 }
 
-func (manifest *Manifest) Template() string {
-	return manifest.config.Template
+func (man *Manifest) Vars() map[string]interface{} {
+	return man.vars
 }
 
-func (manifest *Manifest) Vars() map[string]interface{} {
-	return manifest.vars
+func (man *Manifest) Sync() []internalSyncer.UnitInterface {
+	return man.config.Sync
 }
 
-func (manifest *Manifest) Sync() []internalSyncer.UnitInterface {
-	return manifest.config.Sync
+func (man *Manifest) Schema() map[string]interface{} {
+	return man.schema
 }
 
-func (manifest *Manifest) Schema() map[string]interface{} {
-	return manifest.schema
-}
-
-func (manifest *Manifest) ReadFrom(reader io.Reader) error {
+func (man *Manifest) ReadFrom(reader io.Reader) error {
 	// Read content
 	content, err := io.ReadAll(reader)
 	if err != nil {
@@ -73,7 +64,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	}
 
 	// Parse content to node
-	manifest.node, err = internalYaml.NewParser(internalYaml.WithComments()).ParseBytes(content)
+	man.node, err = internalYaml.NewParser(internalYaml.WithComments()).ParseBytes(content)
 	if err != nil {
 		return internalReport.NewError(err).
 			WithMessage("irregular recipe manifest")
@@ -82,7 +73,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	// Validate node
 	validation, err := gojsonschema.Validate(
 		gojsonschema.NewStringLoader(manifestSchema),
-		internalYaml.NewJsonLoader(manifest.node),
+		internalYaml.NewJsonLoader(man.node),
 	)
 	if err != nil {
 		return internalReport.NewError(err).
@@ -95,7 +86,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 				"invalid recipe manifest",
 				validation,
 			).
-				WithReporter(manifest).
+				WithReporter(man).
 				WithMessages([]internalValidation.ErrorMessage{
 					{Field: "(root)", Type: "invalid_type", Message: "yaml document must be a map"},
 					{Field: "(root)", Type: "required", Property: "manala", Message: "missing manala field"},
@@ -121,32 +112,32 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	}
 
 	// Extract config node
-	configNode, err := internalYaml.NewExtractor(&manifest.node).ExtractRootMap("manala")
+	configNode, err := internalYaml.NewExtractor(&man.node).ExtractRootMap("manala")
 	if err != nil {
 		return internalReport.NewError(err).
 			WithMessage("incorrect recipe manifest")
 	}
 
 	// Decode config
-	if err = yaml.NodeToValue(configNode, manifest.config); err != nil {
+	if err = yaml.NodeToValue(configNode, man.config); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to decode recipe manifest config")
 	}
 
 	// Decode vars
-	if err = yaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
+	if err = yaml.NodeToValue(man.node, &man.vars); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to decode recipe manifest vars")
 	}
 
 	// Infer schema
-	if err := NewSchemaInferrer().Infer(manifest.node, manifest.schema); err != nil {
+	if err := NewSchemaInferrer().Infer(man.node, man.schema); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to infer recipe manifest schema")
 	}
 
 	// Infer options
-	if err := NewOptionsInferrer().Infer(manifest.node, &manifest.options); err != nil {
+	if err := NewOptionsInferrer().Infer(man.node, &man.options); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to infer recipe manifest options")
 	}
@@ -154,20 +145,20 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	return nil
 }
 
-func (manifest *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	internalYaml.NewValidationPathReporter(manifest.node).Report(result, report)
+func (man *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
+	internalYaml.NewValidationPathReporter(man.node).Report(result, report)
 }
 
-func (manifest *Manifest) InitVars(callback func(options []core.RecipeOption) error) (map[string]interface{}, error) {
+func (man *Manifest) InitVars(callback func(options []core.RecipeOption) error) (map[string]interface{}, error) {
 	var vars map[string]interface{}
 
-	if err := callback(manifest.options); err != nil {
+	if err := callback(man.options); err != nil {
 		return nil, internalReport.NewError(err).
 			WithMessage("unable to apply recipe manifest options")
 	}
 
 	// Decode vars
-	if err := yaml.NewDecoder(manifest.node).Decode(&vars); err != nil {
+	if err := yaml.NewDecoder(man.node).Decode(&vars); err != nil {
 		return nil, internalReport.NewError(err).
 			WithMessage("unable to decode recipe manifest init vars")
 	}

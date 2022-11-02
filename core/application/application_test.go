@@ -29,43 +29,44 @@ func (s *ApplicationSuite) SetupTest() {
 
 func (s *ApplicationSuite) TestCreateProject() {
 	path := internalTesting.DataPath(s)
-	projPath := filepath.Join(path, "project")
-	repoPath := filepath.Join(path, "repository")
+	projDir := filepath.Join(path, "project")
+	repoUrl := filepath.Join(path, "repository")
 
-	_ = os.RemoveAll(projPath)
+	_ = os.RemoveAll(projDir)
 
 	stderr := &bytes.Buffer{}
 
 	app := NewApplication(
 		internalConfig.New(),
 		internalLog.New(stderr),
+		WithRepositoryUrl(repoUrl),
 	)
 
-	repo, _ := app.Repository(repoPath)
-
-	proj, err := app.CreateProject(projPath, repo,
+	proj, err := app.CreateProject(
+		projDir,
 		// Recipe selector
-		func(recWalker core.RecipeWalker) (core.Recipe, error) {
+		func(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
 			var rec core.Recipe
-			recWalker.WalkRecipes(func(_rec core.Recipe) {
+			_ = recWalker(func(_rec core.Recipe) error {
 				rec = _rec
+				return nil
 			})
 			return rec, nil
 		},
 		// Options selector
 		func(rec core.Recipe, options []core.RecipeOption) error {
 			// String float int
-			options[0].Set("3.0")
+			_ = options[0].Set("3.0")
 			// String asterisk
-			options[1].Set("*")
+			_ = options[1].Set("*")
 			return nil
 		},
 	)
 
 	s.NotNil(proj)
-	s.Nil(err)
+	s.NoError(err)
 
 	s.goldie.Assert(s.T(), internalTesting.Path(s, "stderr"), stderr.Bytes())
-	manifestContent, _ := os.ReadFile(filepath.Join(projPath, ".manala.yaml"))
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "manifest"), manifestContent)
+	manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "manifest"), manContent)
 }

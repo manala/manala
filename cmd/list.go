@@ -10,7 +10,7 @@ import (
 	internalLog "manala/internal/log"
 )
 
-func newListCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+func newListCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
@@ -22,29 +22,32 @@ repository.
 
 Example: manala list -> resulting in a recipes list display`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application
-			app := application.NewApplication(config, logger)
-
 			// Get flags
-			repoPath, _ := cmd.Flags().GetString("repository")
+			repoUrl, _ := cmd.Flags().GetString("repository")
 
-			// Load repository
-			repo, err := app.Repository(repoPath)
-			if err != nil {
-				return err
-			}
+			// Application
+			app := application.NewApplication(
+				config,
+				log,
+				application.WithRepositoryUrl(repoUrl),
+			)
 
+			// Styles
 			var nameStyle = lipgloss.NewStyle().Bold(true)
 			var descriptionStyle = lipgloss.NewStyle().Italic(true)
 
-			// Walk into repository recipes
-			return repo.WalkRecipes(func(rec core.Recipe) {
-				_, _ = fmt.Fprintf(
+			// Walk into recipes
+			return app.WalkRecipes(func(rec core.Recipe) error {
+				if _, err := fmt.Fprintf(
 					cmd.OutOrStdout(),
 					"%s: %s\n",
 					nameStyle.Render(rec.Name()),
 					descriptionStyle.Render(rec.Description()),
-				)
+				); err != nil {
+					return err
+				}
+
+				return nil
 			})
 		},
 	}

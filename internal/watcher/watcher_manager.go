@@ -6,8 +6,14 @@ import (
 	internalReport "manala/internal/report"
 )
 
+func NewManager(log *internalLog.Logger) *Manager {
+	return &Manager{
+		log: log,
+	}
+}
+
 type Manager struct {
-	Log *internalLog.Logger
+	log *internalLog.Logger
 }
 
 func (manager *Manager) NewWatcher(onStart func(watcher *Watcher), onChange func(watcher *Watcher), onAll func(watcher *Watcher)) (*Watcher, error) {
@@ -18,7 +24,7 @@ func (manager *Manager) NewWatcher(onStart func(watcher *Watcher), onChange func
 	}
 
 	return &Watcher{
-		log:      manager.Log,
+		log:      manager.log,
 		Watcher:  fsnotifyWatcher,
 		onStart:  onStart,
 		onChange: onChange,

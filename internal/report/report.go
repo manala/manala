@@ -53,9 +53,9 @@ func (report *Report) String() string {
 	return ""
 }
 
-func (report *Report) Compose(options ...Option) {
-	for _, option := range options {
-		option(report)
+func (report *Report) Compose(opts ...Option) {
+	for _, opt := range opts {
+		opt(report)
 	}
 }
 

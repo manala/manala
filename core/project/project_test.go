@@ -28,8 +28,7 @@ func (s *ProjectSuite) SetupTest() {
 func (s *ProjectSuite) Test() {
 	repoMock := core.NewRepositoryMock()
 	repoMock.
-		On("Path").Return("repository").
-		On("Source").Return("repository")
+		On("Url").Return("repository")
 
 	recMock := core.NewRecipeMock()
 	recMock.
@@ -41,20 +40,22 @@ func (s *ProjectSuite) Test() {
 		On("Repository").Return(repoMock).
 		On("Template").Return(internalTemplate.NewTemplate())
 
+	projDir := filepath.Join("dir")
+
 	projManifestMock := core.NewProjectManifestMock()
 	projManifestMock.
-		On("Path").Return(filepath.Join("dir", "manifest")).
 		On("Vars").Return(map[string]interface{}{
 		"bar": "project",
 		"baz": "project",
 	})
 
 	proj := NewProject(
+		projDir,
 		projManifestMock,
 		recMock,
 	)
 
-	s.Equal("dir", proj.Path())
+	s.Equal("dir", proj.Dir())
 	s.Equal(recMock, proj.Recipe())
 
 	s.Run("Vars", func() {

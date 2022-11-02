@@ -8,30 +8,33 @@ import (
 	"path/filepath"
 )
 
-func newWatchCmd(config *internalConfig.Config, logger *internalLog.Logger) *cobra.Command {
+func newWatchCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "watch [path]",
+		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
 		Short:             "List recipes",
 		Long: `Watch (manala watch) will watch project, and launch update on changes.
 
-Example: manala watch -> resulting in a watch in a path (default to the current directory)`,
+Example: manala watch -> resulting in a watch in a dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application
-			app := application.NewApplication(config, logger)
-
 			// Get flags
-			repoPath, _ := cmd.Flags().GetString("repository")
+			repoUrl, _ := cmd.Flags().GetString("repository")
 			recName, _ := cmd.Flags().GetString("recipe")
 			all, _ := cmd.Flags().GetBool("all")
 			notify, _ := cmd.Flags().GetBool("notify")
 
+			// Application
+			app := application.NewApplication(
+				config,
+				log,
+				application.WithRepositoryUrl(repoUrl),
+				application.WithRecipeName(recName),
+			)
+
 			// Load project
-			proj, err := app.ProjectFrom(
+			proj, err := app.LoadProjectFrom(
 				filepath.Clean(append(args, "")[0]),
-				repoPath,
-				recName,
 			)
 			if err != nil {
 				return err
@@ -45,8 +48,6 @@ Example: manala watch -> resulting in a watch in a path (default to the current 
 			// Watch project
 			return app.WatchProject(
 				proj,
-				repoPath,
-				recName,
 				all,
 				notify,
 			)

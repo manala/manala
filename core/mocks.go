@@ -22,33 +22,28 @@ type ProjectManifestMock struct {
 	mock.Mock
 }
 
-func (manifest *ProjectManifestMock) Path() string {
-	args := manifest.Called()
+func (man *ProjectManifestMock) Recipe() string {
+	args := man.Called()
 	return args.String(0)
 }
 
-func (manifest *ProjectManifestMock) Recipe() string {
-	args := manifest.Called()
+func (man *ProjectManifestMock) Repository() string {
+	args := man.Called()
 	return args.String(0)
 }
 
-func (manifest *ProjectManifestMock) Repository() string {
-	args := manifest.Called()
-	return args.String(0)
-}
-
-func (manifest *ProjectManifestMock) Vars() map[string]interface{} {
-	args := manifest.Called()
+func (man *ProjectManifestMock) Vars() map[string]interface{} {
+	args := man.Called()
 	return args.Get(0).(map[string]interface{})
 }
 
-func (manifest *ProjectManifestMock) ReadFrom(reader io.Reader) error {
-	args := manifest.Called(reader)
+func (man *ProjectManifestMock) ReadFrom(reader io.Reader) error {
+	args := man.Called(reader)
 	return args.Error(0)
 }
 
-func (manifest *ProjectManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	manifest.Called(result, report)
+func (man *ProjectManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
+	man.Called(result, report)
 }
 
 /**********/
@@ -63,9 +58,19 @@ type RecipeManagerMock struct {
 	mock.Mock
 }
 
-func (manager *RecipeManagerMock) LoadRecipe(name string) (Recipe, error) {
-	args := manager.Called(name)
+func (manager *RecipeManagerMock) LoadRecipe(repo Repository, name string) (Recipe, error) {
+	args := manager.Called(repo, name)
 	return args.Get(0).(Recipe), args.Error(1)
+}
+
+func (manager *RecipeManagerMock) WalkRecipes(repo Repository, walker func(rec Recipe) error) error {
+	args := manager.Called(repo, walker)
+	return args.Error(0)
+}
+
+func (manager *RecipeManagerMock) WatchRecipe(rec Recipe, watcher *internalWatcher.Watcher) error {
+	args := manager.Called(rec, watcher)
+	return args.Error(0)
 }
 
 func NewRecipeMock() *RecipeMock {
@@ -76,7 +81,7 @@ type RecipeMock struct {
 	mock.Mock
 }
 
-func (rec *RecipeMock) Path() string {
+func (rec *RecipeMock) Dir() string {
 	args := rec.Called()
 	return args.String(0)
 }
@@ -126,11 +131,6 @@ func (rec *RecipeMock) ProjectManifestTemplate() *internalTemplate.Template {
 	return args.Get(0).(*internalTemplate.Template)
 }
 
-func (rec *RecipeMock) Watch(watcher *internalWatcher.Watcher) error {
-	args := rec.Called(watcher)
-	return args.Error(0)
-}
-
 func NewRecipeManifestMock() *RecipeManifestMock {
 	return &RecipeManifestMock{}
 }
@@ -139,47 +139,42 @@ type RecipeManifestMock struct {
 	mock.Mock
 }
 
-func (manifest *RecipeManifestMock) Path() string {
-	args := manifest.Called()
+func (man *RecipeManifestMock) Description() string {
+	args := man.Called()
 	return args.String(0)
 }
 
-func (manifest *RecipeManifestMock) Description() string {
-	args := manifest.Called()
+func (man *RecipeManifestMock) Template() string {
+	args := man.Called()
 	return args.String(0)
 }
 
-func (manifest *RecipeManifestMock) Template() string {
-	args := manifest.Called()
-	return args.String(0)
-}
-
-func (manifest *RecipeManifestMock) Vars() map[string]interface{} {
-	args := manifest.Called()
+func (man *RecipeManifestMock) Vars() map[string]interface{} {
+	args := man.Called()
 	return args.Get(0).(map[string]interface{})
 }
 
-func (manifest *RecipeManifestMock) Sync() []internalSyncer.UnitInterface {
-	args := manifest.Called()
+func (man *RecipeManifestMock) Sync() []internalSyncer.UnitInterface {
+	args := man.Called()
 	return args.Get(0).([]internalSyncer.UnitInterface)
 }
 
-func (manifest *RecipeManifestMock) Schema() map[string]interface{} {
-	args := manifest.Called()
+func (man *RecipeManifestMock) Schema() map[string]interface{} {
+	args := man.Called()
 	return args.Get(0).(map[string]interface{})
 }
 
-func (manifest *RecipeManifestMock) ReadFrom(reader io.Reader) error {
-	args := manifest.Called(reader)
+func (man *RecipeManifestMock) ReadFrom(reader io.Reader) error {
+	args := man.Called(reader)
 	return args.Error(0)
 }
 
-func (manifest *RecipeManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	manifest.Called(result, report)
+func (man *RecipeManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
+	man.Called(result, report)
 }
 
-func (manifest *RecipeManifestMock) InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error) {
-	args := manifest.Called(callback)
+func (man *RecipeManifestMock) InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error) {
+	args := man.Called(callback)
 	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
@@ -218,8 +213,8 @@ type RepositoryManagerMock struct {
 	mock.Mock
 }
 
-func (manager *RepositoryManagerMock) LoadRepository(path string) (Repository, error) {
-	args := manager.Called(path)
+func (manager *RepositoryManagerMock) LoadRepository(url string) (Repository, error) {
+	args := manager.Called(url)
 	return args.Get(0).(Repository), args.Error(1)
 }
 
@@ -231,12 +226,7 @@ type RepositoryMock struct {
 	mock.Mock
 }
 
-func (repo *RepositoryMock) Path() string {
-	args := repo.Called()
-	return args.String(0)
-}
-
-func (repo *RepositoryMock) Source() string {
+func (repo *RepositoryMock) Url() string {
 	args := repo.Called()
 	return args.String(0)
 }
@@ -244,14 +234,4 @@ func (repo *RepositoryMock) Source() string {
 func (repo *RepositoryMock) Dir() string {
 	args := repo.Called()
 	return args.String(0)
-}
-
-func (repo *RepositoryMock) LoadRecipe(name string) (Recipe, error) {
-	args := repo.Called(name)
-	return args.Get(0).(Recipe), args.Error(1)
-}
-
-func (repo *RepositoryMock) WalkRecipes(walker func(rec Recipe)) error {
-	args := repo.Called(walker)
-	return args.Error(0)
 }

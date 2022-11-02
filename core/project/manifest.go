@@ -9,46 +9,37 @@ import (
 	internalReport "manala/internal/report"
 	internalValidation "manala/internal/validation"
 	internalYaml "manala/internal/yaml"
-	"path/filepath"
 )
 
 //go:embed resources/manifest.schema.json
 var manifestSchema string
 
-const manifestFile = ".manala.yaml"
-
-func NewManifest(dir string) *Manifest {
+func NewManifest() *Manifest {
 	return &Manifest{
-		path:   filepath.Join(dir, manifestFile),
 		config: &manifestConfig{},
 		vars:   map[string]interface{}{},
 	}
 }
 
 type Manifest struct {
-	path   string
 	node   yamlAst.Node
 	config *manifestConfig
 	vars   map[string]interface{}
 }
 
-func (manifest *Manifest) Path() string {
-	return manifest.path
+func (man *Manifest) Recipe() string {
+	return man.config.Recipe
 }
 
-func (manifest *Manifest) Recipe() string {
-	return manifest.config.Recipe
+func (man *Manifest) Repository() string {
+	return man.config.Repository
 }
 
-func (manifest *Manifest) Repository() string {
-	return manifest.config.Repository
+func (man *Manifest) Vars() map[string]interface{} {
+	return man.vars
 }
 
-func (manifest *Manifest) Vars() map[string]interface{} {
-	return manifest.vars
-}
-
-func (manifest *Manifest) ReadFrom(reader io.Reader) error {
+func (man *Manifest) ReadFrom(reader io.Reader) error {
 	// Read content
 	content, err := io.ReadAll(reader)
 	if err != nil {
@@ -57,7 +48,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	}
 
 	// Parse content to node
-	manifest.node, err = internalYaml.NewParser().ParseBytes(content)
+	man.node, err = internalYaml.NewParser().ParseBytes(content)
 	if err != nil {
 		return internalReport.NewError(err).
 			WithMessage("irregular project manifest")
@@ -66,7 +57,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	// Validate node
 	validation, err := gojsonschema.Validate(
 		gojsonschema.NewStringLoader(manifestSchema),
-		internalYaml.NewJsonLoader(manifest.node),
+		internalYaml.NewJsonLoader(man.node),
 	)
 	if err != nil {
 		return internalReport.NewError(err).
@@ -79,7 +70,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 				"invalid project manifest",
 				validation,
 			).
-				WithReporter(manifest).
+				WithReporter(man).
 				WithMessages([]internalValidation.ErrorMessage{
 					{Field: "(root)", Type: "invalid_type", Message: "yaml document must be a map"},
 					{Field: "(root)", Type: "required", Property: "manala", Message: "missing manala field"},
@@ -99,20 +90,20 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	}
 
 	// Extract config node
-	configNode, err := internalYaml.NewExtractor(&manifest.node).ExtractRootMap("manala")
+	configNode, err := internalYaml.NewExtractor(&man.node).ExtractRootMap("manala")
 	if err != nil {
 		return internalReport.NewError(err).
 			WithMessage("incorrect project manifest")
 	}
 
 	// Decode config
-	if err = yaml.NodeToValue(configNode, manifest.config); err != nil {
+	if err = yaml.NodeToValue(configNode, man.config); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to decode project manifest config")
 	}
 
 	// Decode vars
-	if err = yaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
+	if err = yaml.NodeToValue(man.node, &man.vars); err != nil {
 		return internalReport.NewError(err).
 			WithMessage("unable to decode recipe manifest vars")
 	}
@@ -120,8 +111,8 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) error {
 	return nil
 }
 
-func (manifest *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	internalYaml.NewValidationPathReporter(manifest.node).Report(result, report)
+func (man *Manifest) Report(result gojsonschema.ResultError, report *internalReport.Report) {
+	internalYaml.NewValidationPathReporter(man.node).Report(result, report)
 }
 
 type manifestConfig struct {

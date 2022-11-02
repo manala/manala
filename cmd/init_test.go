@@ -38,35 +38,11 @@ func (s *InitSuite) SetupTest() {
 }
 
 func (s *InitSuite) TestProjectError() {
-
-	s.Run("Already Existing Empty Project", func() {
-		projPath := internalTesting.DataPath(s, "project")
-
-		err := s.executor.execute([]string{
-			projPath,
-		})
-
-		s.Error(err)
-		s.Empty(s.executor.stdout)
-		s.Empty(s.executor.stderr)
-
-		report := internalReport.NewErrorReport(err)
-
-		reportAssert := &internalReport.Assert{
-			Message: "irregular project manifest",
-			Err:     "empty yaml file",
-			Fields: map[string]interface{}{
-				"path": filepath.Join(projPath, ".manala.yaml"),
-			},
-		}
-		reportAssert.Equal(&s.Suite, report)
-	})
-
 	s.Run("Already Existing Project", func() {
-		projPath := internalTesting.DataPath(s, "project")
+		projDir := internalTesting.DataPath(s, "project")
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 		})
 
 		s.Error(err)
@@ -78,7 +54,7 @@ func (s *InitSuite) TestProjectError() {
 		reportAssert := &internalReport.Assert{
 			Err: "already existing project",
 			Fields: map[string]interface{}{
-				"path": projPath,
+				"dir": projDir,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
@@ -97,16 +73,16 @@ func (s *InitSuite) TestRepositoryError() {
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
-			Err: "unsupported repository",
+			Err: "unable to process empty repository url",
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Repository Not Found", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 		})
 
 		s.Error(err)
@@ -118,17 +94,17 @@ func (s *InitSuite) TestRepositoryError() {
 		reportAssert := &internalReport.Assert{
 			Err: "repository not found",
 			Fields: map[string]interface{}{
-				"path": repoPath,
+				"url": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Repository", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 		})
 
 		s.Error(err)
@@ -140,17 +116,17 @@ func (s *InitSuite) TestRepositoryError() {
 		reportAssert := &internalReport.Assert{
 			Err: "wrong repository",
 			Fields: map[string]interface{}{
-				"dir": repoPath,
+				"dir": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Empty Repository", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 		})
 
 		s.Error(err)
@@ -162,7 +138,7 @@ func (s *InitSuite) TestRepositoryError() {
 		reportAssert := &internalReport.Assert{
 			Err: "empty repository",
 			Fields: map[string]interface{}{
-				"dir": repoPath,
+				"dir": repoUrl,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
@@ -172,10 +148,10 @@ func (s *InitSuite) TestRepositoryError() {
 func (s *InitSuite) TestRecipeError() {
 
 	s.Run("Recipe Not Found", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 			"--recipe", "not_found",
 		})
 
@@ -186,16 +162,19 @@ func (s *InitSuite) TestRecipeError() {
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
-			Err: "recipe not found",
+			Err: "recipe manifest not found",
+			Fields: map[string]interface{}{
+				"file": filepath.Join(repoUrl, "not_found", ".manala.yaml"),
+			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Wrong Recipe Manifest", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 			"--recipe", "recipe",
 		})
 
@@ -208,17 +187,17 @@ func (s *InitSuite) TestRecipeError() {
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest is a directory",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+				"dir": filepath.Join(repoUrl, "recipe", ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Invalid Recipe Manifest", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
 		err := s.executor.execute([]string{
-			"--repository", repoPath,
+			"--repository", repoUrl,
 			"--recipe", "recipe",
 		})
 
@@ -231,7 +210,7 @@ func (s *InitSuite) TestRecipeError() {
 		reportAssert := &internalReport.Assert{
 			Err: "invalid recipe manifest",
 			Fields: map[string]interface{}{
-				"path": filepath.Join(repoPath, "recipe", ".manala.yaml"),
+				"file": filepath.Join(repoUrl, "recipe", ".manala.yaml"),
 			},
 			Reports: []internalReport.Assert{
 				{
@@ -251,61 +230,61 @@ func (s *InitSuite) TestRecipeError() {
 func (s *InitSuite) Test() {
 
 	s.Run("Custom Repository", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
-		_ = os.RemoveAll(projPath)
+		_ = os.RemoveAll(projDir)
 
 		err := s.executor.execute([]string{
-			projPath,
-			"--repository", repoPath,
+			projDir,
+			"--repository", repoUrl,
 			"--recipe", "recipe",
 		})
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout)
 		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
-			"dst": projPath,
-			"src": filepath.Join(repoPath, "recipe"),
+			"dst": projDir,
+			"src": filepath.Join(repoUrl, "recipe"),
 		}, s.executor.stderr.Bytes())
-		s.DirExists(projPath)
-		s.FileExists(filepath.Join(projPath, ".manala.yaml"))
-		manifestContent, _ := os.ReadFile(filepath.Join(projPath, ".manala.yaml"))
+		s.DirExists(projDir)
+		s.FileExists(filepath.Join(projDir, ".manala.yaml"))
+		manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
 		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
-			"repository": repoPath,
-		}, manifestContent)
+			"repository": repoUrl,
+		}, manContent)
 	})
 
 	s.Run("Default Repository", func() {
-		projPath := internalTesting.DataPath(s, "project")
-		repoPath := internalTesting.DataPath(s, "repository")
+		projDir := internalTesting.DataPath(s, "project")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
-		_ = os.RemoveAll(projPath)
+		_ = os.RemoveAll(projDir)
 
-		s.config.Set("default-repository", repoPath)
+		s.config.Set("default-repository", repoUrl)
 
 		err := s.executor.execute([]string{
-			projPath,
+			projDir,
 			"--recipe", "recipe",
 		})
 
 		s.NoError(err)
 		s.Empty(s.executor.stdout)
 		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
-			"dst": projPath,
-			"src": filepath.Join(repoPath, "recipe"),
+			"dst": projDir,
+			"src": filepath.Join(repoUrl, "recipe"),
 		}, s.executor.stderr.Bytes())
-		s.DirExists(projPath)
-		s.FileExists(filepath.Join(projPath, ".manala.yaml"))
-		manifestContent, _ := os.ReadFile(filepath.Join(projPath, ".manala.yaml"))
+		s.DirExists(projDir)
+		s.FileExists(filepath.Join(projDir, ".manala.yaml"))
+		manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
 		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
-			"repository": repoPath,
-		}, manifestContent)
-		s.FileExists(filepath.Join(projPath, "file.txt"))
-		fileContent, _ := os.ReadFile(filepath.Join(projPath, "file.txt"))
+			"repository": repoUrl,
+		}, manContent)
+		s.FileExists(filepath.Join(projDir, "file.txt"))
+		fileContent, _ := os.ReadFile(filepath.Join(projDir, "file.txt"))
 		s.goldie.Assert(s.T(), internalTesting.Path(s, "file.txt"), fileContent)
-		s.FileExists(filepath.Join(projPath, "template"))
-		templateContent, _ := os.ReadFile(filepath.Join(projPath, "template"))
+		s.FileExists(filepath.Join(projDir, "template"))
+		templateContent, _ := os.ReadFile(filepath.Join(projDir, "template"))
 		s.goldie.Assert(s.T(), internalTesting.Path(s, "template"), templateContent)
 	})
 }

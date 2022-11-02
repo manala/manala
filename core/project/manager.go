@@ -12,9 +12,12 @@ import (
 	internalOs "manala/internal/os"
 	internalReport "manala/internal/report"
 	internalValidation "manala/internal/validation"
+	internalWatcher "manala/internal/watcher"
 	"os"
 	"path/filepath"
 )
+
+const manifestFilename = ".manala.yaml"
 
 //go:embed resources/manifest.yaml.tmpl
 var manifestTemplate string
@@ -22,91 +25,96 @@ var manifestTemplate string
 func NewManager(
 	log *internalLog.Logger,
 	repositoryManager core.RepositoryManager,
+	recipeManager core.RecipeManager,
 ) *Manager {
 	return &Manager{
 		log:               log,
 		repositoryManager: repositoryManager,
+		recipeManager:     recipeManager,
 	}
 }
 
 type Manager struct {
 	log               *internalLog.Logger
 	repositoryManager core.RepositoryManager
+	recipeManager     core.RecipeManager
 }
 
-func (manager *Manager) LoadProjectManifest(path string) (core.ProjectManifest, error) {
+func (manager *Manager) IsProject(dir string) bool {
+	manFile := filepath.Join(dir, manifestFilename)
+
+	if _, err := os.Stat(manFile); errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+
+	return true
+}
+
+func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) {
 	// Log
 	manager.log.WithFields(log.Fields{
-		"path": path,
+		"file": file,
 	}).Debug("load project manifest")
 
-	manifest := NewManifest(path)
-
 	// Stat file
-	fileInfo, err := os.Stat(manifest.Path())
-	if err != nil {
+	if fileInfo, err := os.Stat(file); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, internalReport.NewError(
 				core.NewNotFoundProjectManifestError("project manifest not found"),
-			).WithField("path", path)
+			).WithField("file", file)
 		}
 		return nil, internalReport.NewError(internalOs.NewError(err)).
 			WithMessage("unable to stat project manifest").
-			WithField("path", manifest.Path())
+			WithField("file", file)
+	} else {
+		if fileInfo.IsDir() {
+			return nil, internalReport.NewError(fmt.Errorf("project manifest is a directory")).
+				WithField("dir", file)
+		}
 	}
-	if fileInfo.IsDir() {
-		return nil, internalReport.NewError(fmt.Errorf("project manifest is a directory")).
-			WithField("path", manifest.Path())
-	}
+
+	man := NewManifest()
 
 	// Open file
-	file, err := os.Open(manifest.Path())
-	if err != nil {
+	if reader, err := os.Open(file); err != nil {
 		return nil, internalReport.NewError(internalOs.NewError(err)).
 			WithMessage("unable to open project manifest").
-			WithField("path", manifest.Path())
-	}
-
-	// Read from file
-	if err = manifest.ReadFrom(file); err != nil {
-		return nil, internalReport.NewError(err).
-			WithField("path", manifest.Path())
+			WithField("file", file)
+	} else {
+		// Read from file
+		if err = man.ReadFrom(reader); err != nil {
+			return nil, internalReport.NewError(err).
+				WithField("file", file)
+		}
 	}
 
 	// Log
 	manager.log.WithFields(log.Fields{
-		"repository": manifest.Repository(),
-		"recipe":     manifest.Recipe(),
+		"repository": man.Repository(),
+		"recipe":     man.Recipe(),
 	}).Debug("manifest")
 
-	return manifest, nil
+	return man, nil
 }
 
-func (manager *Manager) LoadProject(path string, repoPath string, recName string) (core.Project, error) {
+func (manager *Manager) LoadProject(dir string) (core.Project, error) {
 	// Load manifest
-	manifest, err := manager.LoadProjectManifest(path)
+	manFile := filepath.Join(dir, manifestFilename)
+	man, err := manager.loadManifest(manFile)
 	if err != nil {
 		return nil, err
 	}
 
 	// Log
 	manager.log.WithFields(log.Fields{
-		"repository": manifest.Repository(),
-		"recipe":     manifest.Recipe(),
-	}).Debug("manifest")
-
-	// Log
-	manager.log.WithFields(log.Fields{
-		"path":          repoPath,
-		"manifest.path": manifest.Repository(),
+		"url": man.Repository(),
 	}).Debug("load repository")
 	manager.log.IncreasePadding()
 
 	// Load repository
-	if repoPath == "" {
-		repoPath = manifest.Repository()
-	}
-	repo, err := manager.repositoryManager.LoadRepository(repoPath)
+	repo, err := manager.repositoryManager.LoadRepository(
+		man.Repository(),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -114,22 +122,22 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 	// Log
 	manager.log.DecreasePadding()
 	manager.log.WithFields(log.Fields{
-		"name":          recName,
-		"manifest.name": manifest.Recipe(),
+		"name": man.Recipe(),
 	}).Debug("load recipe")
 	manager.log.IncreasePadding()
 
 	// Load recipe
-	if recName == "" {
-		recName = manifest.Recipe()
-	}
-	rec, err := repo.LoadRecipe(recName)
+	rec, err := manager.recipeManager.LoadRecipe(
+		repo,
+		man.Recipe(),
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	proj := NewProject(
-		manifest,
+		dir,
+		man,
 		rec,
 	)
 
@@ -144,7 +152,7 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 	if err != nil {
 		return nil, internalReport.NewError(err).
 			WithMessage("unable to validate project manifest").
-			WithField("path", manifest.Path())
+			WithField("file", manFile)
 	}
 
 	if !validation.Valid() {
@@ -153,14 +161,14 @@ func (manager *Manager) LoadProject(path string, repoPath string, recName string
 				"invalid project manifest vars",
 				validation,
 			).
-				WithReporter(manifest),
-		).WithField("path", manifest.Path())
+				WithReporter(man),
+		).WithField("file", manFile)
 	}
 
 	return proj, nil
 }
 
-func (manager *Manager) CreateProject(path string, rec core.Recipe, vars map[string]interface{}) (core.Project, error) {
+func (manager *Manager) CreateProject(dir string, rec core.Recipe, vars map[string]interface{}) (core.Project, error) {
 	template := rec.ProjectManifestTemplate().
 		WithData(&core.ProjectView{
 			Vars:   vars,
@@ -174,54 +182,62 @@ func (manager *Manager) CreateProject(path string, rec core.Recipe, vars map[str
 		return nil, err
 	}
 
-	manifest := NewManifest(path)
-	if err := manifest.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
+	manFile := filepath.Join(dir, manifestFilename)
+
+	man := NewManifest()
+	if err := man.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
 		return nil, err
 	}
 
 	// Ensure directory exists
-	dir := filepath.Dir(manifest.Path())
-	if dirStat, err := os.Stat(dir); err != nil {
+	_dir := filepath.Dir(manFile)
+	if dirStat, err := os.Stat(_dir); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			if err := os.MkdirAll(dir, 0755); err != nil {
+			if err := os.MkdirAll(_dir, 0755); err != nil {
 				return nil, internalReport.NewError(internalOs.NewError(err)).
 					WithMessage("unable to create project directory").
-					WithField("path", dir)
+					WithField("dir", _dir)
 			}
 		} else {
 			return nil, internalReport.NewError(internalOs.NewError(err)).
 				WithMessage("unable to stat project directory").
-				WithField("path", dir)
+				WithField("dir", _dir)
 		}
 	} else if !dirStat.IsDir() {
 		return nil, internalReport.NewError(fmt.Errorf("project is not a directory")).
-			WithField("path", dir)
+			WithField("file", _dir)
 	}
 
-	manifestFile, err := os.Create(manifest.Path())
-	if err != nil {
+	if writer, err := os.Create(manFile); err != nil {
 		return nil, internalReport.NewError(internalOs.NewError(err)).
 			WithMessage("unable to create project manifest file").
-			WithField("path", manifest.Path())
-	}
+			WithField("file", manFile)
+	} else {
+		if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
+			return nil, internalReport.NewError(err).
+				WithMessage("unable to save project manifest file").
+				WithField("file", manFile)
+		}
 
-	if _, err := manifestFile.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
-		return nil, internalReport.NewError(err).
-			WithMessage("unable to save project manifest file").
-			WithField("path", manifest.Path())
-	}
-
-	if err := manifestFile.Sync(); err != nil {
-		return nil, internalReport.NewError(err).
-			WithMessage("unable to sync project manifest file").
-			WithField("path", manifest.Path())
+		if err := writer.Sync(); err != nil {
+			return nil, internalReport.NewError(err).
+				WithMessage("unable to sync project manifest file").
+				WithField("file", manFile)
+		}
 	}
 
 	// Final project
 	proj := NewProject(
-		manifest,
+		dir,
+		man,
 		rec,
 	)
 
 	return proj, nil
+}
+
+func (manager *Manager) WatchProject(proj core.Project, watcher *internalWatcher.Watcher) error {
+	manFile := filepath.Join(proj.Dir(), manifestFilename)
+
+	return watcher.AddGroup("project", manFile)
 }

@@ -36,6 +36,20 @@ func (err *NotFoundRecipeManifestError) Error() string {
 	return err.message
 }
 
+func NewUnprocessableRecipeNameError(message string) *UnprocessableRecipeNameError {
+	return &UnprocessableRecipeNameError{
+		message: message,
+	}
+}
+
+type UnprocessableRecipeNameError struct {
+	message string
+}
+
+func (err *UnprocessableRecipeNameError) Error() string {
+	return err.message
+}
+
 /**************/
 /* Repository */
 /**************/
@@ -65,5 +79,19 @@ type UnsupportedRepositoryError struct {
 }
 
 func (err *UnsupportedRepositoryError) Error() string {
+	return err.message
+}
+
+func NewUnprocessableRepositoryUrlError(message string) *UnprocessableRepositoryUrlError {
+	return &UnprocessableRepositoryUrlError{
+		message: message,
+	}
+}
+
+type UnprocessableRepositoryUrlError struct {
+	message string
+}
+
+func (err *UnprocessableRepositoryUrlError) Error() string {
 	return err.message
 }

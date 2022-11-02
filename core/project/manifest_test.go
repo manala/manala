@@ -5,7 +5,6 @@ import (
 	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -17,12 +16,11 @@ func TestManifestSuite(t *testing.T) {
 }
 
 func (s *ManifestSuite) Test() {
-	manifest := NewManifest("dir")
+	recMan := NewManifest()
 
-	s.Equal(filepath.Join("dir", ".manala.yaml"), manifest.Path())
-	s.Equal("", manifest.Recipe())
-	s.Equal("", manifest.Repository())
-	s.Equal(map[string]interface{}{}, manifest.Vars())
+	s.Equal("", recMan.Recipe())
+	s.Equal("", recMan.Repository())
+	s.Equal(map[string]interface{}{}, recMan.Vars())
 }
 
 func (s *ManifestSuite) TestReadFromErrors() {
@@ -265,10 +263,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			manifest := NewManifest("")
+			recMan := NewManifest()
 
-			manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := manifest.ReadFrom(manifestFile)
+			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
+			err := recMan.ReadFrom(recManFile)
 
 			s.Error(err)
 
@@ -322,15 +320,15 @@ func (s *ManifestSuite) TestReadFrom() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			manifest := NewManifest("")
+			recMan := NewManifest()
 
-			manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := manifest.ReadFrom(manifestFile)
+			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
+			err := recMan.ReadFrom(recManFile)
 
 			s.NoError(err)
-			s.Equal(test.recipe, manifest.Recipe())
-			s.Equal(test.repository, manifest.Repository())
-			s.Equal(test.vars, manifest.Vars())
+			s.Equal(test.recipe, recMan.Recipe())
+			s.Equal(test.repository, recMan.Repository())
+			s.Equal(test.vars, recMan.Vars())
 		})
 	}
 }

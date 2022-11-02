@@ -7,7 +7,6 @@ import (
 	internalSyncer "manala/internal/syncer"
 	internalTesting "manala/internal/testing"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -19,14 +18,13 @@ func TestManifestSuite(t *testing.T) {
 }
 
 func (s *ManifestSuite) Test() {
-	manifest := NewManifest("dir")
+	recMan := NewManifest()
 
-	s.Equal(filepath.Join("dir", ".manala.yaml"), manifest.Path())
-	s.Equal("", manifest.Description())
-	s.Equal("", manifest.Template())
-	s.Equal(map[string]interface{}{}, manifest.Vars())
-	s.Equal([]internalSyncer.UnitInterface{}, manifest.Sync())
-	s.Equal(map[string]interface{}{}, manifest.Schema())
+	s.Equal("", recMan.Description())
+	s.Equal("", recMan.Template())
+	s.Equal(map[string]interface{}{}, recMan.Vars())
+	s.Equal([]internalSyncer.UnitInterface{}, recMan.Sync())
+	s.Equal(map[string]interface{}{}, recMan.Schema())
 }
 
 func (s *ManifestSuite) TestReadFromErrors() {
@@ -358,10 +356,10 @@ func (s *ManifestSuite) TestReadFromErrors() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			manifest := NewManifest("")
+			recMan := NewManifest()
 
-			manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := manifest.ReadFrom(manifestFile)
+			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
+			err := recMan.ReadFrom(recManFile)
 
 			s.Error(err)
 
@@ -575,28 +573,28 @@ func (s *ManifestSuite) TestReadFrom() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			manifest := NewManifest("")
+			recMan := NewManifest()
 
-			manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := manifest.ReadFrom(manifestFile)
+			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
+			err := recMan.ReadFrom(recManFile)
 
 			s.NoError(err)
-			s.Equal(test.description, manifest.Description())
-			s.Equal(test.template, manifest.Template())
-			s.Equal(test.vars, manifest.Vars())
-			test.sync.Equal(&s.Suite, manifest.Sync())
-			s.Equal(test.schema, manifest.Schema())
+			s.Equal(test.description, recMan.Description())
+			s.Equal(test.template, recMan.Template())
+			s.Equal(test.vars, recMan.Vars())
+			test.sync.Equal(&s.Suite, recMan.Sync())
+			s.Equal(test.schema, recMan.Schema())
 		})
 	}
 }
 
 func (s *ManifestSuite) TestInitVars() {
-	manifest := NewManifest("")
+	recMan := NewManifest()
 
-	manifestFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-	_ = manifest.ReadFrom(manifestFile)
+	recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
+	_ = recMan.ReadFrom(recManFile)
 
-	vars, err := manifest.InitVars(func(options []core.RecipeOption) error {
+	vars, err := recMan.InitVars(func(options []core.RecipeOption) error {
 		s.Len(options, 11)
 
 		s.Equal("String", options[0].Label())
@@ -613,13 +611,13 @@ func (s *ManifestSuite) TestInitVars() {
 		s.Equal(map[string]interface{}{
 			"enum": []interface{}{"3.0"},
 		}, options[2].Schema())
-		options[2].Set("3.0")
+		_ = options[2].Set("3.0")
 
 		s.Equal("String asterisk", options[3].Label())
 		s.Equal(map[string]interface{}{
 			"enum": []interface{}{"*"},
 		}, options[3].Schema())
-		options[3].Set("*")
+		_ = options[3].Set("*")
 
 		s.Equal("Map single first", options[4].Label())
 		s.Equal(map[string]interface{}{

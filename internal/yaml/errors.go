@@ -10,13 +10,42 @@ import (
 )
 
 func NewError(err error) *Error {
-	return &Error{
+	newError := &Error{
 		error: err,
 	}
+
+	color := true
+	if termenv.EnvColorProfile() == termenv.Ascii {
+		color = false
+	}
+
+	message := yaml.FormatError(err, color, true)
+	if matches := errorRegex.FindStringSubmatch(message); matches != nil {
+		// Message
+		newError.message = matches[5]
+		// Line
+		if line, _err := strconv.Atoi(matches[3]); _err == nil {
+			newError.line = line
+		}
+		// Column
+		if column, _err := strconv.Atoi(matches[4]); _err == nil {
+			newError.column = column
+		}
+		// Trace
+		if matches[8] != "" {
+			newError.trace = matches[8]
+		}
+	}
+
+	return newError
 }
 
 type Error struct {
 	error
+	message string
+	line    int
+	column  int
+	trace   string
 }
 
 func (err *Error) Unwrap() error {
@@ -24,45 +53,31 @@ func (err *Error) Unwrap() error {
 }
 
 func (err *Error) Error() string {
-	color := true
-	if termenv.EnvColorProfile() == termenv.Ascii {
-		color = false
-	}
-
-	message := yaml.FormatError(err.error, color, true)
-	if matches := errorRegex.FindStringSubmatch(message); matches != nil {
-		return matches[5]
+	if err.message != "" {
+		return err.message
 	}
 
 	return err.error.Error()
 }
 
 func (err *Error) Report(report *internalReport.Report) {
-	color := true
-	if termenv.EnvColorProfile() == termenv.Ascii {
-		color = false
+	// Line
+	if err.line != 0 {
+		report.Compose(
+			internalReport.WithField("line", err.line),
+		)
 	}
-
-	message := yaml.FormatError(err.error, color, true)
-	if matches := errorRegex.FindStringSubmatch(message); matches != nil {
-		// Line
-		if line, _err := strconv.Atoi(matches[3]); _err == nil {
-			report.Compose(
-				internalReport.WithField("line", line),
-			)
-		}
-		// Column
-		if column, _err := strconv.Atoi(matches[4]); _err == nil {
-			report.Compose(
-				internalReport.WithField("column", column),
-			)
-		}
-		// Trace
-		if matches[8] != "" {
-			report.Compose(
-				internalReport.WithTrace(matches[8]),
-			)
-		}
+	// Column
+	if err.column != 0 {
+		report.Compose(
+			internalReport.WithField("column", err.column),
+		)
+	}
+	// Trace
+	if err.trace != "" {
+		report.Compose(
+			internalReport.WithTrace(err.trace),
+		)
 	}
 }
 

@@ -17,112 +17,146 @@ func TestManagerSuite(t *testing.T) {
 	suite.Run(t, new(ManagerSuite))
 }
 
-func (s *ManagerSuite) TestLoadRecipeManifestErrors() {
-	logger := internalLog.New(io.Discard)
+func (s *ManagerSuite) TestLoadManifestErrors() {
+	log := internalLog.New(io.Discard)
 
 	s.Run("Not Found", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
-		recPath := filepath.Join(repoPath, "recipe")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
-		repoMock := core.NewRepositoryMock()
-		repoMock.
-			On("Path").Return(repoPath).
-			On("Dir").Return(repoPath)
+		recDir := filepath.Join(repoUrl, "recipe")
+		recManFile := filepath.Join(recDir, ".manala.yaml")
 
-		manager := NewRepositoryManager(
-			logger,
-			repoMock,
-		)
+		manager := NewManager(log)
 
-		manifest, err := manager.LoadRecipeManifest("recipe")
+		recMan, err := manager.loadManifest(recManFile)
 
 		var _notFoundRecipeManifestError *core.NotFoundRecipeManifestError
 		s.ErrorAs(err, &_notFoundRecipeManifestError)
-		s.Nil(manifest)
+		s.Nil(recMan)
 
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest not found",
 			Fields: map[string]interface{}{
-				"path": recPath,
+				"file": filepath.Join(recDir, ".manala.yaml"),
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 
 	s.Run("Directory", func() {
-		repoPath := internalTesting.DataPath(s, "repository")
-		manifestPath := filepath.Join(repoPath, "recipe", ".manala.yaml")
+		repoUrl := internalTesting.DataPath(s, "repository")
 
-		repoMock := core.NewRepositoryMock()
-		repoMock.
-			On("Path").Return(repoPath).
-			On("Dir").Return(repoPath)
+		recDir := filepath.Join(repoUrl, "recipe")
+		recManFile := filepath.Join(recDir, ".manala.yaml")
 
-		manager := NewRepositoryManager(
-			logger,
-			repoMock,
-		)
+		manager := NewManager(log)
 
-		manifest, err := manager.LoadRecipeManifest("recipe")
+		recMan, err := manager.loadManifest(recManFile)
 
 		s.Error(err)
-		s.Nil(manifest)
+		s.Nil(recMan)
 
 		report := internalReport.NewErrorReport(err)
 
 		reportAssert := &internalReport.Assert{
 			Err: "recipe manifest is a directory",
 			Fields: map[string]interface{}{
-				"path": manifestPath,
+				"dir": recManFile,
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
 	})
 }
 
-func (s *ManagerSuite) TestLoadRecipeManifest() {
-	logger := internalLog.New(io.Discard)
+func (s *ManagerSuite) TestLoadManifest() {
+	log := internalLog.New(io.Discard)
 
-	repoPath := internalTesting.DataPath(s, "repository")
+	repoUrl := internalTesting.DataPath(s, "repository")
 
-	repoMock := core.NewRepositoryMock()
-	repoMock.
-		On("Path").Return(repoPath).
-		On("Dir").Return(repoPath)
+	recDir := filepath.Join(repoUrl, "recipe")
+	recManFile := filepath.Join(recDir, ".manala.yaml")
 
-	manager := NewRepositoryManager(
-		logger,
-		repoMock,
-	)
+	manager := NewManager(log)
 
-	manifest, err := manager.LoadRecipeManifest("recipe")
+	recMan, err := manager.loadManifest(recManFile)
 
 	s.NoError(err)
-	s.Equal("Recipe", manifest.Description())
-	s.Equal(map[string]interface{}{"foo": "bar"}, manifest.Vars())
+	s.Equal("Recipe", recMan.Description())
+	s.Equal(map[string]interface{}{"foo": "bar"}, recMan.Vars())
 }
 
 func (s *ManagerSuite) TestLoadRecipe() {
-	logger := internalLog.New(io.Discard)
+	log := internalLog.New(io.Discard)
 
-	repoPath := internalTesting.DataPath(s, "repository")
-	recPath := filepath.Join(repoPath, "recipe")
+	repoUrl := internalTesting.DataPath(s, "repository")
+	recDir := filepath.Join(repoUrl, "recipe")
 
 	repoMock := core.NewRepositoryMock()
 	repoMock.
-		On("Path").Return(repoPath).
-		On("Dir").Return(repoPath)
+		On("Url").Return(repoUrl).
+		On("Dir").Return(repoUrl)
 
-	manager := NewRepositoryManager(
-		logger,
-		repoMock,
-	)
+	manager := NewManager(log)
 
-	rec, err := manager.LoadRecipe("recipe")
+	rec, err := manager.LoadRecipe(repoMock, "recipe")
 
 	s.NoError(err)
-	s.Equal(recPath, rec.Path())
-	s.Equal(repoPath, rec.Repository().Path())
+	s.Equal(recDir, rec.Dir())
+	s.Equal(repoUrl, rec.Repository().Url())
+}
+
+func (s *ManagerSuite) TestWalkRecipes() {
+	log := internalLog.New(io.Discard)
+
+	manager := NewManager(log)
+
+	s.Run("Default", func() {
+		repoUrl := internalTesting.DataPath(s, "repository")
+
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Url").Return(repoUrl).
+			On("Dir").Return(repoUrl)
+
+		count := 1
+
+		err := manager.WalkRecipes(repoMock, func(rec core.Recipe) error {
+			switch count {
+			case 1:
+				s.Equal(internalTesting.DataPath(s, "repository", "bar"), rec.Dir())
+				s.Equal("bar", rec.Name())
+				s.Equal("Bar", rec.Description())
+				s.Equal(map[string]interface{}{"bar": "bar"}, rec.Vars())
+			case 2:
+				s.Equal(internalTesting.DataPath(s, "repository", "foo"), rec.Dir())
+				s.Equal("foo", rec.Name())
+				s.Equal("Foo", rec.Description())
+				s.Equal(map[string]interface{}{"foo": "foo"}, rec.Vars())
+			}
+
+			count++
+
+			return nil
+		})
+
+		s.NoError(err)
+	})
+
+	s.Run("Empty", func() {
+		repoUrl := internalTesting.DataPath(s, "repository")
+
+		repoMock := core.NewRepositoryMock()
+		repoMock.
+			On("Url").Return(repoUrl).
+			On("Dir").Return(repoUrl)
+
+		err := manager.WalkRecipes(repoMock, func(rec core.Recipe) error {
+			return nil
+		})
+
+		s.EqualError(err, "empty repository")
+	})
+
 }

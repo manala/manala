@@ -25,9 +25,9 @@ func TestSyncerSuite(t *testing.T) {
 
 func (s *SyncerSuite) SetupTest() {
 	s.stderr = &bytes.Buffer{}
-	s.syncer = &Syncer{
-		Log: internalLog.New(s.stderr),
-	}
+	s.syncer = New(
+		internalLog.New(s.stderr),
+	)
 	s.templateProvider = &internalTemplate.Provider{}
 }
 

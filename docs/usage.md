@@ -19,7 +19,7 @@ manala:
     description: Saucerful of secrets # Mandatory description
     template: .manala.yaml.tmpl       # Optional project manifest template 
     sync:
-      - .manala                       # ".manala" path will be synchronized on project
+      - .manala                       # ".manala" dir will be synchronized on project
 
 # Custom variables
 foo: bar    # Provide default value for "foo"

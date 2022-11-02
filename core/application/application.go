@@ -2,11 +2,15 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"github.com/caarlos0/log"
 	"github.com/gen2brain/beeep"
+	"golang.org/x/exp/slices"
 	"manala/core"
 	"manala/core/project"
+	"manala/core/recipe"
 	"manala/core/repository"
+	internalCache "manala/internal/cache"
 	internalConfig "manala/internal/config"
 	internalFilepath "manala/internal/filepath"
 	internalLog "manala/internal/log"
@@ -19,7 +23,7 @@ import (
 )
 
 // NewApplication creates an application
-func NewApplication(config *internalConfig.Config, log *internalLog.Logger) *Application {
+func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts ...Option) *Application {
 	// Log
 	log.WithFields(config).Debug("config")
 
@@ -27,36 +31,59 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger) *App
 	app := &Application{
 		config: config,
 		log:    log,
+		exclusionPaths: []string{
+			// Git
+			".git", ".github",
+			// NodeJS
+			"node_modules",
+			// Composer
+			"vendor",
+			// IntelliJ
+			".idea",
+			// Manala
+			".manala",
+		},
 	}
+
+	// Cache
+	cache := internalCache.New(
+		app.config.GetString("cache-dir"),
+		internalCache.WithUserDir("manala"),
+	)
 
 	// Syncer
-	app.syncer = &internalSyncer.Syncer{
-		Log: app.log,
-	}
+	app.syncer = internalSyncer.New(app.log)
 
 	// Watcher manager
-	app.watcherManager = &internalWatcher.Manager{
-		Log: app.log,
-	}
+	app.watcherManager = internalWatcher.NewManager(app.log)
 
 	// Repository manager
-	app.repositoryManager = repository.NewDefaultManager(
+	app.repositoryManager = repository.NewUrlProcessorManager(
 		app.log,
-		app.config.GetString("default-repository"),
 		repository.NewCacheManager(
 			app.log,
 			repository.NewChainManager(
 				app.log,
 				[]core.RepositoryManager{
 					repository.NewGitManager(
-						app.log,
-						app.config.GetString("cache-dir"),
+						log,
+						cache,
 					),
-					repository.NewDirManager(
-						app.log,
-					),
+					repository.NewDirManager(log),
 				},
 			),
+		),
+	)
+	app.repositoryManager.WithLowermostUrl(
+		app.config.GetString("default-repository"),
+	)
+
+	// Recipe manager
+	app.recipeManager = recipe.NewNameProcessorManager(
+		app.log,
+		recipe.NewManager(
+			app.log,
+			recipe.WithExclusionPaths(app.exclusionPaths),
 		),
 	)
 
@@ -64,7 +91,13 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger) *App
 	app.projectManager = project.NewManager(
 		app.log,
 		app.repositoryManager,
+		app.recipeManager,
 	)
+
+	// Options
+	for _, opt := range opts {
+		opt(app)
+	}
 
 	return app
 }
@@ -74,41 +107,79 @@ type Application struct {
 	log               *internalLog.Logger
 	syncer            *internalSyncer.Syncer
 	watcherManager    *internalWatcher.Manager
-	repositoryManager core.RepositoryManager
+	repositoryManager *repository.UrlProcessorManager
+	recipeManager     *recipe.NameProcessorManager
 	projectManager    *project.Manager
+	exclusionPaths    []string
 }
 
-func (app *Application) Repository(path string) (core.Repository, error) {
+func (app *Application) WalkRecipes(walker func(rec core.Recipe) error) error {
 	// Log
-	app.log.WithFields(log.Fields{
-		"path": path,
-	}).Debug("load repository")
+	app.log.Debug("load repository")
 	app.log.IncreasePadding()
 
-	repo, err := app.repositoryManager.LoadRepository(
-		path,
-	)
+	// Load repository
+	repo, err := app.repositoryManager.LoadPrecedingRepository()
+	if err != nil {
+		return err
+	}
 
 	// Log
 	app.log.DecreasePadding()
 
-	return repo, err
-}
-
-func (app *Application) ProjectManifest(path string) (core.ProjectManifest, error) {
-	return app.projectManager.LoadProjectManifest(path)
+	return app.recipeManager.WalkRecipes(repo, walker)
 }
 
 func (app *Application) CreateProject(
-	path string,
-	repo core.Repository,
-	recSelector func(recipeWalker core.RecipeWalker) (core.Recipe, error),
+	dir string,
+	recSelector func(recipeWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error),
 	optionsSelector func(rec core.Recipe, options []core.RecipeOption) error,
 ) (core.Project, error) {
-	// Select recipe
-	rec, err := recSelector(repo)
+	// Ensure no already existing project
+	if app.projectManager.IsProject(dir) {
+		return nil, internalReport.NewError(fmt.Errorf("already existing project")).
+			WithField("dir", dir)
+	}
+
+	// Log
+	app.log.Debug("load repository")
+	app.log.IncreasePadding()
+
+	// Load repository
+	repo, err := app.repositoryManager.LoadPrecedingRepository()
 	if err != nil {
 		return nil, err
+	}
+
+	// Log
+	app.log.DecreasePadding()
+
+	var rec core.Recipe
+
+	// Try with preceding recipe
+	rec, err = app.recipeManager.LoadPrecedingRecipe(repo)
+
+	if err != nil {
+		var _unprocessableRecipeNameError *core.UnprocessableRecipeNameError
+		if !errors.As(err, &_unprocessableRecipeNameError) {
+			return nil, err
+		}
+
+		// Or use recipe selector
+		rec, err = recSelector(func(walker func(rec core.Recipe) error) error {
+			if err := app.recipeManager.WalkRecipes(repo, func(_rec core.Recipe) error {
+				if err := walker(_rec); err != nil {
+					return err
+				}
+				return nil
+			}); err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Select options to get init vars
@@ -123,35 +194,35 @@ func (app *Application) CreateProject(
 		return nil, err
 	}
 
-	return app.projectManager.CreateProject(path, rec, vars)
+	return app.projectManager.CreateProject(dir, rec, vars)
 }
 
-func (app *Application) Project(path string, repoPath string, recName string) (core.Project, error) {
-	return app.projectManager.LoadProject(path, repoPath, recName)
-}
-
-func (app *Application) ProjectFrom(path string, repoPath string, recName string) (core.Project, error) {
+func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 	// Log
-	app.log.WithFields(log.Fields{
-		"path":       path,
-		"repository": repoPath,
-		"recipe":     recName,
-	}).Debug("load project from")
+	app.log.
+		WithField("dir", dir).
+		Debug("load project from")
 	app.log.IncreasePadding()
 
 	var proj core.Project
 
-	// Backwalks from path
+	// Backwalks from dir
 	err := internalFilepath.Backwalk(
-		path,
-		func(path string, file os.DirEntry, err error) error {
+		dir,
+		func(_dir string, file os.DirEntry, err error) error {
 			if err != nil {
 				return internalReport.NewError(internalOs.NewError(err)).
 					WithMessage("file system error")
 			}
 
+			// Log
+			app.log.
+				WithField("dir", _dir).
+				Debug("load project")
+			app.log.IncreasePadding()
+
 			// Load project
-			proj, err = app.Project(path, repoPath, recName)
+			proj, err = app.projectManager.LoadProject(_dir)
 			if err != nil {
 				var _notFoundProjectManifestError *core.NotFoundProjectManifestError
 				if errors.As(err, &_notFoundProjectManifestError) {
@@ -159,6 +230,9 @@ func (app *Application) ProjectFrom(path string, repoPath string, recName string
 				}
 				return err
 			}
+
+			// Log
+			app.log.DecreasePadding()
 
 			// Stop backwalk
 			return filepath.SkipDir
@@ -174,26 +248,26 @@ func (app *Application) ProjectFrom(path string, repoPath string, recName string
 	if proj == nil {
 		return nil, internalReport.NewError(
 			core.NewNotFoundProjectManifestError("project manifest not found"),
-		).WithField("path", path)
+		).WithField("dir", dir)
 	}
 
 	app.log.WithFields(log.Fields{
-		"path":       proj.Path(),
-		"repository": proj.Recipe().Repository().Path(),
+		"dir":        proj.Dir(),
+		"repository": proj.Recipe().Repository().Url(),
 		"recipe":     proj.Recipe().Name(),
 	}).Info("project loaded")
 
 	return proj, nil
 }
 
-func (app *Application) WalkProjects(path string, repoPath string, recName string, walker func(proj core.Project) error) error {
+func (app *Application) WalkProjects(dir string, walker func(proj core.Project) error) error {
 	// Log
 	app.log.WithFields(log.Fields{
-		"path": path,
+		"dir": dir,
 	}).Info("load projects from")
 	app.log.IncreasePadding()
 
-	err := filepath.WalkDir(path, func(path string, file os.DirEntry, err error) error {
+	err := filepath.WalkDir(dir, func(_dir string, file os.DirEntry, err error) error {
 		if err != nil {
 			return internalReport.NewError(internalOs.NewError(err)).
 				WithMessage("file system error")
@@ -205,27 +279,21 @@ func (app *Application) WalkProjects(path string, repoPath string, recName strin
 		}
 
 		// Exclusions
-		if internalFilepath.Exclude(path) {
-			app.log.WithFields(log.Fields{
-				"path": path,
-			}).Debug("exclude project")
+		if slices.Contains(app.exclusionPaths, filepath.Base(_dir)) {
+			app.log.
+				WithField("path", _dir).
+				Debug("exclude path")
 			return filepath.SkipDir
 		}
 
 		// Log
-		app.log.WithFields(log.Fields{
-			"path":       path,
-			"repository": repoPath,
-			"recipe":     recName,
-		}).Debug("load project")
+		app.log.
+			WithField("dir", _dir).
+			Debug("load project")
 		app.log.IncreasePadding()
 
 		// Load project
-		proj, err := app.Project(path, repoPath, recName)
-
-		// Log
-		app.log.DecreasePadding()
-
+		proj, err := app.projectManager.LoadProject(_dir)
 		if err != nil {
 			var _notFoundProjectManifestError *core.NotFoundProjectManifestError
 			if errors.As(err, &_notFoundProjectManifestError) {
@@ -234,9 +302,12 @@ func (app *Application) WalkProjects(path string, repoPath string, recName strin
 			return err
 		}
 
+		// Log
+		app.log.DecreasePadding()
+
 		app.log.WithFields(log.Fields{
-			"path":       proj.Path(),
-			"repository": proj.Recipe().Repository().Path(),
+			"dir":        proj.Dir(),
+			"repository": proj.Recipe().Repository().Url(),
 			"recipe":     proj.Recipe().Name(),
 		}).Info("project loaded")
 
@@ -254,17 +325,17 @@ func (app *Application) SyncProject(proj core.Project) error {
 	// Log
 	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
-		"src": proj.Recipe().Path(),
-		"dst": proj.Path(),
+		"src": proj.Recipe().Dir(),
+		"dst": proj.Dir(),
 	}).Info("sync project")
 	app.log.IncreasePadding()
 
 	// Loop over project recipe sync units
 	for _, unit := range proj.Recipe().Sync() {
 		if err := app.syncer.Sync(
-			proj.Recipe().Path(),
+			proj.Recipe().Dir(),
 			unit.Source(),
-			proj.Path(),
+			proj.Dir(),
 			unit.Destination(),
 			proj,
 		); err != nil {
@@ -281,42 +352,36 @@ func (app *Application) SyncProject(proj core.Project) error {
 	return nil
 }
 
-func (app *Application) WatchProject(proj core.Project, repoPath string, recName string, all bool, notify bool) error {
+func (app *Application) WatchProject(proj core.Project, all bool, notify bool) error {
 	// Log
 	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
-		"src": proj.Recipe().Path(),
-		"dst": proj.Path(),
+		"src": proj.Recipe().Dir(),
+		"dst": proj.Dir(),
 	}).Info("watch project")
 	app.log.IncreasePadding()
 
-	path := proj.Path()
+	dir := proj.Dir()
 
 	watcher, err := app.watcherManager.NewWatcher(
 
 		// On start
 		func(watcher *internalWatcher.Watcher) {
 			// Watch project
-			_ = proj.Watch(watcher)
+			_ = app.projectManager.WatchProject(proj, watcher)
 		},
 
 		// On change
 		func(watcher *internalWatcher.Watcher) {
 			// Log
-			app.log.WithFields(log.Fields{
-				"path":       path,
-				"repository": repoPath,
-				"recipe":     recName,
-			}).Debug("load project")
+			app.log.
+				WithField("dir", dir).
+				Debug("load project")
 			app.log.IncreasePadding()
 
 			// Load project
 			var err error
-			proj, err = app.Project(path, repoPath, recName)
-
-			// Log
-			app.log.DecreasePadding()
-
+			proj, err := app.projectManager.LoadProject(dir)
 			if err != nil {
 				report := internalReport.NewErrorReport(err)
 				if notify {
@@ -327,9 +392,12 @@ func (app *Application) WatchProject(proj core.Project, repoPath string, recName
 			}
 
 			// Log
+			app.log.DecreasePadding()
+
+			// Log
 			app.log.WithFields(log.Fields{
-				"path":       proj.Path(),
-				"repository": proj.Recipe().Repository().Path(),
+				"dir":        proj.Dir(),
+				"repository": proj.Recipe().Repository().Url(),
 				"recipe":     proj.Recipe().Name(),
 			}).Info("project loaded")
 
@@ -353,7 +421,7 @@ func (app *Application) WatchProject(proj core.Project, repoPath string, recName
 		// On all
 		func(watcher *internalWatcher.Watcher) {
 			if all && proj != nil {
-				_ = proj.Recipe().Watch(watcher)
+				_ = app.recipeManager.WatchRecipe(proj.Recipe(), watcher)
 			}
 		},
 	)
