@@ -81,10 +81,10 @@ func (err *Error) Report(report *internalReport.Report) {
 	}
 }
 
-// 3 : line (mutually optional with column)
-// 4 : column (mutually optional with line)
-// 5 : message
-// 8 : trace (optional)
+// 3: line (mutually optional with column)
+// 4: column (mutually optional with line)
+// 5: message
+// 8: trace (optional)
 var errorRegex = regexp.MustCompile(`(?s)^(\x1b\[91m)?(\[(\d+):(\d+)] )?([^\n]*)(\x1b\[0m)?(\n(.*))?$`)
 
 func NewNodeError(message string, node yamlAst.Node) *NodeError {

@@ -41,9 +41,9 @@ func (err *ParsingError) Report(report *internalReport.Report) {
 	}
 }
 
-// 1 : template
-// 2 : line
-// 3 : message
+// 1: template
+// 2: line
+// 3: message
 var parsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
 
 func NewExecutionError(err error) *ExecutionError {
@@ -92,10 +92,10 @@ func (err *ExecutionError) Report(report *internalReport.Report) {
 	}
 }
 
-// 1 : template
-// 2 : line
-// 3 : column
-// 4 : name
-// 5 : context
-// 6 : message
+// 1: template
+// 2: line
+// 3: column
+// 4: name
+// 5: context
+// 6: message
 var executionErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
