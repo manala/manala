@@ -109,7 +109,7 @@ type Application struct {
 	watcherManager    *internalWatcher.Manager
 	repositoryManager *repository.UrlProcessorManager
 	recipeManager     *recipe.NameProcessorManager
-	projectManager    *project.Manager
+	projectManager    core.ProjectManager
 	exclusionPaths    []string
 }
 
