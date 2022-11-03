@@ -24,13 +24,13 @@ func (manager *CacheManager) LoadRepository(url string) (core.Repository, error)
 	if repo, ok := manager.cache[url]; ok {
 		manager.log.
 			WithField("manager", "cache").
-			Debug("load from cache")
+			Debug("from cache")
 		return repo, nil
 	}
 
 	manager.log.
 		WithField("manager", "cache").
-		Debug("load from cascading manager")
+		Debug("cascade loading")
 
 	repo, err := manager.cascadingManager.LoadRepository(url)
 	if err != nil {
