@@ -79,8 +79,8 @@ func (report *Report) Reports() []*Report {
 	return report.reports
 }
 
-func (report *Report) Add(rep *Report) {
-	report.reports = append(report.reports, rep)
+func (report *Report) Add(_report *Report) {
+	report.reports = append(report.reports, _report)
 }
 
 type Option func(report *Report)
