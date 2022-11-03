@@ -104,6 +104,12 @@ func (manager *Manager) LoadRecipe(repo core.Repository, name string) (core.Reci
 }
 
 func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.Recipe) error) error {
+	// Log
+	manager.log.
+		WithField("dir", repo.Dir()).
+		Debug("walk repository recipes")
+	manager.log.IncreasePadding()
+
 	dir, err := os.Open(repo.Dir())
 	if err != nil {
 		return internalReport.NewError(internalOs.NewError(err)).
@@ -167,6 +173,9 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 		return internalReport.NewError(fmt.Errorf("empty repository")).
 			WithField("dir", repo.Dir())
 	}
+
+	// Log
+	manager.log.DecreasePadding()
 
 	return nil
 }

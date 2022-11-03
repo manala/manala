@@ -105,12 +105,6 @@ func (manager *Manager) LoadProject(dir string) (core.Project, error) {
 		return nil, err
 	}
 
-	// Log
-	manager.log.WithFields(log.Fields{
-		"url": man.Repository(),
-	}).Debug("load repository")
-	manager.log.IncreasePadding()
-
 	// Load repository
 	repo, err := manager.repositoryManager.LoadRepository(
 		man.Repository(),
@@ -118,13 +112,6 @@ func (manager *Manager) LoadProject(dir string) (core.Project, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// Log
-	manager.log.DecreasePadding()
-	manager.log.WithFields(log.Fields{
-		"name": man.Recipe(),
-	}).Debug("load recipe")
-	manager.log.IncreasePadding()
 
 	// Load recipe
 	rec, err := manager.recipeManager.LoadRecipe(
@@ -140,9 +127,6 @@ func (manager *Manager) LoadProject(dir string) (core.Project, error) {
 		man,
 		rec,
 	)
-
-	// Log
-	manager.log.DecreasePadding()
 
 	// Validate vars against recipe
 	validation, err := gojsonschema.Validate(

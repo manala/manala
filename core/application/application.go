@@ -60,17 +60,20 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 	// Repository manager
 	app.repositoryManager = repository.NewUrlProcessorManager(
 		app.log,
-		repository.NewCacheManager(
+		repository.NewLogManager(
 			app.log,
-			repository.NewChainManager(
+			repository.NewCacheManager(
 				app.log,
-				[]core.RepositoryManager{
-					repository.NewGitManager(
-						log,
-						cache,
-					),
-					repository.NewDirManager(log),
-				},
+				repository.NewChainManager(
+					app.log,
+					[]core.RepositoryManager{
+						repository.NewGitManager(
+							log,
+							cache,
+						),
+						repository.NewDirManager(log),
+					},
+				),
 			),
 		),
 	)
@@ -81,17 +84,23 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 	// Recipe manager
 	app.recipeManager = recipe.NewNameProcessorManager(
 		app.log,
-		recipe.NewManager(
+		recipe.NewLogManager(
 			app.log,
-			recipe.WithExclusionPaths(app.exclusionPaths),
+			recipe.NewManager(
+				app.log,
+				recipe.WithExclusionPaths(app.exclusionPaths),
+			),
 		),
 	)
 
 	// Project manager
-	app.projectManager = project.NewManager(
-		app.log,
-		app.repositoryManager,
-		app.recipeManager,
+	app.projectManager = project.NewLogManager(
+		log,
+		project.NewManager(
+			app.log,
+			app.repositoryManager,
+			app.recipeManager,
+		),
 	)
 
 	// Options
@@ -114,18 +123,11 @@ type Application struct {
 }
 
 func (app *Application) WalkRecipes(walker func(rec core.Recipe) error) error {
-	// Log
-	app.log.Debug("load repository")
-	app.log.IncreasePadding()
-
 	// Load repository
 	repo, err := app.repositoryManager.LoadPrecedingRepository()
 	if err != nil {
 		return err
 	}
-
-	// Log
-	app.log.DecreasePadding()
 
 	return app.recipeManager.WalkRecipes(repo, walker)
 }
@@ -141,18 +143,11 @@ func (app *Application) CreateProject(
 			WithField("dir", dir)
 	}
 
-	// Log
-	app.log.Debug("load repository")
-	app.log.IncreasePadding()
-
 	// Load repository
 	repo, err := app.repositoryManager.LoadPrecedingRepository()
 	if err != nil {
 		return nil, err
 	}
-
-	// Log
-	app.log.DecreasePadding()
 
 	var rec core.Recipe
 
@@ -215,12 +210,6 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 					WithMessage("file system error")
 			}
 
-			// Log
-			app.log.
-				WithField("dir", _dir).
-				Debug("load project")
-			app.log.IncreasePadding()
-
 			// Load project
 			proj, err = app.projectManager.LoadProject(_dir)
 			if err != nil {
@@ -230,9 +219,6 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 				}
 				return err
 			}
-
-			// Log
-			app.log.DecreasePadding()
 
 			// Stop backwalk
 			return filepath.SkipDir
@@ -250,12 +236,6 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 			core.NewNotFoundProjectManifestError("project manifest not found"),
 		).WithField("dir", dir)
 	}
-
-	app.log.WithFields(log.Fields{
-		"dir":        proj.Dir(),
-		"repository": proj.Recipe().Repository().Url(),
-		"recipe":     proj.Recipe().Name(),
-	}).Info("project loaded")
 
 	return proj, nil
 }
@@ -286,12 +266,6 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 			return filepath.SkipDir
 		}
 
-		// Log
-		app.log.
-			WithField("dir", _dir).
-			Debug("load project")
-		app.log.IncreasePadding()
-
 		// Load project
 		proj, err := app.projectManager.LoadProject(_dir)
 		if err != nil {
@@ -301,15 +275,6 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 			}
 			return err
 		}
-
-		// Log
-		app.log.DecreasePadding()
-
-		app.log.WithFields(log.Fields{
-			"dir":        proj.Dir(),
-			"repository": proj.Recipe().Repository().Url(),
-			"recipe":     proj.Recipe().Name(),
-		}).Info("project loaded")
 
 		// Walk function
 		return walker(proj)
@@ -373,12 +338,6 @@ func (app *Application) WatchProject(proj core.Project, all bool, notify bool) e
 
 		// On change
 		func(watcher *internalWatcher.Watcher) {
-			// Log
-			app.log.
-				WithField("dir", dir).
-				Debug("load project")
-			app.log.IncreasePadding()
-
 			// Load project
 			var err error
 			proj, err := app.projectManager.LoadProject(dir)
@@ -390,16 +349,6 @@ func (app *Application) WatchProject(proj core.Project, all bool, notify bool) e
 				app.log.Report(report)
 				return
 			}
-
-			// Log
-			app.log.DecreasePadding()
-
-			// Log
-			app.log.WithFields(log.Fields{
-				"dir":        proj.Dir(),
-				"repository": proj.Recipe().Repository().Url(),
-				"recipe":     proj.Recipe().Name(),
-			}).Info("project loaded")
 
 			// Sync project
 			err = app.SyncProject(proj)
