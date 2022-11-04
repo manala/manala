@@ -1,30 +1,28 @@
 package repository
 
 import (
+	"golang.org/x/exp/maps"
 	"manala/core"
 	internalLog "manala/internal/log"
+	"sort"
 )
 
 func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager core.RepositoryManager) *UrlProcessorManager {
 	return &UrlProcessorManager{
 		log:              log,
 		cascadingManager: cascadingManager,
+		urls:             map[int]string{},
 	}
 }
 
 type UrlProcessorManager struct {
 	log              *internalLog.Logger
-	lowermostUrl     string
-	uppermostUrl     string
 	cascadingManager core.RepositoryManager
+	urls             map[int]string
 }
 
-func (manager *UrlProcessorManager) WithLowermostUrl(url string) {
-	manager.lowermostUrl = url
-}
-
-func (manager *UrlProcessorManager) WithUppermostUrl(url string) {
-	manager.uppermostUrl = url
+func (manager *UrlProcessorManager) AddUrl(url string, priority int) {
+	manager.urls[priority] = url
 }
 
 func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository, error) {
@@ -46,9 +44,19 @@ func (manager *UrlProcessorManager) LoadPrecedingRepository() (core.Repository, 
 }
 
 func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
+	// Clone manager urls to add current processed one with priority 0 without touching them
+	urls := maps.Clone(manager.urls)
+	urls[0] = url
+
+	// Reverse order priorities
+	priorities := maps.Keys(urls)
+	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
+
 	var processedUrl string
 
-	for _, _url := range []string{manager.uppermostUrl, url, manager.lowermostUrl} {
+	for _, priority := range priorities {
+		_url := urls[priority]
+
 		if _url == "" {
 			continue
 		}

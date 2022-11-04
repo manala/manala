@@ -1,26 +1,29 @@
 package recipe
 
 import (
+	"golang.org/x/exp/maps"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalWatcher "manala/internal/watcher"
+	"sort"
 )
 
 func NewNameProcessorManager(log *internalLog.Logger, cascadingManager core.RecipeManager) *NameProcessorManager {
 	return &NameProcessorManager{
 		log:              log,
 		cascadingManager: cascadingManager,
+		names:            map[int]string{},
 	}
 }
 
 type NameProcessorManager struct {
 	log              *internalLog.Logger
-	uppermostName    string
 	cascadingManager core.RecipeManager
+	names            map[int]string
 }
 
-func (manager *NameProcessorManager) WithUppermostName(name string) {
-	manager.uppermostName = name
+func (manager *NameProcessorManager) AddName(name string, priority int) {
+	manager.names[priority] = name
 }
 
 func (manager *NameProcessorManager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
@@ -58,9 +61,19 @@ func (manager *NameProcessorManager) WatchRecipe(rec core.Recipe, watcher *inter
 }
 
 func (manager *NameProcessorManager) processName(name string) (string, error) {
+	// Clone manager names to add current processed one with priority 0 without touching them
+	names := maps.Clone(manager.names)
+	names[0] = name
+
+	// Reverse order priorities
+	priorities := maps.Keys(names)
+	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
+
 	var processedName string
 
-	for _, _name := range []string{manager.uppermostName, name} {
+	for _, priority := range priorities {
+		_name := names[priority]
+
 		if _name == "" {
 			continue
 		}

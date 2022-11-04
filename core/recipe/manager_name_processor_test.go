@@ -3,7 +3,9 @@ package recipe
 import (
 	"fmt"
 	"github.com/stretchr/testify/suite"
+	"io"
 	"manala/core"
+	internalLog "manala/internal/log"
 	"testing"
 )
 
@@ -14,38 +16,55 @@ func TestNameProcessorManagerSuite(t *testing.T) {
 }
 
 func (s *NameProcessorManagerSuite) TestProcessName() {
+	log := internalLog.New(io.Discard)
+
+	cascadingManagerMock := core.NewRecipeManagerMock()
+
 	tests := []struct {
-		name          string
-		uppermostName string
-		expected      string
-		error         bool
+		name     string
+		names    map[int]string
+		expected string
+		error    bool
 	}{
 		{
-			name:          "",
-			uppermostName: "",
-			error:         true,
+			name: "",
+			names: map[int]string{
+				10: "",
+			},
+			error: true,
 		},
 		{
-			name:          "name",
-			uppermostName: "",
-			expected:      "name",
+			name: "name",
+			names: map[int]string{
+				10: "",
+			},
+			expected: "name",
 		},
 		{
-			name:          "",
-			uppermostName: "upper",
-			expected:      "upper",
+			name: "",
+			names: map[int]string{
+				10: "upper",
+			},
+			expected: "upper",
 		},
 		{
-			name:          "name",
-			uppermostName: "upper",
-			expected:      "upper",
+			name: "name",
+			names: map[int]string{
+				10: "upper",
+			},
+			expected: "upper",
 		},
 	}
 
 	for i, test := range tests {
 		s.Run(fmt.Sprint(i), func() {
-			manager := &NameProcessorManager{
-				uppermostName: test.uppermostName,
+			manager := NewNameProcessorManager(
+				log,
+				cascadingManagerMock,
+			)
+
+			for priority, name := range test.names {
+				manager.AddName(name, priority)
 			}
 
 			actual, err := manager.processName(test.name)

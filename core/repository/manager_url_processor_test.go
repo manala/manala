@@ -31,7 +31,7 @@ func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
 		log,
 		cascadingManagerMock,
 	)
-	manager.WithLowermostUrl("url")
+	manager.AddUrl("url", -10)
 
 	repo, err := manager.LoadRepository("url")
 
@@ -46,37 +46,44 @@ func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 
 	tests := []struct {
 		name                 string
-		lowermostUrl         string
 		url                  string
-		uppermostUrl         string
+		urls                 map[int]string
 		expectedCascadingUrl string
 	}{
 		{
-			name:                 "Lowermost Url Only",
-			lowermostUrl:         "lowermost_url",
-			url:                  "",
-			uppermostUrl:         "",
+			name: "Lowermost Url Only",
+			url:  "",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "",
+			},
 			expectedCascadingUrl: "lowermost_url",
 		},
 		{
-			name:                 "Lowermost Url And Url",
-			lowermostUrl:         "lowermost_url",
-			url:                  "url",
-			uppermostUrl:         "",
+			name: "Lowermost Url And Url",
+			url:  "url",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "",
+			},
 			expectedCascadingUrl: "url",
 		},
 		{
-			name:                 "Lowermost Url And Url And Uppermost Url",
-			lowermostUrl:         "lowermost_url",
-			url:                  "url",
-			uppermostUrl:         "uppermost_url",
+			name: "Lowermost Url And Url And Uppermost Url",
+			url:  "url",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "uppermost_url",
+			},
 			expectedCascadingUrl: "uppermost_url",
 		},
 		{
-			name:                 "Lowermost Url And Uppermost Url",
-			lowermostUrl:         "lowermost_url",
-			url:                  "",
-			uppermostUrl:         "uppermost_url",
+			name: "Lowermost Url And Uppermost Url",
+			url:  "",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "uppermost_url",
+			},
 			expectedCascadingUrl: "uppermost_url",
 		},
 	}
@@ -91,8 +98,10 @@ func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 				log,
 				cascadingManagerMock,
 			)
-			manager.WithLowermostUrl(test.lowermostUrl)
-			manager.WithUppermostUrl(test.uppermostUrl)
+
+			for priority, url := range test.urls {
+				manager.AddUrl(url, priority)
+			}
 
 			repo, err := manager.LoadRepository(test.url)
 
@@ -111,20 +120,23 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 
 	tests := []struct {
 		name                 string
-		lowermostUrl         string
-		uppermostUrl         string
+		urls                 map[int]string
 		expectedCascadingUrl string
 	}{
 		{
-			name:                 "Lowermost Url",
-			lowermostUrl:         "lowermost_url",
-			uppermostUrl:         "",
+			name: "Lowermost Url",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "",
+			},
 			expectedCascadingUrl: "lowermost_url",
 		},
 		{
-			name:                 "Lowermost Url And Uppermost Url",
-			lowermostUrl:         "lowermost_url",
-			uppermostUrl:         "uppermost_url",
+			name: "Lowermost Url And Uppermost Url",
+			urls: map[int]string{
+				-10: "lowermost_url",
+				10:  "uppermost_url",
+			},
 			expectedCascadingUrl: "uppermost_url",
 		},
 	}
@@ -139,8 +151,10 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 				log,
 				cascadingManagerMock,
 			)
-			manager.WithLowermostUrl(test.lowermostUrl)
-			manager.WithUppermostUrl(test.uppermostUrl)
+
+			for priority, url := range test.urls {
+				manager.AddUrl(url, priority)
+			}
 
 			repo, err := manager.LoadPrecedingRepository()
 
@@ -153,68 +167,59 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 }
 
 func (s *UrlProcessorManagerSuite) TestProcessUrl() {
+	log := internalLog.New(io.Discard)
+
+	cascadingManagerMock := core.NewRepositoryManagerMock()
+
 	tests := []struct {
-		lowermostUrl string
-		url          string
-		uppermostUrl string
-		expected     string
-		error        bool
+		url      string
+		urls     map[int]string
+		expected string
+		error    bool
 	}{
 		{
-			lowermostUrl: "",
-			url:          "",
-			uppermostUrl: "",
-			error:        true,
+			url: "",
+			urls: map[int]string{
+				-10: "",
+				10:  "",
+			},
+			error: true,
 		},
 		{
-			lowermostUrl: "lower",
-			url:          "",
-			uppermostUrl: "",
-			expected:     "lower",
+			url: "",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "",
+			},
+			expected: "lower",
 		},
 		{
-			lowermostUrl: "",
-			url:          "url",
-			uppermostUrl: "",
-			expected:     "url",
+			url: "url",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "",
+			},
+			expected: "url",
 		},
 		{
-			lowermostUrl: "lower",
-			url:          "url",
-			uppermostUrl: "",
-			expected:     "url",
-		},
-		{
-			lowermostUrl: "",
-			url:          "",
-			uppermostUrl: "upper",
-			expected:     "upper",
-		},
-		{
-			lowermostUrl: "lower",
-			url:          "",
-			uppermostUrl: "upper",
-			expected:     "upper",
-		},
-		{
-			lowermostUrl: "",
-			url:          "url",
-			uppermostUrl: "upper",
-			expected:     "upper",
-		},
-		{
-			lowermostUrl: "lower",
-			url:          "url",
-			uppermostUrl: "upper",
-			expected:     "upper",
+			url: "url",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "upper",
+			},
+			expected: "upper",
 		},
 	}
 
 	for i, test := range tests {
 		s.Run(fmt.Sprint(i), func() {
-			manager := &UrlProcessorManager{
-				lowermostUrl: test.lowermostUrl,
-				uppermostUrl: test.uppermostUrl,
+			manager := NewUrlProcessorManager(
+				log,
+				cascadingManagerMock,
+			)
+
+			for priority, url := range test.urls {
+				manager.AddUrl(url, priority)
 			}
 
 			actual, err := manager.processUrl(test.url)

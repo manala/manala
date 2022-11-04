@@ -77,8 +77,9 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 			),
 		),
 	)
-	app.repositoryManager.WithLowermostUrl(
+	app.repositoryManager.AddUrl(
 		app.config.GetString("default-repository"),
+		-10,
 	)
 
 	// Recipe manager
