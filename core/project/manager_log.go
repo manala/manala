@@ -52,11 +52,13 @@ func (manager LogManager) LoadProject(dir string) (core.Project, error) {
 		return nil, err
 	}
 
+	manager.log.ResetPadding()
 	manager.log.WithFields(log.Fields{
 		"dir":        proj.Dir(),
 		"repository": proj.Recipe().Repository().Url(),
 		"recipe":     proj.Recipe().Name(),
 	}).Info("project loaded")
+	manager.log.RestorePadding()
 
 	return proj, nil
 }

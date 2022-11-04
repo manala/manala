@@ -288,7 +288,6 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 
 func (app *Application) SyncProject(proj core.Project) error {
 	// Log
-	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
 		"src": proj.Recipe().Dir(),
 		"dst": proj.Dir(),
@@ -319,7 +318,6 @@ func (app *Application) SyncProject(proj core.Project) error {
 
 func (app *Application) WatchProject(proj core.Project, all bool, notify bool) error {
 	// Log
-	app.log.IncreasePadding()
 	app.log.WithFields(log.Fields{
 		"src": proj.Recipe().Dir(),
 		"dst": proj.Dir(),

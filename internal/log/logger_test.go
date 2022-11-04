@@ -155,4 +155,17 @@ func (s *LoggerSuite) TestPadding() {
 	logger.Info("info")
 
 	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_decrease"), out.Bytes())
+
+	logger.IncreasePadding()
+	logger.IncreasePadding()
+	logger.Info("info")
+	logger.ResetPadding()
+	logger.Info("info")
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_reset"), out.Bytes())
+
+	logger.RestorePadding()
+	logger.Info("info")
+
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_restore"), out.Bytes())
 }

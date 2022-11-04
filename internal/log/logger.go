@@ -15,21 +15,30 @@ func New(out io.Writer) *Logger {
 
 type Logger struct {
 	*log.Logger
+	padding int
 }
 
 func (logger *Logger) LevelDebug() {
 	logger.Level = log.DebugLevel
 }
 
+func (logger *Logger) ResetPadding() {
+	logger.padding = logger.Logger.Padding
+	logger.Logger.ResetPadding()
+}
+
+func (logger *Logger) RestorePadding() {
+	logger.Logger.Padding = logger.padding
+}
+
 func (logger *Logger) Report(report *internalReport.Report) {
 	// Reset padding
-	_padding := logger.Padding
 	logger.ResetPadding()
 
 	logger.report(report)
 
 	// Restore padding
-	logger.Padding = _padding
+	logger.RestorePadding()
 }
 
 func (logger *Logger) report(report *internalReport.Report) {
