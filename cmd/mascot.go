@@ -18,11 +18,7 @@ func newMascotCmd() *cobra.Command {
 			repeat, _ := cmd.Flags().GetInt("repeat")
 
 			// Model
-			model := &mascotModel{
-				duration: 345,
-				style:    lipgloss.NewStyle(),
-				repeat:   repeat,
-			}
+			model := newMascotModel(repeat)
 
 			// Program
 			if err := tea.NewProgram(
@@ -48,6 +44,14 @@ var mascotText string
 
 //go:embed resources/mascot_yell.txt
 var mascotTextYell string
+
+func newMascotModel(repeat int) *mascotModel {
+	return &mascotModel{
+		duration: 345,
+		style:    lipgloss.NewStyle(),
+		repeat:   repeat,
+	}
+}
 
 type mascotModel struct {
 	duration     int
