@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"io"
 	internalConfig "manala/internal/config"
@@ -9,6 +10,18 @@ import (
 	"os"
 	"strings"
 )
+
+// Styles
+var styles = struct {
+	Primary, Secondary lipgloss.Style
+}{
+	Primary: lipgloss.NewStyle().
+		Foreground(lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#DDDDDD"}).
+		Bold(true),
+	Secondary: lipgloss.NewStyle().
+		Foreground(lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#DDDDDD"}).
+		Italic(true),
+}
 
 func newCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{

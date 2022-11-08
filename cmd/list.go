@@ -32,23 +32,40 @@ Example: manala list -> resulting in a recipes list display`,
 				application.WithRepositoryUrl(repoUrl),
 			)
 
-			// Styles
-			var nameStyle = lipgloss.NewStyle().Bold(true)
-			var descriptionStyle = lipgloss.NewStyle().Italic(true)
+			var recs []core.Recipe
+			maxNameWidth := 0
 
 			// Walk into recipes
-			return app.WalkRecipes(func(rec core.Recipe) error {
+			if err := app.WalkRecipes(func(rec core.Recipe) error {
+				recs = append(recs, rec)
+
+				nameWidth := lipgloss.Width(rec.Name())
+				if nameWidth > maxNameWidth {
+					maxNameWidth = nameWidth
+				}
+
+				return nil
+			}); err != nil {
+				return err
+			}
+
+			nameStyle := styles.Primary.Copy().
+				Width(maxNameWidth).
+				MarginRight(2)
+			descriptionStyle := styles.Secondary.Copy()
+
+			for _, rec := range recs {
 				if _, err := fmt.Fprintf(
 					cmd.OutOrStdout(),
-					"%s: %s\n",
+					"%s%s\n",
 					nameStyle.Render(rec.Name()),
 					descriptionStyle.Render(rec.Description()),
 				); err != nil {
 					return err
 				}
+			}
 
-				return nil
-			})
+			return nil
 		},
 	}
 

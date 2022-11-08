@@ -1,2 +1,2 @@
-[1mbar[0m: [3mBar[0m
-[1mfoo[0m: [3mFoo[0m
+[1;mbar[0m  [3;mBar[0m
+[1;mfoo[0m  [3;mFoo[0m

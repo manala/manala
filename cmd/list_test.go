@@ -21,6 +21,7 @@ type ListSuite struct {
 }
 
 func TestListSuite(t *testing.T) {
+	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ListSuite))
 }
 
