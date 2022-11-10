@@ -6,7 +6,7 @@ require (
 	code.rocketnine.space/tslocum/cview v1.5.8
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/caarlos0/log v0.1.10
-	github.com/charmbracelet/bubbletea v0.22.1
+	github.com/charmbracelet/bubbletea v0.23.0
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.6.0
