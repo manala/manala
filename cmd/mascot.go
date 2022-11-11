@@ -21,11 +21,11 @@ func newMascotCmd() *cobra.Command {
 			model := newMascotModel(repeat)
 
 			// Program
-			if err := tea.NewProgram(
+			if _, err := tea.NewProgram(
 				model,
 				tea.WithAltScreen(),
 				tea.WithOutput(cmd.OutOrStdout()),
-			).Start(); err != nil {
+			).Run(); err != nil {
 				return err
 			}
 
