@@ -1,12 +1,29 @@
 .SILENT:
+
+docs: docs/commands docs/demo
 .PHONY: docs
 
-## Run documentation local server (on port 8000 by default)
-## See: https://github.com/squidfunk/mkdocs-material
-docs:
-	docker run \
-		--rm \
-		--volume $(CURDIR):/docs \
-		--publish 8000:${or ${PORT},${PORT},8000} \
-		squidfunk/mkdocs-material:8.3.8 \
-		serve -a 0.0.0.0:8000
+docs/commands:
+	printf "Generate docs commands...\n"
+	docker compose run --rm \
+		go \
+		go run . docs docs/commands
+.PHONY: docs/commands
+
+docs/demo:
+	printf "Generate docs demo...\n"
+	docker compose run --rm \
+		go \
+		go build -o /go/bin/manala
+	docker compose run --rm \
+		vhs \
+		docs/demo/demo.tape
+.PHONY: docs/demo
+
+go:
+	docker compose run --rm \
+		go
+
+mkdocs:
+	docker compose run --rm --service-ports \
+		mkdocs

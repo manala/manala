@@ -4,6 +4,8 @@
 <h3 align="center">Manala</h3>
 <p align="center">Let your project's plumbing up to date.</p>
 
+<img align="center" src="docs/demo/demo.gif" />
+
 ---
 
 [![Release](https://img.shields.io/github/release/manala/manala.svg?style=flat-square)](https://github.com/manala/manala/releases/latest)

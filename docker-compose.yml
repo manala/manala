@@ -1,0 +1,23 @@
+services:
+  go:
+    image: golang:1.19.3-alpine
+    volumes:
+      - go:/go
+      - .:/usr/src/manala
+    working_dir: /usr/src/manala
+  mkdocs:
+    image: squidfunk/mkdocs-material:8.3.8
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/docs
+    command: serve --dev-addr 0.0.0.0:8000
+  vhs:
+    image: ghcr.io/charmbracelet/vhs:v0.1.1
+    volumes:
+      - go:/go
+      - .:/usr/src/manala
+    working_dir: /usr/src/manala
+
+volumes:
+  go:

@@ -4,6 +4,8 @@
 <h3 align="center">Manala</h3>
 <p align="center">Let your project's plumbing up to date.</p>
 
+<img align="center" src="demo/demo.gif" />
+
 ---
 
 <p align="center">
