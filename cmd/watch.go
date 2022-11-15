@@ -13,10 +13,10 @@ func newWatchCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.
 		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
-		Short:             "List recipes",
-		Long: `Watch (manala watch) will watch project, and launch update on changes.
+		Short:             "Watch project",
+		Long: `Watch (manala watch) will watch project files, and launch update on changes.
 
-Example: manala watch -> resulting in a watch in a dir (default to the current directory)`,
+Example: manala watch -> resulting in a watch in a project dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Get flags
 			repoUrl, _ := cmd.Flags().GetString("repository")

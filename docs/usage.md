@@ -1,30 +1,53 @@
 ## Project
 
+A project is a directory containing a `.manala.yaml` manifest.
+
+### Manifest
+
+A project manifest file is made of two parts:
+
+* a config block (recipe, repository) handled by a fixed `manala` map key
+* some custom variables values
+
+```yaml
+# Config
+manala:
+    recipe: eugene                                      # Mandatory
+    repository: https://example.com/careful/eugene.git  # Optional repository url 
+
+# Custom variables
+foo: baz     # Provide custom value for "foo" recipe variable
+```
+
 ## Repository
+
+A repository is just a directory where all first level directories are recipes.
 
 ## Recipe
 
-### Config
+A recipe is a directory containing a `.manala.yaml` manifest. Its name is, in fact, its directory name.
+
+### Manifest
 
 A recipe manifest file is made of two parts:
 
 * a config block (description, project manifest template, files to sync,...) handled by a fixed `manala` map key
-* some custom variables serving two purposes:
+* some variables serving two purposes:
     * provide default values
     * scaffold validation schema
 
 ```yaml
 # Config
 manala:
-    description: Saucerful of secrets # Mandatory description
-    template: .manala.yaml.tmpl       # Optional project manifest template 
+    description: Saucerful of secrets  # Mandatory description
+    template: .manala.yaml.tmpl        # Optional project manifest template 
     sync:
-      - .manala                       # ".manala" dir will be synchronized on project
+      - .manala                        # ".manala" dir will be synchronized on project
 
-# Custom variables
-foo: bar    # Provide default value for "foo"
-bar:        # Scaffold "bar" validation schema as an object
-    baz: [] # Scaffold "bar.baz" validation schema as an array
+# Variables
+foo: bar     # Provide default value for "foo"
+bar:         # Scaffold "bar" validation schema as an object
+    baz: []  # Scaffold "bar.baz" validation schema as an array
 ```
 
 ### Validation
@@ -138,7 +161,11 @@ Recipes support three kind of files:
 
 **Regular**
 
+Regular files or directories are synchronised as is, respecting their permissions.
+
 **Template**
+
+Template files must ends with `.tmpl` extension.
 
 Functions are supplied by the built-in [Go text/template package](https://golang.org/pkg/text/template/) and the
 [Sprig template function library](http://masterminds.github.io/sprig/).
@@ -147,3 +174,7 @@ Additionally, following functions are provided:
 * `toYaml`: serialize variables as yaml
 
 **Dist**
+
+Dist files must ends with `.dist` extension.
+
+They are synchronized only ONCE, when the destination file does not exist in the project.
