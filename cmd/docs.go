@@ -9,10 +9,13 @@ import (
 func newDocsCmd(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "docs",
-		Args:   cobra.NoArgs,
+		Args:   cobra.MaximumNArgs(1),
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return doc.GenMarkdownTree(rootCmd, filepath.Join("docs", "commands"))
+			// Get args
+			dir := filepath.Clean(append(args, "")[0])
+
+			return doc.GenMarkdownTree(rootCmd, dir)
 		},
 	}
 
