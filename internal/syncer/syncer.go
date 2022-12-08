@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
-	"github.com/caarlos0/log"
 	"io"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -56,10 +55,10 @@ func (syncer *Syncer) syncNode(node *node) error {
 	relDstPath, _ := filepath.Rel(node.Dst.Dir, node.Dst.Path)
 	if node.Src.IsDir {
 
-		syncer.log.WithFields(log.Fields{
-			"src": relSrcPath,
-			"dst": relDstPath,
-		}).Debug("sync dir")
+		syncer.log.
+			WithField("src", relSrcPath).
+			WithField("dst", relDstPath).
+			Debug("sync dir")
 
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
@@ -77,9 +76,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 					WithMessage("file system error")
 			}
 
-			syncer.log.WithField(
-				"path", relDstPath,
-			).Info("dir synced")
+			syncer.log.
+				WithField("path", relDstPath).
+				Info("dir synced")
 		}
 
 		// Iterate over source files
@@ -124,10 +123,10 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 	} else {
 
-		syncer.log.WithFields(log.Fields{
-			"src": relSrcPath,
-			"dst": relDstPath,
-		}).Debug("sync file")
+		syncer.log.
+			WithField("src", relSrcPath).
+			WithField("dst", relDstPath).
+			Debug("sync file")
 
 		if node.Dst.IsExist {
 			// Destination is a directory; remove
@@ -226,9 +225,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 				return err
 			}
 
-			syncer.log.WithField(
-				"path", relDstPath,
-			).Info("file synced")
+			syncer.log.
+				WithField("path", relDstPath).
+				Info("file synced")
 		} else {
 			dstMode := node.Dst.Mode &^ 0111
 			if node.Src.IsExecutable {

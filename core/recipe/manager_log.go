@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"github.com/caarlos0/log"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalWatcher "manala/internal/watcher"
@@ -21,9 +20,9 @@ type LogManager struct {
 
 func (manager *LogManager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
 	// Log
-	manager.log.WithFields(log.Fields{
-		"name": name,
-	}).Debug("load recipe")
+	manager.log.
+		WithField("name", name).
+		Debug("load recipe")
 	manager.log.IncreasePadding()
 
 	rec, err := manager.cascadingManager.LoadRecipe(repo, name)

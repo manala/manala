@@ -2,7 +2,6 @@ package project
 
 import (
 	_ "embed"
-	"github.com/caarlos0/log"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalWatcher "manala/internal/watcher"
@@ -53,11 +52,11 @@ func (manager LogManager) LoadProject(dir string) (core.Project, error) {
 	}
 
 	manager.log.ResetPadding()
-	manager.log.WithFields(log.Fields{
-		"dir":        proj.Dir(),
-		"repository": proj.Recipe().Repository().Url(),
-		"recipe":     proj.Recipe().Name(),
-	}).Info("project loaded")
+	manager.log.
+		WithField("dir", proj.Dir()).
+		WithField("repository", proj.Recipe().Repository().Url()).
+		WithField("recipe", proj.Recipe().Name()).
+		Info("project loaded")
 	manager.log.RestorePadding()
 
 	return proj, nil

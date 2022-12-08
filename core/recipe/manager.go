@@ -3,7 +3,6 @@ package recipe
 import (
 	"errors"
 	"fmt"
-	"github.com/caarlos0/log"
 	"golang.org/x/exp/slices"
 	"io/fs"
 	"manala/core"
@@ -38,9 +37,9 @@ type Manager struct {
 
 func (manager *Manager) loadManifest(file string) (*Manifest, error) {
 	// Log
-	manager.log.WithFields(log.Fields{
-		"file": file,
-	}).Debug("load recipe manifest")
+	manager.log.
+		WithField("file", file).
+		Debug("load recipe manifest")
 
 	// Stat file
 	if fileInfo, err := os.Stat(file); err != nil {
@@ -75,10 +74,10 @@ func (manager *Manager) loadManifest(file string) (*Manifest, error) {
 	}
 
 	// Log
-	manager.log.WithFields(log.Fields{
-		"description": man.Description(),
-		"template":    man.Template(),
-	}).Debug("manifest")
+	manager.log.
+		WithField("description", man.Description()).
+		WithField("template", man.Template()).
+		Debug("manifest")
 
 	return man, nil
 }
@@ -144,9 +143,9 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 		}
 
 		// Log
-		manager.log.WithFields(log.Fields{
-			"name": file.Name(),
-		}).Debug("load recipe")
+		manager.log.
+			WithField("name", file.Name()).
+			Debug("load recipe")
 		manager.log.IncreasePadding()
 
 		rec, err := manager.LoadRecipe(repo, file.Name())

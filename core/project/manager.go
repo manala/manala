@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"github.com/caarlos0/log"
 	"github.com/xeipuuv/gojsonschema"
 	"manala/core"
 	internalLog "manala/internal/log"
@@ -52,9 +51,9 @@ func (manager *Manager) IsProject(dir string) bool {
 
 func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) {
 	// Log
-	manager.log.WithFields(log.Fields{
-		"file": file,
-	}).Debug("load project manifest")
+	manager.log.
+		WithField("file", file).
+		Debug("load project manifest")
 
 	// Stat file
 	if fileInfo, err := os.Stat(file); err != nil {
@@ -89,10 +88,10 @@ func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) 
 	}
 
 	// Log
-	manager.log.WithFields(log.Fields{
-		"repository": man.Repository(),
-		"recipe":     man.Recipe(),
-	}).Debug("manifest")
+	manager.log.
+		WithField("repository", man.Repository()).
+		WithField("recipe", man.Recipe()).
+		Debug("manifest")
 
 	return man, nil
 }

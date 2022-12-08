@@ -3,7 +3,6 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/caarlos0/log"
 	"github.com/gen2brain/beeep"
 	"golang.org/x/exp/slices"
 	"manala/core"
@@ -25,7 +24,9 @@ import (
 // NewApplication creates an application
 func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts ...Option) *Application {
 	// Log
-	log.WithFields(config).Debug("config")
+	log.
+		WithFields(config).
+		Debug("config")
 
 	// App
 	app := &Application{
@@ -243,9 +244,9 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 
 func (app *Application) WalkProjects(dir string, walker func(proj core.Project) error) error {
 	// Log
-	app.log.WithFields(log.Fields{
-		"dir": dir,
-	}).Info("load projects from")
+	app.log.
+		WithField("dir", dir).
+		Info("load projects from")
 	app.log.IncreasePadding()
 
 	err := filepath.WalkDir(dir, func(_dir string, file os.DirEntry, err error) error {
@@ -289,10 +290,10 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 
 func (app *Application) SyncProject(proj core.Project) error {
 	// Log
-	app.log.WithFields(log.Fields{
-		"src": proj.Recipe().Dir(),
-		"dst": proj.Dir(),
-	}).Info("sync project")
+	app.log.
+		WithField("src", proj.Recipe().Dir()).
+		WithField("dst", proj.Dir()).
+		Info("sync project")
 	app.log.IncreasePadding()
 
 	// Loop over project recipe sync units
@@ -319,10 +320,10 @@ func (app *Application) SyncProject(proj core.Project) error {
 
 func (app *Application) WatchProject(proj core.Project, all bool, notify bool) error {
 	// Log
-	app.log.WithFields(log.Fields{
-		"src": proj.Recipe().Dir(),
-		"dst": proj.Dir(),
-	}).Info("watch project")
+	app.log.
+		WithField("src", proj.Recipe().Dir()).
+		WithField("dst", proj.Dir()).
+		Info("watch project")
 	app.log.IncreasePadding()
 
 	dir := proj.Dir()

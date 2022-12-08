@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"github.com/caarlos0/log"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -34,10 +33,10 @@ func (manager *DirManager) LoadRepository(url string) (core.Repository, error) {
 	}
 
 	// Log
-	manager.log.WithFields(log.Fields{
-		"url":     url,
-		"manager": "dir",
-	}).Debug("try load")
+	manager.log.
+		WithField("url", url).
+		WithField("manager", "dir").
+		Debug("try load")
 
 	repo := NewRepository(
 		url,

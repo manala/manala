@@ -3,7 +3,6 @@ package repository
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"github.com/caarlos0/log"
 	"github.com/go-git/go-git/v5"
 	"manala/core"
 	internalCache "manala/internal/cache"
@@ -34,10 +33,10 @@ func (manager *GitManager) LoadRepository(url string) (core.Repository, error) {
 	}
 
 	// Log
-	manager.log.WithFields(log.Fields{
-		"url":     url,
-		"manager": "git",
-	}).Debug("try load")
+	manager.log.
+		WithField("url", url).
+		WithField("manager", "git").
+		Debug("try load")
 
 	hash := sha1.New()
 	hash.Write([]byte(url))
@@ -48,7 +47,9 @@ func (manager *GitManager) LoadRepository(url string) (core.Repository, error) {
 		return nil, err
 	}
 
-	manager.log.WithField("dir", dir).Debug("open git repository cache")
+	manager.log.
+		WithField("dir", dir).
+		Debug("open git repository cache")
 
 	repo := NewRepository(
 		url,
@@ -67,7 +68,8 @@ Load:
 
 	// Repository not in cache, let's clone it
 	case git.ErrRepositoryNotExists:
-		manager.log.Debug("clone git repository cache")
+		manager.log.
+			Debug("clone git repository cache")
 
 		_, err = git.PlainClone(repo.dir, false, &git.CloneOptions{
 			URL:               repo.url,
@@ -82,7 +84,8 @@ Load:
 
 	// Repository already in cache, let's pull it
 	case nil:
-		manager.log.Debug("get git repository cache worktree")
+		manager.log.
+			Debug("get git repository cache worktree")
 
 		gitRepositoryWorktree, err := gitRepository.Worktree()
 		if err != nil {
@@ -91,7 +94,8 @@ Load:
 				WithField("dir", repo.dir)
 		}
 
-		manager.log.Debug("pull git repository cache worktree")
+		manager.log.
+			Debug("pull git repository cache worktree")
 
 		if err := gitRepositoryWorktree.Pull(&git.PullOptions{
 			RemoteName: "origin",
@@ -99,7 +103,8 @@ Load:
 			switch err {
 			case git.NoErrAlreadyUpToDate:
 			case git.ErrNonFastForwardUpdate:
-				manager.log.Debug("fast forward update detected, delete git repository cache and retry with cloning")
+				manager.log.
+					Debug("fast forward update detected, delete git repository cache and retry with cloning")
 				if err := os.RemoveAll(repo.dir); err != nil {
 					return nil, internalReport.NewError(err).
 						WithMessage("delete git repository").
