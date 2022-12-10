@@ -191,6 +191,7 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 		WithField("dir", dir).
 		Debug("load project from")
 	app.log.IncreasePadding()
+	defer app.log.DecreasePadding()
 
 	var proj core.Project
 
@@ -217,9 +218,6 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 			return filepath.SkipDir
 		})
 
-	// Log
-	app.log.DecreasePadding()
-
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +237,7 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 		WithField("dir", dir).
 		Info("load projects from")
 	app.log.IncreasePadding()
+	defer app.log.DecreasePadding()
 
 	err := filepath.WalkDir(dir, func(_dir string, file os.DirEntry, err error) error {
 		if err != nil {
@@ -273,9 +272,6 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 		return walker(proj)
 	})
 
-	// Log
-	app.log.DecreasePadding()
-
 	return err
 }
 
@@ -286,6 +282,8 @@ func (app *Application) SyncProject(proj core.Project) error {
 		WithField("dst", proj.Dir()).
 		Info("sync project")
 	app.log.IncreasePadding()
+	defer app.log.DecreasePadding()
+	defer app.log.DecreasePadding()
 
 	// Loop over project recipe sync units
 	for _, unit := range proj.Recipe().Sync() {
@@ -296,15 +294,10 @@ func (app *Application) SyncProject(proj core.Project) error {
 			unit.Destination(),
 			proj,
 		); err != nil {
-			app.log.DecreasePadding()
-			app.log.DecreasePadding()
 
 			return err
 		}
 	}
-
-	app.log.DecreasePadding()
-	app.log.DecreasePadding()
 
 	return nil
 }
@@ -316,6 +309,8 @@ func (app *Application) WatchProject(proj core.Project, all bool, notify bool) e
 		WithField("dst", proj.Dir()).
 		Info("watch project")
 	app.log.IncreasePadding()
+	defer app.log.DecreasePadding()
+	defer app.log.DecreasePadding()
 
 	dir := proj.Dir()
 
@@ -373,9 +368,6 @@ func (app *Application) WatchProject(proj core.Project, all bool, notify bool) e
 	defer watcher.Close()
 
 	watcher.Watch()
-
-	app.log.DecreasePadding()
-	app.log.DecreasePadding()
 
 	return nil
 }
