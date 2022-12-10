@@ -4,12 +4,26 @@ type Option func(app *Application)
 
 func WithRepositoryUrl(url string) Option {
 	return func(app *Application) {
-		app.repositoryManager.AddUrl(url, 10)
+		priority := 10
+
+		app.log.
+			WithField("url", url).
+			WithField("priority", priority).
+			Debug("option repository")
+
+		app.repositoryManager.AddUrl(url, priority)
 	}
 }
 
 func WithRecipeName(name string) Option {
 	return func(app *Application) {
-		app.recipeManager.AddName(name, 10)
+		priority := 10
+
+		app.log.
+			WithField("name", name).
+			WithField("priority", priority).
+			Debug("option recipe")
+
+		app.recipeManager.AddName(name, priority)
 	}
 }
