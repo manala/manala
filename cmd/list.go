@@ -22,14 +22,20 @@ repository.
 
 Example: manala list -> resulting in a recipes list display`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Get flags
-			repoUrl, _ := cmd.Flags().GetString("repository")
+			// Application options
+			var appOptions []application.Option
+
+			// Flag - Repository url
+			if cmd.Flags().Changed("repository") {
+				repoUrl, _ := cmd.Flags().GetString("repository")
+				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+			}
 
 			// Application
 			app := application.NewApplication(
 				config,
 				log,
-				application.WithRepositoryUrl(repoUrl),
+				appOptions...,
 			)
 
 			var recs []core.Recipe

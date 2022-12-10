@@ -21,18 +21,29 @@ repository's recipe and related variables defined in manifest (.manala.yaml).
 
 Example: manala update -> resulting in an update in a project dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Application options
+			var appOptions []application.Option
 
-			// Get flags
-			repoUrl, _ := cmd.Flags().GetString("repository")
-			recName, _ := cmd.Flags().GetString("recipe")
+			// Flag - Repository url
+			if cmd.Flags().Changed("repository") {
+				repoUrl, _ := cmd.Flags().GetString("repository")
+				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+			}
+
+			// Flag - Recipe name
+			if cmd.Flags().Changed("recipe") {
+				recName, _ := cmd.Flags().GetString("recipe")
+				appOptions = append(appOptions, application.WithRecipeName(recName))
+			}
+
+			// Flag - Recursive
 			recursive, _ := cmd.Flags().GetBool("recursive")
 
 			// Application
 			app := application.NewApplication(
 				config,
 				log,
-				application.WithRepositoryUrl(repoUrl),
-				application.WithRecipeName(recName),
+				appOptions...,
 			)
 
 			// Get args

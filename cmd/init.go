@@ -24,16 +24,26 @@ func newInitCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.C
 
 Example: manala init -> resulting in a project init in a dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Get flags
-			repoUrl, _ := cmd.Flags().GetString("repository")
-			recName, _ := cmd.Flags().GetString("recipe")
+			// Application options
+			var appOptions []application.Option
+
+			// Flag - Repository url
+			if cmd.Flags().Changed("repository") {
+				repoUrl, _ := cmd.Flags().GetString("repository")
+				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+			}
+
+			// Flag - Recipe name
+			if cmd.Flags().Changed("recipe") {
+				recName, _ := cmd.Flags().GetString("recipe")
+				appOptions = append(appOptions, application.WithRecipeName(recName))
+			}
 
 			// Application
 			app := application.NewApplication(
 				config,
 				log,
-				application.WithRepositoryUrl(repoUrl),
-				application.WithRecipeName(recName),
+				appOptions...,
 			)
 
 			// Get args
