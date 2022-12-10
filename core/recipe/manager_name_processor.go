@@ -35,11 +35,13 @@ func (manager *NameProcessorManager) LoadRecipe(repo core.Repository, name strin
 	manager.log.IncreasePadding()
 	defer manager.log.DecreasePadding()
 
+	// Process name
 	name, err := manager.processName(name)
 	if err != nil {
 		return nil, err
 	}
 
+	// Cascading manager
 	rec, err := manager.cascadingManager.LoadRecipe(repo, name)
 	if err != nil {
 		return nil, err
@@ -77,29 +79,24 @@ func (manager *NameProcessorManager) processName(name string) (string, error) {
 	priorities := maps.Keys(names)
 	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
 
-	var processedName string
-
 	for _, priority := range priorities {
-		_name := names[priority]
+		name = names[priority]
 
 		manager.log.
-			WithField("name", _name).
+			WithField("name", name).
 			WithField("priority", priority).
 			Debug("process name")
 
-		if _name == "" {
-			continue
+		if name != "" {
+			break
 		}
-
-		processedName = _name
-		break
 	}
 
-	if processedName == "" {
+	if name == "" {
 		return "", core.NewUnprocessableRecipeNameError(
 			"unable to process empty recipe name",
 		)
 	}
 
-	return processedName, nil
+	return name, nil
 }

@@ -34,11 +34,13 @@ func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository,
 	manager.log.IncreasePadding()
 	defer manager.log.DecreasePadding()
 
+	// Process url
 	url, err := manager.processUrl(url)
 	if err != nil {
 		return nil, err
 	}
 
+	// Cascading manager
 	repo, err := manager.cascadingManager.LoadRepository(url)
 	if err != nil {
 		return nil, err
@@ -60,29 +62,24 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 	priorities := maps.Keys(urls)
 	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
 
-	var processedUrl string
-
 	for _, priority := range priorities {
-		_url := urls[priority]
+		url = urls[priority]
 
 		manager.log.
-			WithField("url", _url).
+			WithField("url", url).
 			WithField("priority", priority).
 			Debug("process url")
 
-		if _url == "" {
-			continue
+		if url != "" {
+			break
 		}
-
-		processedUrl = _url
-		break
 	}
 
-	if processedUrl == "" {
+	if url == "" {
 		return "", core.NewUnprocessableRepositoryUrlError(
 			"unable to process empty repository url",
 		)
 	}
 
-	return processedUrl, nil
+	return url, nil
 }
