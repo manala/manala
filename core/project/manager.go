@@ -91,12 +91,17 @@ func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) 
 	manager.log.
 		WithField("repository", man.Repository()).
 		WithField("recipe", man.Recipe()).
-		Debug("manifest")
+		Debug("project manifest")
 
 	return man, nil
 }
 
 func (manager *Manager) LoadProject(dir string) (core.Project, error) {
+	// Log
+	manager.log.
+		WithField("dir", dir).
+		Debug("load project")
+
 	// Load manifest
 	manFile := filepath.Join(dir, manifestFilename)
 	man, err := manager.loadManifest(manFile)

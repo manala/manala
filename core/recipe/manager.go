@@ -77,12 +77,17 @@ func (manager *Manager) loadManifest(file string) (*Manifest, error) {
 	manager.log.
 		WithField("description", man.Description()).
 		WithField("template", man.Template()).
-		Debug("manifest")
+		Debug("recipe manifest")
 
 	return man, nil
 }
 
 func (manager *Manager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
+	// Log
+	manager.log.
+		WithField("name", name).
+		Debug("load recipe")
+
 	dir := filepath.Join(repo.Dir(), name)
 
 	// Load manifest
@@ -108,6 +113,7 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 		WithField("dir", repo.Dir()).
 		Debug("walk repository recipes")
 	manager.log.IncreasePadding()
+	defer manager.log.DecreasePadding()
 
 	dir, err := os.Open(repo.Dir())
 	if err != nil {
@@ -142,17 +148,7 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 			continue
 		}
 
-		// Log
-		manager.log.
-			WithField("name", file.Name()).
-			Debug("load recipe")
-		manager.log.IncreasePadding()
-
 		rec, err := manager.LoadRecipe(repo, file.Name())
-
-		// Log
-		manager.log.DecreasePadding()
-
 		if err != nil {
 			var _notFoundRecipeManifestError *core.NotFoundRecipeManifestError
 			if errors.As(err, &_notFoundRecipeManifestError) {
@@ -172,9 +168,6 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 		return internalReport.NewError(fmt.Errorf("empty repository")).
 			WithField("dir", repo.Dir())
 	}
-
-	// Log
-	manager.log.DecreasePadding()
 
 	return nil
 }

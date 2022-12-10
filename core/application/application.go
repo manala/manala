@@ -61,20 +61,17 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 	// Repository manager
 	app.repositoryManager = repository.NewUrlProcessorManager(
 		app.log,
-		repository.NewLogManager(
+		repository.NewCacheManager(
 			app.log,
-			repository.NewCacheManager(
+			repository.NewChainManager(
 				app.log,
-				repository.NewChainManager(
-					app.log,
-					[]core.RepositoryManager{
-						repository.NewGitManager(
-							log,
-							cache,
-						),
-						repository.NewDirManager(log),
-					},
-				),
+				[]core.RepositoryManager{
+					repository.NewGitManager(
+						log,
+						cache,
+					),
+					repository.NewDirManager(log),
+				},
 			),
 		),
 	)
@@ -86,23 +83,17 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 	// Recipe manager
 	app.recipeManager = recipe.NewNameProcessorManager(
 		app.log,
-		recipe.NewLogManager(
+		recipe.NewManager(
 			app.log,
-			recipe.NewManager(
-				app.log,
-				recipe.WithExclusionPaths(app.exclusionPaths),
-			),
+			recipe.WithExclusionPaths(app.exclusionPaths),
 		),
 	)
 
 	// Project manager
-	app.projectManager = project.NewLogManager(
-		log,
-		project.NewManager(
-			app.log,
-			app.repositoryManager,
-			app.recipeManager,
-		),
+	app.projectManager = project.NewManager(
+		app.log,
+		app.repositoryManager,
+		app.recipeManager,
 	)
 
 	// Options

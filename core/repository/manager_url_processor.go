@@ -26,6 +26,14 @@ func (manager *UrlProcessorManager) AddUrl(url string, priority int) {
 }
 
 func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository, error) {
+	// Log
+	manager.log.
+		WithField("manager", "url_processor").
+		WithField("url", url).
+		Debug("load repository")
+	manager.log.IncreasePadding()
+	defer manager.log.DecreasePadding()
+
 	url, err := manager.processUrl(url)
 	if err != nil {
 		return nil, err
@@ -56,6 +64,11 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 
 	for _, priority := range priorities {
 		_url := urls[priority]
+
+		manager.log.
+			WithField("url", _url).
+			WithField("priority", priority).
+			Debug("process url")
 
 		if _url == "" {
 			continue

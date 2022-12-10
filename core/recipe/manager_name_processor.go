@@ -27,6 +27,14 @@ func (manager *NameProcessorManager) AddName(name string, priority int) {
 }
 
 func (manager *NameProcessorManager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
+	// Log
+	manager.log.
+		WithField("manager", "name_processor").
+		WithField("name", name).
+		Debug("load recipe")
+	manager.log.IncreasePadding()
+	defer manager.log.DecreasePadding()
+
 	name, err := manager.processName(name)
 	if err != nil {
 		return nil, err
@@ -73,6 +81,11 @@ func (manager *NameProcessorManager) processName(name string) (string, error) {
 
 	for _, priority := range priorities {
 		_name := names[priority]
+
+		manager.log.
+			WithField("name", _name).
+			WithField("priority", priority).
+			Debug("process name")
 
 		if _name == "" {
 			continue
