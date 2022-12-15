@@ -64,8 +64,8 @@ github.com/aymanbagabas/go-osc52 v1.0.3/go.mod h1:zT8H+Rk4VSabYN90pWyugflM3ZhpTZ
 github.com/aymanbagabas/go-osc52 v1.2.1 h1:q2sWUyDcozPLcLabEMd+a+7Ea2DitxZVN9hTxab9L4E=
 github.com/aymanbagabas/go-osc52 v1.2.1/go.mod h1:zT8H+Rk4VSabYN90pWyugflM3ZhpTZNC7cASDfUCdT4=
 github.com/bwesterb/go-ristretto v1.2.0/go.mod h1:fUIoIZaG73pV5biE2Blr2xEzDoMj7NFEuV9ekS419A0=
-github.com/caarlos0/log v0.1.10 h1:kHKiXTKEeK019o7QQWXRbHVKFrYYljxuQ7vF2taEA3M=
-github.com/caarlos0/log v0.1.10/go.mod h1:BLxpdZKXvWBjB6fshua4c8d7ApdYjypEDok6ibt+pXk=
+github.com/caarlos0/log v0.2.1 h1:E5vf0Sg24tUbrGanknDu2UH0CZq6cCColThb8gTQnHQ=
+github.com/caarlos0/log v0.2.1/go.mod h1:BLxpdZKXvWBjB6fshua4c8d7ApdYjypEDok6ibt+pXk=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/charmbracelet/bubbletea v0.23.1 h1:CYdteX1wCiCzKNUlwm25ZHBIc1GXlYFyUIte8WPvhck=
 github.com/charmbracelet/bubbletea v0.23.1/go.mod h1:JAfGK/3/pPKHTnAS8JIE2u9f61BjWTQY57RbT25aMXU=

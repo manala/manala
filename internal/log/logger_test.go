@@ -142,30 +142,19 @@ func (s *LoggerSuite) TestPadding() {
 	out := &bytes.Buffer{}
 	logger := New(out)
 
-	logger.Info("info")
-
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
+	logger.WithField("foo", "bar").Info("default")
 
 	logger.IncreasePadding()
-	logger.Info("info")
-
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_increase"), out.Bytes())
+	logger.WithField("foo", "bar").Info("increase")
 
 	logger.DecreasePadding()
-	logger.Info("info")
-
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_decrease"), out.Bytes())
+	logger.WithField("foo", "bar").Info("decrease")
 
 	logger.IncreasePadding()
 	logger.IncreasePadding()
-	logger.Info("info")
-	logger.ResetPadding()
-	logger.Info("info")
+	logger.WithField("foo", "bar").Info("before without padding")
+	logger.WithoutPadding().WithField("foo", "bar").Info("without padding")
+	logger.WithField("foo", "bar").Info("after without padding")
 
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_reset"), out.Bytes())
-
-	logger.RestorePadding()
-	logger.Info("info")
-
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "out_restore"), out.Bytes())
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "out"), out.Bytes())
 }
