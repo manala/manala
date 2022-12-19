@@ -13,7 +13,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
 	github.com/go-git/go-git/v5 v5.5.0
-	github.com/goccy/go-yaml v1.9.7
+	github.com/goccy/go-yaml v1.9.8
 	github.com/imdario/mergo v0.3.13
 	github.com/muesli/termenv v0.13.0
 	github.com/sebdah/goldie/v2 v2.5.3
