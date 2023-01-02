@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/gdamore/tcell/v2 v2.5.3
+	github.com/gdamore/tcell/v2 v2.5.4
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
 	github.com/go-git/go-git/v5 v5.5.0
 	github.com/goccy/go-yaml v1.9.7
@@ -91,7 +91,7 @@ require (
 	golang.org/x/net v0.2.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/term v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/tools v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
