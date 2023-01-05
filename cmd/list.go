@@ -31,6 +31,12 @@ Example: manala list -> resulting in a recipes list display`,
 				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
 			}
 
+			// Flag - Repository ref
+			if cmd.Flags().Changed("ref") {
+				repoRef, _ := cmd.Flags().GetString("ref")
+				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+			}
+
 			// Application
 			app := application.NewApplication(
 				config,
@@ -77,6 +83,7 @@ Example: manala list -> resulting in a recipes list display`,
 
 	// Flags
 	cmd.Flags().StringP("repository", "o", "", "use repository")
+	cmd.Flags().String("ref", "", "use repository ref")
 
 	return cmd
 }

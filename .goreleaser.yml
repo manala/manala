@@ -74,6 +74,8 @@ nfpms:
       - deb
       - rpm
       - apk
+    suggests:
+      - git
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     summary: Let your project's plumbing up to date

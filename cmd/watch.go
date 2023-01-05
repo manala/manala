@@ -27,6 +27,12 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
 			}
 
+			// Flag - Repository ref
+			if cmd.Flags().Changed("ref") {
+				repoRef, _ := cmd.Flags().GetString("ref")
+				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+			}
+
 			// Flag - Recipe name
 			if cmd.Flags().Changed("recipe") {
 				recName, _ := cmd.Flags().GetString("recipe")
@@ -70,6 +76,7 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 
 	// Flags
 	cmd.Flags().StringP("repository", "o", "", "use repository")
+	cmd.Flags().String("ref", "", "use repository ref")
 	cmd.Flags().StringP("recipe", "i", "", "use recipe")
 	cmd.Flags().BoolP("all", "a", false, "watch recipe too")
 	cmd.Flags().BoolP("notify", "n", false, "use system notifications")

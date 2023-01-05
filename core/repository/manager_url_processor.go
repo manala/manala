@@ -1,10 +1,14 @@
 package repository
 
 import (
+	"fmt"
+	"github.com/imdario/mergo"
 	"golang.org/x/exp/maps"
 	"manala/core"
 	internalLog "manala/internal/log"
+	netUrl "net/url"
 	"sort"
+	"strings"
 )
 
 func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager core.RepositoryManager) *UrlProcessorManager {
@@ -23,6 +27,17 @@ type UrlProcessorManager struct {
 
 func (manager *UrlProcessorManager) AddUrl(url string, priority int) {
 	manager.urls[priority] = url
+}
+
+func (manager *UrlProcessorManager) AddUrlQuery(key string, value string, priority int) {
+	if value == "" {
+		return
+	}
+
+	query := netUrl.Values{}
+	query.Add(key, value)
+
+	manager.urls[priority] = "?" + query.Encode()
 }
 
 func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository, error) {
@@ -62,13 +77,26 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 	priorities := maps.Keys(urls)
 	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
 
+	var query string
+	var queryValues netUrl.Values
+
 	for _, priority := range priorities {
-		url = urls[priority]
+		// Split url and query parts
+		url, query, _ = strings.Cut(urls[priority], "?")
 
 		manager.log.
 			WithField("url", url).
+			WithField("query", query).
 			WithField("priority", priority).
 			Debug("process url")
+
+		if query != "" {
+			_queryValues, err := netUrl.ParseQuery(query)
+			if err != nil {
+				return "", err
+			}
+			_ = mergo.Merge(&queryValues, _queryValues)
+		}
 
 		if url != "" {
 			break
@@ -79,6 +107,10 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 		return "", core.NewUnprocessableRepositoryUrlError(
 			"unable to process empty repository url",
 		)
+	}
+
+	if queryValues != nil {
+		url = fmt.Sprintf("%s?%s", url, queryValues.Encode())
 	}
 
 	return url, nil

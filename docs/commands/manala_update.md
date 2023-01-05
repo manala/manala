@@ -19,6 +19,7 @@ manala update [dir] [flags]
   -h, --help                help for update
   -i, --recipe string       use recipe
   -r, --recursive           set recursive mode
+      --ref string          use repository ref
   -o, --repository string   use repository
 ```
 

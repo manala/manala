@@ -15,6 +15,19 @@ func WithRepositoryUrl(url string) Option {
 	}
 }
 
+func WithRepositoryRef(ref string) Option {
+	return func(app *Application) {
+		priority := 20
+
+		app.log.
+			WithField("ref", ref).
+			WithField("priority", priority).
+			Debug("option repository")
+
+		app.repositoryManager.AddUrlQuery("ref", ref, priority)
+	}
+}
+
 func WithRecipeName(name string) Option {
 	return func(app *Application) {
 		priority := 10

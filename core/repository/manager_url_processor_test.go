@@ -209,6 +209,56 @@ func (s *UrlProcessorManagerSuite) TestProcessUrl() {
 			},
 			expected: "upper",
 		},
+		// Windows
+		{
+			url: "",
+			urls: map[int]string{
+				-10: "",
+				10:  `foo\bar`,
+			},
+			expected: `foo\bar`,
+		},
+		// Query
+		{
+			url: "?url=url",
+			urls: map[int]string{
+				-10: "",
+				10:  "",
+			},
+			error: true,
+		},
+		{
+			url: "?url=url",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "",
+			},
+			expected: "lower?url=url",
+		},
+		{
+			url: "url",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "?upper=upper",
+			},
+			expected: "url?upper=upper",
+		},
+		{
+			url: "url?url=url",
+			urls: map[int]string{
+				-10: "lower",
+				10:  "upper?upper=upper",
+			},
+			expected: "upper?upper=upper",
+		},
+		{
+			url: "?url=url",
+			urls: map[int]string{
+				-10: "lower?lower=lower",
+				10:  "?upper=upper",
+			},
+			expected: "lower?lower=lower&upper=upper&url=url",
+		},
 	}
 
 	for i, test := range tests {

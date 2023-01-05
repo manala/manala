@@ -33,6 +33,12 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
 			}
 
+			// Flag - Repository ref
+			if cmd.Flags().Changed("ref") {
+				repoRef, _ := cmd.Flags().GetString("ref")
+				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+			}
+
 			// Flag - Recipe name
 			if cmd.Flags().Changed("recipe") {
 				recName, _ := cmd.Flags().GetString("recipe")
@@ -78,6 +84,7 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 
 	// Flags
 	cmd.Flags().StringP("repository", "o", "", "use repository")
+	cmd.Flags().String("ref", "", "use repository ref")
 	cmd.Flags().StringP("recipe", "i", "", "use recipe")
 
 	return cmd

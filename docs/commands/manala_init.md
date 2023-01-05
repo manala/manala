@@ -17,6 +17,7 @@ manala init [dir] [flags]
 ```
   -h, --help                help for init
   -i, --recipe string       use recipe
+      --ref string          use repository ref
   -o, --repository string   use repository
 ```
 

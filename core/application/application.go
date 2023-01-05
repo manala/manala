@@ -63,15 +63,9 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 		app.log,
 		repository.NewCacheManager(
 			app.log,
-			repository.NewChainManager(
+			repository.NewGetterManager(
 				app.log,
-				[]core.RepositoryManager{
-					repository.NewGitManager(
-						log,
-						cache,
-					),
-					repository.NewDirManager(log),
-				},
+				cache,
 			),
 		),
 	)
