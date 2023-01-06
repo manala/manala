@@ -24,12 +24,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ matrix.os }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ matrix.os }}-
+          cache: true
       - name: Lint
         if: matrix.os == 'macos-11'
         uses: golangci/golangci-lint-action@v3
