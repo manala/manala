@@ -4,12 +4,6 @@
 brew install manala/tap/manala
 ```
 
-**snapcraft:**
-
-```shell
-sudo snap install manala
-```
-
 **deb/rpm:**
 
 Download the `.deb` or `.rpm` from the releases page and install with `dpkg -i` and `rpm -i` respectively.
