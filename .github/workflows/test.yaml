@@ -10,7 +10,7 @@ jobs:
         goreleaser-version: [1.14.1]
         golangci-lint-version: [1.50.1]
         richgo-version: [0.3.11]
-        os: [ubuntu-20.04, macos-11, windows-2022]
+        os: [ubuntu-22.04, macos-11, windows-2022]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
