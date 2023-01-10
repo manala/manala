@@ -5,7 +5,7 @@ go 1.19
 require (
 	code.rocketnine.space/tslocum/cview v1.5.8
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/aws/aws-sdk-go v1.44.175
+	github.com/aws/aws-sdk-go v1.44.176
 	github.com/caarlos0/log v0.2.1
 	github.com/charmbracelet/bubbletea v0.23.1
 	github.com/charmbracelet/lipgloss v0.6.0
