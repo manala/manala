@@ -1,15 +1,24 @@
-**homebrew tap:**
+**Homebrew**
 
 ```shell
 brew install manala/tap/manala
 ```
 
-**deb/rpm:**
+**Debian / Ubuntu**
+
+```shell
+curl -sSL https://raw.githubusercontent.com/manala/packages/main/apt/manala.gpg -o /usr/share/keyrings/manala.gpg
+echo "deb [signed-by=/usr/share/keyrings/manala.gpg] https://manala.github.io/packages/apt/ stable main" > /etc/apt/sources.list.d/manala.list
+apt update
+apt install manala
+```
+
+**deb / rpm**
 
 Download the `.deb` or `.rpm` from the releases page and install with `dpkg -i` and `rpm -i` respectively.
 
-**Shell script:**
+**Shell script**
 
 ```shell
-curl -sfL https://raw.githubusercontent.com/manala/manala/master/godownloader.sh | sh
+curl -sfL https://raw.githubusercontent.com/manala/manala/main/godownloader.sh | sh
 ```

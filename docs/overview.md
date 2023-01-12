@@ -20,15 +20,10 @@ In our example, our reference coding rules will be stored in a single place wher
 
 ## First step: install manala
 
-```
-curl -sL https://github.com/nervo/manala/raw/master/install.sh | sudo sh
-```
+See [installation documentation](installation.md)
 
 !!! Tip
     Run `manala` in a console/terminal to obtain a list of available commands.
-
-!!! Tip
-    Various installation methods exist. Go to the [installation documentation](installation.md) to learn more.
 
 ## Create your recipe repository and your first template
 
