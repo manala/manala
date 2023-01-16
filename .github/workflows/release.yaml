@@ -3,16 +3,20 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - '*.*.*'
+
+concurrency: release
+
+env:
+  GO_VERSION: 1.19.5
+  GORELEASER_VERSION: 1.14.1
 
 jobs:
+
   release:
     name: Release
     strategy:
       fail-fast: false
-      matrix:
-        go-version: [1.19.5]
-        goreleaser-version: [1.14.1]
     runs-on: macos-11
     steps:
       - name: Checkout
@@ -23,7 +27,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ env.GO_VERSION }}
           cache: true
       - name: Goreleaser release
         uses: goreleaser/goreleaser-action@v3
@@ -31,29 +35,64 @@ jobs:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
         with:
-          version: v${{ matrix.goreleaser-version }}
+          version: v${{ env.GORELEASER_VERSION }}
           args: >
             release
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release
+          path: dist/
+          if-no-files-found: error
+
+  packages:
+    name: Packages
+    needs:
+      - release
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-22.04
+    steps:
       - name: Checkout packages
         uses: actions/checkout@v3
         with:
           repository: manala/packages
           token: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
           path: packages
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release
+          path: dist/
       - name: Import packages GPG private key
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
-      - name: Install reprepro
-        uses: tecolicom/actions-use-homebrew-tools@v1
-        with:
-          tools: reprepro
-          cache: true
-      - name: Reprepro include deb files
-        env:
-          REPREPRO_BASE_DIR: packages/apt
+      - name: Apt packages
         run: |
-          reprepro -V includedeb stable dist/*.deb
+          sudo apt-get -qq --yes install reprepro
+          reprepro \
+            --verbose \
+            --basedir packages/apt \
+            includedeb stable dist/*.deb
+      - name: Aur packages
+        run: |
+          sudo add-apt-repository --yes ppa:michel-slm/kernel-utils
+          sudo apt-get -qq --yes install pacman-package-manager libarchive-tools
+          for file in dist/*.pkg.tar.zst ; do \
+            arch=$(basename $file .pkg.tar.zst | sed 's/.*-//') ; \
+            echo "Processing arch $arch..." && \
+            mkdir -p aur/stable/$arch && \
+            cp dist/*-$arch.pkg.tar.zst aur/stable/$arch && \
+            gpg --detach-sign --no-armor aur/stable/$arch/*$arch.pkg.tar.zst && \
+            repo-add \
+              --verify \
+              --sign \
+              --new \
+              --remove \
+              --prevent-downgrade \
+              aur/stable/$arch/manala.db.tar.gz aur/stable/$arch/*$arch.pkg.tar.zst ; \
+          done
       - name: Commit packages
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
