@@ -4,16 +4,18 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  GO_VERSION: 1.19.5
+  GORELEASER_VERSION: 1.14.1
+  GOLANGCI_LINT_VERSION: 1.50.1
+  RICHGO_VERSION: 0.3.11
+
 jobs:
   test:
     name: Test
     strategy:
       fail-fast: false
       matrix:
-        go-version: [1.19.5]
-        goreleaser-version: [1.14.1]
-        golangci-lint-version: [1.50.1]
-        richgo-version: [0.3.11]
         os: [ubuntu-22.04, macos-11, windows-2022]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -27,19 +29,19 @@ jobs:
       - name: Set up go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ env.GO_VERSION }}
           cache: true
       - name: Lint
         if: matrix.os == 'macos-11'
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v${{ matrix.golangci-lint-version }}
+          version: v${{ env.GOLANGCI_LINT_VERSION }}
           args: --verbose --timeout 3m
       - name: Test
         env:
           RICHGO_FORCE_COLOR: 1
         run: |
-          go install github.com/kyoh86/richgo@v${{ matrix.richgo-version }}
+          go install github.com/kyoh86/richgo@v${{ env.RICHGO_VERSION }}
           richgo test -v ./...
       - name: Goreleaser build
         if: matrix.os == 'macos-11'
@@ -47,7 +49,7 @@ jobs:
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         with:
-          version: v${{ matrix.goreleaser-version }}
+          version: v${{ env.GORELEASER_VERSION }}
           args: >
             build --snapshot
       - name: Upload artifacts
@@ -55,4 +57,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: dist/*
+          path: dist/
+          if-no-files-found: error
