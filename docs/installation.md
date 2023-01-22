@@ -8,16 +8,18 @@ brew install manala/tap/manala
 
 as root:
 ```shell
-curl -sSL https://raw.githubusercontent.com/manala/packages/main/manala.gpg -o /usr/share/keyrings/manala.gpg
-echo "deb [signed-by=/usr/share/keyrings/manala.gpg] https://manala.github.io/packages/apt/ stable main" > /etc/apt/sources.list.d/manala.list
+mkdir -p 755 /etc/apt/keyrings
+curl -sSL https://raw.githubusercontent.com/manala/packages/main/manala.gpg -o /etc/apt/keyrings/manala.gpg
+echo "deb [signed-by=/etc/apt/keyrings/manala.gpg] https://manala.github.io/packages/apt/ stable main" > /etc/apt/sources.list.d/manala.list
 apt update
 apt install manala
 ```
 
 as user with sudo privileges:
 ```shell
-sudo curl -sSL https://raw.githubusercontent.com/manala/packages/main/manala.gpg -o /usr/share/keyrings/manala.gpg
-echo "deb [signed-by=/usr/share/keyrings/manala.gpg] https://manala.github.io/packages/apt/ stable main" | sudo tee /etc/apt/sources.list.d/manala.list
+sudo mkdir -p 755 /etc/apt/keyrings
+sudo curl -sSL https://raw.githubusercontent.com/manala/packages/main/manala.gpg -o /etc/apt/keyrings/manala.gpg
+echo "deb [signed-by=/etc/apt/keyrings/manala.gpg] https://manala.github.io/packages/apt/ stable main" | sudo tee /etc/apt/sources.list.d/manala.list
 sudo apt update
 sudo apt install manala
 ```
