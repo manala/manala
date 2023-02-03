@@ -48,6 +48,12 @@ Download the `.deb` or `.rpm` from the releases page and install with `dpkg -i` 
 
 **Shell script**
 
+as root:
 ```shell
-curl -sfL https://raw.githubusercontent.com/manala/manala/main/godownloader.sh | sh
+curl -sfL https://raw.githubusercontent.com/manala/manala/main/godownloader.sh | sh -s -- -b /usr/local/bin
+```
+
+as user with sudo privileges:
+```shell
+curl -sfL https://raw.githubusercontent.com/manala/manala/main/godownloader.sh | sudo sh -s -- -b /usr/local/bin
 ```
