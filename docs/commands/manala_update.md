@@ -7,7 +7,7 @@ Synchronize project(s)
 Update (manala update) will synchronize project(s), based on
 repository's recipe and related variables defined in manifest (.manala.yaml).
 
-Example: manala update -> resulting in an update in a dir (default to the current directory)
+Example: manala update -> resulting in an update in a project dir (default to the current directory)
 
 ```
 manala update [dir] [flags]

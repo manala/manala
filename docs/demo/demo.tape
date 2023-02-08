@@ -1,15 +1,22 @@
 Output docs/demo/demo.gif
 
-Set FontSize 20
-Set Width 1600
-Set Height 800
-Set Framerate 30
-Set Padding 12
+Set FontSize 16
+Set Width 1024
+Set Height 768
+Set Framerate 20
+Set Padding 10
 Set TypingSpeed 100ms
 
 # Setup
 Hide
-Type@1ms "export PATH=/go/bin:$PATH && rm -Rf my-project && clear"
+Type@1ms "export PATH=/go/bin:$PATH"
+Enter
+Type@1ms "rm -Rf my-project"
+Enter
+Type@1ms "apt update && apt install -y git"
+Enter
+Sleep 6s
+Type@1ms "clear"
 Enter
 Show
 

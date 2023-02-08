@@ -20,10 +20,7 @@ type Reporter struct {
 func (reporter *Reporter) Report(report *internalReport.Report) {
 	var pp yamlPrinter.Printer
 
-	color := true
-	if termenv.EnvColorProfile() == termenv.Ascii {
-		color = false
-	}
+	color := !(termenv.EnvColorProfile() == termenv.Ascii)
 
 	if reporter.node != nil {
 		token := reporter.node.GetToken()

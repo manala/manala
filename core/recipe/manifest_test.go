@@ -13,7 +13,6 @@ import (
 type ManifestSuite struct{ suite.Suite }
 
 func TestManifestSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ManifestSuite))
 }
 

@@ -11,7 +11,6 @@ import (
 type ParserSuite struct{ suite.Suite }
 
 func TestParserSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ParserSuite))
 }
 

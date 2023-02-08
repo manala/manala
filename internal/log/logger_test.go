@@ -16,7 +16,6 @@ type LoggerSuite struct {
 }
 
 func TestLoggerSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(LoggerSuite))
 }
 

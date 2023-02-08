@@ -23,5 +23,5 @@ Recipes are pulled from a git repository, or a local directory.
 * [manala init](manala_init.md)	 - Init project
 * [manala list](manala_list.md)	 - List recipes
 * [manala update](manala_update.md)	 - Synchronize project(s)
-* [manala watch](manala_watch.md)	 - List recipes
+* [manala watch](manala_watch.md)	 - Watch project
 
