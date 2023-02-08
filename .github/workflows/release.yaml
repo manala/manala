@@ -82,20 +82,21 @@ jobs:
           for file in dist/*.pkg.tar.zst ; do \
             arch=$(basename $file .pkg.tar.zst | sed 's/.*-//') ; \
             echo "Processing arch $arch..." && \
-            mkdir -p aur/stable/$arch && \
-            cp dist/*-$arch.pkg.tar.zst aur/stable/$arch && \
-            gpg --detach-sign --no-armor aur/stable/$arch/*$arch.pkg.tar.zst && \
+            mkdir -p packages/aur/stable/$arch && \
+            cp dist/*-$arch.pkg.tar.zst packages/aur/stable/$arch && \
             repo-add \
               --verify \
               --sign \
               --new \
               --remove \
               --prevent-downgrade \
-              aur/stable/$arch/manala.db.tar.gz aur/stable/$arch/*$arch.pkg.tar.zst ; \
+              packages/aur/stable/$arch/manala.db.tar.gz packages/aur/stable/$arch/*-$arch.pkg.tar.zst && \
+            gpg --detach-sign --no-armor --batch --yes packages/aur/stable/$arch/*-$arch.pkg.tar.zst ; \
           done
       - name: Commit packages
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           repository: packages
           branch: main
+          file_pattern: .
           commit_message: Update packages
