@@ -277,7 +277,6 @@ func (app *Application) SyncProject(proj core.Project) error {
 		Info("sync project")
 	app.log.IncreasePadding()
 	defer app.log.DecreasePadding()
-	defer app.log.DecreasePadding()
 
 	// Loop over project recipe sync units
 	for _, unit := range proj.Recipe().Sync() {
@@ -303,7 +302,6 @@ func (app *Application) WatchProject(proj core.Project, all bool, notify bool) e
 		WithField("dst", proj.Dir()).
 		Info("watch project")
 	app.log.IncreasePadding()
-	defer app.log.DecreasePadding()
 	defer app.log.DecreasePadding()
 
 	dir := proj.Dir()
