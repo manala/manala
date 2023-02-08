@@ -11,7 +11,6 @@ import (
 type ExtractorSuite struct{ suite.Suite }
 
 func TestExtractorSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ExtractorSuite))
 }
 

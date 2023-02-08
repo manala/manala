@@ -11,7 +11,6 @@ import (
 type SchemaInferrerSuite struct{ suite.Suite }
 
 func TestSchemaInferrerSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(SchemaInferrerSuite))
 }
 

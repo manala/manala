@@ -22,7 +22,6 @@ type InitSuite struct {
 }
 
 func TestInitSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(InitSuite))
 }
 

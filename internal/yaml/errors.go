@@ -14,10 +14,7 @@ func NewError(err error) *Error {
 		error: err,
 	}
 
-	color := true
-	if termenv.EnvColorProfile() == termenv.Ascii {
-		color = false
-	}
+	color := !(termenv.EnvColorProfile() == termenv.Ascii)
 
 	message := yaml.FormatError(err, color, true)
 	if matches := errorRegex.FindStringSubmatch(message); matches != nil {

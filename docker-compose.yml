@@ -1,12 +1,12 @@
 services:
   go:
-    image: golang:1.19.5-alpine
+    image: golang:1.19.5-bullseye
     volumes:
       - go:/go
       - .:/usr/src/manala
     working_dir: /usr/src/manala
   mkdocs:
-    image: squidfunk/mkdocs-material:8.3.8
+    image: squidfunk/mkdocs-material:9.0.6
     ports:
       - 8000:8000
     volumes:

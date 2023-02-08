@@ -19,7 +19,6 @@ type ApplicationSuite struct {
 }
 
 func TestApplicationSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ApplicationSuite))
 }
 

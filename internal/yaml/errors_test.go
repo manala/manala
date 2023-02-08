@@ -10,7 +10,6 @@ import (
 type ErrorsSuite struct{ suite.Suite }
 
 func TestErrorsSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(ErrorsSuite))
 }
 

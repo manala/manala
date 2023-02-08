@@ -22,7 +22,6 @@ type UpdateSuite struct {
 }
 
 func TestUpdateSuite(t *testing.T) {
-	t.Setenv("NO_COLOR", "1")
 	suite.Run(t, new(UpdateSuite))
 }
 
