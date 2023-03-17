@@ -13,6 +13,8 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/gen2brain/beeep v0.0.0-20230307103607-6e717729cb4f
+	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/render v1.0.2
 	github.com/goccy/go-yaml v1.10.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.1
 	github.com/hashicorp/go-getter/v2 v2.2.1
@@ -31,6 +33,7 @@ require (
 	code.rocketnine.space/tslocum/cbind v0.1.5 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/containerd/console v1.0.3 // indirect
