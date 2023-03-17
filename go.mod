@@ -13,6 +13,9 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/gen2brain/beeep v0.0.0-20230307103607-6e717729cb4f
+	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/cors v1.2.1
+	github.com/go-chi/render v1.0.2
 	github.com/goccy/go-yaml v1.11.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.1
 	github.com/hashicorp/go-getter/v2 v2.2.1
@@ -25,12 +28,14 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
+	golang.org/x/sync v0.1.0
 )
 
 require (
 	code.rocketnine.space/tslocum/cbind v0.1.5 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/containerd/console v1.0.3 // indirect
@@ -87,7 +92,6 @@ require (
 	golang.org/x/exp/shiny v0.0.0-20221031165847-c99f073a8326 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	golang.org/x/mobile v0.0.0-20201217150744-e6ae53a27f4f // indirect
-	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect

@@ -41,3 +41,12 @@ func (conf *ConfigMock) CacheDir() string {
 func (conf *ConfigMock) BindCacheDirFlag(flag *pflag.Flag) {
 	conf.Called(flag)
 }
+
+func (conf *ConfigMock) WebPort() int {
+	args := conf.Called()
+	return args.Int(0)
+}
+
+func (conf *ConfigMock) BindWebPortFlag(flag *pflag.Flag) {
+	conf.Called(flag)
+}

@@ -5,3 +5,7 @@ updates:
     directory: /
     schedule:
       interval: daily
+  - package-ecosystem: npm
+    directory: /web/app
+    schedule:
+      interval: daily

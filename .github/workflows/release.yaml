@@ -26,6 +26,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.MANALA_NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
       - name: Goreleaser release
         uses: goreleaser/goreleaser-action@v4
         env:

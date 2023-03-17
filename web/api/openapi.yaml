@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: Manala API
+  description: |
+    This is *THE* Manala API.
+  contact:
+    email: contact@manala.io
+  license:
+    name: MIT
+  version: 1.0.0
+servers:
+  - url: /api
+    description: Current Server
+tags:
+  - name: project
+    description: Everything about project
+  - name: recipes
+    description: Everything about recipes
+  - name: server
+    description: Everything about server
+paths:
+  /project:
+    get:
+      tags:
+        - project
+      summary: Get project
+      description: Returns project
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        "404":
+          description: Project not found
+  /recipes:
+    get:
+      tags:
+        - recipes
+      summary: List recipes
+      description: List recipes
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+  /recipes/{name}:
+    get:
+      tags:
+        - recipes
+      summary: Get a recipe by name
+      description: Returns a single recipe
+      parameters:
+        - name: name
+          in: path
+          description: name of recipe to return
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        "404":
+          description: Recipe not found
+  /server/stop:
+    get:
+      tags:
+        - server
+      summary: Stop web server
+      description: Stop web server
+      responses:
+        "200":
+          description: successful operation
+components:
+  schemas:
+    Project:
+      required:
+        - dir
+      type: object
+      properties:
+        dir:
+          type: string
+        recipe:
+          $ref: '#/components/schemas/Recipe'
+        vars:
+          type: object
+    Recipe:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string

@@ -11,12 +11,14 @@ const (
 	defaultDebug      = false
 	defaultRepository = "https://github.com/manala/manala-recipes.git"
 	defaultCacheDir   = ""
+	defaultWebPort    = 9400
 )
 
 const (
 	debugKey      = "debug"
 	repositoryKey = "repository"
 	cacheDirKey   = "cache-dir"
+	webPortKey    = "web-port"
 )
 
 func New() *Config {
@@ -29,6 +31,7 @@ func New() *Config {
 	v.SetDefault(debugKey, defaultDebug)
 	v.SetDefault(repositoryKey, defaultRepository)
 	v.SetDefault(cacheDirKey, defaultCacheDir)
+	v.SetDefault(webPortKey, defaultWebPort)
 
 	return &Config{
 		viper: v,
@@ -62,4 +65,12 @@ func (conf *Config) CacheDir() string {
 
 func (conf *Config) BindCacheDirFlag(flag *pflag.Flag) {
 	_ = conf.viper.BindPFlag(cacheDirKey, flag)
+}
+
+func (conf *Config) WebPort() int {
+	return conf.viper.GetInt(webPortKey)
+}
+
+func (conf *Config) BindWebPortFlag(flag *pflag.Flag) {
+	_ = conf.viper.BindPFlag(webPortKey, flag)
 }

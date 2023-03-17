@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@app/*": [
+        "src/*"
+      ],
+      "@assets/*": [
+        "assets/*"
+      ],
+      "@images/*": [
+        "assets/images/*"
+      ]
+    },
+
+    // No module system, concatenated file
+    "module": "none",
+
+    // Set React as the JSX factory
+    "jsx": "react",
+
+    // Resolve modules using Node-resolution algorithm
+    "moduleResolution": "node",
+
+    // Target ES6 for more modern browsers
+    "target": "es6",
+
+    // Include typings from built-in lib declarations
+    "lib": ["es2015", "dom", "dom.iterable"],
+
+    // Include module source maps for debugging
+    "sourceMap": true,
+
+    "allowSyntheticDefaultImports": true,
+
+    // https://www.typescriptlang.org/tsconfig#strictNullChecks
+    "strictNullChecks": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

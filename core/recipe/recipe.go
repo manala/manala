@@ -48,6 +48,10 @@ func (rec *Recipe) Schema() map[string]interface{} {
 	return rec.manifest.Schema()
 }
 
+func (rec *Recipe) Options() []interfaces.RecipeOption {
+	return rec.manifest.Options()
+}
+
 func (rec *Recipe) InitVars(callback func(options []interfaces.RecipeOption) error) (map[string]interface{}, error) {
 	return rec.manifest.InitVars(callback)
 }

@@ -1,5 +1,7 @@
 before:
   hooks:
+    - make --directory web/app install
+    - make --directory web/app build
     - go mod download
 
 changelog:
@@ -16,12 +18,16 @@ changelog:
 
 builds:
   - id: linux
+    flags:
+      - -tags=web_app_build_embed
     goos:
       - linux
     goarch:
       - amd64
       - arm64
   - id: darwin
+    flags:
+      - -tags=web_app_build_embed
     env:
       - CGO_ENABLED=1
     goos:
@@ -30,6 +36,8 @@ builds:
       - amd64
       - arm64
   - id: windows
+    flags:
+      - -tags=web_app_build_embed
     goos:
       - windows
     goarch:

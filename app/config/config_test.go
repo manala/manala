@@ -21,6 +21,7 @@ func (s *ConfigSuite) Test() {
 			"debug":      false,
 			"repository": "https://github.com/manala/manala-recipes.git",
 			"cache-dir":  "",
+			"web-port":   9400,
 		}, conf.Fields())
 	})
 
