@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 )
 
+// !!!
+// Ici, on pourrait jouer avec les flags de build, nan ?
+
 func newDocsCmd(rootCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "docs",

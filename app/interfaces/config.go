@@ -12,4 +12,6 @@ type Config interface {
 	Repository() string
 	CacheDir() string
 	BindCacheDirFlag(flag *pflag.Flag)
+	WebPort() int
+	BindWebPortFlag(flag *pflag.Flag)
 }

@@ -1,0 +1,135 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:json/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 13,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "react-hooks",
+    "@typescript-eslint"
+  ],
+  "settings": {
+    "react": {
+      "pragma": "React",
+      "version": "detect"
+    }
+  },
+  "globals": {
+    "module": true
+  },
+  "ignorePatterns": [
+    "webpack.config.js",
+    "webpack/**/*.js",
+    "bin/**/*.js"
+  ],
+  "rules": {
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        "ignoredNodes": [
+          "TemplateLiteral"
+        ]
+      }
+    ],
+    "template-curly-spacing": 0,
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "debug",
+          "info",
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "spaced-comment": [
+      "error",
+      "always"
+    ],
+    "object-curly-spacing": [
+      "error",
+      "always",
+      {
+        "objectsInObjects": true
+      }
+    ],
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useDebugEffect)"
+      }
+    ],
+    "react/prop-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+
+    "comma-dangle": "off",
+    "@typescript-eslint/comma-dangle": ["error", {
+      // https://eslint.org/docs/latest/rules/comma-dangle#options
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "always-multiline",
+      // https://typescript-eslint.io/rules/comma-dangle/
+      "enums": "always-multiline",
+      "generics": "always-multiline",
+      "tuples": "always-multiline"
+    }],
+
+    // https://eslint.org/docs/latest/rules/jsx-quotes
+    "jsx-quotes": ["error", "prefer-double"],
+    // https://github.com/jsx-eslint/eslint-plugin-react/blob/master/docs/rules/jsx-curly-spacing.md
+    "react/jsx-curly-spacing": ["error", {
+      "when": "never",
+      "children": true
+    }],
+
+    "@typescript-eslint/member-delimiter-style": ["error", {
+      // https://typescript-eslint.io/rules/member-delimiter-style/
+      "multiline": {
+        "delimiter": "none",
+        "requireLast": false
+      },
+      "singleline": {
+        "delimiter": "comma",
+        "requireLast": false
+      },
+      "multilineDetection": "brackets"
+    }],
+
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error"
+    ]
+  }
+}

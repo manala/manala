@@ -55,6 +55,16 @@ go.sh:
 		go \
 		/bin/bash
 
+########
+# Node #
+########
+
+## Node - Open node shell
+node.sh:
+	docker compose run --rm \
+		node \
+		/bin/bash
+
 #######
 # Vhs #
 #######
@@ -64,3 +74,79 @@ vhs.sh:
 	docker compose run --rm \
 		--entrypoint /bin/bash \
 		vhs
+
+#######
+# Web #
+#######
+
+machin:
+	$(if $(PORT),MANALA_WEB_PORT=$(PORT)) \
+	docker compose \
+		--profile web \
+		--profile serve \
+		up
+
+web.serve:
+	go run \
+		-tags web_app_build \
+		. \
+		web \
+			--debug \
+			$(if $(PORT),--port $(PORT))
+
+## Web - Serve both web api & app (PORT)
+_web.serve: PORT = 9400
+_web.serve:
+	npm exec --yes -- \
+		concurrently \
+			--names SERVER,APP \
+			--prefix-colors red,green \
+			--kill-others \
+			--kill-signal SIGKILL \
+			"docker compose run --rm \
+            	--publish $(PORT):$(PORT) \
+				go \
+				go run \
+					-tags web_app_build \
+					. \
+					web --debug --port $(PORT)" \
+			"$(MAKE) --directory web/app serve PORT=$(PORT)"
+
+
+pipi: PORT = 9400
+pipi:
+	npm exec --yes -- \
+		concurrently \
+			--names SERVER,APP \
+			--prefix-colors red,green \
+			"go run \
+				-tags web_app_build \
+				. \
+				web --debug --port $(PORT)" \
+			"$(MAKE) --directory web/app serve PORT=$(PORT)"
+
+prout: PORT = 9400
+prout:
+	npm exec --yes -- \
+		concurrently \
+			--names server \
+			"docker compose run --rm \
+            	--publish $(PORT):$(PORT) \
+				go \
+				go run \
+					-tags web_app_build \
+					. \
+					web --debug --port $(PORT)"
+
+## Web - Start web server (PORT)
+web: PORT = 9400
+web:
+	echo Start web server...
+	docker compose run --rm \
+		--publish $(PORT):$(PORT) \
+		go \
+		go run \
+			-tags web_app_build \
+			. \
+			web --debug --port $(PORT)
+.PHONY: web

@@ -15,6 +15,7 @@ type Recipe interface {
 	Vars() map[string]interface{}
 	Sync() []internalSyncer.UnitInterface
 	Schema() map[string]interface{}
+	Options() []RecipeOption
 	InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error)
 	Repository() Repository
 	Template() *internalTemplate.Template
@@ -27,6 +28,7 @@ type RecipeManifest interface {
 	Vars() map[string]interface{}
 	Sync() []internalSyncer.UnitInterface
 	Schema() map[string]interface{}
+	Options() []RecipeOption
 	ReadFrom(reader io.Reader) error
 	internalValidation.Reporter
 	InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error)
