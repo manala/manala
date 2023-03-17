@@ -14,8 +14,8 @@ require (
 	github.com/gdamore/tcell/v2 v2.5.4
 	github.com/gen2brain/beeep v0.0.0-20220909211152-5a9ec94374f6
 	github.com/goccy/go-yaml v1.9.8
-	github.com/hashicorp/go-getter/s3/v2 v2.1.1
-	github.com/hashicorp/go-getter/v2 v2.1.1
+	github.com/hashicorp/go-getter/s3/v2 v2.2.1
+	github.com/hashicorp/go-getter/v2 v2.2.1
 	github.com/imdario/mergo v0.3.13
 	github.com/muesli/termenv v0.14.0
 	github.com/sebdah/goldie/v2 v2.5.3
@@ -51,6 +51,7 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/klauspost/compress v1.11.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
