@@ -3,6 +3,8 @@ package recipe
 import (
 	"github.com/stretchr/testify/suite"
 	"io"
+	"manala/app/interfaces"
+	"manala/app/mocks"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
@@ -93,7 +95,7 @@ func (s *ManagerSuite) TestLoadRecipe() {
 	repoUrl := internalTesting.DataPath(s, "repository")
 	recDir := filepath.Join(repoUrl, "recipe")
 
-	repoMock := core.NewRepositoryMock()
+	repoMock := mocks.MockRepository()
 	repoMock.
 		On("Url").Return(repoUrl).
 		On("Dir").Return(repoUrl)
@@ -115,14 +117,14 @@ func (s *ManagerSuite) TestWalkRecipes() {
 	s.Run("Default", func() {
 		repoUrl := internalTesting.DataPath(s, "repository")
 
-		repoMock := core.NewRepositoryMock()
+		repoMock := mocks.MockRepository()
 		repoMock.
 			On("Url").Return(repoUrl).
 			On("Dir").Return(repoUrl)
 
 		count := 1
 
-		err := manager.WalkRecipes(repoMock, func(rec core.Recipe) error {
+		err := manager.WalkRecipes(repoMock, func(rec interfaces.Recipe) error {
 			switch count {
 			case 1:
 				s.Equal(internalTesting.DataPath(s, "repository", "bar"), rec.Dir())
@@ -147,12 +149,12 @@ func (s *ManagerSuite) TestWalkRecipes() {
 	s.Run("Empty", func() {
 		repoUrl := internalTesting.DataPath(s, "repository")
 
-		repoMock := core.NewRepositoryMock()
+		repoMock := mocks.MockRepository()
 		repoMock.
 			On("Url").Return(repoUrl).
 			On("Dir").Return(repoUrl)
 
-		err := manager.WalkRecipes(repoMock, func(rec core.Recipe) error {
+		err := manager.WalkRecipes(repoMock, func(rec interfaces.Recipe) error {
 			return nil
 		})
 

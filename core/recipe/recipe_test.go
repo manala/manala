@@ -4,7 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"github.com/stretchr/testify/suite"
-	"manala/core"
+	"manala/app/mocks"
 	internalSyncer "manala/internal/syncer"
 	internalTesting "manala/internal/testing"
 	"path/filepath"
@@ -20,9 +20,9 @@ func TestRecipeSuite(t *testing.T) {
 func (s *RecipeSuite) Test() {
 	recDir := internalTesting.DataPath(s, "recipe")
 
-	repoMock := core.NewRepositoryMock()
+	repoMock := mocks.MockRepository()
 
-	recManifestMock := core.NewRecipeManifestMock()
+	recManifestMock := mocks.MockRecipeManifest()
 	recManifestMock.
 		On("Description").Return("Description").
 		On("Template").Return(filepath.Join("templates", "foo.tmpl")).

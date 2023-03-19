@@ -2,13 +2,14 @@ package recipe
 
 import (
 	"golang.org/x/exp/maps"
+	"manala/app/interfaces"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalWatcher "manala/internal/watcher"
 	"sort"
 )
 
-func NewNameProcessorManager(log *internalLog.Logger, cascadingManager core.RecipeManager) *NameProcessorManager {
+func NewNameProcessorManager(log *internalLog.Logger, cascadingManager interfaces.RecipeManager) *NameProcessorManager {
 	return &NameProcessorManager{
 		log:              log,
 		cascadingManager: cascadingManager,
@@ -18,7 +19,7 @@ func NewNameProcessorManager(log *internalLog.Logger, cascadingManager core.Reci
 
 type NameProcessorManager struct {
 	log              *internalLog.Logger
-	cascadingManager core.RecipeManager
+	cascadingManager interfaces.RecipeManager
 	names            map[int]string
 }
 
@@ -26,7 +27,7 @@ func (manager *NameProcessorManager) AddName(name string, priority int) {
 	manager.names[priority] = name
 }
 
-func (manager *NameProcessorManager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
+func (manager *NameProcessorManager) LoadRecipe(repo interfaces.Repository, name string) (interfaces.Recipe, error) {
 	// Log
 	manager.log.
 		WithField("manager", "name_processor").
@@ -50,11 +51,11 @@ func (manager *NameProcessorManager) LoadRecipe(repo core.Repository, name strin
 	return rec, nil
 }
 
-func (manager *NameProcessorManager) LoadPrecedingRecipe(repo core.Repository) (core.Recipe, error) {
+func (manager *NameProcessorManager) LoadPrecedingRecipe(repo interfaces.Repository) (interfaces.Recipe, error) {
 	return manager.LoadRecipe(repo, "")
 }
 
-func (manager *NameProcessorManager) WalkRecipes(repo core.Repository, walker func(rec core.Recipe) error) error {
+func (manager *NameProcessorManager) WalkRecipes(repo interfaces.Repository, walker func(rec interfaces.Recipe) error) error {
 	if err := manager.cascadingManager.WalkRecipes(repo, walker); err != nil {
 		return err
 	}
@@ -62,7 +63,7 @@ func (manager *NameProcessorManager) WalkRecipes(repo core.Repository, walker fu
 	return nil
 }
 
-func (manager *NameProcessorManager) WatchRecipe(rec core.Recipe, watcher *internalWatcher.Watcher) error {
+func (manager *NameProcessorManager) WatchRecipe(rec interfaces.Recipe, watcher *internalWatcher.Watcher) error {
 	if err := manager.cascadingManager.WatchRecipe(rec, watcher); err != nil {
 		return err
 	}

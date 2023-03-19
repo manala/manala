@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/imdario/mergo"
 	"golang.org/x/exp/maps"
+	"manala/app/interfaces"
 	"manala/core"
 	internalLog "manala/internal/log"
 	netUrl "net/url"
@@ -11,7 +12,7 @@ import (
 	"strings"
 )
 
-func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager core.RepositoryManager) *UrlProcessorManager {
+func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager interfaces.RepositoryManager) *UrlProcessorManager {
 	return &UrlProcessorManager{
 		log:              log,
 		cascadingManager: cascadingManager,
@@ -21,7 +22,7 @@ func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager core.Repos
 
 type UrlProcessorManager struct {
 	log              *internalLog.Logger
-	cascadingManager core.RepositoryManager
+	cascadingManager interfaces.RepositoryManager
 	urls             map[int]string
 }
 
@@ -40,7 +41,7 @@ func (manager *UrlProcessorManager) AddUrlQuery(key string, value string, priori
 	manager.urls[priority] = "?" + query.Encode()
 }
 
-func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository, error) {
+func (manager *UrlProcessorManager) LoadRepository(url string) (interfaces.Repository, error) {
 	// Log
 	manager.log.
 		WithField("manager", "url_processor").
@@ -64,7 +65,7 @@ func (manager *UrlProcessorManager) LoadRepository(url string) (core.Repository,
 	return repo, err
 }
 
-func (manager *UrlProcessorManager) LoadPrecedingRepository() (core.Repository, error) {
+func (manager *UrlProcessorManager) LoadPrecedingRepository() (interfaces.Repository, error) {
 	return manager.LoadRepository("")
 }
 

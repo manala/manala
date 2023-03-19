@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-	"manala/core"
+	"manala/app/interfaces"
 	"manala/core/application"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
@@ -44,11 +44,11 @@ Example: manala list -> resulting in a recipes list display`,
 				appOptions...,
 			)
 
-			var recs []core.Recipe
+			var recs []interfaces.Recipe
 			maxNameWidth := 0
 
 			// Walk into recipes
-			if err := app.WalkRecipes(func(rec core.Recipe) error {
+			if err := app.WalkRecipes(func(rec interfaces.Recipe) error {
 				recs = append(recs, rec)
 
 				nameWidth := lipgloss.Width(rec.Name())

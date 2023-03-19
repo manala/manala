@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"manala/app/mocks"
 	"manala/core"
 	internalLog "manala/internal/log"
 	"testing"
@@ -20,10 +21,10 @@ func TestUrlProcessorManagerSuite(t *testing.T) {
 func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
 	log := internalLog.New(io.Discard)
 
-	cascadingRepoMock := core.NewRepositoryMock()
+	cascadingRepoMock := mocks.MockRepository()
 	cascadingError := errors.New("error")
 
-	cascadingManagerMock := core.NewRepositoryManagerMock()
+	cascadingManagerMock := mocks.MockRepositoryManager()
 	cascadingManagerMock.
 		On("LoadRepository", mock.Anything).Return(cascadingRepoMock, cascadingError)
 
@@ -42,7 +43,7 @@ func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
 func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 	log := internalLog.New(io.Discard)
 
-	cascadingRepoMock := core.NewRepositoryMock()
+	cascadingRepoMock := mocks.MockRepository()
 
 	tests := []struct {
 		name                 string
@@ -90,7 +91,7 @@ func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			cascadingManagerMock := core.NewRepositoryManagerMock()
+			cascadingManagerMock := mocks.MockRepositoryManager()
 			cascadingManagerMock.
 				On("LoadRepository", mock.Anything).Return(cascadingRepoMock, nil)
 
@@ -116,7 +117,7 @@ func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 	log := internalLog.New(io.Discard)
 
-	cascadingRepoMock := core.NewRepositoryMock()
+	cascadingRepoMock := mocks.MockRepository()
 
 	tests := []struct {
 		name                 string
@@ -143,7 +144,7 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			cascadingManagerMock := core.NewRepositoryManagerMock()
+			cascadingManagerMock := mocks.MockRepositoryManager()
 			cascadingManagerMock.
 				On("LoadRepository", mock.Anything).Return(cascadingRepoMock, nil)
 
@@ -169,7 +170,7 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 func (s *UrlProcessorManagerSuite) TestProcessUrl() {
 	log := internalLog.New(io.Discard)
 
-	cascadingManagerMock := core.NewRepositoryManagerMock()
+	cascadingManagerMock := mocks.MockRepositoryManager()
 
 	tests := []struct {
 		url      string

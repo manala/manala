@@ -8,7 +8,7 @@ import (
 	"github.com/goccy/go-yaml"
 	yamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/xeipuuv/gojsonschema"
-	"manala/core"
+	"manala/app/interfaces"
 	internalValidation "manala/internal/validation"
 	internalYaml "manala/internal/yaml"
 )
@@ -102,11 +102,11 @@ func NewOptionsInferrer() *OptionsInferrer {
 }
 
 type OptionsInferrer struct {
-	options *[]core.RecipeOption
+	options *[]interfaces.RecipeOption
 	err     error
 }
 
-func (inferrer *OptionsInferrer) Infer(node yamlAst.Node, options *[]core.RecipeOption) error {
+func (inferrer *OptionsInferrer) Infer(node yamlAst.Node, options *[]interfaces.RecipeOption) error {
 	if _, ok := interface{}(node).(yamlAst.MapNode); !ok {
 		return internalYaml.NewNodeError("unable to infer options type", node)
 	}

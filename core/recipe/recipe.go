@@ -1,14 +1,14 @@
 package recipe
 
 import (
-	"manala/core"
+	"manala/app/interfaces"
 	internalSyncer "manala/internal/syncer"
 	internalTemplate "manala/internal/template"
 	"os"
 	"path/filepath"
 )
 
-func NewRecipe(dir string, name string, recMan core.RecipeManifest, repo core.Repository) *Recipe {
+func NewRecipe(dir string, name string, recMan interfaces.RecipeManifest, repo interfaces.Repository) *Recipe {
 	return &Recipe{
 		dir:        dir,
 		name:       name,
@@ -20,8 +20,8 @@ func NewRecipe(dir string, name string, recMan core.RecipeManifest, repo core.Re
 type Recipe struct {
 	dir        string
 	name       string
-	manifest   core.RecipeManifest
-	repository core.Repository
+	manifest   interfaces.RecipeManifest
+	repository interfaces.Repository
 }
 
 func (rec *Recipe) Dir() string {
@@ -48,11 +48,11 @@ func (rec *Recipe) Schema() map[string]interface{} {
 	return rec.manifest.Schema()
 }
 
-func (rec *Recipe) InitVars(callback func(options []core.RecipeOption) error) (map[string]interface{}, error) {
+func (rec *Recipe) InitVars(callback func(options []interfaces.RecipeOption) error) (map[string]interface{}, error) {
 	return rec.manifest.InitVars(callback)
 }
 
-func (rec *Recipe) Repository() core.Repository {
+func (rec *Recipe) Repository() interfaces.Repository {
 	return rec.repository
 }
 

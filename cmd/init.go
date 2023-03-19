@@ -6,7 +6,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
-	"manala/core"
+	"manala/app/interfaces"
 	"manala/core/application"
 	internalBinder "manala/internal/binder"
 	internalConfig "manala/internal/config"
@@ -59,12 +59,12 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 			proj, err := app.CreateProject(
 				dir,
 				// Recipe selector
-				func(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
+				func(recWalker func(walker func(rec interfaces.Recipe) error) error) (interfaces.Recipe, error) {
 					// From tui list
 					return initRecipeListApplication(recWalker)
 				},
 				// Options selector
-				func(rec core.Recipe, options []core.RecipeOption) error {
+				func(rec interfaces.Recipe, options []interfaces.RecipeOption) error {
 					if len(options) > 0 {
 						// From tui form
 						return initRecipeOptionsFormApplication(rec, options)
@@ -90,7 +90,7 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 	return cmd
 }
 
-func initRecipeListApplication(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
+func initRecipeListApplication(recWalker func(walker func(rec interfaces.Recipe) error) error) (interfaces.Recipe, error) {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)
@@ -106,10 +106,10 @@ func initRecipeListApplication(recWalker func(walker func(rec core.Recipe) error
 		app.Stop()
 	})
 
-	var rec core.Recipe
+	var rec interfaces.Recipe
 
 	// Walk into recipes
-	if err2 := recWalker(func(_rec core.Recipe) error {
+	if err2 := recWalker(func(_rec interfaces.Recipe) error {
 		item := cview.NewListItem(" " + _rec.Name() + " ")
 		item.SetSecondaryText("   " + _rec.Description())
 		item.SetSelectedFunc(func() {
@@ -143,7 +143,7 @@ func initRecipeListApplication(recWalker func(walker func(rec core.Recipe) error
 	return rec, nil
 }
 
-func initRecipeOptionsFormApplication(rec core.Recipe, options []core.RecipeOption) error {
+func initRecipeOptionsFormApplication(rec interfaces.Recipe, options []interfaces.RecipeOption) error {
 	// Application
 	app := cview.NewApplication()
 	app.EnableMouse(true)
