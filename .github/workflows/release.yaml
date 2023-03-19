@@ -8,8 +8,8 @@ on:
 concurrency: release
 
 env:
-  GO_VERSION: 1.19.5
-  GORELEASER_VERSION: 1.15.2
+  GO_VERSION: 1.20.2
+  GORELEASER_VERSION: 1.16.1
 
 jobs:
 

@@ -1,1 +1,1 @@
-[1;m  •[0m load projects from                               [1;mdir[0m={{ .dir }}
+  • load projects from                               dir={{ .dir }}

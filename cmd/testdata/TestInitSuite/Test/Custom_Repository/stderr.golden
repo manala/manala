@@ -1,1 +1,1 @@
-[1;m  •[0m sync project                                     [1;mdst[0m={{ .dst }} [1;msrc[0m={{ .src }}
+  • sync project                                     dst={{ .dst }} src={{ .src }}
