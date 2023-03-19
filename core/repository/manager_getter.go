@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/hashicorp/go-getter/v2"
-	"manala/core"
+	"manala/app/interfaces"
 	internalCache "manala/internal/cache"
 	internalLog "manala/internal/log"
 )
@@ -22,7 +22,7 @@ type GetterManager struct {
 	cache *internalCache.Cache
 }
 
-func (manager *GetterManager) LoadRepository(url string) (core.Repository, error) {
+func (manager *GetterManager) LoadRepository(url string) (interfaces.Repository, error) {
 	// Log
 	manager.log.
 		WithField("manager", "getter").

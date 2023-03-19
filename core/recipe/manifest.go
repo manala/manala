@@ -6,7 +6,7 @@ import (
 	yamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/xeipuuv/gojsonschema"
 	"io"
-	"manala/core"
+	"manala/app/interfaces"
 	internalReport "manala/internal/report"
 	internalSyncer "manala/internal/syncer"
 	internalValidation "manala/internal/validation"
@@ -32,7 +32,7 @@ type Manifest struct {
 	config  *manifestConfig
 	vars    map[string]interface{}
 	schema  map[string]interface{}
-	options []core.RecipeOption
+	options []interfaces.RecipeOption
 }
 
 func (man *Manifest) Description() string {
@@ -149,7 +149,7 @@ func (man *Manifest) Report(result gojsonschema.ResultError, report *internalRep
 	internalYaml.NewValidationPathReporter(man.node).Report(result, report)
 }
 
-func (man *Manifest) InitVars(callback func(options []core.RecipeOption) error) (map[string]interface{}, error) {
+func (man *Manifest) InitVars(callback func(options []interfaces.RecipeOption) error) (map[string]interface{}, error) {
 	var vars map[string]interface{}
 
 	if err := callback(man.options); err != nil {

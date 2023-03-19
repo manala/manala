@@ -2,7 +2,7 @@ package recipe
 
 import (
 	"github.com/stretchr/testify/suite"
-	"manala/core"
+	"manala/app/interfaces"
 	internalReport "manala/internal/report"
 	internalSyncer "manala/internal/syncer"
 	internalTesting "manala/internal/testing"
@@ -593,7 +593,7 @@ func (s *ManifestSuite) TestInitVars() {
 	recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
 	_ = recMan.ReadFrom(recManFile)
 
-	vars, err := recMan.InitVars(func(options []core.RecipeOption) error {
+	vars, err := recMan.InitVars(func(options []interfaces.RecipeOption) error {
 		s.Len(options, 11)
 
 		s.Equal("String", options[0].Label())

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xeipuuv/gojsonschema"
+	"manala/app/interfaces"
+	"manala/app/views"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -23,8 +25,8 @@ var manifestTemplate string
 
 func NewManager(
 	log *internalLog.Logger,
-	repositoryManager core.RepositoryManager,
-	recipeManager core.RecipeManager,
+	repositoryManager interfaces.RepositoryManager,
+	recipeManager interfaces.RecipeManager,
 ) *Manager {
 	return &Manager{
 		log:               log,
@@ -35,8 +37,8 @@ func NewManager(
 
 type Manager struct {
 	log               *internalLog.Logger
-	repositoryManager core.RepositoryManager
-	recipeManager     core.RecipeManager
+	repositoryManager interfaces.RepositoryManager
+	recipeManager     interfaces.RecipeManager
 }
 
 func (manager *Manager) IsProject(dir string) bool {
@@ -49,7 +51,7 @@ func (manager *Manager) IsProject(dir string) bool {
 	return true
 }
 
-func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) {
+func (manager *Manager) loadManifest(file string) (interfaces.ProjectManifest, error) {
 	// Log
 	manager.log.
 		WithField("file", file).
@@ -96,7 +98,7 @@ func (manager *Manager) loadManifest(file string) (core.ProjectManifest, error) 
 	return man, nil
 }
 
-func (manager *Manager) LoadProject(dir string) (core.Project, error) {
+func (manager *Manager) LoadProject(dir string) (interfaces.Project, error) {
 	// Log
 	manager.log.
 		WithField("dir", dir).
@@ -156,11 +158,11 @@ func (manager *Manager) LoadProject(dir string) (core.Project, error) {
 	return proj, nil
 }
 
-func (manager *Manager) CreateProject(dir string, rec core.Recipe, vars map[string]interface{}) (core.Project, error) {
+func (manager *Manager) CreateProject(dir string, rec interfaces.Recipe, vars map[string]interface{}) (interfaces.Project, error) {
 	template := rec.ProjectManifestTemplate().
-		WithData(&core.ProjectView{
+		WithData(&views.ProjectView{
 			Vars:   vars,
-			Recipe: core.NewRecipeView(rec),
+			Recipe: views.NormalizeRecipe(rec),
 		}).
 		WithDefaultContent(manifestTemplate)
 
@@ -224,7 +226,7 @@ func (manager *Manager) CreateProject(dir string, rec core.Recipe, vars map[stri
 	return proj, nil
 }
 
-func (manager *Manager) WatchProject(proj core.Project, watcher *internalWatcher.Watcher) error {
+func (manager *Manager) WatchProject(proj interfaces.Project, watcher *internalWatcher.Watcher) error {
 	manFile := filepath.Join(proj.Dir(), manifestFilename)
 
 	return watcher.AddGroup("project", manFile)

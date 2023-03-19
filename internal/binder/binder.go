@@ -3,10 +3,10 @@ package binder
 import (
 	"code.rocketnine.space/tslocum/cview"
 	"fmt"
-	"manala/core"
+	"manala/app/interfaces"
 )
 
-func NewRecipeFormBinder(options []core.RecipeOption) (*RecipeFormBinder, error) {
+func NewRecipeFormBinder(options []interfaces.RecipeOption) (*RecipeFormBinder, error) {
 	binder := &RecipeFormBinder{}
 
 	for _, option := range options {
@@ -109,7 +109,7 @@ func (binder *RecipeFormBinder) Apply() error {
 }
 
 type recipeFormBind struct {
-	Option    core.RecipeOption
+	Option    interfaces.RecipeOption
 	Item      cview.FormItem
 	ItemIndex int
 	Value     interface{}

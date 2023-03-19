@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"manala/core"
+	"manala/app/interfaces"
 	"manala/core/application"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
@@ -59,7 +59,7 @@ Example: manala update -> resulting in an update in a project dir (default to th
 				// Recursively load projects
 				return app.WalkProjects(
 					dir,
-					func(proj core.Project) error {
+					func(proj interfaces.Project) error {
 						// Sync project
 						return app.SyncProject(proj)
 					},

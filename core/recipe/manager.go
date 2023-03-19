@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golang.org/x/exp/slices"
 	"io/fs"
+	"manala/app/interfaces"
 	"manala/core"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -82,7 +83,7 @@ func (manager *Manager) loadManifest(file string) (*Manifest, error) {
 	return man, nil
 }
 
-func (manager *Manager) LoadRecipe(repo core.Repository, name string) (core.Recipe, error) {
+func (manager *Manager) LoadRecipe(repo interfaces.Repository, name string) (interfaces.Recipe, error) {
 	// Log
 	manager.log.
 		WithField("name", name).
@@ -107,7 +108,7 @@ func (manager *Manager) LoadRecipe(repo core.Repository, name string) (core.Reci
 	return rec, nil
 }
 
-func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.Recipe) error) error {
+func (manager *Manager) WalkRecipes(repo interfaces.Repository, walker func(rec interfaces.Recipe) error) error {
 	// Log
 	manager.log.
 		WithField("dir", repo.Dir()).
@@ -172,7 +173,7 @@ func (manager *Manager) WalkRecipes(repo core.Repository, walker func(rec core.R
 	return nil
 }
 
-func (manager *Manager) WatchRecipe(rec core.Recipe, watcher *internalWatcher.Watcher) error {
+func (manager *Manager) WatchRecipe(rec interfaces.Recipe, watcher *internalWatcher.Watcher) error {
 	var dirs []string
 
 	// Walk on recipe dirs

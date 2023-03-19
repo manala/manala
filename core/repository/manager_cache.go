@@ -1,25 +1,25 @@
 package repository
 
 import (
-	"manala/core"
+	"manala/app/interfaces"
 	internalLog "manala/internal/log"
 )
 
-func NewCacheManager(log *internalLog.Logger, cascadingManager core.RepositoryManager) *CacheManager {
+func NewCacheManager(log *internalLog.Logger, cascadingManager interfaces.RepositoryManager) *CacheManager {
 	return &CacheManager{
 		log:              log,
-		cache:            make(map[string]core.Repository),
+		cache:            make(map[string]interfaces.Repository),
 		cascadingManager: cascadingManager,
 	}
 }
 
 type CacheManager struct {
 	log              *internalLog.Logger
-	cache            map[string]core.Repository
-	cascadingManager core.RepositoryManager
+	cache            map[string]interfaces.Repository
+	cascadingManager interfaces.RepositoryManager
 }
 
-func (manager *CacheManager) LoadRepository(url string) (core.Repository, error) {
+func (manager *CacheManager) LoadRepository(url string) (interfaces.Repository, error) {
 	// Log
 	manager.log.
 		WithField("manager", "cache").

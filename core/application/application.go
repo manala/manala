@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gen2brain/beeep"
 	"golang.org/x/exp/slices"
+	"manala/app/interfaces"
 	"manala/core"
 	"manala/core/project"
 	"manala/core/recipe"
@@ -105,11 +106,11 @@ type Application struct {
 	watcherManager    *internalWatcher.Manager
 	repositoryManager *repository.UrlProcessorManager
 	recipeManager     *recipe.NameProcessorManager
-	projectManager    core.ProjectManager
+	projectManager    interfaces.ProjectManager
 	exclusionPaths    []string
 }
 
-func (app *Application) WalkRecipes(walker func(rec core.Recipe) error) error {
+func (app *Application) WalkRecipes(walker func(rec interfaces.Recipe) error) error {
 	// Load repository
 	repo, err := app.repositoryManager.LoadPrecedingRepository()
 	if err != nil {
@@ -121,9 +122,9 @@ func (app *Application) WalkRecipes(walker func(rec core.Recipe) error) error {
 
 func (app *Application) CreateProject(
 	dir string,
-	recSelector func(recipeWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error),
-	optionsSelector func(rec core.Recipe, options []core.RecipeOption) error,
-) (core.Project, error) {
+	recSelector func(recipeWalker func(walker func(rec interfaces.Recipe) error) error) (interfaces.Recipe, error),
+	optionsSelector func(rec interfaces.Recipe, options []interfaces.RecipeOption) error,
+) (interfaces.Project, error) {
 	// Ensure no already existing project
 	if app.projectManager.IsProject(dir) {
 		return nil, internalReport.NewError(fmt.Errorf("already existing project")).
@@ -136,7 +137,7 @@ func (app *Application) CreateProject(
 		return nil, err
 	}
 
-	var rec core.Recipe
+	var rec interfaces.Recipe
 
 	// Try with preceding recipe
 	rec, err = app.recipeManager.LoadPrecedingRecipe(repo)
@@ -148,8 +149,8 @@ func (app *Application) CreateProject(
 		}
 
 		// Or use recipe selector
-		rec, err = recSelector(func(walker func(rec core.Recipe) error) error {
-			if err := app.recipeManager.WalkRecipes(repo, func(_rec core.Recipe) error {
+		rec, err = recSelector(func(walker func(rec interfaces.Recipe) error) error {
+			if err := app.recipeManager.WalkRecipes(repo, func(_rec interfaces.Recipe) error {
 				if err := walker(_rec); err != nil {
 					return err
 				}
@@ -165,7 +166,7 @@ func (app *Application) CreateProject(
 	}
 
 	// Select options to get init vars
-	vars, err := rec.InitVars(func(options []core.RecipeOption) error {
+	vars, err := rec.InitVars(func(options []interfaces.RecipeOption) error {
 		if err := optionsSelector(rec, options); err != nil {
 			return err
 		}
@@ -179,7 +180,7 @@ func (app *Application) CreateProject(
 	return app.projectManager.CreateProject(dir, rec, vars)
 }
 
-func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
+func (app *Application) LoadProjectFrom(dir string) (interfaces.Project, error) {
 	// Log
 	app.log.
 		WithField("dir", dir).
@@ -187,7 +188,7 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 	app.log.IncreasePadding()
 	defer app.log.DecreasePadding()
 
-	var proj core.Project
+	var proj interfaces.Project
 
 	// Backwalks from dir
 	err := internalFilepath.Backwalk(
@@ -225,7 +226,7 @@ func (app *Application) LoadProjectFrom(dir string) (core.Project, error) {
 	return proj, nil
 }
 
-func (app *Application) WalkProjects(dir string, walker func(proj core.Project) error) error {
+func (app *Application) WalkProjects(dir string, walker func(proj interfaces.Project) error) error {
 	// Log
 	app.log.
 		WithField("dir", dir).
@@ -269,7 +270,7 @@ func (app *Application) WalkProjects(dir string, walker func(proj core.Project) 
 	return err
 }
 
-func (app *Application) SyncProject(proj core.Project) error {
+func (app *Application) SyncProject(proj interfaces.Project) error {
 	// Log
 	app.log.
 		WithField("src", proj.Recipe().Dir()).
@@ -295,7 +296,7 @@ func (app *Application) SyncProject(proj core.Project) error {
 	return nil
 }
 
-func (app *Application) WatchProject(proj core.Project, all bool, notify bool) error {
+func (app *Application) WatchProject(proj interfaces.Project, all bool, notify bool) error {
 	// Log
 	app.log.
 		WithField("src", proj.Recipe().Dir()).

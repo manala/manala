@@ -3,11 +3,12 @@ package project
 import (
 	_ "embed"
 	"github.com/imdario/mergo"
-	"manala/core"
+	"manala/app/interfaces"
+	"manala/app/views"
 	internalTemplate "manala/internal/template"
 )
 
-func NewProject(dir string, projMan core.ProjectManifest, rec core.Recipe) *Project {
+func NewProject(dir string, projMan interfaces.ProjectManifest, rec interfaces.Recipe) *Project {
 	return &Project{
 		dir:      dir,
 		manifest: projMan,
@@ -17,15 +18,15 @@ func NewProject(dir string, projMan core.ProjectManifest, rec core.Recipe) *Proj
 
 type Project struct {
 	dir      string
-	manifest core.ProjectManifest
-	recipe   core.Recipe
+	manifest interfaces.ProjectManifest
+	recipe   interfaces.Recipe
 }
 
 func (proj *Project) Dir() string {
 	return proj.dir
 }
 
-func (proj *Project) Recipe() core.Recipe {
+func (proj *Project) Recipe() interfaces.Recipe {
 	return proj.recipe
 }
 
@@ -40,5 +41,5 @@ func (proj *Project) Vars() map[string]interface{} {
 
 func (proj *Project) Template() *internalTemplate.Template {
 	return proj.recipe.Template().
-		WithData(core.NewProjectView(proj))
+		WithData(views.NormalizeProject(proj))
 }

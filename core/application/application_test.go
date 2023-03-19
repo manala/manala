@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
-	"manala/core"
+	"manala/app/interfaces"
 	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	internalTesting "manala/internal/testing"
@@ -44,16 +44,16 @@ func (s *ApplicationSuite) TestCreateProject() {
 	proj, err := app.CreateProject(
 		projDir,
 		// Recipe selector
-		func(recWalker func(walker func(rec core.Recipe) error) error) (core.Recipe, error) {
-			var rec core.Recipe
-			_ = recWalker(func(_rec core.Recipe) error {
+		func(recWalker func(walker func(rec interfaces.Recipe) error) error) (interfaces.Recipe, error) {
+			var rec interfaces.Recipe
+			_ = recWalker(func(_rec interfaces.Recipe) error {
 				rec = _rec
 				return nil
 			})
 			return rec, nil
 		},
 		// Options selector
-		func(rec core.Recipe, options []core.RecipeOption) error {
+		func(rec interfaces.Recipe, options []interfaces.RecipeOption) error {
 			// String float int
 			_ = options[0].Set("3.0")
 			// String asterisk

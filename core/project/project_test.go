@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
-	"manala/core"
+	"manala/app/mocks"
 	internalTemplate "manala/internal/template"
 	internalTesting "manala/internal/testing"
 	"path/filepath"
@@ -26,11 +26,11 @@ func (s *ProjectSuite) SetupTest() {
 }
 
 func (s *ProjectSuite) Test() {
-	repoMock := core.NewRepositoryMock()
+	repoMock := mocks.MockRepository()
 	repoMock.
 		On("Url").Return("repository")
 
-	recMock := core.NewRecipeMock()
+	recMock := mocks.MockRecipe()
 	recMock.
 		On("Name").Return("recipe").
 		On("Vars").Return(map[string]interface{}{
@@ -42,7 +42,7 @@ func (s *ProjectSuite) Test() {
 
 	projDir := filepath.Join("dir")
 
-	projManifestMock := core.NewProjectManifestMock()
+	projManifestMock := mocks.MockProjectManifest()
 	projManifestMock.
 		On("Vars").Return(map[string]interface{}{
 		"bar": "project",

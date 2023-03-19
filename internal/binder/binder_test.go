@@ -4,7 +4,8 @@ import (
 	"code.rocketnine.space/tslocum/cview"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"manala/core"
+	"manala/app/interfaces"
+	"manala/app/mocks"
 	"testing"
 )
 
@@ -19,14 +20,14 @@ func TestRecipeFormBinderSuite(t *testing.T) {
 func (s *RecipeFormBinderSuite) TestNew() {
 
 	s.Run("String", func() {
-		optionMock := core.NewRecipeOptionMock()
+		optionMock := mocks.MockRecipeOption()
 		optionMock.
 			On("Label").Return("Option").
 			On("Schema").Return(map[string]interface{}{
 			"type": "string",
 		})
 
-		options := []core.RecipeOption{
+		options := []interfaces.RecipeOption{
 			optionMock,
 		}
 
@@ -49,14 +50,14 @@ func (s *RecipeFormBinderSuite) TestNew() {
 	})
 
 	s.Run("Enum", func() {
-		optionMock := core.NewRecipeOptionMock()
+		optionMock := mocks.MockRecipeOption()
 		optionMock.
 			On("Label").Return("Option").
 			On("Schema").Return(map[string]interface{}{
 			"enum": []interface{}{true, false, nil, "foo", 123, "7.0", 7.1},
 		})
 
-		options := []core.RecipeOption{
+		options := []interfaces.RecipeOption{
 			optionMock,
 		}
 
@@ -112,7 +113,7 @@ func (s *RecipeFormBinderSuite) TestNew() {
 func (s *RecipeFormBinderSuite) TestApply() {
 	var value interface{}
 
-	optionMock := core.NewRecipeOptionMock()
+	optionMock := mocks.MockRecipeOption()
 	optionMock.
 		On("Label").Return("Option").
 		On("Schema").Return(map[string]interface{}{
@@ -122,7 +123,7 @@ func (s *RecipeFormBinderSuite) TestApply() {
 		value = args.Get(0)
 	})
 
-	binder, _ := NewRecipeFormBinder([]core.RecipeOption{
+	binder, _ := NewRecipeFormBinder([]interfaces.RecipeOption{
 		optionMock,
 	})
 

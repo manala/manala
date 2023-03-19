@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"manala/app/mocks"
 	"manala/core"
 	internalLog "manala/internal/log"
 	"testing"
@@ -18,7 +19,7 @@ func TestNameProcessorManagerSuite(t *testing.T) {
 func (s *NameProcessorManagerSuite) TestProcessName() {
 	log := internalLog.New(io.Discard)
 
-	cascadingManagerMock := core.NewRecipeManagerMock()
+	cascadingManagerMock := mocks.MockRecipeManager()
 
 	tests := []struct {
 		name     string
