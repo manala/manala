@@ -27,10 +27,9 @@ jobs:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
       - name: Set up go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
       - name: Lint
         if: matrix.os == 'macos-11'
         uses: golangci/golangci-lint-action@v3

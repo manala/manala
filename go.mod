@@ -5,8 +5,8 @@ go 1.20
 require (
 	code.rocketnine.space/tslocum/cview v1.5.8
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/aws/aws-sdk-go v1.44.224
-	github.com/caarlos0/log v0.2.1
+	github.com/aws/aws-sdk-go v1.44.225
+	github.com/caarlos0/log v0.2.2
 	github.com/charmbracelet/bubbletea v0.23.2
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/faiface/beep v1.1.0
@@ -24,7 +24,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 )
 
 require (
