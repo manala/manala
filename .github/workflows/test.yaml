@@ -6,11 +6,34 @@ on:
 
 env:
   GO_VERSION: 1.20.2
-  GORELEASER_VERSION: 1.16.1
-  GOLANGCI_LINT_VERSION: 1.52.0
+  GORELEASER_VERSION: 1.16.2
+  GOLANGCI_LINT_VERSION: 1.52.2
   RICHGO_VERSION: 0.3.12
 
 jobs:
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-22.04
+    permissions:
+      # See: https://github.com/golangci/golangci-lint-action#how-to-use
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          # See: https://github.com/golangci/golangci-lint-action/pull/704
+          cache: false
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v${{ env.GOLANGCI_LINT_VERSION }}
+          # See: https://github.com/golangci/golangci-lint-action/issues/297
+          args: --verbose --timeout 3m
+
   test:
     name: Test
     strategy:
@@ -18,8 +41,26 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-12, windows-2022]
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Test
+        env:
+          RICHGO_FORCE_COLOR: 1
+        run: |
+          go install github.com/kyoh86/richgo@v${{ env.RICHGO_VERSION }}
+          richgo test -v ./...
+
+  build:
+    name: Build
+    needs:
+      - lint
+      - test
+    runs-on: macos-12
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -30,20 +71,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Lint
-        if: matrix.os == 'macos-12'
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v${{ env.GOLANGCI_LINT_VERSION }}
-          args: --verbose --timeout 3m
-      - name: Test
-        env:
-          RICHGO_FORCE_COLOR: 1
-        run: |
-          go install github.com/kyoh86/richgo@v${{ env.RICHGO_VERSION }}
-          richgo test -v ./...
       - name: Goreleaser build
-        if: matrix.os == 'macos-12'
         uses: goreleaser/goreleaser-action@v4
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
@@ -52,7 +80,6 @@ jobs:
           args: >
             build --snapshot
       - name: Upload artifacts
-        if: matrix.os == 'macos-12'
         uses: actions/upload-artifact@v3
         with:
           name: dist
