@@ -1,5 +1,8 @@
 .SILENT:
 
+-include .make/help.mk
+-include .make/text.mk
+
 .PHONY: build
 
 ## Setup - Install dependencies
@@ -13,12 +16,12 @@ install@integration:
 update:
 	npm update
 
-## Serve
+## Serve - Serve
 serve:
 	npx webpack serve \
 		--mode=development \
 
-## Build
+## Build - Build
 build: export BUILD = 1
 build:
 	npx webpack \
