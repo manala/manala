@@ -38,7 +38,5 @@
   },
   "include": [
     "src/**/*",
-    // Declare allowed custom globals to TypeScript:
-    "./globals.d.ts",
   ]
 }
