@@ -9,7 +9,7 @@ concurrency: release
 
 env:
   GO_VERSION: 1.20.2
-  GORELEASER_VERSION: 1.16.1
+  GORELEASER_VERSION: 1.16.2
 
 jobs:
 
