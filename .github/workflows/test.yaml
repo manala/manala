@@ -35,6 +35,44 @@ jobs:
           # See: https://github.com/golangci/golangci-lint-action/issues/297
           args: --verbose --timeout 3m
 
+  lint-web-ui:
+    name: 'Lint WEB UI'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: "!github.event.pull_request || (!contains(github.event.pull_request.labels.*.name, 'WIP') && github.event.pull_request.draft == false)"
+    env:
+      working-directory: ./web/app
+    defaults:
+      run:
+        working-directory: ${{ env.working-directory }}
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v3
+      # https://github.com/actions/setup-node
+      - name: 'Setup node'
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 'Get npm cache directory'
+        id: npm-cache-dir
+        run: echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: lint-node-front-${{ hashFiles('front/**/package-lock.json') }}
+          restore-keys: |
+            lint-node-front-
+      - name: 'Install dependencies'
+        id: install
+        run: make install@integration
+      - name: 'ESLint front'
+        if: always() && steps.install.outcome == 'success'
+        run: make lint.eslint@integration
+      - name: 'TypeScript check front'
+        if: always() && steps.install.outcome == 'success'
+        run: make lint.tsc@integration
+
   test:
     name: Test
     strategy:
@@ -60,6 +98,7 @@ jobs:
     name: Build
     needs:
       - lint
+      - lint-web-ui
       - test
     runs-on: macos-12
     steps:
