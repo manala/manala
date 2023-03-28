@@ -1,16 +1,7 @@
-import React, { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
 
-const container = document.getElementById('app');
-
-function App() {
-    return <div>
-        Manala Web UI
-    </div>
+export default function App() {
+  return <div>
+    Manala Web UI
+  </div>
 }
-
-createRoot(container).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);

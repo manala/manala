@@ -9,7 +9,7 @@ module.exports = (argv) => {
 
   return {
     target: 'web',
-    entry: './src/App.tsx',
+    entry: './src/index.tsx',
     output: {
       filename: isDevelopment ? '[name].js' : '[name].[contenthash].js',
       path: path.resolve(__dirname, 'build'),
