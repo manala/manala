@@ -1,8 +1,16 @@
 import React from 'react';
 import Layout from '@app/pages/Layout';
 import { Typography, Button, Grid } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { route, Routes } from '@app/router';
 
 export default function Error404() {
+  const navigate = useNavigate();
+
+  function redirectToHome() {
+    navigate(route(Routes.recipes));
+  }
+
   return <Layout>
     <Grid display="flex" flexDirection="column" alignItems="center">
       <Typography
@@ -16,7 +24,7 @@ export default function Error404() {
       </Typography>
       <Typography variant="body1">This page doesn&apos;t exist.</Typography>
       <Button
-        href="/"
+        onClick={() => redirectToHome()}
         variant="contained"
         sx={{
           mt: 5,

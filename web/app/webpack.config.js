@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = (argv) => {
   const isDevelopment = argv.mode === 'development';
@@ -85,6 +86,16 @@ module.exports = (argv) => {
       // Enables fast-refresh for true React HMR:
       // https://github.com/pmmmwh/react-refresh-webpack-plugin
       isDevServer && new ReactRefreshWebpackPlugin(),
+      new CopyPlugin({
+        patterns: [
+          {
+            from: 'public',
+            globOptions: {
+              ignore: ['**/index.{html,ejs}'],
+            }
+          },
+        ],
+      }),
     ].filter(Boolean),
     resolve: {
       extensions: ['.ts', '.tsx', '.js'],
@@ -94,6 +105,7 @@ module.exports = (argv) => {
         '@images': path.resolve(__dirname, 'assets/images'),
       }
     },
+    devtool: isDevServer ? 'eval-cheap-module-source-map' : 'source-map',
     devServer: {
       // https://webpack.js.org/configuration/dev-server/#devserverhot
       hot: true,

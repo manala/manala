@@ -1,19 +1,13 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Layout from '@app/pages/Layout';
-import Error404 from '@app/pages/Error404';
+import { RouterProvider } from 'react-router-dom';
+import { router } from '@app/router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Layout>todo homepage</Layout>,
-  },
-  {
-    path: '*',
-    element: <Error404 />,
-  },
-]);
+const queryClient = new QueryClient();
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return <QueryClientProvider client={queryClient}>
+    <RouterProvider router={router} />
+  </QueryClientProvider>
+  ;
 }
