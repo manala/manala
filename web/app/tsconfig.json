@@ -10,7 +10,7 @@
       ],
       "@images/*": [
         "assets/images/*"
-      ],
+      ]
     },
 
     // No module system, concatenated file
@@ -37,6 +37,6 @@
     "strictNullChecks": true
   },
   "include": [
-    "src/**/*",
+    "src/**/*"
   ]
 }
