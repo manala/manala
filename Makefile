@@ -1,17 +1,27 @@
 .SILENT:
 
+include .make/help.mk
+include .make/text.mk
+
+########
+# Docs #
+########
+
+## Docs - Generate all
 docs: docs/commands docs/demo
 .PHONY: docs
 
+## Docs - Generate commands
 docs/commands:
-	printf "Generate docs commands...\n"
+	echo Generate docs commands...
 	docker compose run --rm \
 		go \
 		go run . docs docs/commands
 .PHONY: docs/commands
 
+## Docs - Generate demo
 docs/demo:
-	printf "Generate docs demo...\n"
+	echo Generate docs demo...
 	docker compose run --rm \
 		go \
 		go build -a -v -o /go/bin/manala
@@ -20,20 +30,36 @@ docs/demo:
 		docs/demo/demo.tape
 .PHONY: docs/demo
 
-go.sh:
-	docker compose run --rm \
-		go \
-		/bin/bash
+##########
+# MkDocs #
+##########
 
+## MkDocs - Generate
 mkdocs:
 	docker compose run --rm --service-ports \
 		mkdocs
 
+## MkDocs - Open mkdocs shell
 mkdocs.sh:
 	docker compose run --rm --service-ports \
 		--entrypoint /bin/ash \
 		mkdocs
 
+######
+# Go #
+######
+
+## Go - Open go shell
+go.sh:
+	docker compose run --rm \
+		go \
+		/bin/bash
+
+#######
+# Vhs #
+#######
+
+## Vhs - Open vhs shell
 vhs.sh:
 	docker compose run --rm \
 		--entrypoint /bin/bash \
