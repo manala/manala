@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"bytes"
+	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	internalConfig "manala/internal/config"
+	"manala/app/mocks"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
@@ -14,8 +15,8 @@ import (
 
 type WatchSuite struct {
 	suite.Suite
-	config   *internalConfig.Config
-	executor *cmdExecutor
+	configMock *mocks.ConfigMock
+	executor   *cmdExecutor
 }
 
 func TestWatchSuite(t *testing.T) {
@@ -23,16 +24,20 @@ func TestWatchSuite(t *testing.T) {
 }
 
 func (s *WatchSuite) SetupTest() {
-	s.config = internalConfig.New()
+	s.configMock = mocks.MockConfig()
 	s.executor = newCmdExecutor(func(stderr *bytes.Buffer) *cobra.Command {
 		return newWatchCmd(
-			s.config,
+			s.configMock,
 			internalLog.New(stderr),
 		)
 	})
 }
 
 func (s *WatchSuite) TestProjectError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("Project Not Found", func() {
 		projDir := internalTesting.DataPath(s, "project")
@@ -135,6 +140,10 @@ func (s *WatchSuite) TestProjectError() {
 }
 
 func (s *WatchSuite) TestRepositoryError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("No Repository", func() {
 		projDir := internalTesting.DataPath(s, "project")
@@ -205,12 +214,16 @@ func (s *WatchSuite) TestRepositoryError() {
 }
 
 func (s *WatchSuite) TestRecipeError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("")
 
 	s.Run("Recipe Not Found", func() {
 		projDir := internalTesting.DataPath(s, "project")
 		repoUrl := internalTesting.DataPath(s, "repository")
 
-		s.config.Set("default-repository", repoUrl)
+		s.configMock.
+			On("Repository").Return(repoUrl)
 
 		err := s.executor.execute([]string{
 			projDir,

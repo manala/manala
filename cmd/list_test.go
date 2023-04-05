@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	internalConfig "manala/internal/config"
+	"manala/app/mocks"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
@@ -15,9 +16,9 @@ import (
 
 type ListSuite struct {
 	suite.Suite
-	goldie   *goldie.Goldie
-	config   *internalConfig.Config
-	executor *cmdExecutor
+	goldie     *goldie.Goldie
+	configMock *mocks.ConfigMock
+	executor   *cmdExecutor
 }
 
 func TestListSuite(t *testing.T) {
@@ -26,16 +27,20 @@ func TestListSuite(t *testing.T) {
 
 func (s *ListSuite) SetupTest() {
 	s.goldie = goldie.New(s.T())
-	s.config = internalConfig.New()
+	s.configMock = mocks.MockConfig()
 	s.executor = newCmdExecutor(func(stderr *bytes.Buffer) *cobra.Command {
 		return newListCmd(
-			s.config,
+			s.configMock,
 			internalLog.New(stderr),
 		)
 	})
 }
 
 func (s *ListSuite) TestRepositoryError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("No Repository", func() {
 		err := s.executor.execute([]string{})
@@ -119,7 +124,43 @@ func (s *ListSuite) TestRepositoryError() {
 	})
 }
 
+func (s *ListSuite) TestRepositoryCustom() {
+	repoUrl := internalTesting.DataPath(s, "repository")
+
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
+
+	err := s.executor.execute([]string{
+		"--repository", repoUrl,
+	})
+
+	s.NoError(err)
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "stdout"), s.executor.stdout.Bytes())
+	s.Empty(s.executor.stderr)
+}
+
+func (s *ListSuite) TestRepositoryConfig() {
+	repoUrl := internalTesting.DataPath(s, "repository")
+
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return(repoUrl)
+
+	err := s.executor.execute([]string{})
+
+	s.NoError(err)
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "stdout"), s.executor.stdout.Bytes())
+	s.Empty(s.executor.stderr)
+}
+
 func (s *ListSuite) TestRecipeError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("Wrong Recipe Manifest", func() {
 		repoUrl := internalTesting.DataPath(s, "repository")
@@ -173,32 +214,5 @@ func (s *ListSuite) TestRecipeError() {
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
-	})
-}
-
-func (s *ListSuite) Test() {
-
-	s.Run("Custom Repository", func() {
-		repoUrl := internalTesting.DataPath(s, "repository")
-
-		err := s.executor.execute([]string{
-			"--repository", repoUrl,
-		})
-
-		s.NoError(err)
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "stdout"), s.executor.stdout.Bytes())
-		s.Empty(s.executor.stderr)
-	})
-
-	s.Run("Default Repository", func() {
-		repoUrl := internalTesting.DataPath(s, "repository")
-
-		s.config.Set("default-repository", repoUrl)
-
-		err := s.executor.execute([]string{})
-
-		s.NoError(err)
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "stdout"), s.executor.stdout.Bytes())
-		s.Empty(s.executor.stderr)
 	})
 }

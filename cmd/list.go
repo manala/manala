@@ -6,11 +6,10 @@ import (
 	"github.com/spf13/cobra"
 	"manala/app/interfaces"
 	"manala/core/application"
-	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 )
 
-func newListCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
+func newListCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
@@ -39,7 +38,7 @@ Example: manala list -> resulting in a recipes list display`,
 
 			// Application
 			app := application.NewApplication(
-				config,
+				conf,
 				log,
 				appOptions...,
 			)

@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
-	internalConfig "manala/internal/config"
+	"manala/app/mocks"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
 	internalTesting "manala/internal/testing"
@@ -16,9 +17,9 @@ import (
 
 type InitSuite struct {
 	suite.Suite
-	goldie   *goldie.Goldie
-	config   *internalConfig.Config
-	executor *cmdExecutor
+	goldie     *goldie.Goldie
+	configMock *mocks.ConfigMock
+	executor   *cmdExecutor
 }
 
 func TestInitSuite(t *testing.T) {
@@ -27,16 +28,21 @@ func TestInitSuite(t *testing.T) {
 
 func (s *InitSuite) SetupTest() {
 	s.goldie = goldie.New(s.T())
-	s.config = internalConfig.New()
+	s.configMock = mocks.MockConfig()
 	s.executor = newCmdExecutor(func(stderr *bytes.Buffer) *cobra.Command {
 		return newInitCmd(
-			s.config,
+			s.configMock,
 			internalLog.New(stderr),
 		)
 	})
 }
 
 func (s *InitSuite) TestProjectError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
+
 	s.Run("Already Existing Project", func() {
 		projDir := internalTesting.DataPath(s, "project")
 
@@ -61,6 +67,10 @@ func (s *InitSuite) TestProjectError() {
 }
 
 func (s *InitSuite) TestRepositoryError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("No Repository", func() {
 		err := s.executor.execute([]string{})
@@ -144,7 +154,78 @@ func (s *InitSuite) TestRepositoryError() {
 	})
 }
 
+func (s *InitSuite) TestRepositoryCustom() {
+	projDir := internalTesting.DataPath(s, "project")
+	repoUrl := internalTesting.DataPath(s, "repository")
+
+	_ = os.RemoveAll(projDir)
+
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
+
+	err := s.executor.execute([]string{
+		projDir,
+		"--repository", repoUrl,
+		"--recipe", "recipe",
+	})
+
+	s.NoError(err)
+	s.Empty(s.executor.stdout)
+	s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
+		"dst": projDir,
+		"src": filepath.Join(repoUrl, "recipe"),
+	}, s.executor.stderr.Bytes())
+	s.DirExists(projDir)
+	s.FileExists(filepath.Join(projDir, ".manala.yaml"))
+	manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
+	s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
+		"repository": repoUrl,
+	}, manContent)
+}
+
+func (s *InitSuite) TestRepositoryConfig() {
+	projDir := internalTesting.DataPath(s, "project")
+	repoUrl := internalTesting.DataPath(s, "repository")
+
+	_ = os.RemoveAll(projDir)
+
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return(repoUrl)
+
+	err := s.executor.execute([]string{
+		projDir,
+		"--recipe", "recipe",
+	})
+
+	s.NoError(err)
+	s.Empty(s.executor.stdout)
+	s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
+		"dst": projDir,
+		"src": filepath.Join(repoUrl, "recipe"),
+	}, s.executor.stderr.Bytes())
+	s.DirExists(projDir)
+	s.FileExists(filepath.Join(projDir, ".manala.yaml"))
+	manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
+	s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
+		"repository": repoUrl,
+	}, manContent)
+	s.FileExists(filepath.Join(projDir, "file.txt"))
+	fileContent, _ := os.ReadFile(filepath.Join(projDir, "file.txt"))
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "file.txt"), fileContent)
+	s.FileExists(filepath.Join(projDir, "template"))
+	templateContent, _ := os.ReadFile(filepath.Join(projDir, "template"))
+	s.goldie.Assert(s.T(), internalTesting.Path(s, "template"), templateContent)
+}
+
 func (s *InitSuite) TestRecipeError() {
+	s.configMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
 
 	s.Run("Recipe Not Found", func() {
 		repoUrl := internalTesting.DataPath(s, "repository")
@@ -223,67 +304,5 @@ func (s *InitSuite) TestRecipeError() {
 			},
 		}
 		reportAssert.Equal(&s.Suite, report)
-	})
-}
-
-func (s *InitSuite) Test() {
-
-	s.Run("Custom Repository", func() {
-		projDir := internalTesting.DataPath(s, "project")
-		repoUrl := internalTesting.DataPath(s, "repository")
-
-		_ = os.RemoveAll(projDir)
-
-		err := s.executor.execute([]string{
-			projDir,
-			"--repository", repoUrl,
-			"--recipe", "recipe",
-		})
-
-		s.NoError(err)
-		s.Empty(s.executor.stdout)
-		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
-			"dst": projDir,
-			"src": filepath.Join(repoUrl, "recipe"),
-		}, s.executor.stderr.Bytes())
-		s.DirExists(projDir)
-		s.FileExists(filepath.Join(projDir, ".manala.yaml"))
-		manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
-		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
-			"repository": repoUrl,
-		}, manContent)
-	})
-
-	s.Run("Default Repository", func() {
-		projDir := internalTesting.DataPath(s, "project")
-		repoUrl := internalTesting.DataPath(s, "repository")
-
-		_ = os.RemoveAll(projDir)
-
-		s.config.Set("default-repository", repoUrl)
-
-		err := s.executor.execute([]string{
-			projDir,
-			"--recipe", "recipe",
-		})
-
-		s.NoError(err)
-		s.Empty(s.executor.stdout)
-		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "stderr"), map[string]interface{}{
-			"dst": projDir,
-			"src": filepath.Join(repoUrl, "recipe"),
-		}, s.executor.stderr.Bytes())
-		s.DirExists(projDir)
-		s.FileExists(filepath.Join(projDir, ".manala.yaml"))
-		manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
-		s.goldie.AssertWithTemplate(s.T(), internalTesting.Path(s, "manifest"), map[string]interface{}{
-			"repository": repoUrl,
-		}, manContent)
-		s.FileExists(filepath.Join(projDir, "file.txt"))
-		fileContent, _ := os.ReadFile(filepath.Join(projDir, "file.txt"))
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "file.txt"), fileContent)
-		s.FileExists(filepath.Join(projDir, "template"))
-		templateContent, _ := os.ReadFile(filepath.Join(projDir, "template"))
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "template"), templateContent)
 	})
 }
