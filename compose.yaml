@@ -1,19 +1,34 @@
 services:
+
+  ######
+  # Go #
+  ######
+
   go:
-    image: golang:1.20.2-bullseye
+    image: golang:${MANALA_GO_VERSION}-bullseye
     volumes:
       - go:/go
       - .:/usr/src/manala
     working_dir: /usr/src/manala
+
+  ##########
+  # MkDocs #
+  ##########
+
   mkdocs:
-    image: squidfunk/mkdocs-material:9.0.6
+    image: squidfunk/mkdocs-material:${MANALA_MKDOCS_VERSION}
     ports:
       - 8000:8000
     volumes:
       - .:/docs
     command: serve --dev-addr 0.0.0.0:8000
+
+  #######
+  # Vhs #
+  #######
+
   vhs:
-    image: ghcr.io/charmbracelet/vhs:v0.3.0
+    image: ghcr.io/charmbracelet/vhs:v${MANALA_VHS_VERSION}
     volumes:
       - go:/go
       - .:/usr/src/manala
