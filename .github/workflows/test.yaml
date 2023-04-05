@@ -4,12 +4,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  GO_VERSION: 1.20.2
-  GORELEASER_VERSION: 1.16.2
-  GOLANGCI_LINT_VERSION: 1.52.2
-  RICHGO_VERSION: 0.3.12
-
 jobs:
 
   lint:
@@ -21,16 +15,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Dotenv
+        uses: xom9ikk/dotenv@v2
       - name: Set up go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: ${{ env.MANALA_GO_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/pull/704
           cache: false
-      - name: Lint
+      - name: Lint - GolangCI
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v${{ env.GOLANGCI_LINT_VERSION }}
+          version: v${{ env.MANALA_GOLANGCI_LINT_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/issues/297
           args: --verbose --timeout 3m
 
@@ -44,15 +40,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Dotenv
+        uses: xom9ikk/dotenv@v2
       - name: Set up go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Test
         env:
           RICHGO_FORCE_COLOR: 1
         run: |
-          go install github.com/kyoh86/richgo@v${{ env.RICHGO_VERSION }}
+          go install github.com/kyoh86/richgo@v${{ env.MANALA_RICHGO_VERSION }}
           richgo test -v ./...
 
   build:
@@ -67,16 +65,18 @@ jobs:
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
+      - name: Dotenv
+        uses: xom9ikk/dotenv@v2
       - name: Set up go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser build
         uses: goreleaser/goreleaser-action@v4
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         with:
-          version: v${{ env.GORELEASER_VERSION }}
+          version: v${{ env.MANALA_GORELEASER_VERSION }}
           args: >
             build --snapshot
       - name: Upload artifacts
