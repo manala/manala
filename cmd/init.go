@@ -9,12 +9,11 @@ import (
 	"manala/app/interfaces"
 	"manala/core/application"
 	internalBinder "manala/internal/binder"
-	internalConfig "manala/internal/config"
 	internalLog "manala/internal/log"
 	"path/filepath"
 )
 
-func newInitCmd(config *internalConfig.Config, log *internalLog.Logger) *cobra.Command {
+func newInitCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "init [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -47,7 +46,7 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 
 			// Application
 			app := application.NewApplication(
-				config,
+				conf,
 				log,
 				appOptions...,
 			)

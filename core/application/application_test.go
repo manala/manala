@@ -2,10 +2,11 @@ package application
 
 import (
 	"bytes"
+	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
 	"manala/app/interfaces"
-	internalConfig "manala/internal/config"
+	"manala/app/mocks"
 	internalLog "manala/internal/log"
 	internalTesting "manala/internal/testing"
 	"os"
@@ -35,8 +36,14 @@ func (s *ApplicationSuite) TestCreateProject() {
 
 	stderr := &bytes.Buffer{}
 
+	confMock := mocks.MockConfig()
+	confMock.
+		On("Fields").Return(log.Fields{}).
+		On("CacheDir").Return("").
+		On("Repository").Return("")
+
 	app := NewApplication(
-		internalConfig.New(),
+		confMock,
 		internalLog.New(stderr),
 		WithRepositoryUrl(repoUrl),
 	)

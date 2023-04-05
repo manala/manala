@@ -11,7 +11,6 @@ import (
 	"manala/core/recipe"
 	"manala/core/repository"
 	internalCache "manala/internal/cache"
-	internalConfig "manala/internal/config"
 	internalFilepath "manala/internal/filepath"
 	internalLog "manala/internal/log"
 	internalOs "manala/internal/os"
@@ -23,15 +22,15 @@ import (
 )
 
 // NewApplication creates an application
-func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts ...Option) *Application {
+func NewApplication(conf interfaces.Config, log *internalLog.Logger, opts ...Option) *Application {
 	// Log
 	log.
-		WithFields(config).
+		WithFields(conf).
 		Debug("config")
 
 	// App
 	app := &Application{
-		config: config,
+		config: conf,
 		log:    log,
 		exclusionPaths: []string{
 			// Git
@@ -49,7 +48,7 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 
 	// Cache
 	cache := internalCache.New(
-		app.config.GetString("cache-dir"),
+		app.config.CacheDir(),
 		internalCache.WithUserDir("manala"),
 	)
 
@@ -71,7 +70,7 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 		),
 	)
 	app.repositoryManager.AddUrl(
-		app.config.GetString("default-repository"),
+		app.config.Repository(),
 		-10,
 	)
 
@@ -100,7 +99,7 @@ func NewApplication(config *internalConfig.Config, log *internalLog.Logger, opts
 }
 
 type Application struct {
-	config            *internalConfig.Config
+	config            interfaces.Config
 	log               *internalLog.Logger
 	syncer            *internalSyncer.Syncer
 	watcherManager    *internalWatcher.Manager

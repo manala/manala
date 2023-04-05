@@ -8,9 +8,6 @@ import (
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
 
-// Default repository
-var defaultRepository = "https://github.com/manala/manala-recipes.git"
-
 func main() {
-	cmd.Execute(version, defaultRepository, os.Stdout, os.Stderr)
+	cmd.Execute(version, os.Stdout, os.Stderr)
 }

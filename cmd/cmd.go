@@ -4,11 +4,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"io"
-	internalConfig "manala/internal/config"
+	"manala/app/config"
+	"manala/app/interfaces"
 	internalLog "manala/internal/log"
 	internalReport "manala/internal/report"
 	"os"
-	"strings"
 )
 
 // Styles
@@ -23,7 +23,7 @@ var styles = struct {
 		Italic(true),
 }
 
-func newCmd(version string) *cobra.Command {
+func newCmd(version string, conf interfaces.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "manala",
 		Version:           version,
@@ -38,47 +38,42 @@ Recipes are pulled from a git repository, or a local directory.`,
 	}
 
 	// Persistent flags
-	cmd.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
-	cmd.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
+	cmd.PersistentFlags().StringP("cache-dir", "c", conf.CacheDir(), "use cache directory")
+	conf.BindCacheDirFlag(cmd.PersistentFlags().Lookup("cache-dir"))
+
+	cmd.PersistentFlags().BoolP("debug", "d", conf.Debug(), "set debug mode")
+	conf.BindDebugFlag(cmd.PersistentFlags().Lookup("debug"))
 
 	return cmd
 }
 
-func Execute(version string, defaultRepository string, stdout io.Writer, stderr io.Writer) {
+func Execute(version string, stdout io.Writer, stderr io.Writer) {
 
 	// Log
 	log := internalLog.New(stderr)
 
 	// Config
-	config := internalConfig.New()
-	config.SetEnvPrefix("MANALA")
-	config.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-	config.AutomaticEnv()
-	config.SetDefault("debug", false)
-	config.Set("default-repository", defaultRepository)
+	conf := config.New()
 
 	// Debug
 	cobra.OnInitialize(func() {
-		if config.GetBool("debug") {
+		if conf.Debug() {
 			log.LevelDebug()
 		}
 	})
 
 	// Root command
-	cmd := newCmd(version)
+	cmd := newCmd(version, conf)
 	cmd.SetOut(stdout)
 	cmd.SetErr(stderr)
 
-	// Bind config to persistent flags
-	_ = config.BindPFlags(cmd.PersistentFlags())
-
 	// Sub commands
 	cmd.AddCommand(
-		newInitCmd(config, log),
-		newListCmd(config, log),
+		newInitCmd(conf, log),
+		newListCmd(conf, log),
 		newMascotCmd(),
-		newUpdateCmd(config, log),
-		newWatchCmd(config, log),
+		newUpdateCmd(conf, log),
+		newWatchCmd(conf, log),
 	)
 
 	// Docs generation command
