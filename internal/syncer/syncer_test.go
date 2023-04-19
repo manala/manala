@@ -120,7 +120,7 @@ func (s *SyncerSuite) TestSync() {
 
 func (s *SyncerSuite) TestSyncExecutable() {
 	// Irrelevant on Windows
-	// noinspection GoBoolExpressions
+	//goland:noinspection GoBoolExpressions
 	if runtime.GOOS == "windows" {
 		s.T().Skip()
 	}
