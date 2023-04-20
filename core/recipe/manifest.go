@@ -55,6 +55,10 @@ func (man *Manifest) Schema() map[string]interface{} {
 	return man.schema
 }
 
+func (man *Manifest) Options() []interfaces.RecipeOption {
+	return man.options
+}
+
 func (man *Manifest) ReadFrom(reader io.Reader) error {
 	// Read content
 	content, err := io.ReadAll(reader)

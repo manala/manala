@@ -74,6 +74,7 @@ func Execute(version string, stdout io.Writer, stderr io.Writer) {
 		newMascotCmd(),
 		newUpdateCmd(conf, log),
 		newWatchCmd(conf, log),
+		newWebCmd(conf, log),
 	)
 
 	// Docs generation command

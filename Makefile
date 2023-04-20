@@ -64,3 +64,20 @@ vhs.sh:
 	docker compose run --rm \
 		--entrypoint /bin/bash \
 		vhs
+
+#######
+# Web #
+#######
+
+## Web - Start web server (PORT)
+web: PORT = 9400
+web:
+	echo Start web server...
+	docker compose run --rm \
+		--publish $(PORT):$(PORT) \
+		go \
+		go run \
+			-tags web_app_build \
+			. \
+			web --debug --port $(PORT)
+.PHONY: web

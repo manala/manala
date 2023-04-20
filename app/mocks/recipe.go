@@ -49,6 +49,11 @@ func (rec *RecipeMock) Schema() map[string]interface{} {
 	return args.Get(0).(map[string]interface{})
 }
 
+func (rec *RecipeMock) Options() []interfaces.RecipeOption {
+	args := rec.Called()
+	return args.Get(0).([]interfaces.RecipeOption)
+}
+
 func (rec *RecipeMock) InitVars(callback func(options []interfaces.RecipeOption) error) (map[string]interface{}, error) {
 	args := rec.Called(callback)
 	return args.Get(0).(map[string]interface{}), args.Error(1)
@@ -104,6 +109,11 @@ func (man *RecipeManifestMock) Sync() []internalSyncer.UnitInterface {
 func (man *RecipeManifestMock) Schema() map[string]interface{} {
 	args := man.Called()
 	return args.Get(0).(map[string]interface{})
+}
+
+func (man *RecipeManifestMock) Options() []interfaces.RecipeOption {
+	args := man.Called()
+	return args.Get(0).([]interfaces.RecipeOption)
 }
 
 func (man *RecipeManifestMock) ReadFrom(reader io.Reader) error {

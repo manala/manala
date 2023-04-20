@@ -119,6 +119,16 @@ func (app *Application) WalkRecipes(walker func(rec interfaces.Recipe) error) er
 	return app.recipeManager.WalkRecipes(repo, walker)
 }
 
+func (app *Application) LoadRecipe(name string) (interfaces.Recipe, error) {
+	// Load repository
+	repo, err := app.repositoryManager.LoadPrecedingRepository()
+	if err != nil {
+		return nil, err
+	}
+
+	return app.recipeManager.LoadRecipe(repo, name)
+}
+
 func (app *Application) CreateProject(
 	dir string,
 	recSelector func(recipeWalker func(walker func(rec interfaces.Recipe) error) error) (interfaces.Recipe, error),
