@@ -16,13 +16,16 @@ install@integration:
 update:
 	npm update
 
-## Serve - Serve
+## Serve - Serve (API_PORT, API_BASE_URI)
+serve: export API_PORT = 9400
+serve: export API_BASE_URI = http://localhost:$(API_PORT)/api
 serve:
 	npx webpack serve \
-		--mode=development \
+		--mode=development
 
-## Build - Build
+## Build - Build (API_BASE_URI)
 build: export BUILD = 1
+build: export API_BASE_URI = http://localhost:9400/api
 build:
 	npx webpack \
 		--mode=production

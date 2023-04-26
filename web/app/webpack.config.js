@@ -1,4 +1,5 @@
 const path = require('path');
+const { DefinePlugin } = require('webpack');
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackHarddiskPlugin = require('html-webpack-harddisk-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
@@ -75,6 +76,11 @@ module.exports = (argv) => {
       ]
     },
     plugins: [
+      new DefinePlugin({
+        AppConfig: JSON.stringify({
+          API_BASE_URI: process.env.API_BASE_URI,
+        }),
+      }),
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, 'public/index.html'),
         publicPath: '/',

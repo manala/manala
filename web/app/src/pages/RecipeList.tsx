@@ -1,14 +1,15 @@
 import React from 'react';
-import { Grid, List, ListItemButton, ListItemText, Skeleton, Stack, Typography } from '@mui/material';
+import { Alert, Grid, List, ListItemButton, ListItemText, Skeleton, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { route, Routes } from '@app/router';
 import { useQuery } from '@tanstack/react-query';
+import { jsonApiQuery } from '@app/utils/api';
 
 export default function RecipeList() {
 
   const { isLoading, isError, data } = useQuery({
-    queryKey: ['repoData'],
-    queryFn: () => fetch('http://localhost:9400/api/recipes').then((res) => res.json()),
+    queryKey: ['recipes'],
+    queryFn: jsonApiQuery('/recipes'),
   });
 
   const recipes = data;
@@ -37,6 +38,7 @@ export default function RecipeList() {
       <Skeleton variant="rectangular" width={210} height={60} />
       <Skeleton variant="rectangular" width={210} height={60} />
     </Stack>}
+    {isError && <Alert severity="error">An error occurred while fetching the data</Alert>}
     {!isLoading && !isError && <List>
       {recipes.map((recipe) =>
         <ListItemButton
