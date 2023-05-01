@@ -2,7 +2,6 @@ package application
 
 import (
 	"bytes"
-	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
 	"manala/app/interfaces"
@@ -38,7 +37,7 @@ func (s *ApplicationSuite) TestCreateProject() {
 
 	confMock := mocks.MockConfig()
 	confMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 

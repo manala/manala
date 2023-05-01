@@ -1,1 +1,1 @@
-  • sync project                                     dst={{ .dst }} src={{ .src }}
+  • sync project                                     src={{ .src }} dst={{ .dst }}

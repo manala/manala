@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -17,7 +16,7 @@ func (s *ConfigSuite) Test() {
 	conf := New()
 
 	s.Run("Fields", func() {
-		s.Equal(log.Fields{
+		s.Equal(map[string]interface{}{
 			"debug":      false,
 			"repository": "https://github.com/manala/manala-recipes.git",
 			"cache-dir":  "",

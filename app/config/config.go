@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"strings"
@@ -39,8 +38,7 @@ type Config struct {
 	viper *viper.Viper
 }
 
-// Fields implements caarlos0 log Fielder
-func (conf *Config) Fields() log.Fields {
+func (conf *Config) Fields() map[string]interface{} {
 	return conf.viper.AllSettings()
 }
 

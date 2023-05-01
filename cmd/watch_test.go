@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/caarlos0/log"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	"manala/app/mocks"
@@ -35,7 +34,7 @@ func (s *WatchSuite) SetupTest() {
 
 func (s *WatchSuite) TestProjectError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -141,7 +140,7 @@ func (s *WatchSuite) TestProjectError() {
 
 func (s *WatchSuite) TestRepositoryError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -215,7 +214,7 @@ func (s *WatchSuite) TestRepositoryError() {
 
 func (s *WatchSuite) TestRecipeError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("")
 
 	s.Run("Recipe Not Found", func() {

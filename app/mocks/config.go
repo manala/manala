@@ -1,7 +1,6 @@
 package mocks
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,9 +13,9 @@ type ConfigMock struct {
 	mock.Mock
 }
 
-func (conf *ConfigMock) Fields() log.Fields {
+func (conf *ConfigMock) Fields() map[string]interface{} {
 	args := conf.Called()
-	return args.Get(0).(log.Fields)
+	return args.Get(0).(map[string]interface{})
 }
 
 func (conf *ConfigMock) Debug() bool {

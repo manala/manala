@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
@@ -38,7 +37,7 @@ func (s *ListSuite) SetupTest() {
 
 func (s *ListSuite) TestRepositoryError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -128,7 +127,7 @@ func (s *ListSuite) TestRepositoryCustom() {
 	repoUrl := internalTesting.DataPath(s, "repository")
 
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -145,7 +144,7 @@ func (s *ListSuite) TestRepositoryConfig() {
 	repoUrl := internalTesting.DataPath(s, "repository")
 
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return(repoUrl)
 
@@ -158,7 +157,7 @@ func (s *ListSuite) TestRepositoryConfig() {
 
 func (s *ListSuite) TestRecipeError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 

@@ -25,7 +25,7 @@ import (
 func NewApplication(conf interfaces.Config, log *internalLog.Logger, opts ...Option) *Application {
 	// Log
 	log.
-		WithFields(conf).
+		WithFields(conf.Fields()).
 		Debug("config")
 
 	// App

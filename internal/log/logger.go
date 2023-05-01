@@ -17,6 +17,16 @@ type Logger struct {
 	*log.Logger
 }
 
+func (logger *Logger) WithFields(fields map[string]interface{}) *log.Entry {
+	entry := log.NewEntry(logger.Logger)
+
+	for k, v := range fields {
+		entry = entry.WithField(k, v)
+	}
+
+	return entry
+}
+
 func (logger *Logger) LevelDebug() {
 	logger.Level = log.DebugLevel
 }
@@ -34,11 +44,7 @@ func (logger *Logger) Report(report *internalReport.Report) {
 
 func (logger *Logger) report(report *internalReport.Report) {
 	// Fields
-	fields := log.Fields{}
-	for k, v := range report.Fields() {
-		fields[k] = v
-	}
-	_logger := logger.WithFields(fields)
+	_logger := logger.WithFields(report.Fields())
 
 	if report.Message() != "" {
 		if report.Err() != nil {

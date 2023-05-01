@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/caarlos0/log"
 	"github.com/sebdah/goldie/v2"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
@@ -39,7 +38,7 @@ func (s *UpdateSuite) SetupTest() {
 
 func (s *UpdateSuite) TestProjectError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -145,7 +144,7 @@ func (s *UpdateSuite) TestProjectError() {
 
 func (s *UpdateSuite) TestRecursiveProjectError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -253,7 +252,7 @@ func (s *UpdateSuite) TestRecursiveProjectError() {
 
 func (s *UpdateSuite) TestRepositoryError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -332,7 +331,7 @@ func (s *UpdateSuite) TestRepositoryCustom() {
 	_ = os.Remove(filepath.Join(projDir, "file.txt"))
 
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
@@ -362,7 +361,7 @@ func (s *UpdateSuite) TestRepositoryConfig() {
 	_ = os.Remove(filepath.Join(projDir, "template"))
 
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return(repoUrl)
 
@@ -388,7 +387,7 @@ func (s *UpdateSuite) TestRepositoryConfig() {
 
 func (s *UpdateSuite) TestRecipeError() {
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("")
 
 	s.Run("Recipe Not Found", func() {
@@ -486,7 +485,7 @@ func (s *UpdateSuite) TestRecipeCustom() {
 	_ = os.Remove(filepath.Join(projDir, "file.txt"))
 
 	s.configMock.
-		On("Fields").Return(log.Fields{}).
+		On("Fields").Return(map[string]interface{}{}).
 		On("CacheDir").Return("").
 		On("Repository").Return(repoUrl)
 
