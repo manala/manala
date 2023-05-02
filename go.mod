@@ -6,7 +6,7 @@ require (
 	code.rocketnine.space/tslocum/cview v1.5.8
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go v1.44.235
-	github.com/caarlos0/log v0.2.2
+	github.com/caarlos0/log v0.4.1
 	github.com/charmbracelet/bubbletea v0.23.2
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/faiface/beep v1.1.0
@@ -36,6 +36,7 @@ require (
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/elliotchance/orderedmap/v2 v2.2.0 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
