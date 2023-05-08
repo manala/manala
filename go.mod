@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/aws/aws-sdk-go v1.44.235
 	github.com/caarlos0/log v0.2.2
-	github.com/charmbracelet/bubbletea v0.23.2
+	github.com/charmbracelet/bubbletea v0.24.0
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.6.0
@@ -33,7 +33,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
-	github.com/containerd/console v1.0.3 // indirect
+	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.15.0 // indirect
@@ -55,7 +55,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
