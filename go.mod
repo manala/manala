@@ -16,7 +16,7 @@ require (
 	github.com/goccy/go-yaml v1.11.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.1
 	github.com/hashicorp/go-getter/v2 v2.2.1
-	github.com/imdario/mergo v0.3.15
+	github.com/imdario/mergo v0.3.16
 	github.com/muesli/termenv v0.15.1
 	github.com/sebdah/goldie/v2 v2.5.3
 	github.com/spf13/cobra v1.7.0
