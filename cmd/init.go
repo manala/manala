@@ -6,14 +6,15 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core/application"
-	internalBinder "manala/internal/binder"
-	internalLog "manala/internal/log"
+	"manala/internal/binder"
+	"manala/internal/ui/output"
 	"path/filepath"
 )
 
-func newInitCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
+func newInitCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "init [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -48,6 +49,7 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 			app := application.NewApplication(
 				conf,
 				log,
+				out,
 				appOptions...,
 			)
 
@@ -178,7 +180,7 @@ func initRecipeOptionsFormApplication(rec interfaces.Recipe, options []interface
 	panels.AddPanel("modal", modal, false, false)
 
 	// Recipe form binder
-	binder, _err := internalBinder.NewRecipeFormBinder(options)
+	binder, _err := binder.NewRecipeFormBinder(options)
 	if _err != nil {
 		return _err
 	}
@@ -189,7 +191,7 @@ func initRecipeOptionsFormApplication(rec interfaces.Recipe, options []interface
 		// Validate
 		valid := true
 		for _, bind := range binder.Binds() {
-			validation, _err := gojsonschema.Validate(
+			val, _err := gojsonschema.Validate(
 				gojsonschema.NewGoLoader(bind.Option.Schema()),
 				gojsonschema.NewGoLoader(bind.Value),
 			)
@@ -200,9 +202,9 @@ func initRecipeOptionsFormApplication(rec interfaces.Recipe, options []interface
 				break
 			}
 
-			if !validation.Valid() {
+			if !val.Valid() {
 				valid = false
-				modal.SetText(bind.Option.Label() + validation.Errors()[0].String())
+				modal.SetText(bind.Option.Label() + val.Errors()[0].String())
 				panels.ShowPanel("modal")
 				form.SetFocus(bind.ItemIndex)
 				break

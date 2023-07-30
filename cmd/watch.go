@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core/application"
-	internalLog "manala/internal/log"
+	"manala/internal/ui/output"
 	"path/filepath"
 )
 
-func newWatchCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
+func newWatchCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -49,6 +50,7 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 			app := application.NewApplication(
 				conf,
 				log,
+				out,
 				appOptions...,
 			)
 

@@ -12,43 +12,47 @@ func TestErrorsSuite(t *testing.T) {
 }
 
 func (s *ErrorsSuite) TestProject() {
+	s.Run("AlreadyExistingProjectError", func() {
+		err := &AlreadyExistingProjectError{Dir: "dir"}
+
+		s.EqualError(err, "already existing project")
+		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
+	})
+
 	s.Run("NotFoundProjectManifestError", func() {
-		err := NewNotFoundProjectManifestError("error")
+		err := &NotFoundProjectManifestError{File: "file"}
 
-		var _notFoundProjectManifestError *NotFoundProjectManifestError
-		s.ErrorAs(err, &_notFoundProjectManifestError)
-
-		s.EqualError(err, "error")
+		s.EqualError(err, "project manifest not found")
+		s.Equal([]any{"file", "file"}, err.ErrorArguments())
 	})
 }
 
 func (s *ErrorsSuite) TestRecipe() {
 	s.Run("NotFoundRecipeManifestError", func() {
-		err := NewNotFoundRecipeManifestError("error")
+		err := &NotFoundRecipeManifestError{File: "file"}
 
-		var _notFoundRecipeManifestError *NotFoundRecipeManifestError
-		s.ErrorAs(err, &_notFoundRecipeManifestError)
+		s.EqualError(err, "recipe manifest not found")
+		s.Equal([]any{"file", "file"}, err.ErrorArguments())
+	})
 
-		s.EqualError(err, "error")
+	s.Run("UnprocessableRecipeNameError", func() {
+		err := &UnprocessableRecipeNameError{}
+
+		s.EqualError(err, "unable to process recipe name")
 	})
 }
 
 func (s *ErrorsSuite) TestRepository() {
-	s.Run("NotFoundRepositoryError", func() {
-		err := NewNotFoundRepositoryError("error")
+	s.Run("UnsupportedRepositoryError", func() {
+		err := &UnsupportedRepositoryError{Url: "url"}
 
-		var _notFoundRepositoryError *NotFoundRepositoryError
-		s.ErrorAs(err, &_notFoundRepositoryError)
-
-		s.EqualError(err, "error")
+		s.EqualError(err, "unsupported repository url")
+		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 
-	s.Run("UnsupportedRepositoryError", func() {
-		err := NewUnsupportedRepositoryError("error")
+	s.Run("UnprocessableRepositoryUrlError", func() {
+		err := &UnprocessableRepositoryUrlError{}
 
-		var _unsupportedRepositoryError *UnsupportedRepositoryError
-		s.ErrorAs(err, &_unsupportedRepositoryError)
-
-		s.EqualError(err, "error")
+		s.EqualError(err, "unable to process repository url")
 	})
 }

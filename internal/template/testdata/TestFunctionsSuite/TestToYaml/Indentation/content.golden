@@ -1,6 +1,0 @@
-mapping:
-    bar: baz
-    foo: bar
-sequence:
-    - foo
-    - bar

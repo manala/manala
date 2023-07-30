@@ -2,12 +2,12 @@ package watcher
 
 import (
 	"github.com/fsnotify/fsnotify"
-	internalLog "manala/internal/log"
+	"log/slog"
 	"path/filepath"
 )
 
 type Watcher struct {
-	log *internalLog.Logger
+	log *slog.Logger
 	*fsnotify.Watcher
 	onStart  func(watcher *Watcher)
 	onChange func(watcher *Watcher)
@@ -35,23 +35,21 @@ func (watcher *Watcher) doWatch() {
 				}
 
 				// Log
-				watcher.log.
-					WithField("operation", event.Op).
-					WithField("path", event.Name).
-					Debug("watch event")
+				watcher.log.Debug("watch event",
+					"operation", event.Op,
+					"path", event.Name,
+				)
 
 				// Ignore chmod events & empty events
 				if event.Has(fsnotify.Chmod) || event.Name == "" {
-					watcher.log.IncreasePadding()
-					watcher.log.
-						Debug("ignore event")
-					watcher.log.DecreasePadding()
+					watcher.log.Debug("ignore event")
 					break
 				}
 
-				watcher.log.
-					WithField("path", filepath.Clean(event.Name)).
-					Info("file modified")
+				// Log
+				watcher.log.Info("file modified",
+					"path", filepath.Clean(event.Name),
+				)
 
 				watcher.onChange(watcher)
 				watcher.onAll(watcher)
@@ -61,9 +59,9 @@ func (watcher *Watcher) doWatch() {
 				}
 
 				// Log
-				watcher.log.
-					WithError(err).
-					Warn("watch error")
+				watcher.log.Warn("watch error",
+					"error", err,
+				)
 			}
 		}
 	}()

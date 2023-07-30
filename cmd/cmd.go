@@ -1,27 +1,15 @@
 package cmd
 
 import (
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"io"
+	"log/slog"
 	"manala/app/config"
 	"manala/app/interfaces"
-	internalLog "manala/internal/log"
-	internalReport "manala/internal/report"
+	"manala/internal/ui/log"
+	"manala/internal/ui/output/lipgloss"
 	"os"
 )
-
-// Styles
-var styles = struct {
-	Primary, Secondary lipgloss.Style
-}{
-	Primary: lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#DDDDDD"}).
-		Bold(true),
-	Secondary: lipgloss.NewStyle().
-		Foreground(lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#DDDDDD"}).
-		Italic(true),
-}
 
 func newCmd(version string, conf interfaces.Config) *cobra.Command {
 	cmd := &cobra.Command{
@@ -48,19 +36,24 @@ Recipes are pulled from a git repository, or a local directory.`,
 }
 
 func Execute(version string, stdout io.Writer, stderr io.Writer) {
-
-	// Log
-	log := internalLog.New(stderr)
-
 	// Config
 	conf := config.New()
+
+	// Ui Output
+	out := lipgloss.New(stdout, stderr)
+
+	// Log handler
+	logHandler := log.NewSlogHandler(out)
 
 	// Debug
 	cobra.OnInitialize(func() {
 		if conf.Debug() {
-			log.LevelDebug()
+			logHandler.LevelDebug()
 		}
 	})
+
+	// Logger
+	logger := slog.New(logHandler)
 
 	// Root command
 	cmd := newCmd(version, conf)
@@ -69,11 +62,11 @@ func Execute(version string, stdout io.Writer, stderr io.Writer) {
 
 	// Sub commands
 	cmd.AddCommand(
-		newInitCmd(conf, log),
-		newListCmd(conf, log),
+		newInitCmd(conf, logger, out),
+		newListCmd(conf, logger, out),
 		newMascotCmd(),
-		newUpdateCmd(conf, log),
-		newWatchCmd(conf, log),
+		newUpdateCmd(conf, logger, out),
+		newWatchCmd(conf, logger, out),
 	)
 
 	// Docs generation command
@@ -83,8 +76,7 @@ func Execute(version string, stdout io.Writer, stderr io.Writer) {
 
 	// Execute
 	if err := cmd.Execute(); err != nil {
-		report := internalReport.NewErrorReport(err)
-		log.Report(report)
+		out.Error(err)
 		os.Exit(1)
 	}
 }

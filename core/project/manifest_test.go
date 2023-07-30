@@ -2,9 +2,12 @@ package project
 
 import (
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
-	internalTesting "manala/internal/testing"
+	"manala/internal/errors/serrors"
+	"manala/internal/testing/heredoc"
+	"manala/internal/validation"
+	"manala/internal/yaml"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -24,59 +27,89 @@ func (s *ManifestSuite) Test() {
 
 func (s *ManifestSuite) TestReadFromErrors() {
 	tests := []struct {
-		name   string
-		report *internalReport.Assert
+		test     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Empty",
-			report: &internalReport.Assert{
+			test: "Empty",
+			expected: &serrors.Assert{
+				Type:    &serrors.WrapError{},
 				Message: "irregular project manifest",
-				Err:     "empty yaml file",
-			},
-		},
-		{
-			name: "Invalid",
-			report: &internalReport.Assert{
-				Message: "irregular project manifest",
-				Fields: map[string]interface{}{
-					"column": 1,
-					"line":   1,
-				},
-				Err: "unexpected mapping key",
-			},
-		},
-		{
-			name: "Irregular Type",
-			report: &internalReport.Assert{
-				Message: "irregular project manifest",
-				Err:     "irregular type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 6,
+				Error: &serrors.Assert{
+					Type:    &serrors.Error{},
+					Message: "empty yaml file",
 				},
 			},
 		},
 		{
-			name: "Irregular Map Key",
-			report: &internalReport.Assert{
+			test: "Invalid",
+			expected: &serrors.Assert{
+				Type:    &serrors.WrapError{},
 				Message: "irregular project manifest",
-				Err:     "irregular map key",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 2,
+				Error: &serrors.Assert{
+					Type:    &yaml.Error{},
+					Message: "unexpected mapping key",
+					Arguments: []any{
+						"line", 1,
+						"column", 1,
+					},
+					Details: heredoc.Doc(`
+						>  1 | ::
+						       ^
+					`),
 				},
 			},
 		},
 		{
-			name: "Not Map",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "IrregularType",
+			expected: &serrors.Assert{
+				Type:    &serrors.WrapError{},
+				Message: "irregular project manifest",
+				Error: &serrors.Assert{
+					Type:    &yaml.NodeError{},
+					Message: "irregular type",
+					Arguments: []any{
+						"line", 1,
+						"column", 6,
+					},
+					Details: heredoc.Doc(`
+						>  1 | foo: .inf
+						            ^
+					`),
+				},
+			},
+		},
+		{
+			test: "IrregularMapKey",
+			expected: &serrors.Assert{
+				Type:    &serrors.WrapError{},
+				Message: "irregular project manifest",
+				Error: &serrors.Assert{
+					Type:    &yaml.NodeError{},
+					Message: "irregular map key",
+					Arguments: []any{
+						"line", 1,
+						"column", 2,
+					},
+					Details: heredoc.Doc(`
+						>  1 | 0: bar
+						        ^
+					`),
+				},
+			},
+		},
+		{
+			test: "NotMap",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "yaml document must be a map",
-						Fields: map[string]interface{}{
-							"expected": "object",
-							"given":    "string",
+						Arguments: []any{
+							"expected", "object",
+							"given", "string",
 						},
 					},
 				},
@@ -84,176 +117,253 @@ func (s *ManifestSuite) TestReadFromErrors() {
 		},
 		// Config
 		{
-			name: "Config Absent",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigAbsent",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "missing manala field",
-						Fields: map[string]interface{}{
-							"property": "manala",
+						Arguments: []any{
+							"property", "manala",
 						},
 					},
 				},
 			},
 		},
 		{
-			name: "Config Not Map",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigNotMap",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "manala field must be a map",
-						Fields: map[string]interface{}{
-							"line":     1,
-							"column":   9,
-							"expected": "object",
-							"given":    "string",
+						Arguments: []any{
+							"expected", "object",
+							"given", "string",
+							"line", 1,
+							"column", 9,
 						},
+						Details: heredoc.Doc(`
+							>  1 | manala: foo
+							               ^
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Empty",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigEmpty",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "missing manala recipe field",
-						Fields: map[string]interface{}{
-							"line":     1,
-							"column":   9,
-							"property": "recipe",
+						Arguments: []any{
+							"property", "recipe",
+							"line", 1,
+							"column", 9,
 						},
+						Details: heredoc.Doc(`
+							>  1 | manala: {}
+							               ^
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Additional Properties",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigAdditionalProperties",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "manala field don't support additional properties",
-						Fields: map[string]interface{}{
-							"line":     2,
-							"column":   9,
-							"property": "foo",
+						Arguments: []any{
+							"property", "foo",
+							"line", 2,
+							"column", 9,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							>  2 |   recipe: recipe
+							               ^
+							   3 |   foo: bar
+						`),
 					},
 				},
 			},
 		},
 		// Config - Recipe
 		{
-			name: "Config Recipe Absent",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRecipeAbsent",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "missing manala recipe field",
-						Fields: map[string]interface{}{
-							"line":     2,
-							"column":   13,
-							"property": "recipe",
+						Arguments: []any{
+							"property", "recipe",
+							"line", 2,
+							"column", 13,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							>  2 |   repository: repository
+							                   ^
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Recipe Not String",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRecipeNotString",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "manala recipe field must be a string",
-						Fields: map[string]interface{}{
-							"line":     2,
-							"column":   11,
-							"expected": "string",
-							"given":    "array",
+						Arguments: []any{
+							"expected", "string",
+							"given", "array",
+							"line", 2,
+							"column", 11,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							>  2 |   recipe: []
+							                 ^
+							   3 |   repository: repository
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Recipe Empty",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRecipeEmpty",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "empty manala recipe field",
-						Fields: map[string]interface{}{
-							"line":   2,
-							"column": 11,
+						Arguments: []any{
+							"line", 2,
+							"column", 11,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							>  2 |   recipe: ""
+							                 ^
+							   3 |   repository: repository
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Recipe Too Long",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRecipeTooLong",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "too long manala recipe field",
-						Fields: map[string]interface{}{
-							"line":   2,
-							"column": 11,
+						Arguments: []any{
+							"line", 2,
+							"column", 11,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							>  2 |   recipe: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+							                 ^
+							   3 |   repository: repository
+						`),
 					},
 				},
 			},
 		},
 		// Config - Repository
 		{
-			name: "Config Repository Not String",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRepositoryNotString",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "manala repository field must be a string",
-						Fields: map[string]interface{}{
-							"line":     3,
-							"column":   15,
-							"expected": "string",
-							"given":    "array",
+						Arguments: []any{
+							"expected", "string",
+							"given", "array",
+							"line", 3,
+							"column", 15,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							   2 |   recipe: recipe
+							>  3 |   repository: []
+							                     ^
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Repository Empty",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRepositoryEmpty",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "empty manala repository field",
-						Fields: map[string]interface{}{
-							"line":   3,
-							"column": 15,
+						Arguments: []any{
+							"line", 3,
+							"column", 15,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							   2 |   recipe: recipe
+							>  3 |   repository: ""
+							                     ^
+						`),
 					},
 				},
 			},
 		},
 		{
-			name: "Config Repository Too Long",
-			report: &internalReport.Assert{
-				Err: "invalid project manifest",
-				Reports: []internalReport.Assert{
+			test: "ConfigRepositoryTooLong",
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid project manifest",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &yaml.NodeValidationResultError{},
 						Message: "too long manala repository field",
-						Fields: map[string]interface{}{
-							"line":   3,
-							"column": 15,
+						Arguments: []any{
+							"line", 3,
+							"column", 15,
 						},
+						Details: heredoc.Doc(`
+							   1 | manala:
+							   2 |   recipe: recipe
+							>  3 |   repository: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+							                     ^
+						`),
 					},
 				},
 			},
@@ -261,55 +371,53 @@ func (s *ManifestSuite) TestReadFromErrors() {
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			recMan := NewManifest()
+		s.Run(test.test, func() {
+			projMan := NewManifest()
 
-			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := recMan.ReadFrom(recManFile)
+			projDir := filepath.FromSlash("testdata/ManifestSuite/TestReadFromErrors/" + test.test)
 
-			s.Error(err)
+			projManFile, _ := os.Open(filepath.Join(projDir, "manifest.yaml"))
+			err := projMan.ReadFrom(projManFile)
 
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *ManifestSuite) TestReadFrom() {
 	tests := []struct {
-		name       string
-		recipe     string
-		repository string
-		vars       map[string]interface{}
+		test               string
+		expectedRecipe     string
+		expectedRepository string
+		expectedVars       map[string]interface{}
 	}{
 		{
-			name:       "All",
-			recipe:     "recipe",
-			repository: "repository",
-			vars: map[string]interface{}{
+			test:               "All",
+			expectedRecipe:     "recipe",
+			expectedRepository: "repository",
+			expectedVars: map[string]interface{}{
 				"foo": "bar",
 			},
 		},
 		{
-			name:       "Config Repository Absent",
-			recipe:     "recipe",
-			repository: "",
-			vars: map[string]interface{}{
+			test:               "ConfigRepositoryAbsent",
+			expectedRecipe:     "recipe",
+			expectedRepository: "",
+			expectedVars: map[string]interface{}{
 				"foo": "bar",
 			},
 		},
 		{
-			name:       "Vars Absent",
-			recipe:     "recipe",
-			repository: "repository",
-			vars:       map[string]interface{}{},
+			test:               "VarsAbsent",
+			expectedRecipe:     "recipe",
+			expectedRepository: "repository",
+			expectedVars:       map[string]interface{}{},
 		},
 		{
-			name:       "Vars Keys",
-			recipe:     "recipe",
-			repository: "repository",
-			vars: map[string]interface{}{
+			test:               "VarsKeys",
+			expectedRecipe:     "recipe",
+			expectedRepository: "repository",
+			expectedVars: map[string]interface{}{
 				"underscore_key": "ok",
 				"hyphen-key":     "ok",
 				"dot.key":        "ok",
@@ -318,16 +426,19 @@ func (s *ManifestSuite) TestReadFrom() {
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			recMan := NewManifest()
+		s.Run(test.test, func() {
+			projMan := NewManifest()
 
-			recManFile, _ := os.Open(internalTesting.DataPath(s, "manifest.yaml"))
-			err := recMan.ReadFrom(recManFile)
+			projDir := filepath.FromSlash("testdata/ManifestSuite/TestReadFrom/" + test.test)
+
+			projManFile, _ := os.Open(filepath.Join(projDir, "manifest.yaml"))
+			err := projMan.ReadFrom(projManFile)
 
 			s.NoError(err)
-			s.Equal(test.recipe, recMan.Recipe())
-			s.Equal(test.repository, recMan.Repository())
-			s.Equal(test.vars, recMan.Vars())
+
+			s.Equal(test.expectedRecipe, projMan.Recipe())
+			s.Equal(test.expectedRepository, projMan.Repository())
+			s.Equal(test.expectedVars, projMan.Vars())
 		})
 	}
 }

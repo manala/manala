@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core/application"
-	internalLog "manala/internal/log"
+	"manala/internal/ui/output"
 	"path/filepath"
 )
 
-func newUpdateCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
+func newUpdateCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "update [dir]",
 		Aliases:           []string{"up"},
@@ -48,6 +49,7 @@ Example: manala update -> resulting in an update in a project dir (default to th
 			app := application.NewApplication(
 				conf,
 				log,
+				out,
 				appOptions...,
 			)
 

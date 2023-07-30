@@ -2,10 +2,10 @@ package interfaces
 
 import (
 	"io"
-	internalSyncer "manala/internal/syncer"
-	internalTemplate "manala/internal/template"
-	internalValidation "manala/internal/validation"
-	internalWatcher "manala/internal/watcher"
+	"manala/internal/syncer"
+	"manala/internal/template"
+	"manala/internal/validation"
+	"manala/internal/watcher"
 )
 
 type Recipe interface {
@@ -13,22 +13,22 @@ type Recipe interface {
 	Name() string
 	Description() string
 	Vars() map[string]interface{}
-	Sync() []internalSyncer.UnitInterface
+	Sync() []syncer.UnitInterface
 	Schema() map[string]interface{}
 	InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error)
 	Repository() Repository
-	Template() *internalTemplate.Template
-	ProjectManifestTemplate() *internalTemplate.Template
+	Template() *template.Template
+	ProjectManifestTemplate() *template.Template
 }
 
 type RecipeManifest interface {
 	Description() string
 	Template() string
 	Vars() map[string]interface{}
-	Sync() []internalSyncer.UnitInterface
+	Sync() []syncer.UnitInterface
 	Schema() map[string]interface{}
 	ReadFrom(reader io.Reader) error
-	internalValidation.Reporter
+	ValidationResultErrorDecorator() validation.ResultErrorDecorator
 	InitVars(callback func(options []RecipeOption) error) (map[string]interface{}, error)
 }
 
@@ -41,5 +41,5 @@ type RecipeOption interface {
 type RecipeManager interface {
 	LoadRecipe(repo Repository, name string) (Recipe, error)
 	WalkRecipes(repo Repository, walker func(rec Recipe) error) error
-	WatchRecipe(rec Recipe, watcher *internalWatcher.Watcher) error
+	WatchRecipe(rec Recipe, watcher *watcher.Watcher) error
 }

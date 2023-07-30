@@ -4,13 +4,13 @@ import (
 	"context"
 	"github.com/hashicorp/go-getter/s3/v2"
 	"github.com/hashicorp/go-getter/v2"
-	internalLog "manala/internal/log"
+	"log/slog"
 	"time"
 )
 
-func NewS3Getter(log *internalLog.Logger, result *GetterResult) *S3Getter {
+func NewS3Getter(log *slog.Logger, result *GetterResult) *S3Getter {
 	return &S3Getter{
-		log:    log,
+		log:    log.With("getter", "s3"),
 		result: result,
 		Getter: &s3.Getter{
 			Timeout: 30 * time.Second,
@@ -20,25 +20,26 @@ func NewS3Getter(log *internalLog.Logger, result *GetterResult) *S3Getter {
 }
 
 type S3Getter struct {
-	log    *internalLog.Logger
+	log    *slog.Logger
 	result *GetterResult
 	*s3.Getter
 	protocol string
 }
 
 func (g *S3Getter) Detect(req *getter.Request) (bool, error) {
-	g.log.
-		WithField("protocol", "s3").
-		Debug("detect")
+	// Log
+	g.log.Debug("try to detect repository",
+		"src", req.Src,
+	)
 
 	// Detect
 	ok, err := g.Getter.Detect(req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to detect")
+		// Log
+		g.log.Debug("unable to detect repository",
+			"error", err,
+		)
 
 		g.result.SetDetectError(err, g.protocol)
 
@@ -49,18 +50,19 @@ func (g *S3Getter) Detect(req *getter.Request) (bool, error) {
 }
 
 func (g *S3Getter) Get(ctx context.Context, req *getter.Request) error {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("get")
+	// Log
+	g.log.Debug("get repository",
+		"src", req.Src,
+	)
 
 	// Get
 	err := g.Getter.Get(ctx, req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to get")
+		// Log
+		g.log.Debug("unable to get repository",
+			"error", err,
+		)
 
 		g.result.AddGetError(err, g.protocol)
 

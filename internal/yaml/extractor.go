@@ -1,32 +1,32 @@
 package yaml
 
 import (
-	"fmt"
-	yamlAst "github.com/goccy/go-yaml/ast"
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	"manala/internal/errors/serrors"
 )
 
-func NewExtractor(node *yamlAst.Node) *Extractor {
+func NewExtractor(node *goYamlAst.Node) *Extractor {
 	return &Extractor{
 		node: node,
 	}
 }
 
 type Extractor struct {
-	node *yamlAst.Node
+	node *goYamlAst.Node
 }
 
-func (extractor *Extractor) ExtractRootMap(key string) (yamlAst.Node, error) {
-	var subject yamlAst.Node
+func (extractor *Extractor) ExtractRootMap(key string) (goYamlAst.Node, error) {
+	var subject goYamlAst.Node
 
 	switch node := (*extractor.node).(type) {
-	case *yamlAst.MappingValueNode:
+	case *goYamlAst.MappingValueNode:
 		if node.Key.GetToken().Value == key {
 			subject = node.Value
-			*extractor.node = &yamlAst.MappingNode{
-				BaseNode: &yamlAst.BaseNode{},
+			*extractor.node = &goYamlAst.MappingNode{
+				BaseNode: &goYamlAst.BaseNode{},
 			}
 		}
-	case *yamlAst.MappingNode:
+	case *goYamlAst.MappingNode:
 		for i, n := range node.Values {
 			if n.Key.GetToken().Value == key {
 				subject = n.Value
@@ -42,14 +42,13 @@ func (extractor *Extractor) ExtractRootMap(key string) (yamlAst.Node, error) {
 	}
 
 	if subject == nil {
-		return nil, fmt.Errorf("unable to find \"%s\" map", key)
+		return nil, serrors.New("unable to find map").
+			WithArguments("key", key)
 	}
 
-	if _, ok := subject.(yamlAst.MapNode); !ok {
-		return nil, NewNodeError(
-			fmt.Sprintf("\"%s\" is not a map", key),
-			subject,
-		)
+	if _, ok := subject.(goYamlAst.MapNode); !ok {
+		return nil, NewNodeError("key is not a map", subject).
+			WithArguments("key", key)
 	}
 
 	return subject, nil

@@ -1,101 +1,118 @@
 package yaml
 
 import (
-	"github.com/goccy/go-yaml"
-	yamlAst "github.com/goccy/go-yaml/ast"
-	"github.com/muesli/termenv"
-	internalReport "manala/internal/report"
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlPrinter "github.com/goccy/go-yaml/printer"
+	"manala/internal/errors/serrors"
 	"regexp"
 	"strconv"
+	"strings"
 )
-
-func NewError(err error) *Error {
-	newError := &Error{
-		error: err,
-	}
-
-	color := !(termenv.EnvColorProfile() == termenv.Ascii)
-
-	message := yaml.FormatError(err, color, true)
-	if matches := errorRegex.FindStringSubmatch(message); matches != nil {
-		// Message
-		newError.message = matches[5]
-		// Line
-		if line, _err := strconv.Atoi(matches[3]); _err == nil {
-			newError.line = line
-		}
-		// Column
-		if column, _err := strconv.Atoi(matches[4]); _err == nil {
-			newError.column = column
-		}
-		// Trace
-		if matches[8] != "" {
-			newError.trace = matches[8]
-		}
-	}
-
-	return newError
-}
-
-type Error struct {
-	error
-	message string
-	line    int
-	column  int
-	trace   string
-}
-
-func (err *Error) Unwrap() error {
-	return err.error
-}
-
-func (err *Error) Error() string {
-	if err.message != "" {
-		return err.message
-	}
-
-	return err.error.Error()
-}
-
-func (err *Error) Report(report *internalReport.Report) {
-	// Line
-	if err.line != 0 {
-		report.Compose(
-			internalReport.WithField("line", err.line),
-		)
-	}
-	// Column
-	if err.column != 0 {
-		report.Compose(
-			internalReport.WithField("column", err.column),
-		)
-	}
-	// Trace
-	if err.trace != "" {
-		report.Compose(
-			internalReport.WithTrace(err.trace),
-		)
-	}
-}
 
 // 3: line (mutually optional with column)
 // 4: column (mutually optional with line)
 // 5: message
-// 8: trace (optional)
+// 8: details (optional)
 var errorRegex = regexp.MustCompile(`(?s)^(\x1b\[91m)?(\[(\d+):(\d+)] )?([^\n]*)(\x1b\[0m)?(\n(.*))?$`)
 
-func NewNodeError(message string, node yamlAst.Node) *NodeError {
-	return &NodeError{
-		message:  message,
-		Reporter: NewReporter(node),
+func NewError(err error) *Error {
+	_err := &Error{
+		message:   err.Error(),
+		err:       err,
+		Arguments: serrors.NewArguments(),
 	}
+
+	str := goYaml.FormatError(err, false, false)
+	if matches := errorRegex.FindStringSubmatch(str); matches != nil {
+		// Message
+		_err.message = matches[5]
+		// Line
+		if line, __err := strconv.Atoi(matches[3]); __err == nil {
+			_err.AppendArguments("line", line)
+		}
+		// Column
+		if column, __err := strconv.Atoi(matches[4]); __err == nil {
+			_err.AppendArguments("column", column)
+		}
+	}
+
+	return _err
+}
+
+type Error struct {
+	message string
+	err     error
+	*serrors.Arguments
+}
+
+func (err *Error) Error() string {
+	return err.message
+}
+
+func (err *Error) ErrorDetails(ansi bool) string {
+	str := goYaml.FormatError(err.err, ansi, true)
+	if matches := errorRegex.FindStringSubmatch(str); matches != nil {
+		if matches[8] != "" {
+			return matches[8]
+		}
+	}
+
+	return ""
+}
+
+func NewNodeError(message string, node goYamlAst.Node) *NodeError {
+	_err := &NodeError{
+		message:   message,
+		node:      node,
+		Arguments: serrors.NewArguments(),
+	}
+
+	if node != nil {
+		token := node.GetToken()
+		_err.AppendArguments(
+			"line", token.Position.Line,
+			"column", token.Position.Column,
+		)
+	}
+
+	return _err
 }
 
 type NodeError struct {
 	message string
-	*Reporter
+	node    goYamlAst.Node
+	*serrors.Arguments
 }
 
 func (err *NodeError) Error() string {
 	return err.message
+}
+
+func (err *NodeError) ErrorDetails(ansi bool) string {
+	if err.node == nil {
+		return ""
+	}
+
+	var pp goYamlPrinter.Printer
+
+	lines := strings.Split(
+		strings.TrimRight(
+			pp.PrintErrorToken(err.node.GetToken(), ansi),
+			"\n",
+		),
+		"\n",
+	)
+
+	// Remove trailing spaces
+	for i, line := range lines {
+		lines[i] = strings.TrimRight(line, " ")
+	}
+
+	return strings.Join(lines, "\n") + "\n"
+}
+
+func (err *NodeError) WithArguments(arguments ...any) *NodeError {
+	err.AppendArguments(arguments...)
+	return err
 }

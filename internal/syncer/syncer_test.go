@@ -1,11 +1,11 @@
 package syncer
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
-	internalLog "manala/internal/log"
-	internalTemplate "manala/internal/template"
-	internalTesting "manala/internal/testing"
+	"io"
+	"log/slog"
+	"manala/internal/errors/serrors"
+	"manala/internal/template"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,9 +14,8 @@ import (
 
 type SyncerSuite struct {
 	suite.Suite
-	stderr           *bytes.Buffer
 	syncer           *Syncer
-	templateProvider internalTemplate.ProviderInterface
+	templateProvider template.ProviderInterface
 }
 
 func TestSyncerSuite(t *testing.T) {
@@ -24,16 +23,15 @@ func TestSyncerSuite(t *testing.T) {
 }
 
 func (s *SyncerSuite) SetupTest() {
-	s.stderr = &bytes.Buffer{}
 	s.syncer = New(
-		internalLog.New(s.stderr),
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
 	)
-	s.templateProvider = &internalTemplate.Provider{}
+	s.templateProvider = &template.Provider{}
 }
 
 func (s *SyncerSuite) TestSync() {
-	sourcePath := internalTesting.DataPath(s, "source")
-	destinationPath := internalTesting.DataPath(s, "destination")
+	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSync/source")
+	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSync/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
@@ -48,12 +46,19 @@ func (s *SyncerSuite) TestSync() {
 	f, _ = os.Create(filepath.Join(destinationPath+"dir", "bar", "foo"))
 	_ = f.Close()
 
-	s.Run("Source Not Exists", func() {
+	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
-		s.Error(err, "no source file or directory")
+
+		serrors.Equal(s.Assert(), &serrors.Assert{
+			Type:    &serrors.Error{},
+			Message: "no source file or directory",
+			Arguments: []any{
+				"path", filepath.Join(sourcePath, "baz"),
+			},
+		}, err)
 	})
 
-	s.Run("Destination File Not Exists", func() {
+	s.Run("DestinationFileNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, "foo", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "foo"))
@@ -61,7 +66,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Destination File Exists And Same", func() {
+	s.Run("DestinationFileExistsAndSame", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, "file_bar", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_bar"))
@@ -69,7 +74,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Destination File Exists And Different", func() {
+	s.Run("DestinationFileExistsAndDifferent", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, "file_foo", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_foo"))
@@ -77,7 +82,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Source File Over Destination Directory Empty", func() {
+	s.Run("SourceFileOverDestinationDirectoryEmpty", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, "dir_empty", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "dir_empty"))
@@ -85,7 +90,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Source File Over Destination Directory", func() {
+	s.Run("SourceFileOverDestinationDirectory", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, "dir", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "dir"))
@@ -93,7 +98,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Destination Directory Not Exists", func() {
+	s.Run("DestinationDirectoryNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "bar", destinationPath, "bar", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "bar", "foo"))
@@ -101,7 +106,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("baz", string(content))
 	})
 
-	s.Run("Destination Directory Exists", func() {
+	s.Run("DestinationDirectoryExists", func() {
 		err := s.syncer.Sync(sourcePath, "bar", destinationPath, "dir", nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "dir", "foo"))
@@ -109,7 +114,7 @@ func (s *SyncerSuite) TestSync() {
 		s.Equal("baz", string(content))
 	})
 
-	s.Run("Destination File Directory Not exists", func() {
+	s.Run("DestinationFileDirectoryNotexists", func() {
 		err := s.syncer.Sync(sourcePath, "foo", destinationPath, filepath.Join("baz", "foo"), nil)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "baz", "foo"))
@@ -125,50 +130,50 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.T().Skip()
 	}
 
-	sourcePath := internalTesting.DataPath(s, "source")
-	destinationPath := internalTesting.DataPath(s, "destination")
+	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSyncExecutable/source")
+	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncExecutable/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
 	_ = os.WriteFile(filepath.Join(destinationPath, "executable_true"), []byte(""), 0777)
 	_ = os.WriteFile(filepath.Join(destinationPath, "executable_false"), []byte(""), 0666)
 
-	s.Run("Source True", func() {
+	s.Run("SourceTrue", func() {
 		err := s.syncer.Sync(sourcePath, "executable_true", destinationPath, "executable", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable"))
 		s.Equal(true, (stat.Mode()&0100) != 0)
 	})
 
-	s.Run("Source False", func() {
+	s.Run("SourceFalse", func() {
 		err := s.syncer.Sync(sourcePath, "executable_false", destinationPath, "executable", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable"))
 		s.Equal(false, (stat.Mode()&0100) != 0)
 	})
 
-	s.Run("Source False Destination False", func() {
+	s.Run("SourceFalseDestinationFalse", func() {
 		err := s.syncer.Sync(sourcePath, "executable_false", destinationPath, "executable_false", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_false"))
 		s.Equal(false, (stat.Mode()&0100) != 0)
 	})
 
-	s.Run("Source True Destination False", func() {
+	s.Run("SourceTrueDestinationFalse", func() {
 		err := s.syncer.Sync(sourcePath, "executable_true", destinationPath, "executable_false", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_false"))
 		s.Equal(true, (stat.Mode()&0100) != 0)
 	})
 
-	s.Run("Source False Destination True", func() {
+	s.Run("SourceFalseDestinationTrue", func() {
 		err := s.syncer.Sync(sourcePath, "executable_false", destinationPath, "executable_true", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_true"))
 		s.Equal(false, (stat.Mode()&0100) != 0)
 	})
 
-	s.Run("Source True Destination True", func() {
+	s.Run("SourceTrueDestinationTrue", func() {
 		err := s.syncer.Sync(sourcePath, "executable_true", destinationPath, "executable_true", nil)
 		s.NoError(err)
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_true"))
@@ -177,20 +182,27 @@ func (s *SyncerSuite) TestSyncExecutable() {
 }
 
 func (s *SyncerSuite) TestSyncTemplate() {
-	sourcePath := internalTesting.DataPath(s, "source")
-	destinationPath := internalTesting.DataPath(s, "destination")
+	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSyncTemplate/source")
+	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncTemplate/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
 	_ = os.WriteFile(filepath.Join(destinationPath, "file_foo"), []byte("foo"), 0666)
 	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0666)
 
-	s.Run("Source Not Exists", func() {
+	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)
-		s.Error(err, "no source file or directory")
+
+		serrors.Equal(s.Assert(), &serrors.Assert{
+			Type:    &serrors.Error{},
+			Message: "no source file or directory",
+			Arguments: []any{
+				"path", filepath.Join(sourcePath, "baz.tmpl"),
+			},
+		}, err)
 	})
 
-	s.Run("Destination File Not Exists", func() {
+	s.Run("DestinationFileNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "foo", s.templateProvider)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "foo"))
@@ -198,7 +210,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Destination File Exists And Same", func() {
+	s.Run("DestinationFileExistsAndSame", func() {
 		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_bar", s.templateProvider)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_bar"))
@@ -206,7 +218,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 		s.Equal("bar", string(content))
 	})
 
-	s.Run("Destination File Exists And Different", func() {
+	s.Run("DestinationFileExistsAndDifferent", func() {
 		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_foo", s.templateProvider)
 		s.NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_foo"))
@@ -216,6 +228,20 @@ func (s *SyncerSuite) TestSyncTemplate() {
 
 	s.Run("Invalid", func() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateProvider)
-		s.Error(err, "template execution error")
+
+		serrors.Equal(s.Assert(), &serrors.Assert{
+			Type:    &serrors.WrapError{},
+			Message: "template error",
+			Error: &serrors.Assert{
+				Type:    &template.Error{},
+				Message: "nil data; no entry for key \"foo\"",
+				Arguments: []any{
+					"file", filepath.Join(sourcePath, "invalid.tmpl"),
+					"context", ".foo",
+					"line", 1,
+					"column", 3,
+				},
+			},
+		}, err)
 	})
 }

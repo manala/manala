@@ -2,18 +2,13 @@ package mocks
 
 import (
 	"github.com/stretchr/testify/mock"
-	"github.com/xeipuuv/gojsonschema"
 	"io"
 	"manala/app/interfaces"
-	internalReport "manala/internal/report"
-	internalSyncer "manala/internal/syncer"
-	internalTemplate "manala/internal/template"
-	internalWatcher "manala/internal/watcher"
+	"manala/internal/syncer"
+	"manala/internal/template"
+	"manala/internal/validation"
+	"manala/internal/watcher"
 )
-
-func MockRecipe() *RecipeMock {
-	return &RecipeMock{}
-}
 
 type RecipeMock struct {
 	mock.Mock
@@ -39,9 +34,9 @@ func (rec *RecipeMock) Vars() map[string]interface{} {
 	return args.Get(0).(map[string]interface{})
 }
 
-func (rec *RecipeMock) Sync() []internalSyncer.UnitInterface {
+func (rec *RecipeMock) Sync() []syncer.UnitInterface {
 	args := rec.Called()
-	return args.Get(0).([]internalSyncer.UnitInterface)
+	return args.Get(0).([]syncer.UnitInterface)
 }
 
 func (rec *RecipeMock) Schema() map[string]interface{} {
@@ -59,23 +54,19 @@ func (rec *RecipeMock) Repository() interfaces.Repository {
 	return args.Get(0).(interfaces.Repository)
 }
 
-func (rec *RecipeMock) Template() *internalTemplate.Template {
+func (rec *RecipeMock) Template() *template.Template {
 	args := rec.Called()
-	return args.Get(0).(*internalTemplate.Template)
+	return args.Get(0).(*template.Template)
 }
 
-func (rec *RecipeMock) ProjectManifestTemplate() *internalTemplate.Template {
+func (rec *RecipeMock) ProjectManifestTemplate() *template.Template {
 	args := rec.Called()
-	return args.Get(0).(*internalTemplate.Template)
+	return args.Get(0).(*template.Template)
 }
 
 /************/
 /* Manifest */
 /************/
-
-func MockRecipeManifest() *RecipeManifestMock {
-	return &RecipeManifestMock{}
-}
 
 type RecipeManifestMock struct {
 	mock.Mock
@@ -96,9 +87,9 @@ func (man *RecipeManifestMock) Vars() map[string]interface{} {
 	return args.Get(0).(map[string]interface{})
 }
 
-func (man *RecipeManifestMock) Sync() []internalSyncer.UnitInterface {
+func (man *RecipeManifestMock) Sync() []syncer.UnitInterface {
 	args := man.Called()
-	return args.Get(0).([]internalSyncer.UnitInterface)
+	return args.Get(0).([]syncer.UnitInterface)
 }
 
 func (man *RecipeManifestMock) Schema() map[string]interface{} {
@@ -111,22 +102,19 @@ func (man *RecipeManifestMock) ReadFrom(reader io.Reader) error {
 	return args.Error(0)
 }
 
-func (man *RecipeManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	man.Called(result, report)
-}
-
 func (man *RecipeManifestMock) InitVars(callback func(options []interfaces.RecipeOption) error) (map[string]interface{}, error) {
 	args := man.Called(callback)
 	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
+func (man *RecipeManifestMock) ValidationResultErrorDecorator() validation.ResultErrorDecorator {
+	args := man.Called()
+	return args.Get(0).(validation.ResultErrorDecorator)
+}
+
 /**********/
 /* Option */
 /**********/
-
-func MockRecipeOption() *RecipeOptionMock {
-	return &RecipeOptionMock{}
-}
 
 type RecipeOptionMock struct {
 	mock.Mock
@@ -151,10 +139,6 @@ func (option *RecipeOptionMock) Set(value interface{}) error {
 /* Manager */
 /***********/
 
-func MockRecipeManager() *RecipeManagerMock {
-	return &RecipeManagerMock{}
-}
-
 type RecipeManagerMock struct {
 	mock.Mock
 }
@@ -169,7 +153,7 @@ func (manager *RecipeManagerMock) WalkRecipes(repo interfaces.Repository, walker
 	return args.Error(0)
 }
 
-func (manager *RecipeManagerMock) WatchRecipe(rec interfaces.Recipe, watcher *internalWatcher.Watcher) error {
+func (manager *RecipeManagerMock) WatchRecipe(rec interfaces.Recipe, watcher *watcher.Watcher) error {
 	args := manager.Called(rec, watcher)
 	return args.Error(0)
 }

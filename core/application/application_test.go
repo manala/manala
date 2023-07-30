@@ -2,13 +2,14 @@ package application
 
 import (
 	"bytes"
-	"github.com/caarlos0/log"
-	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/app/mocks"
-	internalLog "manala/internal/log"
-	internalTesting "manala/internal/testing"
+	"manala/internal/testing/file"
+	"manala/internal/testing/heredoc"
+	"manala/internal/ui/log"
+	"manala/internal/ui/output/lipgloss"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,35 +17,32 @@ import (
 
 type ApplicationSuite struct {
 	suite.Suite
-	goldie *goldie.Goldie
 }
 
 func TestApplicationSuite(t *testing.T) {
 	suite.Run(t, new(ApplicationSuite))
 }
 
-func (s *ApplicationSuite) SetupTest() {
-	s.goldie = goldie.New(s.T())
-}
-
 func (s *ApplicationSuite) TestCreateProject() {
-	path := internalTesting.DataPath(s)
-	projDir := filepath.Join(path, "project")
-	repoUrl := filepath.Join(path, "repository")
+	projDir := filepath.FromSlash("testdata/ApplicationSuite/TestCreateProject/project")
+	repoUrl := filepath.FromSlash("testdata/ApplicationSuite/TestCreateProject/repository")
 
 	_ = os.RemoveAll(projDir)
 
+	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
-	confMock := mocks.MockConfig()
+	confMock := &mocks.ConfigMock{}
 	confMock.
-		On("Fields").Return(log.Fields{}).
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
+	out := lipgloss.New(stdout, stderr)
+
 	app := NewApplication(
 		confMock,
-		internalLog.New(stderr),
+		slog.New(log.NewSlogHandler(out)),
+		out,
 		WithRepositoryUrl(repoUrl),
 	)
 
@@ -70,9 +68,22 @@ func (s *ApplicationSuite) TestCreateProject() {
 	)
 
 	s.NotNil(proj)
+
 	s.NoError(err)
 
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "stderr"), stderr.Bytes())
-	manContent, _ := os.ReadFile(filepath.Join(projDir, ".manala.yaml"))
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "manifest"), manContent)
+	s.Empty(stdout)
+	s.Empty(stderr)
+
+	file.EqualContent(s.Assert(), heredoc.Docf(`
+		manala:
+		    recipe: recipe
+
+		string_float_int: '3.0'
+		string_float_int_value: '3.0'
+
+		string_asterisk: '*'
+		string_asterisk_value: '*'
+		`),
+		filepath.Join(projDir, ".manala.yaml"),
+	)
 }

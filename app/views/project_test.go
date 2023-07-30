@@ -15,13 +15,13 @@ func TestProjectSuite(t *testing.T) {
 func (s *ProjectSuite) TestNormalize() {
 	repoUrl := "url"
 
-	repoMock := mocks.MockRepository()
+	repoMock := &mocks.RepositoryMock{}
 	repoMock.
 		On("Url").Return(repoUrl)
 
 	recName := "name"
 
-	recMock := mocks.MockRecipe()
+	recMock := &mocks.RecipeMock{}
 	recMock.
 		On("Name").Return(recName).
 		On("Repository").Return(repoMock)
@@ -30,7 +30,7 @@ func (s *ProjectSuite) TestNormalize() {
 		"foo": "bar",
 	}
 
-	projMock := mocks.MockProject()
+	projMock := &mocks.ProjectMock{}
 	projMock.
 		On("Vars").Return(projVars).
 		On("Recipe").Return(recMock)

@@ -2,81 +2,131 @@ package validation
 
 import (
 	"github.com/xeipuuv/gojsonschema"
-	internalReport "manala/internal/report"
+	"manala/internal/errors/serrors"
 	"regexp"
 )
 
-func NewError(message string, result *gojsonschema.Result) *Error {
+func NewError(msg string, result *gojsonschema.Result) *Error {
 	return &Error{
-		message: message,
-		result:  result,
+		message:   msg,
+		result:    result,
+		Arguments: serrors.NewArguments(),
 	}
 }
 
 type Error struct {
-	message   string
-	result    *gojsonschema.Result
-	reporters []Reporter
-	messages  []ErrorMessage
+	message string
+	result  *gojsonschema.Result
+	*serrors.Arguments
+	messages              []ErrorMessage
+	resultErrorDecorators []ResultErrorDecorator
 }
 
 func (err *Error) Error() string {
 	return err.message
 }
 
-func (err *Error) Report(report *internalReport.Report) {
-	// Range over result errors
-	for _, result := range err.result.Errors() {
-		rep := internalReport.NewReport(result.Description())
+func (err *Error) Unwrap() []error {
+	var errs []error
 
-		// Special error type treatments
-		switch result.(type) {
-		case *gojsonschema.InvalidTypeError:
-			rep.Compose(
-				internalReport.WithMessage("invalid type"),
-				internalReport.WithField("expected", result.Details()["expected"]),
-				internalReport.WithField("given", result.Details()["given"]),
-			)
-		case *gojsonschema.RequiredError:
-			rep.Compose(
-				internalReport.WithMessage("missing property"),
-				internalReport.WithField("property", result.Details()["property"]),
-			)
-		case *gojsonschema.AdditionalPropertyNotAllowedError:
-			rep.Compose(
-				internalReport.WithMessage("additional property is not allowed"),
-				internalReport.WithField("property", result.Details()[gojsonschema.STRING_PROPERTY]),
-			)
+	for _, _err := range err.result.Errors() {
+		__err := NewResultError(_err, err.messages)
+		for _, decorator := range err.resultErrorDecorators {
+			__err = decorator.Decorate(__err)
+
 		}
-
-		// Custom messages
-		for _, customMessage := range err.messages {
-			if ok, message := customMessage.Match(result); ok {
-				rep.Compose(
-					internalReport.WithMessage(message),
-				)
-			}
-		}
-
-		for _, reporter := range err.reporters {
-			reporter.Report(result, rep)
-		}
-
-		report.Add(rep)
+		errs = append(errs, __err)
 	}
+
+	return errs
 }
 
 func (err *Error) WithMessages(messages []ErrorMessage) *Error {
 	err.messages = append(err.messages, messages...)
-
 	return err
 }
 
-func (err *Error) WithReporter(reporter Reporter) *Error {
-	err.reporters = append(err.reporters, reporter)
-
+func (err *Error) WithArguments(arguments ...any) *Error {
+	err.AppendArguments(arguments...)
 	return err
 }
+
+func (err *Error) WithResultErrorDecorator(decorator ResultErrorDecorator) *Error {
+	err.resultErrorDecorators = append(err.resultErrorDecorators, decorator)
+	return err
+}
+
+/**********/
+/* Result */
+/**********/
+
+type ResultErrorDecorator interface {
+	Decorate(err ResultErrorInterface) ResultErrorInterface
+}
+
+type ResultErrorInterface interface {
+	Path() string
+	error
+	serrors.ErrorArguments
+	serrors.ErrorDetails
+}
+
+func NewResultError(err gojsonschema.ResultError, messages []ErrorMessage) ResultErrorInterface {
+	_err := &ResultError{
+		message:   err.String(),
+		err:       err,
+		Arguments: serrors.NewArguments(),
+		Details:   serrors.NewDetails(),
+	}
+
+	// Special types
+	switch err.(type) {
+	case *gojsonschema.InvalidTypeError:
+		_err.message = "invalid type"
+		_err.AppendArguments(
+			"expected", err.Details()["expected"],
+			"given", err.Details()["given"],
+		)
+	case *gojsonschema.RequiredError:
+		_err.message = "missing property"
+		_err.AppendArguments(
+			"property", err.Details()["property"],
+		)
+	case *gojsonschema.AdditionalPropertyNotAllowedError:
+		_err.message = "additional property is not allowed"
+		_err.AppendArguments(
+			"property", err.Details()["property"],
+		)
+	}
+
+	// Custom messages
+	for _, message := range messages {
+		if _message, ok := message.Match(err); ok {
+			_err.message = _message
+		}
+	}
+
+	return _err
+}
+
+type ResultError struct {
+	message string
+	err     gojsonschema.ResultError
+	*serrors.Arguments
+	*serrors.Details
+}
+
+func (err *ResultError) Path() string {
+	return err.err.Field()
+}
+
+func (err *ResultError) Error() string {
+	return err.message
+}
+
+/***********/
+/* Message */
+/***********/
 
 type ErrorMessage struct {
 	Field      string
@@ -86,25 +136,25 @@ type ErrorMessage struct {
 	Message    string
 }
 
-func (message *ErrorMessage) Match(result gojsonschema.ResultError) (bool, string) {
+func (message *ErrorMessage) Match(result gojsonschema.ResultError) (string, bool) {
 	field := result.Field()
 
 	// Try to match on field
 	if message.Field != "" && message.Field != field {
-		return false, ""
+		return "", false
 	}
 	// Try to match on path regex
 	if message.FieldRegex != nil && !message.FieldRegex.MatchString(field) {
-		return false, ""
+		return "", false
 	}
 	// Try to match on type
 	if message.Type != "" && message.Type != result.Type() {
-		return false, ""
+		return "", false
 	}
 	// Try to match on property
 	if message.Property != "" && message.Property != result.Details()["property"] {
-		return false, ""
+		return "", false
 	}
 
-	return true, message.Message
+	return message.Message, true
 }

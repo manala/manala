@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	yamlAst "github.com/goccy/go-yaml/ast"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
-	internalTesting "manala/internal/testing"
+	"manala/internal/errors/serrors"
+	"manala/internal/testing/heredoc"
+	"path/filepath"
 	"testing"
 )
 
@@ -16,150 +17,170 @@ func TestExtractorSuite(t *testing.T) {
 
 func (s *ExtractorSuite) TestExtractRootMapErrors() {
 	tests := []struct {
-		name   string
-		err    string
-		report *internalReport.Assert
+		test     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Empty",
-			err:  "root must be a map",
-			report: &internalReport.Assert{
-				Err: "root must be a map",
+			test: "Empty",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "root must be a map",
 			},
 		},
 		{
-			name: "Non Map",
-			err:  "root must be a map",
-			report: &internalReport.Assert{
-				Err: "root must be a map",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 1,
+			test: "NonMap",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "root must be a map",
+				Arguments: []any{
+					"line", 1,
+					"column", 1,
+				},
+				Details: heredoc.Doc(`
+					>  1 | foo
+					       ^
+				`),
+			},
+		},
+		{
+			test: "SubjectNotFoundSingle",
+			expected: &serrors.Assert{
+				Type:    &serrors.Error{},
+				Message: "unable to find map",
+				Arguments: []any{
+					"key", "subject",
 				},
 			},
 		},
 		{
-			name: "Subject Not Found Single",
-			err:  "unable to find \"subject\" map",
-			report: &internalReport.Assert{
-				Err: "unable to find \"subject\" map",
-			},
-		},
-		{
-			name: "Subject Not Found Multiple",
-			err:  "unable to find \"subject\" map",
-			report: &internalReport.Assert{
-				Err: "unable to find \"subject\" map",
-			},
-		},
-		{
-			name: "Subject Non Map Single",
-			err:  "\"subject\" is not a map",
-			report: &internalReport.Assert{
-				Err: "\"subject\" is not a map",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 10,
+			test: "SubjectNotFoundMultiple",
+			expected: &serrors.Assert{
+				Type:    &serrors.Error{},
+				Message: "unable to find map",
+				Arguments: []any{
+					"key", "subject",
 				},
 			},
 		},
 		{
-			name: "Subject Non Map Multiple",
-			err:  "\"subject\" is not a map",
-			report: &internalReport.Assert{
-				Err: "\"subject\" is not a map",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 10,
+			test: "SubjectNonMapSingle",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "key is not a map",
+				Arguments: []any{
+					"line", 1,
+					"column", 10,
+					"key", "subject",
 				},
+				Details: heredoc.Doc(`
+					>  1 | subject: 123
+					                ^
+				`),
+			},
+		},
+		{
+			test: "SubjectNonMapMultiple",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "key is not a map",
+				Arguments: []any{
+					"line", 1,
+					"column", 10,
+					"key", "subject",
+				},
+				Details: heredoc.Doc(`
+					>  1 | subject: 123
+					                ^
+					   2 | foo: foo
+				`),
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			parser := NewParser()
+		s.Run(test.test, func() {
+			dir := filepath.FromSlash("testdata/ExtractorSuite/TestExtractRootMapErrors/" + test.test)
 
-			node, _ := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+			parser := NewParser()
+			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 			extractor := NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
 			s.Nil(subjectNode)
-			s.EqualError(err, test.err)
 
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *ExtractorSuite) TestExtractRootMap() {
 	tests := []struct {
-		name    string
-		subject interface{}
-		node    interface{}
+		test            string
+		expectedSubject interface{}
+		expectedNode    interface{}
 	}{
 		{
-			name:    "Single Empty",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "SingleEmpty",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
-			name:    "Single Single",
-			subject: (*yamlAst.MappingValueNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "SingleSingle",
+			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
-			name:    "Single Multiple",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "SingleMultiple",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
-			name:    "Couple Empty",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingValueNode)(nil),
+			test:            "CoupleEmpty",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
 		},
 		{
-			name:    "Couple Single",
-			subject: (*yamlAst.MappingValueNode)(nil),
-			node:    (*yamlAst.MappingValueNode)(nil),
+			test:            "CoupleSingle",
+			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
+			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
 		},
 		{
-			name:    "Couple Multiple",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingValueNode)(nil),
+			test:            "CoupleMultiple",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
 		},
 		{
-			name:    "Multiple Empty",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "MultipleEmpty",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
-			name:    "Multiple Single",
-			subject: (*yamlAst.MappingValueNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "MultipleSingle",
+			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
-			name:    "Multiple Multiple",
-			subject: (*yamlAst.MappingNode)(nil),
-			node:    (*yamlAst.MappingNode)(nil),
+			test:            "MultipleMultiple",
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			parser := NewParser()
+		s.Run(test.test, func() {
+			dir := filepath.FromSlash("testdata/ExtractorSuite/TestExtractRootMap/" + test.test)
 
-			node, _ := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+			parser := NewParser()
+			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 			extractor := NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
 			s.NoError(err)
-			s.IsType(test.subject, subjectNode)
-			s.IsType(test.node, node)
+
+			s.IsType(test.expectedSubject, subjectNode)
+			s.IsType(test.expectedNode, node)
 		})
 	}
 }

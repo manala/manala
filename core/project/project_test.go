@@ -3,34 +3,28 @@ package project
 import (
 	"bytes"
 	_ "embed"
-	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
 	"manala/app/mocks"
-	internalTemplate "manala/internal/template"
-	internalTesting "manala/internal/testing"
+	"manala/internal/template"
+	"manala/internal/testing/heredoc"
 	"path/filepath"
 	"testing"
 )
 
 type ProjectSuite struct {
 	suite.Suite
-	goldie *goldie.Goldie
 }
 
 func TestProjectSuite(t *testing.T) {
 	suite.Run(t, new(ProjectSuite))
 }
 
-func (s *ProjectSuite) SetupTest() {
-	s.goldie = goldie.New(s.T())
-}
-
 func (s *ProjectSuite) Test() {
-	repoMock := mocks.MockRepository()
+	repoMock := &mocks.RepositoryMock{}
 	repoMock.
 		On("Url").Return("repository")
 
-	recMock := mocks.MockRecipe()
+	recMock := &mocks.RecipeMock{}
 	recMock.
 		On("Name").Return("recipe").
 		On("Vars").Return(map[string]interface{}{
@@ -38,11 +32,11 @@ func (s *ProjectSuite) Test() {
 		"bar": "recipe",
 	}).
 		On("Repository").Return(repoMock).
-		On("Template").Return(internalTemplate.NewTemplate())
+		On("Template").Return(template.NewTemplate())
 
 	projDir := filepath.Join("dir")
 
-	projManifestMock := mocks.MockProjectManifest()
+	projManifestMock := &mocks.ProjectManifestMock{}
 	projManifestMock.
 		On("Vars").Return(map[string]interface{}{
 		"bar": "project",
@@ -75,6 +69,11 @@ func (s *ProjectSuite) Test() {
 			WriteTo(out)
 
 		s.NoError(err)
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "template"), out.Bytes())
+
+		s.Equal(heredoc.Doc(`
+			bar: project
+			baz: project
+			foo: recipe`,
+		), out.String())
 	})
 }

@@ -3,9 +3,8 @@ package repository
 import (
 	"github.com/stretchr/testify/suite"
 	"io"
-	internalCache "manala/internal/cache"
-	internalLog "manala/internal/log"
-	internalTesting "manala/internal/testing"
+	"log/slog"
+	"manala/internal/cache"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,14 +17,14 @@ func TestGetterManagerSuite(t *testing.T) {
 }
 
 func (s *GetterManagerSuite) TestLoadRepository() {
-	cacheDir := internalTesting.DataPath(s, "cache")
+	cacheDir := filepath.FromSlash("testdata/GetterManagerSuite/TestLoadRepository/cache")
 
 	manager := NewGetterManager(
-		internalLog.New(io.Discard),
-		internalCache.New(cacheDir),
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
+		cache.New(cacheDir),
 	)
 
-	s.Run("Git Http", func() {
+	s.Run("GitHttp", func() {
 		_ = os.RemoveAll(cacheDir)
 
 		repoUrl := "https://github.com/octocat/Hello-World.git"
@@ -33,11 +32,12 @@ func (s *GetterManagerSuite) TestLoadRepository() {
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 		s.DirExists(filepath.Join(cacheDir, "repositories", "0abe222eb5c9f101220b454d055bd5cbbb419722eddec6ad296f343f"))
 	})
 
-	s.Run("Git Http Forced", func() {
+	s.Run("GitHttpForced", func() {
 		_ = os.RemoveAll(cacheDir)
 
 		repoUrl := "git::https://github.com/octocat/Hello-World.git"
@@ -45,11 +45,12 @@ func (s *GetterManagerSuite) TestLoadRepository() {
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 		s.DirExists(filepath.Join(cacheDir, "repositories", "fb19e43b4b91cd3024866d556a7d04f40cc66e18c5f7098b9a4af8d0"))
 	})
 
-	s.Run("Http Zip", func() {
+	s.Run("HttpZip", func() {
 		_ = os.RemoveAll(cacheDir)
 
 		repoUrl := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip"
@@ -57,11 +58,12 @@ func (s *GetterManagerSuite) TestLoadRepository() {
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 		s.DirExists(filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97"))
 	})
 
-	s.Run("Http Zip Subdirectory", func() {
+	s.Run("HttpZipSubdirectory", func() {
 		_ = os.RemoveAll(cacheDir)
 
 		repoUrl := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip//Hello-World-master"
@@ -69,11 +71,12 @@ func (s *GetterManagerSuite) TestLoadRepository() {
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 		s.DirExists(filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8"))
 	})
 
-	s.Run("Http Zip Subdirectory Glob", func() {
+	s.Run("HttpZipSubdirectoryGlob", func() {
 		_ = os.RemoveAll(cacheDir)
 
 		repoUrl := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip//Hello-World-*"
@@ -81,29 +84,33 @@ func (s *GetterManagerSuite) TestLoadRepository() {
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 		s.DirExists(filepath.Join(cacheDir, "repositories", "5a7b4af36fbdca7290e1a95ffbb524e645707cf6695fa38c135771cf"))
 	})
 
-	s.Run("File Relative", func() {
+	s.Run("FileRelative", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		repoUrl := internalTesting.DataPath(s, "repository")
+		repoUrl := filepath.FromSlash("testdata/GetterManagerSuite/TestLoadRepository/FileRelative/repository")
 
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 	})
 
-	s.Run("File Absolute", func() {
+	s.Run("FileAbsolute", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		repoUrl, _ := filepath.Abs(internalTesting.DataPath(s, "repository"))
+		repoUrl := filepath.FromSlash("testdata/GetterManagerSuite/TestLoadRepository/FileAbsolute/repository")
+		repoUrl, _ = filepath.Abs(repoUrl)
 
 		repo, err := manager.LoadRepository(repoUrl)
 
 		s.NoError(err)
+
 		s.Equal(repoUrl, repo.Url())
 	})
 }

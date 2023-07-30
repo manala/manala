@@ -5,38 +5,39 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"github.com/hashicorp/go-getter/v2"
+	"log/slog"
 	"manala/app/interfaces"
-	internalCache "manala/internal/cache"
-	internalLog "manala/internal/log"
+	"manala/internal/cache"
+	"manala/internal/errors/serrors"
 )
 
-func NewGetterManager(log *internalLog.Logger, cache *internalCache.Cache) *GetterManager {
+func NewGetterManager(log *slog.Logger, cache *cache.Cache) *GetterManager {
 	return &GetterManager{
-		log:   log,
+		log:   log.With("manager", "getter"),
 		cache: cache,
 	}
 }
 
 type GetterManager struct {
-	log   *internalLog.Logger
-	cache *internalCache.Cache
+	log   *slog.Logger
+	cache *cache.Cache
 }
 
 func (manager *GetterManager) LoadRepository(url string) (interfaces.Repository, error) {
 	// Log
-	manager.log.
-		WithField("manager", "getter").
-		WithField("url", url).
-		Debug("load repository")
-	manager.log.IncreasePadding()
-	defer manager.log.DecreasePadding()
+	manager.log.Debug("load repository",
+		"url", url,
+	)
 
 	// Repository cache directory should be unique
 	hash := sha256.New224()
 	hash.Write([]byte(url))
-	cacheDir, err := manager.cache.Dir("repositories", hex.EncodeToString(hash.Sum(nil)))
+	cacheDir, err := manager.cache.Dir(
+		"repositories",
+		hex.EncodeToString(hash.Sum(nil)),
+	)
 	if err != nil {
-		return nil, err
+		return nil, serrors.Wrap("unable to get cache dir", err)
 	}
 
 	request := &getter.Request{
@@ -45,7 +46,7 @@ func (manager *GetterManager) LoadRepository(url string) (interfaces.Repository,
 		GetMode: getter.ModeDir,
 	}
 
-	result := NewGetterResult()
+	result := NewGetterResult(url)
 
 	client := &getter.Client{
 		// Prevent copying or writing files through symlinks
@@ -60,8 +61,8 @@ func (manager *GetterManager) LoadRepository(url string) (interfaces.Repository,
 	}
 
 	response, err := client.Get(context.Background(), request)
-	if err := result.HandleError(err); err != nil {
-		return nil, err.WithField("url", url)
+	if _err := result.Error(err); _err != nil {
+		return nil, _err
 	}
 
 	return NewRepository(

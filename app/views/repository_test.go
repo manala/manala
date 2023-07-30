@@ -15,7 +15,7 @@ func TestRepositorySuite(t *testing.T) {
 func (s *RepositorySuite) TestNormalize() {
 	repoUrl := "url"
 
-	repoMock := mocks.MockRepository()
+	repoMock := &mocks.RepositoryMock{}
 	repoMock.
 		On("Url").Return(repoUrl)
 

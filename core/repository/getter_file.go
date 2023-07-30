@@ -5,15 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hashicorp/go-getter/v2"
-	internalLog "manala/internal/log"
-	internalOs "manala/internal/os"
+	"log/slog"
+	"manala/internal/errors/serrors"
 	"os"
 	"path/filepath"
 )
 
-func NewFileGetter(log *internalLog.Logger, result *GetterResult) *FileGetter {
+func NewFileGetter(log *slog.Logger, result *GetterResult) *FileGetter {
 	return &FileGetter{
-		log:        log,
+		log:        log.With("getter", "file"),
 		result:     result,
 		FileGetter: &getter.FileGetter{},
 		protocol:   "file",
@@ -21,16 +21,17 @@ func NewFileGetter(log *internalLog.Logger, result *GetterResult) *FileGetter {
 }
 
 type FileGetter struct {
-	log    *internalLog.Logger
+	log    *slog.Logger
 	result *GetterResult
 	*getter.FileGetter
 	protocol string
 }
 
 func (g *FileGetter) Detect(req *getter.Request) (bool, error) {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("detect")
+	// Log
+	g.log.Debug("try to detect repository",
+		"src", req.Src,
+	)
 
 	// Stat
 	stat, err := os.Stat(req.Src)
@@ -38,7 +39,8 @@ func (g *FileGetter) Detect(req *getter.Request) (bool, error) {
 		if errors.Is(err, os.ErrNotExist) {
 			return false, nil
 		}
-		return false, internalOs.NewError(err)
+		return false, serrors.WrapOs("file system error", err).
+			WithArguments("path", req.Src)
 	} else if !stat.IsDir() {
 		return false, nil
 	}
@@ -59,10 +61,10 @@ func (g *FileGetter) Detect(req *getter.Request) (bool, error) {
 	ok, err := g.FileGetter.Detect(req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to detect")
+		// Log
+		g.log.Debug("unable to detect repository",
+			"error", err,
+		)
 
 		g.result.SetDetectError(err, g.protocol)
 
@@ -73,18 +75,19 @@ func (g *FileGetter) Detect(req *getter.Request) (bool, error) {
 }
 
 func (g *FileGetter) Get(ctx context.Context, req *getter.Request) error {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("get")
+	// Log
+	g.log.Debug("get repository",
+		"src", req.Src,
+	)
 
 	// Get
 	err := g.FileGetter.Get(ctx, req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to get ")
+		// Log
+		g.log.Debug("unable to get repository",
+			"error", err,
+		)
 
 		g.result.AddGetError(err, g.protocol)
 

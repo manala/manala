@@ -3,16 +3,14 @@ package template
 import (
 	"bytes"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/sebdah/goldie/v2"
 	"github.com/stretchr/testify/suite"
-	internalTesting "manala/internal/testing"
+	"manala/internal/testing/heredoc"
 	"testing"
-	textTemplate "text/template"
+	"text/template"
 )
 
 type FunctionsSuite struct {
 	suite.Suite
-	goldie *goldie.Goldie
 	buffer *bytes.Buffer
 }
 
@@ -21,12 +19,11 @@ func TestFunctionsSuite(t *testing.T) {
 }
 
 func (s *FunctionsSuite) SetupTest() {
-	s.goldie = goldie.New(s.T())
 	s.buffer = &bytes.Buffer{}
 }
 
 func (s *FunctionsSuite) execute(content string, data interface{}) string {
-	template := textTemplate.New("test")
+	template := template.New("test")
 
 	template.Funcs(sprig.TxtFuncMap())
 	template.Funcs(FuncMap(template))
@@ -73,7 +70,27 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			foo:
+			    bar: string
+			    baz:
+			        foo: foo
+			        bar: 123
+			    corge: false
+			    fred: []
+			    garply: {}
+			    grault: 1.23
+			    plugh:
+			        - foo
+			        - bar
+			    quux: true
+			    qux: 123
+			    thud: '123'
+			    waldo:
+			        bar: baz
+			        foo: bar
+			    xyzzy: null`,
+		), content)
 	})
 
 	s.Run("Cases", func() {
@@ -86,7 +103,13 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			foo:
+			    BAZ: true
+			    QuuX: true
+			    bar: true
+			    qUx: true`,
+		), content)
 	})
 
 	s.Run("Mapping", func() {
@@ -98,20 +121,27 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			bar: true
+			qux: true`,
+		), content)
 	})
 
-	s.Run("Root Sequence", func() {
+	s.Run("RootSequence", func() {
 		content := s.execute(`{{ . | toYaml }}`, []string{
 			"foo",
 			"bar",
 			"baz",
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			- foo
+			- bar
+			- baz`,
+		), content)
 	})
 
-	s.Run("Nested Sequence", func() {
+	s.Run("NestedSequence", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"nested": []string{
 				"foo",
@@ -120,23 +150,34 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			nested:
+			    - foo
+			    - bar
+			    - baz`,
+		), content)
 	})
 
 	s.Run("Quotes", func() {
 		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			'\'single\' "double"'`,
+		), content)
 	})
 
-	s.Run("Block Scalar", func() {
+	s.Run("BlockScalar", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
 			"scalar": `foo
 bar\baz
 `,
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			scalar: |
+			  foo
+			  bar\baz`,
+		), content)
 	})
 
 	s.Run("Indentation", func() {
@@ -151,7 +192,14 @@ bar\baz
 			},
 		})
 
-		s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+		s.Equal(heredoc.Docf(`
+			mapping:
+			    bar: baz
+			    foo: bar
+			sequence:
+			    - foo
+			    - bar`,
+		), content)
 	})
 }
 
@@ -165,5 +213,7 @@ func (s *FunctionsSuite) TestInclude() {
 		"bar",
 	)
 
-	s.goldie.Assert(s.T(), internalTesting.Path(s, "content"), []byte(content))
+	s.Equal(heredoc.Docf(`
+			foo bar`,
+	), content)
 }

@@ -22,7 +22,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal("dir", dir)
 	})
-	s.Run("Dir Single", func() {
+	s.Run("DirSingle", func() {
 		cache := New("dir")
 
 		dir, err := cache.Dir("foo")
@@ -30,7 +30,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join("dir", "foo"), dir)
 	})
-	s.Run("Dir Multiple", func() {
+	s.Run("DirMultiple", func() {
 		cache := New("dir")
 
 		dir, err := cache.Dir("foo", "bar")
@@ -38,7 +38,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join("dir", "foo", "bar"), dir)
 	})
-	s.Run("User Dir", func() {
+	s.Run("UserDir", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New("")
@@ -48,7 +48,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(userDir, dir)
 	})
-	s.Run("User Dir Single", func() {
+	s.Run("UserDirSingle", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New("")
@@ -58,7 +58,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join(userDir, "foo"), dir)
 	})
-	s.Run("User Dir Multiple", func() {
+	s.Run("UserDirMultiple", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New("")
@@ -68,7 +68,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join(userDir, "foo", "bar"), dir)
 	})
-	s.Run("User Dir Suffix", func() {
+	s.Run("UserDirSuffix", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New(
@@ -81,7 +81,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join(userDir, "foo"), dir)
 	})
-	s.Run("User Dir Suffix Single", func() {
+	s.Run("UserDirSuffixSingle", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New(
@@ -94,7 +94,7 @@ func (s *CacheSuite) TestDir() {
 		s.NoError(err)
 		s.Equal(filepath.Join(userDir, "foo", "bar"), dir)
 	})
-	s.Run("User Dir Suffix Multiple", func() {
+	s.Run("UserDirSuffixMultiple", func() {
 		userDir, _ := os.UserCacheDir()
 
 		cache := New(

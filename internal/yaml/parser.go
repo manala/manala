@@ -1,15 +1,15 @@
 package yaml
 
 import (
-	"fmt"
-	yamlAst "github.com/goccy/go-yaml/ast"
-	yamlParser "github.com/goccy/go-yaml/parser"
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlParser "github.com/goccy/go-yaml/parser"
+	"manala/internal/errors/serrors"
 	"os"
 )
 
 func NewParser(opts ...ParserOption) *Parser {
 	p := &Parser{
-		anchors: map[string]yamlAst.Node{},
+		anchors: map[string]goYamlAst.Node{},
 	}
 
 	// Options
@@ -22,11 +22,11 @@ func NewParser(opts ...ParserOption) *Parser {
 
 type Parser struct {
 	comments bool
-	anchors  map[string]yamlAst.Node
+	anchors  map[string]goYamlAst.Node
 	err      error
 }
 
-func (parser *Parser) ParseFile(filename string) (yamlAst.Node, error) {
+func (parser *Parser) ParseFile(filename string) (goYamlAst.Node, error) {
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -40,21 +40,21 @@ func (parser *Parser) ParseFile(filename string) (yamlAst.Node, error) {
 	return node, nil
 }
 
-func (parser *Parser) ParseBytes(bytes []byte) (yamlAst.Node, error) {
+func (parser *Parser) ParseBytes(bytes []byte) (goYamlAst.Node, error) {
 	// Parse with comments ?
-	var mode yamlParser.Mode = 0
+	var mode goYamlParser.Mode = 0
 	if parser.comments {
-		mode = yamlParser.ParseComments
+		mode = goYamlParser.ParseComments
 	}
 
-	file, err := yamlParser.ParseBytes(bytes, mode)
+	file, err := goYamlParser.ParseBytes(bytes, mode)
 	if err != nil {
 		return nil, NewError(err)
 	}
 
 	// File must not be empty...
 	if len(file.Docs) == 0 {
-		return nil, fmt.Errorf("empty yaml file")
+		return nil, serrors.New("empty yaml file")
 	}
 
 	// ... nor include multiple documents
@@ -64,7 +64,7 @@ func (parser *Parser) ParseBytes(bytes []byte) (yamlAst.Node, error) {
 
 	node := file.Docs[0].Body
 
-	yamlAst.Walk(parser, node)
+	goYamlAst.Walk(parser, node)
 
 	if parser.err != nil {
 		return nil, parser.err
@@ -78,12 +78,12 @@ func (parser *Parser) ParseBytes(bytes []byte) (yamlAst.Node, error) {
 	return node, nil
 }
 
-func (parser *Parser) Visit(node yamlAst.Node) yamlAst.Visitor {
+func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	// Comment of the first MappingValueNode is set on its MappingNode.
 	// Work around by manually move it.
 	// See: https://github.com/goccy/go-yaml/issues/311
 	if parser.comments {
-		if n, ok := node.(*yamlAst.MappingNode); ok {
+		if n, ok := node.(*goYamlAst.MappingNode); ok {
 			if len(n.Values) > 0 && n.Comment != nil {
 				n.Values[0].Comment = n.Comment
 				n.Comment = nil
@@ -92,11 +92,11 @@ func (parser *Parser) Visit(node yamlAst.Node) yamlAst.Visitor {
 	}
 
 	// Irregular map keys
-	if n, ok := node.(*yamlAst.MappingValueNode); ok {
-		if _, ok := n.Key.(*yamlAst.MergeKeyNode); ok {
+	if n, ok := node.(*goYamlAst.MappingValueNode); ok {
+		if _, ok := n.Key.(*goYamlAst.MergeKeyNode); ok {
 			return parser
 		}
-		if _, ok := n.Key.(*yamlAst.StringNode); ok {
+		if _, ok := n.Key.(*goYamlAst.StringNode); ok {
 			return parser
 		}
 		parser.err = NewNodeError("irregular map key", node)
@@ -104,28 +104,28 @@ func (parser *Parser) Visit(node yamlAst.Node) yamlAst.Visitor {
 	}
 
 	switch n := node.(type) {
-	case *yamlAst.AnchorNode:
+	case *goYamlAst.AnchorNode:
 		// Store anchors for coming resolution
 		anchorName := n.Name.GetToken().Value
 		parser.anchors[anchorName] = n.Value
 	case
 		// Scalars
-		*yamlAst.NullNode,
-		*yamlAst.IntegerNode,
-		*yamlAst.FloatNode,
-		*yamlAst.StringNode, *yamlAst.LiteralNode,
-		*yamlAst.BoolNode,
+		*goYamlAst.NullNode,
+		*goYamlAst.IntegerNode,
+		*goYamlAst.FloatNode,
+		*goYamlAst.StringNode, *goYamlAst.LiteralNode,
+		*goYamlAst.BoolNode,
 		// Maps
-		*yamlAst.MappingKeyNode,
-		yamlAst.MapNode,
+		*goYamlAst.MappingKeyNode,
+		goYamlAst.MapNode,
 		// Arrays
-		yamlAst.ArrayNode,
+		goYamlAst.ArrayNode,
 		// Aliases
-		*yamlAst.AliasNode, *yamlAst.MergeKeyNode,
+		*goYamlAst.AliasNode, *goYamlAst.MergeKeyNode,
 		// Tags
-		*yamlAst.TagNode,
+		*goYamlAst.TagNode,
 		// Comments
-		*yamlAst.CommentGroupNode:
+		*goYamlAst.CommentGroupNode:
 		// ¯\_(ツ)_/¯
 	default:
 		// Irregular types
@@ -136,41 +136,37 @@ func (parser *Parser) Visit(node yamlAst.Node) yamlAst.Visitor {
 	return parser
 }
 
-func (parser *Parser) resolve(node yamlAst.Node) (yamlAst.Node, error) {
+func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 	switch n := node.(type) {
-	case yamlAst.MapNode:
-		values := make([]*yamlAst.MappingValueNode, 0)
-		if m, ok := n.(*yamlAst.MappingNode); ok {
+	case goYamlAst.MapNode:
+		values := make([]*goYamlAst.MappingValueNode, 0)
+		if m, ok := n.(*goYamlAst.MappingNode); ok {
 			values = m.Values
 		} else {
-			values = append(values, n.(*yamlAst.MappingValueNode))
+			values = append(values, n.(*goYamlAst.MappingValueNode))
 		}
 
-		deduplicatedValues := make([]*yamlAst.MappingValueNode, 0)
+		deduplicatedValues := make([]*goYamlAst.MappingValueNode, 0)
 
 		for _, v := range values {
 			// Merge values
-			mergedValues := make([]*yamlAst.MappingValueNode, 0)
-			if _, ok := v.Key.(*yamlAst.MergeKeyNode); ok {
-				if vv, ok := v.Value.(*yamlAst.AliasNode); ok {
+			mergedValues := make([]*goYamlAst.MappingValueNode, 0)
+			if _, ok := v.Key.(*goYamlAst.MergeKeyNode); ok {
+				if vv, ok := v.Value.(*goYamlAst.AliasNode); ok {
 					alias := vv.Value.GetToken().Value
 					anchor := parser.anchors[alias]
 					if anchor == nil {
-						return nil, NewNodeError(
-							fmt.Sprintf("cannot find anchor \"%s\"", alias),
-							vv.Value,
-						)
+						return nil, NewNodeError("cannot find anchor", vv.Value).
+							WithArguments("anchor", alias)
 					}
 					switch a := anchor.(type) {
-					case *yamlAst.MappingNode:
+					case *goYamlAst.MappingNode:
 						mergedValues = a.Values
-					case *yamlAst.MappingValueNode:
+					case *goYamlAst.MappingValueNode:
 						mergedValues = append(mergedValues, a)
 					default:
-						return nil, NewNodeError(
-							fmt.Sprintf("anchor \"%s\" must be a map", alias),
-							anchor,
-						)
+						return nil, NewNodeError("anchor must be a map", anchor).
+							WithArguments("anchor", alias)
 					}
 				} else {
 					return nil, NewNodeError("map value must be an alias", v.Value)
@@ -203,22 +199,22 @@ func (parser *Parser) resolve(node yamlAst.Node) (yamlAst.Node, error) {
 		if len(deduplicatedValues) == 1 {
 			return deduplicatedValues[0], nil
 		} else {
-			if m, ok := n.(*yamlAst.MappingNode); ok {
+			if m, ok := n.(*goYamlAst.MappingNode); ok {
 				m.Values = deduplicatedValues
 				return m, nil
 			}
 
-			m := &yamlAst.MappingNode{
-				BaseNode: &yamlAst.BaseNode{},
+			m := &goYamlAst.MappingNode{
+				BaseNode: &goYamlAst.BaseNode{},
 			}
 			m.Values = deduplicatedValues
 			return m, nil
 		}
-	case *yamlAst.TagNode:
+	case *goYamlAst.TagNode:
 		return parser.resolve(n.Value)
-	case *yamlAst.MappingKeyNode:
+	case *goYamlAst.MappingKeyNode:
 		return parser.resolve(n.Value)
-	case *yamlAst.SequenceNode:
+	case *goYamlAst.SequenceNode:
 		for idx, v := range n.Values {
 			value, err := parser.resolve(v)
 			if err != nil {
@@ -226,17 +222,15 @@ func (parser *Parser) resolve(node yamlAst.Node) (yamlAst.Node, error) {
 			}
 			n.Values[idx] = value
 		}
-	case *yamlAst.AliasNode:
+	case *goYamlAst.AliasNode:
 		alias := n.Value.GetToken().Value
 		anchor := parser.anchors[alias]
 		if anchor == nil {
-			return nil, NewNodeError(
-				fmt.Sprintf("cannot find anchor \"%s\"", alias),
-				n.Value,
-			)
+			return nil, NewNodeError("cannot find anchor", n.Value).
+				WithArguments("anchor", alias)
 		}
 		return parser.resolve(anchor)
-	case *yamlAst.AnchorNode:
+	case *goYamlAst.AnchorNode:
 		return parser.resolve(n.Value)
 	}
 

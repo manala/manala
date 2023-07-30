@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 	"github.com/hashicorp/go-getter/v2"
+	"log/slog"
 	"manala/core"
-	internalLog "manala/internal/log"
 	"time"
 )
 
-func NewGitGetter(log *internalLog.Logger, result *GetterResult) *GitGetter {
+func NewGitGetter(log *slog.Logger, result *GetterResult) *GitGetter {
 	return &GitGetter{
-		log:    log,
+		log:    log.With("getter", "git"),
 		result: result,
 		GitGetter: &getter.GitGetter{
 			Detectors: []getter.Detector{
@@ -26,16 +26,17 @@ func NewGitGetter(log *internalLog.Logger, result *GetterResult) *GitGetter {
 }
 
 type GitGetter struct {
-	log    *internalLog.Logger
+	log    *slog.Logger
 	result *GetterResult
 	*getter.GitGetter
 	protocol string
 }
 
 func (g *GitGetter) Detect(req *getter.Request) (bool, error) {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("detect")
+	// Log
+	g.log.Debug("try to detect repository",
+		"src", req.Src,
+	)
 
 	// Force git repo format (ensure backward compatibility)
 	if (&core.GitRepoFormatChecker{}).IsFormat(req.Src) {
@@ -46,10 +47,10 @@ func (g *GitGetter) Detect(req *getter.Request) (bool, error) {
 	ok, err := g.GitGetter.Detect(req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to detect")
+		// Log
+		g.log.Debug("unable to detect repository",
+			"error", err,
+		)
 
 		g.result.SetDetectError(err, g.protocol)
 
@@ -60,18 +61,19 @@ func (g *GitGetter) Detect(req *getter.Request) (bool, error) {
 }
 
 func (g *GitGetter) Get(ctx context.Context, req *getter.Request) error {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("get")
+	// Log
+	g.log.Debug("get repository",
+		"src", req.Src,
+	)
 
 	// Get
 	err := g.GitGetter.Get(ctx, req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to get")
+		// Log
+		g.log.Debug("unable to get repository",
+			"error", err,
+		)
 
 		g.result.AddGetError(err, g.protocol)
 

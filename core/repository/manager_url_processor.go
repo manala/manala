@@ -1,27 +1,27 @@
 package repository
 
 import (
+	"dario.cat/mergo"
 	"fmt"
-	"github.com/imdario/mergo"
-	"golang.org/x/exp/maps"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core"
-	internalLog "manala/internal/log"
+	"maps"
 	netUrl "net/url"
 	"sort"
 	"strings"
 )
 
-func NewUrlProcessorManager(log *internalLog.Logger, cascadingManager interfaces.RepositoryManager) *UrlProcessorManager {
+func NewUrlProcessorManager(log *slog.Logger, cascadingManager interfaces.RepositoryManager) *UrlProcessorManager {
 	return &UrlProcessorManager{
-		log:              log,
+		log:              log.With("manager", "url_processor"),
 		cascadingManager: cascadingManager,
 		urls:             map[int]string{},
 	}
 }
 
 type UrlProcessorManager struct {
-	log              *internalLog.Logger
+	log              *slog.Logger
 	cascadingManager interfaces.RepositoryManager
 	urls             map[int]string
 }
@@ -43,18 +43,20 @@ func (manager *UrlProcessorManager) AddUrlQuery(key string, value string, priori
 
 func (manager *UrlProcessorManager) LoadRepository(url string) (interfaces.Repository, error) {
 	// Log
-	manager.log.
-		WithField("manager", "url_processor").
-		WithField("url", url).
-		Debug("load repository")
-	manager.log.IncreasePadding()
-	defer manager.log.DecreasePadding()
+	manager.log.Debug("load repository",
+		"url", url,
+	)
 
 	// Process url
 	url, err := manager.processUrl(url)
 	if err != nil {
 		return nil, err
 	}
+
+	// Log
+	manager.log.Debug("cascade repository loading…",
+		"url", url,
+	)
 
 	// Cascading manager
 	repo, err := manager.cascadingManager.LoadRepository(url)
@@ -75,7 +77,10 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 	urls[0] = url
 
 	// Reverse order priorities
-	priorities := maps.Keys(urls)
+	priorities := make([]int, 0, len(urls))
+	for priority := range urls {
+		priorities = append(priorities, priority)
+	}
 	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
 
 	var query string
@@ -85,11 +90,12 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 		// Split url and query parts
 		url, query, _ = strings.Cut(urls[priority], "?")
 
-		manager.log.
-			WithField("url", url).
-			WithField("query", query).
-			WithField("priority", priority).
-			Debug("process url")
+		// Log
+		manager.log.Debug("process repository url",
+			"url", url,
+			"query", query,
+			"priority", priority,
+		)
 
 		if query != "" {
 			_queryValues, err := netUrl.ParseQuery(query)
@@ -105,9 +111,7 @@ func (manager *UrlProcessorManager) processUrl(url string) (string, error) {
 	}
 
 	if url == "" {
-		return "", core.NewUnprocessableRepositoryUrlError(
-			"unable to process empty repository url",
-		)
+		return "", &core.UnprocessableRepositoryUrlError{}
 	}
 
 	if queryValues != nil {

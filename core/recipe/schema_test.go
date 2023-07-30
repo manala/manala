@@ -1,10 +1,12 @@
 package recipe
 
 import (
-	yamlAst "github.com/goccy/go-yaml/ast"
+	"encoding/json"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
-	internalYaml "manala/internal/yaml"
+	"manala/internal/errors/serrors"
+	"manala/internal/testing/heredoc"
+	"manala/internal/yaml"
 	"testing"
 )
 
@@ -16,422 +18,449 @@ func TestSchemaInferrerSuite(t *testing.T) {
 
 func (s *SchemaInferrerSuite) TestSchemaChainInferrerErrors() {
 	tests := []struct {
-		name      string
+		test      string
 		node      string
 		inferrers []schemaInferrerInterface
-		err       string
+		expected  *serrors.Assert
 	}{
 		{
-			name: "Error",
+			test: "Error",
 			node: `node: string`,
 			inferrers: []schemaInferrerInterface{
-				NewSchemaCallbackInferrer(func(node yamlAst.Node, _ map[string]interface{}) error {
-					return internalYaml.NewNodeError("foo", node)
+				NewSchemaCallbackInferrer(func(node goYamlAst.Node, _ map[string]interface{}) error {
+					return yaml.NewNodeError("foo", node)
 				}),
 			},
-			err: "foo",
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "foo",
+				Arguments: []any{
+					"line", 1,
+					"column", 5,
+				},
+				Details: heredoc.Doc(`
+					>  1 | node: string
+					           ^
+				`),
+			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaChainInferrer(test.inferrers...).Infer(node, schema)
 
-			s.EqualError(err, test.err)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaChainInferrer() {
 	tests := []struct {
-		name      string
+		test      string
 		node      string
 		inferrers []schemaInferrerInterface
-		schema    map[string]interface{}
+		expected  map[string]interface{}
 	}{
 		{
-			name:      "No Inferrers",
+			test:      "NoInferrers",
 			node:      `node: string`,
 			inferrers: []schemaInferrerInterface{},
-			schema:    map[string]interface{}{"foo": "bar"},
+			expected:  map[string]interface{}{"foo": "bar"},
 		},
 		{
-			name: "Inferrers",
+			test: "Inferrers",
 			node: `node: string`,
 			inferrers: []schemaInferrerInterface{
 				NewSchemaTypeInferrer(),
-				NewSchemaCallbackInferrer(func(_ yamlAst.Node, schema map[string]interface{}) error {
+				NewSchemaCallbackInferrer(func(_ goYamlAst.Node, schema map[string]interface{}) error {
 					schema["foo"] = "baz"
-
 					return nil
 				}),
 			},
-			schema: map[string]interface{}{"foo": "baz", "type": "string"},
+			expected: map[string]interface{}{"foo": "baz", "type": "string"},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaChainInferrer(test.inferrers...).Infer(node, schema)
 
 			s.NoError(err)
-			s.Equal(test.schema, schema)
+
+			s.Equal(test.expected, schema)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaTypeInferrerErrors() {
 	tests := []struct {
-		name   string
-		node   string
-		report *internalReport.Assert
+		test     string
+		node     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Uninferable Node",
+			test: "UninferableNode",
 			node: `string`,
-			report: &internalReport.Assert{
-				Err: "unable to infer schema type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 1,
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "unable to infer schema type",
+				Arguments: []any{
+					"line", 1,
+					"column", 1,
 				},
-				Trace: ">  1 | string\n       ^\n",
+				Details: heredoc.Doc(`
+					>  1 | string
+					       ^
+				`),
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaTypeInferrer().Infer(node, schema)
 
-			s.Error(err)
-
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaTypeInferrer() {
 	tests := []struct {
-		name   string
-		node   string
-		schema map[string]interface{}
-		report *internalReport.Assert
+		test     string
+		node     string
+		expected map[string]interface{}
 	}{
 		{
-			name:   "String",
-			node:   `node: string`,
-			schema: map[string]interface{}{"foo": "bar", "type": "string"},
+			test:     "String",
+			node:     `node: string`,
+			expected: map[string]interface{}{"foo": "bar", "type": "string"},
 		},
 		{
-			name:   "Integer",
-			node:   `node: 12`,
-			schema: map[string]interface{}{"foo": "bar", "type": "integer"},
+			test:     "Integer",
+			node:     `node: 12`,
+			expected: map[string]interface{}{"foo": "bar", "type": "integer"},
 		},
 		{
-			name:   "Number",
-			node:   `node: 3.4`,
-			schema: map[string]interface{}{"foo": "bar", "type": "number"},
+			test:     "Number",
+			node:     `node: 3.4`,
+			expected: map[string]interface{}{"foo": "bar", "type": "number"},
 		},
 		{
-			name:   "Boolean",
-			node:   `node: true`,
-			schema: map[string]interface{}{"foo": "bar", "type": "boolean"},
+			test:     "Boolean",
+			node:     `node: true`,
+			expected: map[string]interface{}{"foo": "bar", "type": "boolean"},
 		},
 		{
-			name:   "Null",
-			node:   `node: ~`,
-			schema: map[string]interface{}{"foo": "bar"},
+			test:     "Null",
+			node:     `node: ~`,
+			expected: map[string]interface{}{"foo": "bar"},
 		},
 		{
-			name: "Array Empty",
+			test: "ArrayEmpty",
 			node: `
 node: []
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "array"},
+			expected: map[string]interface{}{"foo": "bar", "type": "array"},
 		},
 		{
-			name: "Array Single",
+			test: "ArraySingle",
 			node: `
 node:
   - single
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "array"},
+			expected: map[string]interface{}{"foo": "bar", "type": "array"},
 		},
 		{
-			name: "Array Multiple",
+			test: "ArrayMultiple",
 			node: `
 node:
   - first
   - second
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "array"},
+			expected: map[string]interface{}{"foo": "bar", "type": "array"},
 		},
 		{
-			name: "Object Empty",
+			test: "ObjectEmpty",
 			node: `
 node: {}
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "object"},
+			expected: map[string]interface{}{"foo": "bar", "type": "object"},
 		},
 		{
-			name: "Object Single",
+			test: "ObjectSingle",
 			node: `
 node:
   single: foo
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "object"},
+			expected: map[string]interface{}{"foo": "bar", "type": "object"},
 		},
 		{
-			name: "Object Multiple",
+			test: "ObjectMultiple",
 			node: `
 node:
   first: foo
   second: foo
 `,
-			schema: map[string]interface{}{"foo": "bar", "type": "object"},
+			expected: map[string]interface{}{"foo": "bar", "type": "object"},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := map[string]interface{}{"foo": "bar"}
 			err := NewSchemaTypeInferrer().Infer(node, schema)
 
 			s.NoError(err)
-			s.Equal(test.schema, schema)
+
+			s.Equal(test.expected, schema)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaTagsInferrerErrors() {
 	tests := []struct {
-		name   string
-		tags   *internalYaml.Tags
-		report *internalReport.Assert
+		test     string
+		tags     *yaml.Tags
+		expected *serrors.Assert
 	}{
 		{
-			name: "Syntax",
-			tags: &internalYaml.Tags{
-				&internalYaml.Tag{Name: "Tag", Value: `foo`},
+			test: "Syntax",
+			tags: &yaml.Tags{
+				&yaml.Tag{Name: "Tag", Value: `foo`},
 			},
-			report: &internalReport.Assert{
-				Err: "invalid character 'o' in literal false (expecting 'a')",
+			expected: &serrors.Assert{
+				Type:    &json.SyntaxError{},
+				Message: "invalid character 'o' in literal false (expecting 'a')",
 			},
 		},
 		{
-			name: "Type",
-			tags: &internalYaml.Tags{
-				&internalYaml.Tag{Name: "Tag", Value: `[]`},
+			test: "Type",
+			tags: &yaml.Tags{
+				&yaml.Tag{Name: "Tag", Value: `[]`},
 			},
-			report: &internalReport.Assert{
-				Err: "json: cannot unmarshal array into Go value of type map[string]interface {}",
+			expected: &serrors.Assert{
+				Type:    &json.UnmarshalTypeError{},
+				Message: "json: cannot unmarshal array into Go value of type map[string]interface {}",
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
+		s.Run(test.test, func() {
 			schema := map[string]interface{}{"foo": "bar"}
+
 			err := NewSchemaTagsInferrer(test.tags).Infer(nil, schema)
 
-			s.Error(err)
-
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaTagsInferrer() {
 	tests := []struct {
-		name   string
-		tags   *internalYaml.Tags
-		schema map[string]interface{}
+		test     string
+		tags     *yaml.Tags
+		expected map[string]interface{}
 	}{
 		{
-			name: "Extend",
-			tags: &internalYaml.Tags{
-				&internalYaml.Tag{Name: "Tag", Value: `{"bar": "baz"}`},
+			test: "Extend",
+			tags: &yaml.Tags{
+				&yaml.Tag{Name: "Tag", Value: `{"bar": "baz"}`},
 			},
-			schema: map[string]interface{}{"foo": "bar", "bar": "baz"},
+			expected: map[string]interface{}{"foo": "bar", "bar": "baz"},
 		},
 		{
-			name: "Override",
-			tags: &internalYaml.Tags{
-				&internalYaml.Tag{Name: "Tag", Value: `{"foo": "baz"}`},
+			test: "Override",
+			tags: &yaml.Tags{
+				&yaml.Tag{Name: "Tag", Value: `{"foo": "baz"}`},
 			},
-			schema: map[string]interface{}{"foo": "baz"},
+			expected: map[string]interface{}{"foo": "baz"},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
+		s.Run(test.test, func() {
 			schema := map[string]interface{}{"foo": "bar"}
+
 			err := NewSchemaTagsInferrer(test.tags).Infer(nil, schema)
 
 			s.NoError(err)
-			s.Equal(test.schema, schema)
+
+			s.Equal(test.expected, schema)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaCallbackInferrerErrors() {
 	tests := []struct {
-		name     string
-		callback func(node yamlAst.Node, schema map[string]interface{}) error
-		err      string
+		test     string
+		callback func(node goYamlAst.Node, schema map[string]interface{}) error
+		expected *serrors.Assert
 	}{
 		{
-			name: "Error",
-			callback: func(node yamlAst.Node, schema map[string]interface{}) error {
-				return internalYaml.NewNodeError("foo", node)
+			test: "Error",
+			callback: func(node goYamlAst.Node, schema map[string]interface{}) error {
+				return yaml.NewNodeError("foo", node)
 			},
-			err: "foo",
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "foo",
+			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
+		s.Run(test.test, func() {
 			schema := map[string]interface{}{"foo": "bar"}
+
 			err := NewSchemaCallbackInferrer(test.callback).Infer(nil, schema)
 
-			s.EqualError(err, test.err)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaCallbackInferrer() {
 	tests := []struct {
-		name     string
-		callback func(node yamlAst.Node, schema map[string]interface{}) error
-		schema   map[string]interface{}
+		test     string
+		callback func(node goYamlAst.Node, schema map[string]interface{}) error
+		expected map[string]interface{}
 	}{
 		{
-			name: "Extend",
-			callback: func(_ yamlAst.Node, schema map[string]interface{}) error {
+			test: "Extend",
+			callback: func(_ goYamlAst.Node, schema map[string]interface{}) error {
 				schema["bar"] = "baz"
 
 				return nil
 			},
-			schema: map[string]interface{}{"foo": "bar", "bar": "baz"},
+			expected: map[string]interface{}{"foo": "bar", "bar": "baz"},
 		},
 		{
-			name: "Override",
-			callback: func(_ yamlAst.Node, schema map[string]interface{}) error {
+			test: "Override",
+			callback: func(_ goYamlAst.Node, schema map[string]interface{}) error {
 				schema["foo"] = "baz"
 
 				return nil
 			},
-			schema: map[string]interface{}{"foo": "baz"},
+			expected: map[string]interface{}{"foo": "baz"},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
+		s.Run(test.test, func() {
 			schema := map[string]interface{}{"foo": "bar"}
+
 			err := NewSchemaCallbackInferrer(test.callback).Infer(nil, schema)
 
 			s.NoError(err)
-			s.Equal(test.schema, schema)
+
+			s.Equal(test.expected, schema)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaInferrerErrors() {
 	tests := []struct {
-		name   string
-		node   string
-		report *internalReport.Assert
+		test     string
+		node     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Non Map",
+			test: "NonMap",
 			node: `string`,
-			report: &internalReport.Assert{
-				Err: "unable to infer schema type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 1,
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "unable to infer schema type",
+				Arguments: []any{
+					"line", 1,
+					"column", 1,
 				},
-				Trace: ">  1 | string\n       ^\n",
+				Details: heredoc.Doc(`
+					>  1 | string
+					       ^
+				`),
 			},
 		},
 		{
-			name: "Misplaced Tag",
+			test: "MisplacedTag",
 			node: `
 node: ~  # @schema {"type": "string", "minLength": 1}
 `,
-			report: &internalReport.Assert{
-				Err: "misplaced schema tag",
-				Fields: map[string]interface{}{
-					"line":   2,
-					"column": 10,
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "misplaced schema tag",
+				Arguments: []any{
+					"line", 2,
+					"column", 10,
 				},
-				Trace: ">  2 | node: ~  # @schema {\"type\": \"string\", \"minLength\": 1}\n                ^\n",
+				Details: heredoc.Doc(`
+					>  2 | node: ~  # @schema {"type": "string", "minLength": 1}
+					                ^
+				`),
 			},
 		},
 		{
-			name: "Tag Error",
+			test: "TagError",
 			node: `
 # @schema foo
 node: ~
 `,
-			report: &internalReport.Assert{
-				Err: "invalid character 'o' in literal false (expecting 'a')",
-				Fields: map[string]interface{}{
-					"line":   2,
-					"column": 1,
+			expected: &serrors.Assert{
+				Type:    &yaml.NodeError{},
+				Message: "invalid character 'o' in literal false (expecting 'a')",
+				Arguments: []any{
+					"line", 2,
+					"column", 1,
 				},
-				Trace: ">  2 | # @schema foo\n       ^\n   3 | node: ~",
+				Details: heredoc.Doc(`
+					>  2 | # @schema foo
+					       ^
+					   3 | node: ~
+				`),
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
-
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 			schema := map[string]interface{}{}
+
 			err := NewSchemaInferrer().Infer(node, schema)
 
-			s.Error(err)
-
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *SchemaInferrerSuite) TestSchemaInferrer() {
 	tests := []struct {
-		name   string
-		node   string
-		schema map[string]interface{}
+		test     string
+		node     string
+		expected map[string]interface{}
 	}{
 		{
-			name: "Scalars",
+			test: "Scalars",
 			node: `
 string: string
 integer: 12
 number: 2.3
 boolean: true
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -443,7 +472,7 @@ boolean: true
 			},
 		},
 		{
-			name: "Arrays",
+			test: "Arrays",
 			node: `
 array_empty: []
 array_single:
@@ -452,7 +481,7 @@ array_multiple:
   - first
   - second
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -463,7 +492,7 @@ array_multiple:
 			},
 		},
 		{
-			name: "Objects",
+			test: "Objects",
 			node: `
 object_empty: {}
 object_single:
@@ -472,7 +501,7 @@ object_multiple:
   first: foo
   second: bar
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -498,14 +527,14 @@ object_multiple:
 			},
 		},
 		{
-			name: "Scalars Tags",
+			test: "ScalarsTags",
 			node: `
 # @schema {"type": "string", "minLength": 1}
 string: ~
 # @schema {"minimum": 10}
 integer: 12
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -515,12 +544,12 @@ integer: 12
 			},
 		},
 		{
-			name: "Arrays Tags",
+			test: "ArraysTags",
 			node: `
 # @schema {"items": {"type": "string"}}
 array_empty: []
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -531,7 +560,7 @@ array_empty: []
 			},
 		},
 		{
-			name: "Objects Tags",
+			test: "ObjectsTags",
 			node: `
 # @schema {"additionalProperties": false}
 object_empty: {}
@@ -558,7 +587,7 @@ object_multiple_with_comment:
   # @schema {"type": "string", "minLength": 2}
   second: ~
 `,
-			schema: map[string]interface{}{
+			expected: map[string]interface{}{
 				"type":                 "object",
 				"additionalProperties": false,
 				"properties": map[string]interface{}{
@@ -602,14 +631,15 @@ object_multiple_with_comment:
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
-
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 			schema := map[string]interface{}{}
+
 			err := NewSchemaInferrer().Infer(node, schema)
 
 			s.NoError(err)
-			s.Equal(test.schema, schema)
+
+			s.Equal(test.expected, schema)
 		})
 	}
 }

@@ -1,24 +1,24 @@
 package recipe
 
 import (
-	"golang.org/x/exp/maps"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core"
-	internalLog "manala/internal/log"
-	internalWatcher "manala/internal/watcher"
+	"manala/internal/watcher"
+	"maps"
 	"sort"
 )
 
-func NewNameProcessorManager(log *internalLog.Logger, cascadingManager interfaces.RecipeManager) *NameProcessorManager {
+func NewNameProcessorManager(log *slog.Logger, cascadingManager interfaces.RecipeManager) *NameProcessorManager {
 	return &NameProcessorManager{
-		log:              log,
+		log:              log.With("manager", "name_processor"),
 		cascadingManager: cascadingManager,
 		names:            map[int]string{},
 	}
 }
 
 type NameProcessorManager struct {
-	log              *internalLog.Logger
+	log              *slog.Logger
 	cascadingManager interfaces.RecipeManager
 	names            map[int]string
 }
@@ -29,18 +29,20 @@ func (manager *NameProcessorManager) AddName(name string, priority int) {
 
 func (manager *NameProcessorManager) LoadRecipe(repo interfaces.Repository, name string) (interfaces.Recipe, error) {
 	// Log
-	manager.log.
-		WithField("manager", "name_processor").
-		WithField("name", name).
-		Debug("load recipe")
-	manager.log.IncreasePadding()
-	defer manager.log.DecreasePadding()
+	manager.log.Debug("load recipe",
+		"name", name,
+	)
 
 	// Process name
 	name, err := manager.processName(name)
 	if err != nil {
 		return nil, err
 	}
+
+	// Log
+	manager.log.Debug("cascade recipe loading…",
+		"name", name,
+	)
 
 	// Cascading manager
 	rec, err := manager.cascadingManager.LoadRecipe(repo, name)
@@ -56,6 +58,16 @@ func (manager *NameProcessorManager) LoadPrecedingRecipe(repo interfaces.Reposit
 }
 
 func (manager *NameProcessorManager) WalkRecipes(repo interfaces.Repository, walker func(rec interfaces.Recipe) error) error {
+	// Log
+	manager.log.Debug("walk recipes",
+		"repository", repo.Url(),
+	)
+
+	// Log
+	manager.log.Debug("cascade recipes walking…",
+		"repository", repo.Url(),
+	)
+
 	if err := manager.cascadingManager.WalkRecipes(repo, walker); err != nil {
 		return err
 	}
@@ -63,7 +75,7 @@ func (manager *NameProcessorManager) WalkRecipes(repo interfaces.Repository, wal
 	return nil
 }
 
-func (manager *NameProcessorManager) WatchRecipe(rec interfaces.Recipe, watcher *internalWatcher.Watcher) error {
+func (manager *NameProcessorManager) WatchRecipe(rec interfaces.Recipe, watcher *watcher.Watcher) error {
 	if err := manager.cascadingManager.WatchRecipe(rec, watcher); err != nil {
 		return err
 	}
@@ -77,16 +89,20 @@ func (manager *NameProcessorManager) processName(name string) (string, error) {
 	names[0] = name
 
 	// Reverse order priorities
-	priorities := maps.Keys(names)
+	priorities := make([]int, 0, len(names))
+	for priority := range names {
+		priorities = append(priorities, priority)
+	}
 	sort.Sort(sort.Reverse(sort.IntSlice(priorities)))
 
 	for _, priority := range priorities {
 		name = names[priority]
 
-		manager.log.
-			WithField("name", name).
-			WithField("priority", priority).
-			Debug("process name")
+		// Log
+		manager.log.Debug("process recipe name",
+			"name", name,
+			"priority", priority,
+		)
 
 		if name != "" {
 			break
@@ -94,9 +110,7 @@ func (manager *NameProcessorManager) processName(name string) (string, error) {
 	}
 
 	if name == "" {
-		return "", core.NewUnprocessableRecipeNameError(
-			"unable to process empty recipe name",
-		)
+		return "", &core.UnprocessableRecipeNameError{}
 	}
 
 	return name, nil
