@@ -1,6 +1,0 @@
-   1 | manala:
-   2 |   description: description
-   3 | 
->  4 | # @schema foo
-       ^
-   5 | foo: ~

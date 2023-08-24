@@ -4,94 +4,38 @@ package core
 /* Project */
 /***********/
 
-func NewNotFoundProjectManifestError(message string) *NotFoundProjectManifestError {
-	return &NotFoundProjectManifestError{
-		message: message,
-	}
-}
+type AlreadyExistingProjectError struct{ Dir string }
 
-type NotFoundProjectManifestError struct {
-	message string
-}
+func (err *AlreadyExistingProjectError) Error() string         { return "already existing project" }
+func (err *AlreadyExistingProjectError) ErrorArguments() []any { return []any{"dir", err.Dir} }
 
-func (err *NotFoundProjectManifestError) Error() string {
-	return err.message
-}
+type NotFoundProjectManifestError struct{ File string }
+
+func (err *NotFoundProjectManifestError) Error() string         { return "project manifest not found" }
+func (err *NotFoundProjectManifestError) ErrorArguments() []any { return []any{"file", err.File} }
 
 /**********/
 /* Recipe */
 /**********/
 
-func NewNotFoundRecipeManifestError(message string) *NotFoundRecipeManifestError {
-	return &NotFoundRecipeManifestError{
-		message: message,
-	}
-}
+type NotFoundRecipeManifestError struct{ File string }
 
-type NotFoundRecipeManifestError struct {
-	message string
-}
+func (err *NotFoundRecipeManifestError) Error() string         { return "recipe manifest not found" }
+func (err *NotFoundRecipeManifestError) ErrorArguments() []any { return []any{"file", err.File} }
 
-func (err *NotFoundRecipeManifestError) Error() string {
-	return err.message
-}
+type UnprocessableRecipeNameError struct{}
 
-func NewUnprocessableRecipeNameError(message string) *UnprocessableRecipeNameError {
-	return &UnprocessableRecipeNameError{
-		message: message,
-	}
-}
-
-type UnprocessableRecipeNameError struct {
-	message string
-}
-
-func (err *UnprocessableRecipeNameError) Error() string {
-	return err.message
-}
+func (err *UnprocessableRecipeNameError) Error() string { return "unable to process recipe name" }
 
 /**************/
 /* Repository */
 /**************/
 
-func NewNotFoundRepositoryError(message string) *NotFoundRepositoryError {
-	return &NotFoundRepositoryError{
-		message: message,
-	}
-}
+type UnsupportedRepositoryError struct{ Url string }
 
-type NotFoundRepositoryError struct {
-	message string
-}
+func (err *UnsupportedRepositoryError) Error() string         { return "unsupported repository url" }
+func (err *UnsupportedRepositoryError) ErrorArguments() []any { return []any{"url", err.Url} }
 
-func (err *NotFoundRepositoryError) Error() string {
-	return err.message
-}
+type UnprocessableRepositoryUrlError struct{}
 
-func NewUnsupportedRepositoryError(message string) *UnsupportedRepositoryError {
-	return &UnsupportedRepositoryError{
-		message: message,
-	}
-}
-
-type UnsupportedRepositoryError struct {
-	message string
-}
-
-func (err *UnsupportedRepositoryError) Error() string {
-	return err.message
-}
-
-func NewUnprocessableRepositoryUrlError(message string) *UnprocessableRepositoryUrlError {
-	return &UnprocessableRepositoryUrlError{
-		message: message,
-	}
-}
-
-type UnprocessableRepositoryUrlError struct {
-	message string
-}
-
-func (err *UnprocessableRepositoryUrlError) Error() string {
-	return err.message
-}
+func (err *UnprocessableRepositoryUrlError) Error() string { return "unable to process repository url" }

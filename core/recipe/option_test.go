@@ -2,11 +2,12 @@ package recipe
 
 import (
 	"encoding/json"
-	"github.com/goccy/go-yaml"
-	yamlAst "github.com/goccy/go-yaml/ast"
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
-	internalYaml "manala/internal/yaml"
+	"manala/internal/errors/serrors"
+	"manala/internal/validation"
+	"manala/internal/yaml"
 	"testing"
 )
 
@@ -31,130 +32,136 @@ func (s *OptionSuite) Test() {
 
 func (s *OptionSuite) TestSetErrors() {
 	tests := []struct {
-		name  string
-		node  string
-		value interface{}
-		err   string
+		test     string
+		node     string
+		value    interface{}
+		expected *serrors.Assert
 	}{
 		{
-			name:  "Unsupported",
+			test:  "Unsupported",
 			node:  `node: ~`,
 			value: []string{},
-			err:   "unsupported option value type: []",
+			expected: &serrors.Assert{
+				Type:    &serrors.Error{},
+				Message: "unsupported option value type",
+				Arguments: []any{
+					"value", []string{},
+				},
+			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			option := &option{
-				node: node.(*yamlAst.MappingValueNode),
+				node: node.(*goYamlAst.MappingValueNode),
 			}
 
 			err := option.Set(test.value)
 
 			var value map[string]interface{}
-			_ = yaml.NewDecoder(node).Decode(&value)
+			_ = goYaml.NewDecoder(node).Decode(&value)
 
-			s.EqualError(err, test.err)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *OptionSuite) TestSet() {
 	tests := []struct {
-		name          string
-		node          string
-		value         interface{}
-		expectedValue interface{}
+		test     string
+		node     string
+		value    interface{}
+		expected interface{}
 	}{
 		{
-			name:          "Nil",
-			node:          `node: ""`,
-			value:         nil,
-			expectedValue: nil,
+			test:     "Nil",
+			node:     `node: ""`,
+			value:    nil,
+			expected: nil,
 		},
 		{
-			name:          "True",
-			node:          `node: ~`,
-			value:         true,
-			expectedValue: true,
+			test:     "True",
+			node:     `node: ~`,
+			value:    true,
+			expected: true,
 		},
 		{
-			name:          "False",
-			node:          `node: ~`,
-			value:         false,
-			expectedValue: false,
+			test:     "False",
+			node:     `node: ~`,
+			value:    false,
+			expected: false,
 		},
 		{
-			name:          "String",
-			node:          `node: ~`,
-			value:         "string",
-			expectedValue: "string",
+			test:     "String",
+			node:     `node: ~`,
+			value:    "string",
+			expected: "string",
 		},
 		{
-			name:          "String Empty",
-			node:          `node: ~`,
-			value:         "",
-			expectedValue: "",
+			test:     "StringEmpty",
+			node:     `node: ~`,
+			value:    "",
+			expected: "",
 		},
 		{
-			name:          "String Asterisk",
-			node:          `node: ~`,
-			value:         "*",
-			expectedValue: "*",
+			test:     "StringAsterisk",
+			node:     `node: ~`,
+			value:    "*",
+			expected: "*",
 		},
 		{
-			name:          "String Int",
-			node:          `node: ~`,
-			value:         "12",
-			expectedValue: "12",
+			test:     "StringInt",
+			node:     `node: ~`,
+			value:    "12",
+			expected: "12",
 		},
 		{
-			name:          "String Float",
-			node:          `node: ~`,
-			value:         "2.3",
-			expectedValue: "2.3",
+			test:     "StringFloat",
+			node:     `node: ~`,
+			value:    "2.3",
+			expected: "2.3",
 		},
 		{
-			name:          "String Float Int",
-			node:          `node: ~`,
-			value:         "3.0",
-			expectedValue: "3.0",
+			test:     "StringFloatInt",
+			node:     `node: ~`,
+			value:    "3.0",
+			expected: "3.0",
 		},
 		{
-			name:          "Integer Uint64",
-			node:          `node: ~`,
-			value:         uint64(12),
-			expectedValue: uint64(12),
+			test:     "IntegerUint64",
+			node:     `node: ~`,
+			value:    uint64(12),
+			expected: uint64(12),
 		},
 		{
-			name:          "Integer Float64",
-			node:          `node: ~`,
-			value:         float64(12),
-			expectedValue: uint64(12),
+			test:     "IntegerFloat64",
+			node:     `node: ~`,
+			value:    float64(12),
+			expected: uint64(12),
 		},
 		{
-			name:          "Float",
-			node:          `node: ~`,
-			value:         2.3,
-			expectedValue: 2.3,
+			test:     "Float",
+			node:     `node: ~`,
+			value:    2.3,
+			expected: 2.3,
 		},
 		{
-			name:          "Float Int",
-			node:          `node: ~`,
-			value:         3.0,
-			expectedValue: uint64(3),
+			test:     "FloatInt",
+			node:     `node: ~`,
+			value:    3.0,
+			expected: uint64(3),
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			node, _ := internalYaml.NewParser(internalYaml.WithComments()).ParseBytes([]byte(test.node))
+		s.Run(test.test, func() {
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			option := &option{
-				node: node.(*yamlAst.MappingValueNode),
+				node: node.(*goYamlAst.MappingValueNode),
 			}
 
 			err := option.Set(test.value)
@@ -162,49 +169,54 @@ func (s *OptionSuite) TestSet() {
 			s.NoError(err)
 
 			var value map[string]interface{}
-			_ = yaml.NewDecoder(node).Decode(&value)
+			_ = goYaml.NewDecoder(node).Decode(&value)
 
-			s.Equal(test.expectedValue, value["node"])
+			s.Equal(test.expected, value["node"])
 		})
 	}
 }
 
 func (s *OptionSuite) TestUnmarshalJSONErrors() {
 	tests := []struct {
-		name   string
-		data   string
-		report *internalReport.Assert
+		test     string
+		data     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Syntax",
+			test: "Syntax",
 			data: `foo`,
-			report: &internalReport.Assert{
-				Err: "invalid character 'o' in literal false (expecting 'a')",
+			expected: &serrors.Assert{
+				Type:    &json.SyntaxError{},
+				Message: "invalid character 'o' in literal false (expecting 'a')",
 			},
 		},
 		{
-			name: "Type",
+			test: "Type",
 			data: `[]`,
-			report: &internalReport.Assert{
-				Err: "json: cannot unmarshal array into Go value of type map[string]interface {}",
+			expected: &serrors.Assert{
+				Type:    &json.UnmarshalTypeError{},
+				Message: "json: cannot unmarshal array into Go value of type map[string]interface {}",
 			},
 		},
 		{
-			name: "Validation",
+			test: "Validation",
 			data: `{"foo": "bar"}`,
-			report: &internalReport.Assert{
-				Err: "invalid option",
-				Reports: []internalReport.Assert{
+			expected: &serrors.Assert{
+				Type:    &validation.Error{},
+				Message: "invalid option",
+				Errors: []*serrors.Assert{
 					{
+						Type:    &validation.ResultError{},
 						Message: "missing label field",
-						Fields: map[string]interface{}{
-							"property": "label",
+						Arguments: []any{
+							"property", "label",
 						},
 					},
 					{
+						Type:    &validation.ResultError{},
 						Message: "don't support additional properties",
-						Fields: map[string]interface{}{
-							"property": "foo",
+						Arguments: []any{
+							"property", "foo",
 						},
 					},
 				},
@@ -213,16 +225,12 @@ func (s *OptionSuite) TestUnmarshalJSONErrors() {
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
+		s.Run(test.test, func() {
 			var option *option
 
 			err := json.Unmarshal([]byte(test.data), &option)
 
-			s.Error(err)
-
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
@@ -235,5 +243,6 @@ func (s *OptionSuite) TestUnmarshalJSON() {
 	err := json.Unmarshal([]byte(data), &option)
 
 	s.NoError(err)
+
 	s.Equal("foo", option.Label())
 }

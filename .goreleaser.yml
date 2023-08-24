@@ -42,7 +42,7 @@ archives:
         format: zip
 
 brews:
-  - tap:
+  - repository:
       owner: manala
       name: homebrew-tap
     commit_author:

@@ -1,12 +1,12 @@
 package recipe
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"log/slog"
 	"manala/app/mocks"
 	"manala/core"
-	internalLog "manala/internal/log"
+	"manala/internal/errors/serrors"
 	"testing"
 )
 
@@ -17,48 +17,56 @@ func TestNameProcessorManagerSuite(t *testing.T) {
 }
 
 func (s *NameProcessorManagerSuite) TestProcessName() {
-	log := internalLog.New(io.Discard)
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-	cascadingManagerMock := mocks.MockRecipeManager()
+	cascadingManagerMock := &mocks.RecipeManagerMock{}
 
 	tests := []struct {
-		name     string
-		names    map[int]string
-		expected string
-		error    bool
+		test         string
+		name         string
+		names        map[int]string
+		expectedName string
+		expectedErr  *serrors.Assert
 	}{
 		{
+			test: "1",
 			name: "",
 			names: map[int]string{
 				10: "",
 			},
-			error: true,
+			expectedErr: &serrors.Assert{
+				Type:    &core.UnprocessableRecipeNameError{},
+				Message: "unable to process recipe name",
+			},
 		},
 		{
+			test: "2",
 			name: "name",
 			names: map[int]string{
 				10: "",
 			},
-			expected: "name",
+			expectedName: "name",
 		},
 		{
+			test: "3",
 			name: "",
 			names: map[int]string{
 				10: "upper",
 			},
-			expected: "upper",
+			expectedName: "upper",
 		},
 		{
+			test: "4",
 			name: "name",
 			names: map[int]string{
 				10: "upper",
 			},
-			expected: "upper",
+			expectedName: "upper",
 		},
 	}
 
-	for i, test := range tests {
-		s.Run(fmt.Sprint(i), func() {
+	for _, test := range tests {
+		s.Run(test.test, func() {
 			manager := NewNameProcessorManager(
 				log,
 				cascadingManagerMock,
@@ -70,13 +78,12 @@ func (s *NameProcessorManagerSuite) TestProcessName() {
 
 			actual, err := manager.processName(test.name)
 
-			if test.error {
-				var _error *core.UnprocessableRecipeNameError
-				s.ErrorAs(err, &_error)
+			if test.expectedErr != nil {
 				s.Empty(actual)
+				serrors.Equal(s.Assert(), test.expectedErr, err)
 			} else {
+				s.Equal(test.expectedName, actual)
 				s.NoError(err)
-				s.Equal(test.expected, actual)
 			}
 		})
 	}

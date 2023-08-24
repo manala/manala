@@ -4,16 +4,14 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
-	"fmt"
 	"github.com/xeipuuv/gojsonschema"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/app/views"
 	"manala/core"
-	internalLog "manala/internal/log"
-	internalOs "manala/internal/os"
-	internalReport "manala/internal/report"
-	internalValidation "manala/internal/validation"
-	internalWatcher "manala/internal/watcher"
+	"manala/internal/errors/serrors"
+	"manala/internal/validation"
+	"manala/internal/watcher"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +22,7 @@ const manifestFilename = ".manala.yaml"
 var manifestTemplate string
 
 func NewManager(
-	log *internalLog.Logger,
+	log *slog.Logger,
 	repositoryManager interfaces.RepositoryManager,
 	recipeManager interfaces.RecipeManager,
 ) *Manager {
@@ -36,7 +34,7 @@ func NewManager(
 }
 
 type Manager struct {
-	log               *internalLog.Logger
+	log               *slog.Logger
 	repositoryManager interfaces.RepositoryManager
 	recipeManager     interfaces.RecipeManager
 }
@@ -53,24 +51,21 @@ func (manager *Manager) IsProject(dir string) bool {
 
 func (manager *Manager) loadManifest(file string) (interfaces.ProjectManifest, error) {
 	// Log
-	manager.log.
-		WithField("file", file).
-		Debug("load project manifest")
+	manager.log.Debug("try to load project manifest",
+		"file", file,
+	)
 
 	// Stat file
 	if fileInfo, err := os.Stat(file); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, internalReport.NewError(
-				core.NewNotFoundProjectManifestError("project manifest not found"),
-			).WithField("file", file)
+			return nil, &core.NotFoundProjectManifestError{File: file}
 		}
-		return nil, internalReport.NewError(internalOs.NewError(err)).
-			WithMessage("unable to stat project manifest").
-			WithField("file", file)
+		return nil, serrors.WrapOs("unable to stat project manifest", err).
+			WithArguments("file", file)
 	} else {
 		if fileInfo.IsDir() {
-			return nil, internalReport.NewError(fmt.Errorf("project manifest is a directory")).
-				WithField("dir", file)
+			return nil, serrors.New("project manifest is a directory").
+				WithArguments("dir", file)
 		}
 	}
 
@@ -78,31 +73,30 @@ func (manager *Manager) loadManifest(file string) (interfaces.ProjectManifest, e
 
 	// Open file
 	if reader, err := os.Open(file); err != nil {
-		return nil, internalReport.NewError(internalOs.NewError(err)).
-			WithMessage("unable to open project manifest").
-			WithField("file", file)
+		return nil, serrors.WrapOs("unable to open project manifest", err).
+			WithArguments("file", file)
 	} else {
 		// Read from file
 		if err = man.ReadFrom(reader); err != nil {
-			return nil, internalReport.NewError(err).
-				WithField("file", file)
+			return nil, serrors.Wrap("unable to read project manifest", err).
+				WithArguments("file", file)
 		}
 	}
 
 	// Log
-	manager.log.
-		WithField("repository", man.Repository()).
-		WithField("recipe", man.Recipe()).
-		Debug("project manifest")
+	manager.log.Debug("project manifest loaded",
+		"repository", man.Repository(),
+		"recipe", man.Recipe(),
+	)
 
 	return man, nil
 }
 
 func (manager *Manager) LoadProject(dir string) (interfaces.Project, error) {
 	// Log
-	manager.log.
-		WithField("dir", dir).
-		Debug("load project")
+	manager.log.Debug("load project",
+		"dir", dir,
+	)
 
 	// Load manifest
 	manFile := filepath.Join(dir, manifestFilename)
@@ -135,24 +129,22 @@ func (manager *Manager) LoadProject(dir string) (interfaces.Project, error) {
 	)
 
 	// Validate vars against recipe
-	validation, err := gojsonschema.Validate(
+	val, err := gojsonschema.Validate(
 		gojsonschema.NewGoLoader(proj.Recipe().Schema()),
 		gojsonschema.NewGoLoader(proj.Vars()),
 	)
 	if err != nil {
-		return nil, internalReport.NewError(err).
-			WithMessage("unable to validate project manifest").
-			WithField("file", manFile)
+		return nil, serrors.Wrap("unable to validate project manifest", err).
+			WithArguments("file", manFile)
 	}
 
-	if !validation.Valid() {
-		return nil, internalReport.NewError(
-			internalValidation.NewError(
-				"invalid project manifest vars",
-				validation,
-			).
-				WithReporter(man),
-		).WithField("file", manFile)
+	if !val.Valid() {
+		return nil, validation.NewError(
+			"invalid project manifest vars",
+			val,
+		).
+			WithArguments("file", manFile).
+			WithResultErrorDecorator(man.ValidationResultErrorDecorator())
 	}
 
 	return proj, nil
@@ -169,7 +161,7 @@ func (manager *Manager) CreateProject(dir string, rec interfaces.Recipe, vars ma
 	// Get final manifest content
 	buffer := &bytes.Buffer{}
 	if err := template.WriteTo(buffer); err != nil {
-		return nil, err
+		return nil, serrors.Wrap("recipe template error", err)
 	}
 
 	manFile := filepath.Join(dir, manifestFilename)
@@ -184,35 +176,30 @@ func (manager *Manager) CreateProject(dir string, rec interfaces.Recipe, vars ma
 	if dirStat, err := os.Stat(_dir); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			if err := os.MkdirAll(_dir, 0755); err != nil {
-				return nil, internalReport.NewError(internalOs.NewError(err)).
-					WithMessage("unable to create project directory").
-					WithField("dir", _dir)
+				return nil, serrors.WrapOs("unable to create project directory", err).
+					WithArguments("dir", _dir)
 			}
 		} else {
-			return nil, internalReport.NewError(internalOs.NewError(err)).
-				WithMessage("unable to stat project directory").
-				WithField("dir", _dir)
+			return nil, serrors.WrapOs("unable to stat project directory", err).
+				WithArguments("dir", _dir)
 		}
 	} else if !dirStat.IsDir() {
-		return nil, internalReport.NewError(fmt.Errorf("project is not a directory")).
-			WithField("file", _dir)
+		return nil, serrors.New("project is not a directory").
+			WithArguments("path", _dir)
 	}
 
 	if writer, err := os.Create(manFile); err != nil {
-		return nil, internalReport.NewError(internalOs.NewError(err)).
-			WithMessage("unable to create project manifest file").
-			WithField("file", manFile)
+		return nil, serrors.WrapOs("unable to create project manifest file", err).
+			WithArguments("file", manFile)
 	} else {
 		if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
-			return nil, internalReport.NewError(err).
-				WithMessage("unable to save project manifest file").
-				WithField("file", manFile)
+			return nil, serrors.Wrap("unable to save project manifest file", err).
+				WithArguments("file", manFile)
 		}
 
 		if err := writer.Sync(); err != nil {
-			return nil, internalReport.NewError(err).
-				WithMessage("unable to sync project manifest file").
-				WithField("file", manFile)
+			return nil, serrors.Wrap("unable to sync project manifest file", err).
+				WithArguments("file", manFile)
 		}
 	}
 
@@ -226,7 +213,7 @@ func (manager *Manager) CreateProject(dir string, rec interfaces.Recipe, vars ma
 	return proj, nil
 }
 
-func (manager *Manager) WatchProject(proj interfaces.Project, watcher *internalWatcher.Watcher) error {
+func (manager *Manager) WatchProject(proj interfaces.Project, watcher *watcher.Watcher) error {
 	manFile := filepath.Join(proj.Dir(), manifestFilename)
 
 	return watcher.AddGroup("project", manFile)

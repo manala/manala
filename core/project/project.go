@@ -1,11 +1,11 @@
 package project
 
 import (
+	"dario.cat/mergo"
 	_ "embed"
-	"github.com/imdario/mergo"
 	"manala/app/interfaces"
 	"manala/app/views"
-	internalTemplate "manala/internal/template"
+	"manala/internal/template"
 )
 
 func NewProject(dir string, projMan interfaces.ProjectManifest, rec interfaces.Recipe) *Project {
@@ -39,7 +39,7 @@ func (proj *Project) Vars() map[string]interface{} {
 	return vars
 }
 
-func (proj *Project) Template() *internalTemplate.Template {
+func (proj *Project) Template() *template.Template {
 	return proj.recipe.Template().
 		WithData(views.NormalizeProject(proj))
 }

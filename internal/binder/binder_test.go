@@ -20,7 +20,7 @@ func TestRecipeFormBinderSuite(t *testing.T) {
 func (s *RecipeFormBinderSuite) TestNew() {
 
 	s.Run("String", func() {
-		optionMock := mocks.MockRecipeOption()
+		optionMock := &mocks.RecipeOptionMock{}
 		optionMock.
 			On("Label").Return("Option").
 			On("Schema").Return(map[string]interface{}{
@@ -50,7 +50,7 @@ func (s *RecipeFormBinderSuite) TestNew() {
 	})
 
 	s.Run("Enum", func() {
-		optionMock := mocks.MockRecipeOption()
+		optionMock := &mocks.RecipeOptionMock{}
 		optionMock.
 			On("Label").Return("Option").
 			On("Schema").Return(map[string]interface{}{
@@ -113,7 +113,7 @@ func (s *RecipeFormBinderSuite) TestNew() {
 func (s *RecipeFormBinderSuite) TestApply() {
 	var value interface{}
 
-	optionMock := mocks.MockRecipeOption()
+	optionMock := &mocks.RecipeOptionMock{}
 	optionMock.
 		On("Label").Return("Option").
 		On("Schema").Return(map[string]interface{}{

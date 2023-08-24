@@ -2,16 +2,11 @@ package mocks
 
 import (
 	"github.com/stretchr/testify/mock"
-	"github.com/xeipuuv/gojsonschema"
 	"io"
 	"manala/app/interfaces"
-	internalReport "manala/internal/report"
-	internalTemplate "manala/internal/template"
+	"manala/internal/template"
+	"manala/internal/validation"
 )
-
-func MockProject() *ProjectMock {
-	return &ProjectMock{}
-}
 
 type ProjectMock struct {
 	mock.Mock
@@ -32,18 +27,14 @@ func (rec *ProjectMock) Vars() map[string]interface{} {
 	return args.Get(0).(map[string]interface{})
 }
 
-func (rec *ProjectMock) Template() *internalTemplate.Template {
+func (rec *ProjectMock) Template() *template.Template {
 	args := rec.Called()
-	return args.Get(0).(*internalTemplate.Template)
+	return args.Get(0).(*template.Template)
 }
 
 /************/
 /* Manifest */
 /************/
-
-func MockProjectManifest() *ProjectManifestMock {
-	return &ProjectManifestMock{}
-}
 
 type ProjectManifestMock struct {
 	mock.Mock
@@ -69,6 +60,7 @@ func (man *ProjectManifestMock) ReadFrom(reader io.Reader) error {
 	return args.Error(0)
 }
 
-func (man *ProjectManifestMock) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	man.Called(result, report)
+func (man *ProjectManifestMock) ValidationResultErrorDecorator() validation.ResultErrorDecorator {
+	args := man.Called()
+	return args.Get(0).(validation.ResultErrorDecorator)
 }

@@ -1,22 +1,12 @@
 package mocks
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/mock"
 )
 
-func MockConfig() *ConfigMock {
-	return &ConfigMock{}
-}
-
 type ConfigMock struct {
 	mock.Mock
-}
-
-func (conf *ConfigMock) Fields() log.Fields {
-	args := conf.Called()
-	return args.Get(0).(log.Fields)
 }
 
 func (conf *ConfigMock) Debug() bool {
@@ -40,4 +30,8 @@ func (conf *ConfigMock) CacheDir() string {
 
 func (conf *ConfigMock) BindCacheDirFlag(flag *pflag.Flag) {
 	conf.Called(flag)
+}
+
+func (conf *ConfigMock) Args() []any {
+	return []any{}
 }

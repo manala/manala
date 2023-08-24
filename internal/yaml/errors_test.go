@@ -1,9 +1,11 @@
 package yaml
 
 import (
-	"fmt"
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlParser "github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
+	"manala/internal/errors/serrors"
+	"manala/internal/testing/heredoc"
 	"testing"
 )
 
@@ -13,61 +15,80 @@ func TestErrorsSuite(t *testing.T) {
 	suite.Run(t, new(ErrorsSuite))
 }
 
-func (s *ErrorsSuite) Test() {
-	s.Run("Unformatted", func() {
-		_err := fmt.Errorf("error")
-		err := NewError(_err)
+func (s *ErrorsSuite) TestError() {
+	_, formattedErr := goYamlParser.ParseBytes([]byte(`&foo`), 0)
 
-		var _error *Error
-		s.ErrorAs(err, &_error)
-
-		report := internalReport.NewErrorReport(err)
-
-		reportAssert := &internalReport.Assert{
-			Err: "error",
-		}
-		reportAssert.Equal(&s.Suite, report)
-	})
-
-	s.Run("Formatted", func() {
-		_, _err := NewParser().ParseBytes([]byte("&foo"))
-		err := NewError(_err)
-
-		var _error *Error
-		s.ErrorAs(err, &_error)
-
-		report := internalReport.NewErrorReport(err)
-
-		reportAssert := &internalReport.Assert{
-			Err: "unexpected anchor. anchor value is undefined",
-			Fields: map[string]interface{}{
-				"line":   1,
-				"column": 2,
+	tests := []struct {
+		test     string
+		err      error
+		expected *serrors.Assert
+	}{
+		{
+			test: "Unknown",
+			err:  serrors.New(`error`),
+			expected: &serrors.Assert{
+				Type:    &Error{},
+				Message: "error",
 			},
-			Trace: ">  1 | &foo\n        ^\n",
-		}
-		reportAssert.Equal(&s.Suite, report)
-	})
+		},
+		{
+			test: "Formatted",
+			err:  formattedErr,
+			expected: &serrors.Assert{
+				Type:    &Error{},
+				Message: "unexpected anchor. anchor value is undefined",
+				Arguments: []any{
+					"line", 1,
+					"column", 2,
+				},
+				Details: heredoc.Doc(`
+					>  1 | &foo
+					        ^
+				`),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			err := NewError(test.err)
+
+			serrors.Equal(s.Assert(), test.expected, err)
+		})
+	}
 }
 
-func (s *ErrorsSuite) TestNode() {
-	content := `foo: bar`
-	contentNode, _ := NewParser().ParseBytes([]byte(content))
+func (s *ErrorsSuite) TestNodeError() {
+	contentNode, _ := NewParser().ParseBytes([]byte(`foo: bar`))
 
-	err := NewNodeError("message", contentNode)
-
-	var _nodeError *NodeError
-	s.ErrorAs(err, &_nodeError)
-
-	report := internalReport.NewErrorReport(err)
-
-	reportAssert := &internalReport.Assert{
-		Err: "message",
-		Fields: map[string]interface{}{
-			"line":   1,
-			"column": 4,
+	tests := []struct {
+		test     string
+		node     goYamlAst.Node
+		expected *serrors.Assert
+	}{
+		{
+			test: "Content",
+			node: contentNode,
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "error",
+				Arguments: []any{
+					"line", 1,
+					"column", 4,
+				},
+				Details: heredoc.Doc(`
+					>  1 | foo: bar
+					          ^
+				`),
+			},
 		},
-		Trace: ">  1 | foo: bar\n          ^\n",
 	}
-	reportAssert.Equal(&s.Suite, report)
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			err := NewNodeError("error", test.node)
+
+			serrors.Equal(s.Assert(), test.expected, err)
+		})
+	}
 }

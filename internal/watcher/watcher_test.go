@@ -1,39 +1,29 @@
 package watcher
 
 import (
-	"bytes"
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/suite"
-	internalLog "manala/internal/log"
-	internalTesting "manala/internal/testing"
+	"io"
+	"log/slog"
 	"path/filepath"
 	"testing"
 )
 
-type WatcherSuite struct {
-	suite.Suite
-	stderr *bytes.Buffer
-	log    *internalLog.Logger
-}
+type WatcherSuite struct{ suite.Suite }
 
 func TestWatcherSuite(t *testing.T) {
 	suite.Run(t, new(WatcherSuite))
 }
 
-func (s *WatcherSuite) SetupTest() {
-	s.stderr = &bytes.Buffer{}
-	s.log = internalLog.New(s.stderr)
-}
-
 func (s *WatcherSuite) TestGroups() {
-	path := internalTesting.DataPath(s)
+	path := filepath.FromSlash("testdata/WatcherSuite/TestGroups")
 	fooPath := filepath.Join(path, "foo")
 	barPath := filepath.Join(path, "bar")
 	bazPath := filepath.Join(path, "baz")
 
 	fsnotifyWatcher, _ := fsnotify.NewWatcher()
 	watcher := &Watcher{
-		log:     s.log,
+		log:     slog.New(slog.NewTextHandler(io.Discard, nil)),
 		Watcher: fsnotifyWatcher,
 		groups:  map[string][]string{},
 	}

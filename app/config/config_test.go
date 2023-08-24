@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -16,15 +15,15 @@ func TestConfigSuite(t *testing.T) {
 func (s *ConfigSuite) Test() {
 	conf := New()
 
-	s.Run("Fields", func() {
-		s.Equal(log.Fields{
-			"debug":      false,
-			"repository": "https://github.com/manala/manala-recipes.git",
-			"cache-dir":  "",
-		}, conf.Fields())
+	s.Run("Args", func() {
+		s.Equal([]any{
+			"repository", "https://github.com/manala/manala-recipes.git",
+			"cache-dir", "",
+			"debug", false,
+		}, conf.Args())
 	})
 
-	s.Run("Bind Flags", func() {
+	s.Run("BindFlags", func() {
 		flags := pflag.NewFlagSet("test", pflag.ContinueOnError)
 
 		flags.Bool("foo", conf.Debug(), "test")

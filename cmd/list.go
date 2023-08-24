@@ -1,15 +1,15 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app/interfaces"
 	"manala/core/application"
-	internalLog "manala/internal/log"
+	"manala/internal/ui/components"
+	"manala/internal/ui/output"
 )
 
-func newListCmd(conf interfaces.Config, log *internalLog.Logger) *cobra.Command {
+func newListCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
@@ -40,41 +40,21 @@ Example: manala list -> resulting in a recipes list display`,
 			app := application.NewApplication(
 				conf,
 				log,
+				out,
 				appOptions...,
 			)
 
-			var recs []interfaces.Recipe
-			maxNameWidth := 0
+			table := &components.Table{}
 
 			// Walk into recipes
 			if err := app.WalkRecipes(func(rec interfaces.Recipe) error {
-				recs = append(recs, rec)
-
-				nameWidth := lipgloss.Width(rec.Name())
-				if nameWidth > maxNameWidth {
-					maxNameWidth = nameWidth
-				}
-
+				table.AddRow(rec.Name(), rec.Description())
 				return nil
 			}); err != nil {
 				return err
 			}
 
-			nameStyle := styles.Primary.Copy().
-				Width(maxNameWidth).
-				MarginRight(2)
-			descriptionStyle := styles.Secondary.Copy()
-
-			for _, rec := range recs {
-				if _, err := fmt.Fprintf(
-					cmd.OutOrStdout(),
-					"%s%s\n",
-					nameStyle.Render(rec.Name()),
-					descriptionStyle.Render(rec.Description()),
-				); err != nil {
-					return err
-				}
-			}
+			out.Table(table)
 
 			return nil
 		},

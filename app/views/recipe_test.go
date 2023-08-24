@@ -15,13 +15,13 @@ func TestRecipeSuite(t *testing.T) {
 func (s *RecipeSuite) TestNormalize() {
 	repoUrl := "url"
 
-	repoMock := mocks.MockRepository()
+	repoMock := &mocks.RepositoryMock{}
 	repoMock.
 		On("Url").Return(repoUrl)
 
 	recName := "name"
 
-	recMock := mocks.MockRecipe()
+	recMock := &mocks.RecipeMock{}
 	recMock.
 		On("Name").Return(recName).
 		On("Repository").Return(repoMock)

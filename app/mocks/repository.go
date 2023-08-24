@@ -5,10 +5,6 @@ import (
 	"manala/app/interfaces"
 )
 
-func MockRepository() *RepositoryMock {
-	return &RepositoryMock{}
-}
-
 type RepositoryMock struct {
 	mock.Mock
 }
@@ -26,10 +22,6 @@ func (repo *RepositoryMock) Dir() string {
 /***********/
 /* Manager */
 /***********/
-
-func MockRepositoryManager() *RepositoryManagerMock {
-	return &RepositoryManagerMock{}
-}
 
 type RepositoryManagerMock struct {
 	mock.Mock

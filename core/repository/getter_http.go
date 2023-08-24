@@ -3,13 +3,13 @@ package repository
 import (
 	"context"
 	"github.com/hashicorp/go-getter/v2"
-	internalLog "manala/internal/log"
+	"log/slog"
 	"time"
 )
 
-func NewHttpGetter(log *internalLog.Logger, result *GetterResult) *HttpGetter {
+func NewHttpGetter(log *slog.Logger, result *GetterResult) *HttpGetter {
 	return &HttpGetter{
-		log:    log,
+		log:    log.With("getter", "http"),
 		result: result,
 		HttpGetter: &getter.HttpGetter{
 			// Will lookup and use auth information found in the user's netrc file if available
@@ -26,25 +26,26 @@ func NewHttpGetter(log *internalLog.Logger, result *GetterResult) *HttpGetter {
 }
 
 type HttpGetter struct {
-	log    *internalLog.Logger
+	log    *slog.Logger
 	result *GetterResult
 	*getter.HttpGetter
 	protocol string
 }
 
 func (g *HttpGetter) Detect(req *getter.Request) (bool, error) {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("detect")
+	// Log
+	g.log.Debug("try to detect repository",
+		"src", req.Src,
+	)
 
 	// Detect
 	ok, err := g.HttpGetter.Detect(req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to detect")
+		// Log
+		g.log.Debug("unable to detect repository",
+			"error", err,
+		)
 
 		g.result.SetDetectError(err, g.protocol)
 
@@ -55,18 +56,19 @@ func (g *HttpGetter) Detect(req *getter.Request) (bool, error) {
 }
 
 func (g *HttpGetter) Get(ctx context.Context, req *getter.Request) error {
-	g.log.
-		WithField("protocol", g.protocol).
-		Debug("get")
+	// Log
+	g.log.Debug("get repository",
+		"src", req.Src,
+	)
 
 	// Get
 	err := g.HttpGetter.Get(ctx, req)
 
 	if err != nil {
-		g.log.
-			WithField("protocol", g.protocol).
-			WithError(err).
-			Debug("unable to get")
+		// Log
+		g.log.Debug("unable to get repository",
+			"error", err,
+		)
 
 		g.result.AddGetError(err, g.protocol)
 

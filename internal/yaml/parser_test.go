@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	yamlAst "github.com/goccy/go-yaml/ast"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
-	internalReport "manala/internal/report"
-	internalTesting "manala/internal/testing"
+	"manala/internal/errors/serrors"
+	"manala/internal/testing/heredoc"
+	"path/filepath"
 	"testing"
 )
 
@@ -20,290 +21,316 @@ func (s *ParserSuite) TestEmpty() {
 	node, err := parser.ParseBytes(nil)
 
 	s.Nil(node)
-	s.EqualError(err, "empty yaml file")
 
-	report := internalReport.NewErrorReport(err)
-
-	reportAssert := &internalReport.Assert{
-		Err: "empty yaml file",
-	}
-	reportAssert.Equal(&s.Suite, report)
+	serrors.Equal(s.Assert(), &serrors.Assert{
+		Type:    &serrors.Error{},
+		Message: "empty yaml file",
+	}, err)
 }
 
 func (s *ParserSuite) TestMultipleDocuments() {
-	parser := NewParser()
+	dir := filepath.FromSlash("testdata/ParserSuite/TestMultipleDocuments")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser()
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.Nil(node)
-	s.EqualError(err, "multiple documents yaml file")
 
-	report := internalReport.NewErrorReport(err)
-
-	reportAssert := &internalReport.Assert{
-		Err: "multiple documents yaml file",
-		Fields: map[string]interface{}{
-			"line":   4,
-			"column": 1,
+	serrors.Equal(s.Assert(), &serrors.Assert{
+		Type:    &NodeError{},
+		Message: "multiple documents yaml file",
+		Arguments: []any{
+			"line", 4,
+			"column", 1,
 		},
-	}
-	reportAssert.Equal(&s.Suite, report)
+		Details: heredoc.Doc(`
+			   1 | ---
+			   2 | foo
+			   3 | ---
+			>  4 | bar
+			       ^
+		`),
+	}, err)
 }
 
 func (s *ParserSuite) TestMappingComments() {
-	parser := NewParser(WithComments())
+	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingComments")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser(WithComments())
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.NoError(err)
 
-	emptyNode := node.(*yamlAst.MappingNode).Values[0]
+	emptyNode := node.(*goYamlAst.MappingNode).Values[0]
 	s.Equal("# Empty", emptyNode.GetComment().String())
 
-	mappingValueNode := node.(*yamlAst.MappingNode).Values[1]
+	mappingValueNode := node.(*goYamlAst.MappingNode).Values[1]
 	s.Equal("# Mapping Value", mappingValueNode.GetComment().String())
 	s.Equal("# Mapping Value Foo", mappingValueNode.Value.GetComment().String())
 
-	mappingNode := node.(*yamlAst.MappingNode).Values[2]
+	mappingNode := node.(*goYamlAst.MappingNode).Values[2]
 	s.Equal("# Mapping", mappingNode.GetComment().String())
-	s.Equal("# Mapping Foo", mappingNode.Value.(*yamlAst.MappingNode).Values[0].GetComment().String())
-	s.Equal("# Mapping Bar", mappingNode.Value.(*yamlAst.MappingNode).Values[1].GetComment().String())
+	s.Equal("# Mapping Foo", mappingNode.Value.(*goYamlAst.MappingNode).Values[0].GetComment().String())
+	s.Equal("# Mapping Bar", mappingNode.Value.(*goYamlAst.MappingNode).Values[1].GetComment().String())
 }
 
 func (s *ParserSuite) TestIrregularMapKeys() {
 	tests := []struct {
-		name   string
-		err    string
-		report *internalReport.Assert
+		test     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Integer",
-			err:  "irregular map key",
-			report: &internalReport.Assert{
-				Err: "irregular map key",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 2,
+			test: "Integer",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "irregular map key",
+				Arguments: []any{
+					"line", 1,
+					"column", 2,
 				},
+				Details: heredoc.Doc(`
+					>  1 | 0: foo
+					        ^
+				`),
 			},
 		},
 		{
-			name: "Integer Anchor",
-			err:  "irregular map key",
-			report: &internalReport.Assert{
-				Err: "irregular map key",
-				Fields: map[string]interface{}{
-					"line":   2,
-					"column": 4,
+			test: "IntegerAnchor",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "irregular map key",
+				Arguments: []any{
+					"line", 2,
+					"column", 4,
 				},
+				Details: heredoc.Doc(`
+					   1 | anchor: &anchor
+					>  2 |   0: foo
+					          ^
+				`),
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			parser := NewParser()
+		s.Run(test.test, func() {
+			dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularMapKeys/" + test.test)
 
-			node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+			parser := NewParser()
+			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 			s.Nil(node)
-			s.EqualError(err, test.err)
 
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *ParserSuite) TestIrregularTypes() {
 	tests := []struct {
-		name   string
-		err    string
-		report *internalReport.Assert
+		test     string
+		expected *serrors.Assert
 	}{
 		{
-			name: "Inf",
-			err:  "irregular type",
-			report: &internalReport.Assert{
-				Err: "irregular type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 6,
+			test: "Inf",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "irregular type",
+				Arguments: []any{
+					"line", 1,
+					"column", 6,
 				},
+				Details: heredoc.Doc(`
+					>  1 | foo: .inf
+					            ^
+				`),
 			},
 		},
 		{
-			name: "Nan",
-			err:  "irregular type",
-			report: &internalReport.Assert{
-				Err: "irregular type",
-				Fields: map[string]interface{}{
-					"line":   1,
-					"column": 6,
+			test: "Nan",
+			expected: &serrors.Assert{
+				Type:    &NodeError{},
+				Message: "irregular type",
+				Arguments: []any{
+					"line", 1,
+					"column", 6,
 				},
+				Details: heredoc.Doc(`
+					>  1 | foo: .nan
+					            ^
+				`),
 			},
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			parser := NewParser()
+		s.Run(test.test, func() {
+			dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularTypes/" + test.test)
 
-			node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+			parser := NewParser()
+			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 			s.Nil(node)
-			s.EqualError(err, test.err)
 
-			report := internalReport.NewErrorReport(err)
-
-			test.report.Equal(&s.Suite, report)
+			serrors.Equal(s.Assert(), test.expected, err)
 		})
 	}
 }
 
 func (s *ParserSuite) TestMappingKey() {
-	parser := NewParser()
+	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingKey")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser()
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.NoError(err)
-	s.IsType((*yamlAst.MappingValueNode)(nil), node)
 
-	keyNode := node.(*yamlAst.MappingValueNode).Key
-	s.IsType((*yamlAst.StringNode)(nil), keyNode)
-	s.Equal("foo", keyNode.(*yamlAst.StringNode).Value)
+	s.IsType((*goYamlAst.MappingValueNode)(nil), node)
 
-	valueNode := node.(*yamlAst.MappingValueNode).Value
-	s.IsType((*yamlAst.StringNode)(nil), valueNode)
-	s.Equal("bar", valueNode.(*yamlAst.StringNode).Value)
+	keyNode := node.(*goYamlAst.MappingValueNode).Key
+	s.IsType((*goYamlAst.StringNode)(nil), keyNode)
+	s.Equal("foo", keyNode.(*goYamlAst.StringNode).Value)
+
+	valueNode := node.(*goYamlAst.MappingValueNode).Value
+	s.IsType((*goYamlAst.StringNode)(nil), valueNode)
+	s.Equal("bar", valueNode.(*goYamlAst.StringNode).Value)
 }
 
 func (s *ParserSuite) TestIrregularMappingKey() {
-	parser := NewParser()
+	dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularMappingKey")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser()
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.Nil(node)
-	s.EqualError(err, "irregular map key")
 
-	report := internalReport.NewErrorReport(err)
-
-	reportAssert := &internalReport.Assert{
-		Err: "irregular map key",
-		Fields: map[string]interface{}{
-			"line":   1,
-			"column": 6,
+	serrors.Equal(s.Assert(), &serrors.Assert{
+		Type:    &NodeError{},
+		Message: "irregular map key",
+		Arguments: []any{
+			"line", 1,
+			"column", 6,
 		},
-	}
-	reportAssert.Equal(&s.Suite, report)
+		Details: heredoc.Doc(`
+			>  1 | ? 123: bar
+			            ^
+		`),
+	}, err)
 }
 
 func (s *ParserSuite) TestTags() {
-	parser := NewParser()
+	dir := filepath.FromSlash("testdata/ParserSuite/TestTags")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser()
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.NoError(err)
-	s.IsType((*yamlAst.StringNode)(nil), node)
-	s.Equal("foo", node.(*yamlAst.StringNode).Value)
+
+	s.IsType((*goYamlAst.StringNode)(nil), node)
+	s.Equal("foo", node.(*goYamlAst.StringNode).Value)
 }
 
 func (s *ParserSuite) TestUnknownAnchors() {
-	parser := NewParser()
+	dir := filepath.FromSlash("testdata/ParserSuite/TestUnknownAnchors")
 
-	node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+	parser := NewParser()
+	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 	s.Nil(node)
-	s.EqualError(err, "cannot find anchor \"anchor\"")
 
-	report := internalReport.NewErrorReport(err)
-
-	reportAssert := &internalReport.Assert{
-		Err: "cannot find anchor \"anchor\"",
-		Fields: map[string]interface{}{
-			"line":   1,
-			"column": 2,
+	serrors.Equal(s.Assert(), &serrors.Assert{
+		Type:    &NodeError{},
+		Message: "cannot find anchor",
+		Arguments: []any{
+			"line", 1,
+			"column", 2,
+			"anchor", "anchor",
 		},
-	}
-	reportAssert.Equal(&s.Suite, report)
+		Details: heredoc.Doc(`
+			>  1 | *anchor
+			        ^
+		`),
+	}, err)
 }
 
 func (s *ParserSuite) TestAnchors() {
 	s.Run("Anchors", func() {
-		parser := NewParser()
+		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/Anchors")
 
-		node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+		parser := NewParser()
+		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 		s.NoError(err)
 
-		anchorNode := node.(*yamlAst.MappingNode).Values[0]
-		s.IsType((*yamlAst.StringNode)(nil), anchorNode.Value)
-		s.Equal("foo", anchorNode.Value.(*yamlAst.StringNode).Value)
+		anchorNode := node.(*goYamlAst.MappingNode).Values[0]
+		s.IsType((*goYamlAst.StringNode)(nil), anchorNode.Value)
+		s.Equal("foo", anchorNode.Value.(*goYamlAst.StringNode).Value)
 
-		aliasNode := node.(*yamlAst.MappingNode).Values[1]
-		s.IsType((*yamlAst.StringNode)(nil), aliasNode.Value)
-		s.Equal("foo", aliasNode.Value.(*yamlAst.StringNode).Value)
+		aliasNode := node.(*goYamlAst.MappingNode).Values[1]
+		s.IsType((*goYamlAst.StringNode)(nil), aliasNode.Value)
+		s.Equal("foo", aliasNode.Value.(*goYamlAst.StringNode).Value)
 	})
-	s.Run("Merge Keys", func() {
-		parser := NewParser()
+	s.Run("MergeKeys", func() {
+		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/MergeKeys")
 
-		node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+		parser := NewParser()
+		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 		s.NoError(err)
 
-		emptyAnchorNode := node.(*yamlAst.MappingNode).Values[0]
-		s.IsType((*yamlAst.MappingNode)(nil), emptyAnchorNode.Value)
-		s.Len(emptyAnchorNode.Value.(*yamlAst.MappingNode).Values, 0)
+		emptyAnchorNode := node.(*goYamlAst.MappingNode).Values[0]
+		s.IsType((*goYamlAst.MappingNode)(nil), emptyAnchorNode.Value)
+		s.Len(emptyAnchorNode.Value.(*goYamlAst.MappingNode).Values, 0)
 
-		mappingValueAnchorNode := node.(*yamlAst.MappingNode).Values[1]
-		s.IsType((*yamlAst.MappingValueNode)(nil), mappingValueAnchorNode.Value)
+		mappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[1]
+		s.IsType((*goYamlAst.MappingValueNode)(nil), mappingValueAnchorNode.Value)
 
-		mappingAnchorNode := node.(*yamlAst.MappingNode).Values[2]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingAnchorNode.Value)
-		s.Len(mappingAnchorNode.Value.(*yamlAst.MappingNode).Values, 2)
+		mappingAnchorNode := node.(*goYamlAst.MappingNode).Values[2]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingAnchorNode.Value)
+		s.Len(mappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
-		mappingValueAliasEmptyAnchorNode := node.(*yamlAst.MappingNode).Values[3]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingValueAliasEmptyAnchorNode.Value)
-		s.Len(mappingValueAliasEmptyAnchorNode.Value.(*yamlAst.MappingNode).Values, 0)
+		mappingValueAliasEmptyAnchorNode := node.(*goYamlAst.MappingNode).Values[3]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasEmptyAnchorNode.Value)
+		s.Len(mappingValueAliasEmptyAnchorNode.Value.(*goYamlAst.MappingNode).Values, 0)
 
-		mappingValueAliasMappingValueAnchorNode := node.(*yamlAst.MappingNode).Values[4]
-		s.IsType((*yamlAst.MappingValueNode)(nil), mappingValueAliasMappingValueAnchorNode.Value)
+		mappingValueAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[4]
+		s.IsType((*goYamlAst.MappingValueNode)(nil), mappingValueAliasMappingValueAnchorNode.Value)
 
-		mappingValueAliasMappingAnchorNode := node.(*yamlAst.MappingNode).Values[5]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingValueAliasMappingAnchorNode.Value)
-		s.Len(mappingValueAliasMappingAnchorNode.Value.(*yamlAst.MappingNode).Values, 2)
+		mappingValueAliasMappingAnchorNode := node.(*goYamlAst.MappingNode).Values[5]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingAnchorNode.Value)
+		s.Len(mappingValueAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
-		mappingAliasEmptyAnchorNode := node.(*yamlAst.MappingNode).Values[6]
-		s.IsType((*yamlAst.MappingValueNode)(nil), mappingAliasEmptyAnchorNode.Value)
+		mappingAliasEmptyAnchorNode := node.(*goYamlAst.MappingNode).Values[6]
+		s.IsType((*goYamlAst.MappingValueNode)(nil), mappingAliasEmptyAnchorNode.Value)
 
-		mappingAliasMappingValueAnchorNode := node.(*yamlAst.MappingNode).Values[7]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingAliasMappingValueAnchorNode.Value)
-		s.Len(mappingAliasMappingValueAnchorNode.Value.(*yamlAst.MappingNode).Values, 2)
+		mappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[7]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingAliasMappingValueAnchorNode.Value)
+		s.Len(mappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
-		mappingValueAliasMappingNode := node.(*yamlAst.MappingNode).Values[8]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingValueAliasMappingNode.Value)
-		s.Len(mappingValueAliasMappingNode.Value.(*yamlAst.MappingNode).Values, 3)
+		mappingValueAliasMappingNode := node.(*goYamlAst.MappingNode).Values[8]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingNode.Value)
+		s.Len(mappingValueAliasMappingNode.Value.(*goYamlAst.MappingNode).Values, 3)
 	})
-	s.Run("Merge Keys Duplicated", func() {
-		parser := NewParser()
+	s.Run("MergeKeysDuplicated", func() {
+		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/MergeKeysDuplicated")
 
-		node, err := parser.ParseFile(internalTesting.DataPath(s, "node.yaml"))
+		parser := NewParser()
+		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
 		s.NoError(err)
 
-		singleMappingAliasMappingValueAnchorNode := node.(*yamlAst.MappingNode).Values[2]
-		s.IsType((*yamlAst.MappingValueNode)(nil), singleMappingAliasMappingValueAnchorNode.Value)
-		s.Equal("bar", singleMappingAliasMappingValueAnchorNode.Value.(*yamlAst.MappingValueNode).Value.(*yamlAst.StringNode).Value)
+		singleMappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[2]
+		s.IsType((*goYamlAst.MappingValueNode)(nil), singleMappingAliasMappingValueAnchorNode.Value)
+		s.Equal("bar", singleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingValueNode).Value.(*goYamlAst.StringNode).Value)
 
-		multipleMappingAliasMappingValueAnchorNode := node.(*yamlAst.MappingNode).Values[3]
-		s.IsType((*yamlAst.MappingNode)(nil), multipleMappingAliasMappingValueAnchorNode.Value)
-		s.Len(multipleMappingAliasMappingValueAnchorNode.Value.(*yamlAst.MappingNode).Values, 2)
-		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*yamlAst.MappingNode).Values[0].Value.(*yamlAst.StringNode).Value)
+		multipleMappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[3]
+		s.IsType((*goYamlAst.MappingNode)(nil), multipleMappingAliasMappingValueAnchorNode.Value)
+		s.Len(multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
+		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values[0].Value.(*goYamlAst.StringNode).Value)
 
-		mappingAliasMappingAnchorNode := node.(*yamlAst.MappingNode).Values[4]
-		s.IsType((*yamlAst.MappingNode)(nil), mappingAliasMappingAnchorNode.Value)
-		s.Len(mappingAliasMappingAnchorNode.Value.(*yamlAst.MappingNode).Values, 3)
-		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*yamlAst.MappingNode).Values[1].Value.(*yamlAst.StringNode).Value)
+		mappingAliasMappingAnchorNode := node.(*goYamlAst.MappingNode).Values[4]
+		s.IsType((*goYamlAst.MappingNode)(nil), mappingAliasMappingAnchorNode.Value)
+		s.Len(mappingAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 3)
+		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values[1].Value.(*goYamlAst.StringNode).Value)
 	})
 }

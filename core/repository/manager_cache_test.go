@@ -5,8 +5,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"log/slog"
 	"manala/app/mocks"
-	internalLog "manala/internal/log"
 	"testing"
 )
 
@@ -17,36 +17,33 @@ func TestCacheManagerSuite(t *testing.T) {
 }
 
 func (s *CacheManagerSuite) TestLoadRepositoryErrors() {
-	log := internalLog.New(io.Discard)
-
-	cascadingRepoMock := mocks.MockRepository()
+	cascadingRepoMock := &mocks.RepositoryMock{}
 	cascadingError := errors.New("error")
 
-	cascadingManagerMock := mocks.MockRepositoryManager()
+	cascadingManagerMock := &mocks.RepositoryManagerMock{}
 	cascadingManagerMock.
 		On("LoadRepository", mock.Anything).Return(cascadingRepoMock, cascadingError)
 
 	manager := NewCacheManager(
-		log,
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
 		cascadingManagerMock,
 	)
 	repo, err := manager.LoadRepository("url")
 
 	s.Nil(repo)
+
 	s.ErrorIs(err, cascadingError)
 }
 
 func (s *CacheManagerSuite) TestLoadRepository() {
-	log := internalLog.New(io.Discard)
+	cascadingRepoMock := &mocks.RepositoryMock{}
 
-	cascadingRepoMock := mocks.MockRepository()
-
-	cascadingManagerMock := mocks.MockRepositoryManager()
+	cascadingManagerMock := &mocks.RepositoryManagerMock{}
 	cascadingManagerMock.
-		On("LoadRepository", mock.Anything).Return(mocks.MockRepository(), nil)
+		On("LoadRepository", mock.Anything).Return(&mocks.RepositoryMock{}, nil)
 
 	manager := NewCacheManager(
-		log,
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
 		cascadingManagerMock,
 	)
 

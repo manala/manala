@@ -1,7 +1,6 @@
 package cache
 
 import (
-	internalReport "manala/internal/report"
 	"os"
 	"path/filepath"
 )
@@ -32,8 +31,7 @@ func (cache *Cache) Dir(dirs ...string) (string, error) {
 	// Fallback to user cache dir
 	userDir, err := os.UserCacheDir()
 	if err != nil {
-		return "", internalReport.NewError(err).
-			WithMessage("unable to get user cache dir")
+		return "", err
 	}
 
 	return filepath.Join(userDir, cache.userDir, filepath.Join(dirs...)), nil

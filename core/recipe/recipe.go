@@ -2,8 +2,8 @@ package recipe
 
 import (
 	"manala/app/interfaces"
-	internalSyncer "manala/internal/syncer"
-	internalTemplate "manala/internal/template"
+	"manala/internal/syncer"
+	"manala/internal/template"
 	"os"
 	"path/filepath"
 )
@@ -40,7 +40,7 @@ func (rec *Recipe) Vars() map[string]interface{} {
 	return rec.manifest.Vars()
 }
 
-func (rec *Recipe) Sync() []internalSyncer.UnitInterface {
+func (rec *Recipe) Sync() []syncer.UnitInterface {
 	return rec.manifest.Sync()
 }
 
@@ -56,8 +56,8 @@ func (rec *Recipe) Repository() interfaces.Repository {
 	return rec.repository
 }
 
-func (rec *Recipe) Template() *internalTemplate.Template {
-	template := internalTemplate.NewTemplate()
+func (rec *Recipe) Template() *template.Template {
+	template := template.NewTemplate()
 
 	// Include template helpers if any
 	helpersFile := filepath.Join(rec.Dir(), "_helpers.tmpl")
@@ -68,7 +68,7 @@ func (rec *Recipe) Template() *internalTemplate.Template {
 	return template
 }
 
-func (rec *Recipe) ProjectManifestTemplate() *internalTemplate.Template {
+func (rec *Recipe) ProjectManifestTemplate() *template.Template {
 	template := rec.Template()
 
 	if rec.manifest.Template() != "" {

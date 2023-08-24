@@ -1,14 +1,13 @@
 package repository
 
 import (
-	"errors"
-	"fmt"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"log/slog"
 	"manala/app/mocks"
 	"manala/core"
-	internalLog "manala/internal/log"
+	"manala/internal/errors/serrors"
 	"testing"
 )
 
@@ -19,17 +18,15 @@ func TestUrlProcessorManagerSuite(t *testing.T) {
 }
 
 func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
-	log := internalLog.New(io.Discard)
+	cascadingRepoMock := &mocks.RepositoryMock{}
+	cascadingError := serrors.New("error")
 
-	cascadingRepoMock := mocks.MockRepository()
-	cascadingError := errors.New("error")
-
-	cascadingManagerMock := mocks.MockRepositoryManager()
+	cascadingManagerMock := &mocks.RepositoryManagerMock{}
 	cascadingManagerMock.
 		On("LoadRepository", mock.Anything).Return(cascadingRepoMock, cascadingError)
 
 	manager := NewUrlProcessorManager(
-		log,
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
 		cascadingManagerMock,
 	)
 	manager.AddUrl("url", -10)
@@ -37,61 +34,62 @@ func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
 	repo, err := manager.LoadRepository("url")
 
 	s.Nil(repo)
+
 	s.ErrorIs(err, cascadingError)
 }
 
 func (s *UrlProcessorManagerSuite) TestLoadRepository() {
-	log := internalLog.New(io.Discard)
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-	cascadingRepoMock := mocks.MockRepository()
+	cascadingRepoMock := &mocks.RepositoryMock{}
 
 	tests := []struct {
-		name                 string
-		url                  string
-		urls                 map[int]string
-		expectedCascadingUrl string
+		test     string
+		url      string
+		urls     map[int]string
+		expected string
 	}{
 		{
-			name: "Lowermost Url Only",
+			test: "LowermostUrlOnly",
 			url:  "",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "",
 			},
-			expectedCascadingUrl: "lowermost_url",
+			expected: "lowermost_url",
 		},
 		{
-			name: "Lowermost Url And Url",
+			test: "LowermostUrlAndUrl",
 			url:  "url",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "",
 			},
-			expectedCascadingUrl: "url",
+			expected: "url",
 		},
 		{
-			name: "Lowermost Url And Url And Uppermost Url",
+			test: "LowermostUrlAndUrlAndUppermostUrl",
 			url:  "url",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "uppermost_url",
 			},
-			expectedCascadingUrl: "uppermost_url",
+			expected: "uppermost_url",
 		},
 		{
-			name: "Lowermost Url And Uppermost Url",
+			test: "LowermostUrlAndUppermostUrl",
 			url:  "",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "uppermost_url",
 			},
-			expectedCascadingUrl: "uppermost_url",
+			expected: "uppermost_url",
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			cascadingManagerMock := mocks.MockRepositoryManager()
+		s.Run(test.test, func() {
+			cascadingManagerMock := &mocks.RepositoryManagerMock{}
 			cascadingManagerMock.
 				On("LoadRepository", mock.Anything).Return(cascadingRepoMock, nil)
 
@@ -109,42 +107,42 @@ func (s *UrlProcessorManagerSuite) TestLoadRepository() {
 			s.NoError(err)
 			s.Equal(cascadingRepoMock, repo)
 
-			cascadingManagerMock.AssertCalled(s.T(), "LoadRepository", test.expectedCascadingUrl)
+			cascadingManagerMock.AssertCalled(s.T(), "LoadRepository", test.expected)
 		})
 	}
 }
 
 func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
-	log := internalLog.New(io.Discard)
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-	cascadingRepoMock := mocks.MockRepository()
+	cascadingRepoMock := &mocks.RepositoryMock{}
 
 	tests := []struct {
-		name                 string
-		urls                 map[int]string
-		expectedCascadingUrl string
+		test     string
+		urls     map[int]string
+		expected string
 	}{
 		{
-			name: "Lowermost Url",
+			test: "LowermostUrl",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "",
 			},
-			expectedCascadingUrl: "lowermost_url",
+			expected: "lowermost_url",
 		},
 		{
-			name: "Lowermost Url And Uppermost Url",
+			test: "LowermostUrlAndUppermostUrl",
 			urls: map[int]string{
 				-10: "lowermost_url",
 				10:  "uppermost_url",
 			},
-			expectedCascadingUrl: "uppermost_url",
+			expected: "uppermost_url",
 		},
 	}
 
 	for _, test := range tests {
-		s.Run(test.name, func() {
-			cascadingManagerMock := mocks.MockRepositoryManager()
+		s.Run(test.test, func() {
+			cascadingManagerMock := &mocks.RepositoryManagerMock{}
 			cascadingManagerMock.
 				On("LoadRepository", mock.Anything).Return(cascadingRepoMock, nil)
 
@@ -160,110 +158,128 @@ func (s *UrlProcessorManagerSuite) TestLoadPrecedenceRepository() {
 			repo, err := manager.LoadPrecedingRepository()
 
 			s.NoError(err)
+
 			s.Equal(cascadingRepoMock, repo)
 
-			cascadingManagerMock.AssertCalled(s.T(), "LoadRepository", test.expectedCascadingUrl)
+			cascadingManagerMock.AssertCalled(s.T(), "LoadRepository", test.expected)
 		})
 	}
 }
 
 func (s *UrlProcessorManagerSuite) TestProcessUrl() {
-	log := internalLog.New(io.Discard)
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-	cascadingManagerMock := mocks.MockRepositoryManager()
+	cascadingManagerMock := &mocks.RepositoryManagerMock{}
 
 	tests := []struct {
-		url      string
-		urls     map[int]string
-		expected string
-		error    bool
+		test        string
+		url         string
+		urls        map[int]string
+		expectedUrl string
+		expectedErr *serrors.Assert
 	}{
 		{
-			url: "",
+			test: "1",
+			url:  "",
 			urls: map[int]string{
 				-10: "",
 				10:  "",
 			},
-			error: true,
+			expectedErr: &serrors.Assert{
+				Type:    &core.UnprocessableRepositoryUrlError{},
+				Message: "unable to process repository url",
+			},
 		},
 		{
-			url: "",
+			test: "2",
+			url:  "",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "",
 			},
-			expected: "lower",
+			expectedUrl: "lower",
 		},
 		{
-			url: "url",
+			test: "3",
+			url:  "url",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "",
 			},
-			expected: "url",
+			expectedUrl: "url",
 		},
 		{
-			url: "url",
+			test: "4",
+			url:  "url",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "upper",
 			},
-			expected: "upper",
+			expectedUrl: "upper",
 		},
 		// Windows
 		{
-			url: "",
+			test: "5",
+			url:  "",
 			urls: map[int]string{
 				-10: "",
 				10:  `foo\bar`,
 			},
-			expected: `foo\bar`,
+			expectedUrl: `foo\bar`,
 		},
 		// Query
 		{
-			url: "?url=url",
+			test: "6",
+			url:  "?url=url",
 			urls: map[int]string{
 				-10: "",
 				10:  "",
 			},
-			error: true,
+			expectedErr: &serrors.Assert{
+				Type:    &core.UnprocessableRepositoryUrlError{},
+				Message: "unable to process repository url",
+			},
 		},
 		{
-			url: "?url=url",
+			test: "7",
+			url:  "?url=url",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "",
 			},
-			expected: "lower?url=url",
+			expectedUrl: "lower?url=url",
 		},
 		{
-			url: "url",
+			test: "8",
+			url:  "url",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "?upper=upper",
 			},
-			expected: "url?upper=upper",
+			expectedUrl: "url?upper=upper",
 		},
 		{
-			url: "url?url=url",
+			test: "9",
+			url:  "url?url=url",
 			urls: map[int]string{
 				-10: "lower",
 				10:  "upper?upper=upper",
 			},
-			expected: "upper?upper=upper",
+			expectedUrl: "upper?upper=upper",
 		},
 		{
-			url: "?url=url",
+			test: "10",
+			url:  "?url=url",
 			urls: map[int]string{
 				-10: "lower?lower=lower",
 				10:  "?upper=upper",
 			},
-			expected: "lower?lower=lower&upper=upper&url=url",
+			expectedUrl: "lower?lower=lower&upper=upper&url=url",
 		},
 	}
 
-	for i, test := range tests {
-		s.Run(fmt.Sprint(i), func() {
+	for _, test := range tests {
+		s.Run(test.test, func() {
 			manager := NewUrlProcessorManager(
 				log,
 				cascadingManagerMock,
@@ -275,13 +291,13 @@ func (s *UrlProcessorManagerSuite) TestProcessUrl() {
 
 			actual, err := manager.processUrl(test.url)
 
-			if test.error {
-				var _error *core.UnprocessableRepositoryUrlError
-				s.ErrorAs(err, &_error)
+			if test.expectedErr != nil {
 				s.Empty(actual)
+				serrors.Equal(s.Assert(), test.expectedErr, err)
+
 			} else {
+				s.Equal(test.expectedUrl, actual)
 				s.NoError(err)
-				s.Equal(test.expected, actual)
 			}
 		})
 	}

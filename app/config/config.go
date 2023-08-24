@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/caarlos0/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"strings"
@@ -39,11 +38,6 @@ type Config struct {
 	viper *viper.Viper
 }
 
-// Fields implements caarlos0 log Fielder
-func (conf *Config) Fields() log.Fields {
-	return conf.viper.AllSettings()
-}
-
 func (conf *Config) Debug() bool {
 	return conf.viper.GetBool(debugKey)
 }
@@ -62,4 +56,12 @@ func (conf *Config) CacheDir() string {
 
 func (conf *Config) BindCacheDirFlag(flag *pflag.Flag) {
 	_ = conf.viper.BindPFlag(cacheDirKey, flag)
+}
+
+func (conf *Config) Args() []any {
+	return []any{
+		"repository", conf.Repository(),
+		"cache-dir", conf.CacheDir(),
+		"debug", conf.Debug(),
+	}
 }

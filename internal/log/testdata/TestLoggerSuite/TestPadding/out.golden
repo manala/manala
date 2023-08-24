@@ -1,6 +1,0 @@
-  • default                                          foo=bar
-    • increase                                       foo=bar
-  • decrease                                         foo=bar
-      • before without padding                       foo=bar
-  • without padding                                  foo=bar
-      • after without padding                        foo=bar

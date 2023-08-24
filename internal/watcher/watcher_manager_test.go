@@ -1,15 +1,14 @@
 package watcher
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/suite"
-	internalLog "manala/internal/log"
+	"io"
+	"log/slog"
 	"testing"
 )
 
 type WatcherManagerSuite struct {
 	suite.Suite
-	stderr         *bytes.Buffer
 	watcherManager *Manager
 }
 
@@ -18,9 +17,8 @@ func TestWatcherManagerSuite(t *testing.T) {
 }
 
 func (s *WatcherManagerSuite) SetupTest() {
-	s.stderr = &bytes.Buffer{}
 	s.watcherManager = NewManager(
-		internalLog.New(s.stderr),
+		slog.New(slog.NewTextHandler(io.Discard, nil)),
 	)
 }
 

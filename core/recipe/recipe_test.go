@@ -5,8 +5,7 @@ import (
 	_ "embed"
 	"github.com/stretchr/testify/suite"
 	"manala/app/mocks"
-	internalSyncer "manala/internal/syncer"
-	internalTesting "manala/internal/testing"
+	"manala/internal/syncer"
 	"path/filepath"
 	"testing"
 )
@@ -18,16 +17,16 @@ func TestRecipeSuite(t *testing.T) {
 }
 
 func (s *RecipeSuite) Test() {
-	recDir := internalTesting.DataPath(s, "recipe")
+	recDir := filepath.FromSlash("testdata/RecipeSuite/Test/recipe")
 
-	repoMock := mocks.MockRepository()
+	repoMock := &mocks.RepositoryMock{}
 
-	recManifestMock := mocks.MockRecipeManifest()
+	recManifestMock := &mocks.RecipeManifestMock{}
 	recManifestMock.
 		On("Description").Return("Description").
 		On("Template").Return(filepath.Join("templates", "foo.tmpl")).
 		On("Vars").Return(map[string]interface{}{"foo": "bar"}).
-		On("Sync").Return([]internalSyncer.UnitInterface(nil)).
+		On("Sync").Return([]syncer.UnitInterface(nil)).
 		On("Schema").Return(map[string]interface{}{}).
 		On("InitVars").Return(map[string]interface{}{"foo": "baz"})
 
@@ -42,7 +41,7 @@ func (s *RecipeSuite) Test() {
 	s.Equal("recipe", rec.Name())
 	s.Equal("Description", rec.Description())
 	s.Equal(map[string]interface{}{"foo": "bar"}, rec.Vars())
-	s.Equal([]internalSyncer.UnitInterface(nil), rec.Sync())
+	s.Equal([]syncer.UnitInterface(nil), rec.Sync())
 	s.Equal(map[string]interface{}{}, rec.Schema())
 	s.Equal(repoMock, rec.Repository())
 
@@ -55,6 +54,7 @@ func (s *RecipeSuite) Test() {
 			WriteTo(out)
 
 		s.NoError(err)
+
 		s.Equal("_helpers", out.String())
 	})
 
@@ -66,6 +66,7 @@ func (s *RecipeSuite) Test() {
 			WriteTo(out)
 
 		s.NoError(err)
+
 		s.Equal("bar", out.String())
 	})
 }

@@ -2,14 +2,20 @@ package yaml
 
 import (
 	"fmt"
-	"github.com/goccy/go-yaml"
-	yamlAst "github.com/goccy/go-yaml/ast"
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/xeipuuv/gojsonschema"
 	"io"
-	internalReport "manala/internal/report"
+	"manala/internal/errors/serrors"
+	"manala/internal/validation"
+	"regexp"
 )
 
-func NewJsonLoader(node yamlAst.Node) gojsonschema.JSONLoader {
+/**********/
+/* Loader */
+/**********/
+
+func NewJsonLoader(node goYamlAst.Node) gojsonschema.JSONLoader {
 	return &jsonLoader{
 		JSONLoader: gojsonschema.NewRawLoader(node),
 	}
@@ -23,7 +29,7 @@ func (loader *jsonLoader) LoadJSON() (interface{}, error) {
 	var data interface{}
 
 	// Decode node into data
-	if err := yaml.NewDecoder(loader.JsonSource().(yamlAst.Node)).Decode(&data); err != nil {
+	if err := goYaml.NewDecoder(loader.JsonSource().(goYamlAst.Node)).Decode(&data); err != nil {
 		// Nil or empty content
 		if err == io.EOF {
 			return nil, fmt.Errorf("empty content")
@@ -34,45 +40,92 @@ func (loader *jsonLoader) LoadJSON() (interface{}, error) {
 	return gojsonschema.NewGoLoader(data).LoadJSON()
 }
 
-func NewValidationReporter(node yamlAst.Node) *ValidationReporter {
-	return &ValidationReporter{
-		node: node,
+/**************/
+/* Decorators */
+/**************/
+
+func NewNodeValidationResultErrorDecorator(node goYamlAst.Node) *NodeValidationResultErrorDecorator {
+	return &NodeValidationResultErrorDecorator{node: node}
+}
+
+type NodeValidationResultErrorDecorator struct{ node goYamlAst.Node }
+
+func (decorator *NodeValidationResultErrorDecorator) Decorate(err validation.ResultErrorInterface) validation.ResultErrorInterface {
+	return &NodeValidationResultError{
+		resultErr: err,
+		nodeErr:   NewNodeError(err.Error(), decorator.node),
+		Arguments: serrors.NewArguments(),
+		Details:   serrors.NewDetails(),
 	}
 }
 
-type ValidationReporter struct {
-	node yamlAst.Node
+func NewNodeValidationResultPathErrorDecorator(node goYamlAst.Node) *NodeValidationResultPathErrorDecorator {
+	return &NodeValidationResultPathErrorDecorator{node: node}
 }
 
-func (reporter *ValidationReporter) Report(_ gojsonschema.ResultError, report *internalReport.Report) {
-	NewReporter(reporter.node).Report(report)
-}
+type NodeValidationResultPathErrorDecorator struct{ node goYamlAst.Node }
 
-func NewValidationPathReporter(node yamlAst.Node) *ValidationPathReporter {
-	return &ValidationPathReporter{
-		node: node,
-	}
-}
+func (decorator *NodeValidationResultPathErrorDecorator) Decorate(err validation.ResultErrorInterface) validation.ResultErrorInterface {
+	var node goYamlAst.Node
 
-type ValidationPathReporter struct {
-	node yamlAst.Node
-}
-
-func (reporter *ValidationPathReporter) Report(result gojsonschema.ResultError, report *internalReport.Report) {
-	// Normalize json path
-	path := NewJsonPathNormalizer(result.Field()).Normalize()
+	// Normalize result path
+	path := decorator.normalizePath(err.Path())
 
 	// Get yaml path
-	yamlPath, err := yaml.PathString(path)
-	if err != nil {
-		return
+	if yamlPath, _err := goYaml.PathString(path); _err == nil {
+		// Get node
+		node, _ = yamlPath.FilterNode(decorator.node)
 	}
 
-	// Get node
-	node, err := yamlPath.FilterNode(reporter.node)
-	if err != nil || node == nil {
-		return
+	return &NodeValidationResultError{
+		resultErr: err,
+		nodeErr:   NewNodeError(err.Error(), node),
+		Arguments: serrors.NewArguments(),
+		Details:   serrors.NewDetails(),
+	}
+}
+
+var resultPathNormalizeRegex = regexp.MustCompile(`\.(\d+)`)
+
+func (decorator *NodeValidationResultPathErrorDecorator) normalizePath(path string) string {
+	if path == "(root)" {
+		path = ""
 	}
 
-	NewReporter(node).Report(report)
+	if path == "" {
+		path = "$"
+	} else {
+		path = fmt.Sprintf("$.%s", path)
+	}
+
+	// Index
+	// $.foo.0 -> $.foo[0]
+	path = resultPathNormalizeRegex.ReplaceAllString(path, "[${1}]")
+
+	return path
+}
+
+type NodeValidationResultError struct {
+	resultErr validation.ResultErrorInterface
+	nodeErr   *NodeError
+	*serrors.Arguments
+	*serrors.Details
+}
+
+func (err *NodeValidationResultError) Path() string {
+	return err.resultErr.Path()
+}
+
+func (err *NodeValidationResultError) Error() string {
+	return err.nodeErr.Error()
+}
+
+func (err *NodeValidationResultError) ErrorArguments() []any {
+	err.AppendArguments(err.resultErr.ErrorArguments()...)
+	err.AppendArguments(err.nodeErr.ErrorArguments()...)
+	return err.Arguments.ErrorArguments()
+}
+
+func (err *NodeValidationResultError) ErrorDetails(ansi bool) string {
+	return err.nodeErr.ErrorDetails(ansi)
 }
