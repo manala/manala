@@ -5,16 +5,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	"log/slog"
-	"manala/app/mocks"
-	"manala/core"
-	"manala/internal/errors/serrors"
+	"manala/app"
+	"manala/app/config"
+	"manala/internal/serrors"
 	"manala/internal/testing/cmd"
-	"manala/internal/testing/file"
 	"manala/internal/testing/heredoc"
+	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"manala/internal/ui/output/lipgloss"
-	"manala/internal/validation"
-	"manala/internal/yaml"
 	"os"
 	"path/filepath"
 	"testing"
@@ -22,7 +19,7 @@ import (
 
 type InitSuite struct {
 	suite.Suite
-	configMock *mocks.ConfigMock
+	configMock *config.Mock
 	executor   *cmd.Executor
 }
 
@@ -31,13 +28,14 @@ func TestInitSuite(t *testing.T) {
 }
 
 func (s *InitSuite) SetupTest() {
-	s.configMock = &mocks.ConfigMock{}
+	s.configMock = &config.Mock{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
-		out := lipgloss.New(stdout, stderr)
+		ui := charm.New(nil, stdout, stderr)
 		return newInitCmd(
 			s.configMock,
-			slog.New(log.NewSlogHandler(out)),
-			out,
+			slog.New(log.NewSlogHandler(ui)),
+			ui,
+			ui,
 		)
 	})
 }
@@ -48,20 +46,20 @@ func (s *InitSuite) TestProjectErrors() {
 		On("Repository").Return("")
 
 	s.Run("AlreadyExistingProject", func() {
-		projDir := filepath.FromSlash("testdata/InitSuite/TestProjectErrors/AlreadyExistingProject/project")
+		projectDir := filepath.FromSlash("testdata/InitSuite/TestProjectErrors/AlreadyExistingProject/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.AlreadyExistingProjectError{},
+			Type:    &app.AlreadyExistingProjectError{},
 			Message: "already existing project",
 			Arguments: []any{
-				"dir", projDir,
+				"dir", projectDir,
 			},
 		}, err)
 	})
@@ -79,96 +77,100 @@ func (s *InitSuite) TestRepositoryErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnprocessableRepositoryUrlError{},
+			Type:    &app.UnprocessableRepositoryUrlError{},
 			Message: "unable to process repository url",
 		}, err)
 	})
 
 	s.Run("RepositoryNotFound", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/RepositoryNotFound/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/RepositoryNotFound/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnsupportedRepositoryError{},
+			Type:    &app.UnsupportedRepositoryError{},
 			Message: "unsupported repository url",
 			Arguments: []any{
-				"url", repoUrl,
+				"url", repositoryUrl,
 			},
 		}, err)
 	})
 
 	s.Run("WrongRepository", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/WrongRepository/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/WrongRepository/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnsupportedRepositoryError{},
+			Type:    &app.UnsupportedRepositoryError{},
 			Message: "unsupported repository url",
 			Arguments: []any{
-				"url", repoUrl,
+				"url", repositoryUrl,
 			},
 		}, err)
 	})
 
 	s.Run("EmptyRepository", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/EmptyRepository/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryErrors/EmptyRepository/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    &app.EmptyRepositoryError{},
 			Message: "empty repository",
 			Arguments: []any{
-				"dir", repoUrl,
+				"url", repositoryUrl,
 			},
 		}, err)
 	})
 }
 
 func (s *InitSuite) TestRepositoryCustom() {
-	projDir := filepath.FromSlash("testdata/InitSuite/TestRepositoryCustom/project")
-	repoUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryCustom/repository")
+	projectDir := filepath.FromSlash("testdata/InitSuite/TestRepositoryCustom/project")
+	repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryCustom/repository")
 
-	_ = os.RemoveAll(projDir)
+	_ = os.RemoveAll(projectDir)
 
 	s.configMock.
 		On("CacheDir").Return("").
 		On("Repository").Return("")
 
 	err := s.executor.Execute([]string{
-		projDir,
-		"--repository", repoUrl,
+		projectDir,
+		"--repository", repositoryUrl,
 		"--recipe", "recipe",
 	})
 
 	s.NoError(err)
 
 	s.Empty(s.executor.Stdout)
-	s.Equal(heredoc.Docf(`
-		  • sync project…                      src=%[1]s dst=%[2]s
-		`, filepath.Join(repoUrl, "recipe"), projDir,
-	), s.executor.Stderr.String())
+	heredoc.Equal(s.Assert(), `
+		 • sync project…
+		   src=%[1]s dst=%[2]s
+		`,
+		s.executor.Stderr.String(),
+		filepath.Join(repositoryUrl, "recipe"),
+		projectDir,
+	)
 
-	s.DirExists(projDir)
+	s.DirExists(projectDir)
 
-	file.EqualContent(s.Assert(), heredoc.Docf(`
+	heredoc.EqualFile(s.Assert(), `
 		####################################################################
 		#                         !!! REMINDER !!!                         #
 		# Don't forget to run `+"`"+`manala up`+"`"+` each time you update this file ! #
@@ -177,60 +179,68 @@ func (s *InitSuite) TestRepositoryCustom() {
 		manala:
 		    recipe: recipe
 		    repository: %[1]s
-		`, repoUrl),
-		filepath.Join(projDir, ".manala.yaml"),
+		`,
+		filepath.Join(projectDir, ".manala.yaml"),
+		repositoryUrl,
 	)
 }
 
 func (s *InitSuite) TestRepositoryConfig() {
-	projDir := filepath.FromSlash("testdata/InitSuite/TestRepositoryConfig/project")
-	repoUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryConfig/repository")
+	projectDir := filepath.FromSlash("testdata/InitSuite/TestRepositoryConfig/project")
+	repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRepositoryConfig/repository")
 
-	_ = os.RemoveAll(projDir)
+	_ = os.RemoveAll(projectDir)
 
 	s.configMock.
 		On("CacheDir").Return("").
-		On("Repository").Return(repoUrl)
+		On("Repository").Return(repositoryUrl)
 
 	err := s.executor.Execute([]string{
-		projDir,
+		projectDir,
 		"--recipe", "recipe",
 	})
 
 	s.NoError(err)
 
 	s.Empty(s.executor.Stdout)
-	s.Equal(heredoc.Docf(`
-		  • sync project…                      src=%[1]s dst=%[2]s
-		  • file synced                        path=file.txt
-		  • file synced                        path=template
-		`, filepath.Join(repoUrl, "recipe"), projDir,
-	), s.executor.Stderr.String())
-
-	s.DirExists(projDir)
-
-	file.EqualContent(s.Assert(), heredoc.Docf(`
-			manala:
-			    recipe: recipe
-			    repository: %[1]s
-
-			foo: bar
-		`, repoUrl),
-		filepath.Join(projDir, ".manala.yaml"),
+	heredoc.Equal(s.Assert(), `
+		 • sync project…
+		   src=%[1]s dst=%[2]s
+		 • file synced
+		   path=file.txt
+		 • file synced
+		   path=template
+		`,
+		s.executor.Stderr.String(),
+		filepath.Join(repositoryUrl, "recipe"),
+		projectDir,
 	)
 
-	file.EqualContent(s.Assert(), heredoc.Docf(`
+	s.DirExists(projectDir)
+
+	heredoc.EqualFile(s.Assert(), `
+		manala:
+		    recipe: recipe
+		    repository: %[1]s
+
+		foo: bar
+		`,
+		filepath.Join(projectDir, ".manala.yaml"),
+		repositoryUrl,
+	)
+
+	heredoc.EqualFile(s.Assert(), `
 		File
-		`),
-		filepath.Join(projDir, "file.txt"),
+		`,
+		filepath.Join(projectDir, "file.txt"),
 	)
 
-	file.EqualContent(s.Assert(), heredoc.Doc(`
+	heredoc.EqualFile(s.Assert(), `
 		Template
 
 		foo: bar
-		`),
-		filepath.Join(projDir, "template"),
+		`,
+		filepath.Join(projectDir, "template"),
 	)
 }
 
@@ -240,10 +250,10 @@ func (s *InitSuite) TestRecipeErrors() {
 		On("Repository").Return("")
 
 	s.Run("RecipeNotFound", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/RecipeNotFound/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/RecipeNotFound/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -251,19 +261,19 @@ func (s *InitSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.NotFoundRecipeManifestError{},
+			Type:    &app.NotFoundRecipeManifestError{},
 			Message: "recipe manifest not found",
 			Arguments: []any{
-				"file", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"file", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("WrongRecipeManifest", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/WrongRecipeManifest/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/WrongRecipeManifest/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -271,19 +281,19 @@ func (s *InitSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "recipe manifest is a directory",
 			Arguments: []any{
-				"dir", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"dir", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("InvalidRecipeManifest", func() {
-		repoUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/InvalidRecipeManifest/repository")
+		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/InvalidRecipeManifest/repository")
 
 		err := s.executor.Execute([]string{
-			"--repository", repoUrl,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -291,27 +301,30 @@ func (s *InitSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.WrapError{},
+			Type:    serrors.Error{},
 			Message: "unable to read recipe manifest",
 			Arguments: []any{
-				"file", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"file", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
-			Error: &serrors.Assert{
-				Type:    &validation.Error{},
-				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assert{
-					{
-						Type:    &yaml.NodeValidationResultError{},
-						Message: "missing manala description field",
-						Arguments: []any{
-							"property", "description",
-							"line", 1,
-							"column", 9,
+			Errors: []*serrors.Assert{
+				{
+					Type:    serrors.Error{},
+					Message: "invalid recipe manifest",
+					Errors: []*serrors.Assert{
+						{
+							Type:    serrors.Error{},
+							Message: "missing manala description property",
+							Arguments: []any{
+								"path", "manala",
+								"property", "description",
+								"line", 1,
+								"column", 9,
+							},
+							Details: `
+								>  1 | manala: {}
+								               ^
+							`,
 						},
-						Details: heredoc.Doc(`
-							>  1 | manala: {}
-							               ^
-						`),
 					},
 				},
 			},

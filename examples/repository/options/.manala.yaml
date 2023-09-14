@@ -1,0 +1,22 @@
+manala:
+    description: An example recipe with options
+    sync:
+      - README.md.tmpl
+
+knight:
+    # @option {"label": "What is your name?"}
+    # @schema {"type": "string", "minLength": 3, "maxLength": 12}
+    name: ~
+    # @option {"label": "What is your quest?"}
+    # @schema {"type": "string", "pattern": "^.*Grail.*$"}
+    quest: ~
+    # @option {
+    #     "label": "What is your favorite color?",
+    #     "help": "wrong answers only"
+    # }
+    # @schema {"enum": ["blue", "no, yellow"]}
+    favorite_color: ~
+
+# @option {"label": "What is the capital of Assyria?"}
+# @schema {"enum": [null, "Assur", "Kar-Tukulti-Ninurta", "Nimrud", "Dur-Sharrukin", "Nineveh", "Harran", "I don't know that"]}
+capital_of_assyria: ~

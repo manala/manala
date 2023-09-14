@@ -3,8 +3,9 @@ package yaml
 import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"
-	"manala/internal/errors/serrors"
+	"manala/internal/serrors"
 	"os"
+	"strings"
 )
 
 func NewParser(opts ...ParserOption) *Parser {
@@ -103,9 +104,20 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		return nil
 	}
 
+	// Remove literal string's trailing new lines pollution
+	// See: https://github.com/goccy/go-yaml/issues/406
+	if n, ok := node.(*goYamlAst.LiteralNode); ok {
+		switch n.Start.Value {
+		case "|":
+			n.Value.Value = strings.TrimRight(n.Value.Value, "\n") + "\n"
+		case "|-":
+			n.Value.Value = strings.TrimRight(n.Value.Value, "\n")
+		}
+	}
+
 	switch n := node.(type) {
 	case *goYamlAst.AnchorNode:
-		// Store anchors for coming resolution
+		// Store anchors for further resolution
 		anchorName := n.Name.GetToken().Value
 		parser.anchors[anchorName] = n.Value
 	case

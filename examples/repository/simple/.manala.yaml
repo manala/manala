@@ -1,0 +1,4 @@
+manala:
+    description: A simple example recipe
+    sync:
+      - README.md

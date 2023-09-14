@@ -1,0 +1,4 @@
+foo:
+	{{- range $i := until (.Vars.foo.repeat | int) }}
+	echo Bar is {{ $.Vars.foo.bar | quote }}
+	{{- end }}

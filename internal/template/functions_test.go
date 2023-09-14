@@ -3,26 +3,11 @@ package template
 import (
 	"bytes"
 	"github.com/Masterminds/sprig/v3"
-	"github.com/stretchr/testify/suite"
 	"manala/internal/testing/heredoc"
-	"testing"
 	"text/template"
 )
 
-type FunctionsSuite struct {
-	suite.Suite
-	buffer *bytes.Buffer
-}
-
-func TestFunctionsSuite(t *testing.T) {
-	suite.Run(t, new(FunctionsSuite))
-}
-
-func (s *FunctionsSuite) SetupTest() {
-	s.buffer = &bytes.Buffer{}
-}
-
-func (s *FunctionsSuite) execute(content string, data interface{}) string {
+func (s *Suite) execute(content string, data any) string {
 	template := template.New("test")
 
 	template.Funcs(sprig.TxtFuncMap())
@@ -38,11 +23,11 @@ func (s *FunctionsSuite) execute(content string, data interface{}) string {
 	return buffer.String()
 }
 
-func (s *FunctionsSuite) TestToYaml() {
+func (s *Suite) TestFunctionToYaml() {
 
 	s.Run("Default", func() {
-		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
-			"foo": map[string]interface{}{
+		content := s.execute(`{{ . | toYaml }}`, map[string]any{
+			"foo": map[string]any{
 				"bar": "string",
 				"baz": struct {
 					Foo string
@@ -55,13 +40,13 @@ func (s *FunctionsSuite) TestToYaml() {
 				"quux":   true,
 				"corge":  false,
 				"grault": 1.23,
-				"garply": map[string]interface{}{},
-				"waldo": map[string]interface{}{
+				"garply": map[string]any{},
+				"waldo": map[string]any{
 					"foo": "bar",
 					"bar": "baz",
 				},
-				"fred": []interface{}{},
-				"plugh": []interface{}{
+				"fred": []any{},
+				"plugh": []any{
 					"foo",
 					"bar",
 				},
@@ -70,7 +55,7 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			foo:
 			    bar: string
 			    baz:
@@ -90,12 +75,13 @@ func (s *FunctionsSuite) TestToYaml() {
 			        bar: baz
 			        foo: bar
 			    xyzzy: null`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("Cases", func() {
-		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
-			"foo": map[string]interface{}{
+		content := s.execute(`{{ . | toYaml }}`, map[string]any{
+			"foo": map[string]any{
 				"bar":  true,
 				"BAZ":  true,
 				"qUx":  true,
@@ -103,28 +89,30 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			foo:
 			    BAZ: true
 			    QuuX: true
 			    bar: true
 			    qUx: true`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("Mapping", func() {
-		content := s.execute(`{{ omit .foo "baz" | toYaml }}`, map[string]interface{}{
-			"foo": map[string]interface{}{
+		content := s.execute(`{{ omit .foo "baz" | toYaml }}`, map[string]any{
+			"foo": map[string]any{
 				"bar": true,
 				"baz": true,
 				"qux": true,
 			},
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			bar: true
 			qux: true`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("RootSequence", func() {
@@ -134,15 +122,16 @@ func (s *FunctionsSuite) TestToYaml() {
 			"baz",
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			- foo
 			- bar
 			- baz`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("NestedSequence", func() {
-		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
+		content := s.execute(`{{ . | toYaml }}`, map[string]any{
 			"nested": []string{
 				"foo",
 				"bar",
@@ -150,39 +139,42 @@ func (s *FunctionsSuite) TestToYaml() {
 			},
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			nested:
 			    - foo
 			    - bar
 			    - baz`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("Quotes", func() {
 		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
 
-		s.Equal(heredoc.Docf(`
-			'\'single\' "double"'`,
-		), content)
+		heredoc.Equal(s.Assert(),
+			`'\'single\' "double"'`,
+			content,
+		)
 	})
 
 	s.Run("BlockScalar", func() {
-		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
+		content := s.execute(`{{ . | toYaml }}`, map[string]any{
 			"scalar": `foo
 bar\baz
 `,
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			scalar: |
 			  foo
 			  bar\baz`,
-		), content)
+			content,
+		)
 	})
 
 	s.Run("Indentation", func() {
-		content := s.execute(`{{ . | toYaml }}`, map[string]interface{}{
-			"mapping": map[string]interface{}{
+		content := s.execute(`{{ . | toYaml }}`, map[string]any{
+			"mapping": map[string]any{
 				"foo": "bar",
 				"bar": "baz",
 			},
@@ -192,18 +184,19 @@ bar\baz
 			},
 		})
 
-		s.Equal(heredoc.Docf(`
+		heredoc.Equal(s.Assert(), `
 			mapping:
 			    bar: baz
 			    foo: bar
 			sequence:
 			    - foo
 			    - bar`,
-		), content)
+			content,
+		)
 	})
 }
 
-func (s *FunctionsSuite) TestInclude() {
+func (s *Suite) TestFunctionInclude() {
 	content := s.execute(
 		`{{- define "foo" -}}
 	foo {{ . }}
@@ -213,7 +206,8 @@ func (s *FunctionsSuite) TestInclude() {
 		"bar",
 	)
 
-	s.Equal(heredoc.Docf(`
-			foo bar`,
-	), content)
+	heredoc.Equal(s.Assert(),
+		`foo bar`,
+		content,
+	)
 }

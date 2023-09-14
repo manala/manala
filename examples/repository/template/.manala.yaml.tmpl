@@ -1,0 +1,29 @@
+####################################################################
+#                         !!! REMINDER !!!                         #
+# Don't forget to run `manala up` each time you update this file ! #
+####################################################################
+
+manala:
+    recipe: template
+
+{{- if or .Vars.burn .Vars.made_of_wood .Vars.floats_in_water }}
+
+#########
+# Witch #
+#########
+
+witch:
+    name: {{ .Vars.witch.name | toYaml }}
+    status: {{ .Vars.witch.status | toYaml }}
+
+{{- else }}
+
+########################
+# Anyway, it's a witch #
+########################
+
+witch:
+    name: {{ .Vars.witch.name | toYaml }}
+    status: {{ .Vars.witch.status | toYaml }}
+
+{{- end }}

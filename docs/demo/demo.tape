@@ -1,10 +1,13 @@
 Output docs/demo/demo.gif
 
-Set FontSize 16
 Set Width 1024
 Set Height 768
-Set Framerate 20
 Set Padding 10
+Set WindowBar Colorful
+
+Set FontSize 16
+
+Set Framerate 20
 Set TypingSpeed 100ms
 
 # Setup
@@ -15,7 +18,7 @@ Type@1ms "rm -Rf my-project"
 Enter
 Type@1ms "apt update && apt install -y git"
 Enter
-Sleep 6s
+Sleep 10s
 Type@1ms "clear"
 Enter
 Show
@@ -37,10 +40,10 @@ Sleep 1s
 Enter
 Sleep 3s
 
-Type "manala ls -o docs/examples/repository"
+Type "manala ls -o examples/repository"
 Sleep 1s
 Enter
-Sleep 2s
+Sleep 3s
 
 Ctrl+L
 
@@ -49,26 +52,36 @@ Sleep 1s
 Enter
 Sleep 3s
 
-Type "manala init my-project -o docs/examples/repository"
+Type "manala init examples/project -o examples/repository"
 Sleep 1s
 Enter
+Sleep 1s
 
-Down@1s
-Up@1s
-Down@1s
+Down@500ms
+Down@500ms
+Up@500ms
+Enter@1s
+Sleep 1s
+
+Type "Sir Galahad"
+Tab@1s
+Type "I seek the Grail"
+Tab@1s
+Right@1s
+Tab@1s
+Down@250ms
+Down@250ms
+Down@250ms
+Down@250ms
+Down@250ms
+Down@250ms
+Down@250ms
+Down@500ms
+Enter@1s
 Enter@1s
 Sleep 2s
 
-Type "my project"
-Tab@1s
-Down@1s
-Down@1s
-Enter@1s
-Tab@1s
-Enter@1s
-Sleep 2s
-
-Type "cd my-project"
+Type "cd examples/project"
 Sleep 1s
 Enter
 
@@ -76,7 +89,7 @@ Type "ls -sa"
 Sleep 1s
 Enter
 
-Type "manala up -o ../docs/examples/repository"
+Type "manala up -o ../repository"
 Sleep 1s
 Enter
 
@@ -84,6 +97,6 @@ Sleep 4s
 
 # Teardown
 Hide
-Type@1ms "cd .. && rm -Rf my-project"
+Type@1ms "cd ../.. && rm -Rf examples/project"
 Enter
 Show

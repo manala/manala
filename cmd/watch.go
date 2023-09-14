@@ -3,13 +3,13 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"log/slog"
-	"manala/app/interfaces"
-	"manala/core/application"
-	"manala/internal/ui/output"
+	"manala/app/api"
+	"manala/app/config"
+	"manala/internal/ui"
 	"path/filepath"
 )
 
-func newWatchCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
+func newWatchCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -19,25 +19,25 @@ func newWatchCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *c
 
 Example: manala watch -> resulting in a watch in a project dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application options
-			var appOptions []application.Option
+			// Api options
+			var apiOptions []api.Option
 
 			// Flag - Repository url
 			if cmd.Flags().Changed("repository") {
-				repoUrl, _ := cmd.Flags().GetString("repository")
-				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+				repositoryUrl, _ := cmd.Flags().GetString("repository")
+				apiOptions = append(apiOptions, api.WithRepositoryUrl(repositoryUrl))
 			}
 
 			// Flag - Repository ref
 			if cmd.Flags().Changed("ref") {
-				repoRef, _ := cmd.Flags().GetString("ref")
-				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+				repositoryRef, _ := cmd.Flags().GetString("ref")
+				apiOptions = append(apiOptions, api.WithRepositoryRef(repositoryRef))
 			}
 
 			// Flag - Recipe name
 			if cmd.Flags().Changed("recipe") {
-				recName, _ := cmd.Flags().GetString("recipe")
-				appOptions = append(appOptions, application.WithRecipeName(recName))
+				recipeName, _ := cmd.Flags().GetString("recipe")
+				apiOptions = append(apiOptions, api.WithRecipeName(recipeName))
 			}
 
 			// Flag - All
@@ -46,16 +46,16 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 			// Flag - Notify
 			notify, _ := cmd.Flags().GetBool("notify")
 
-			// Application
-			app := application.NewApplication(
-				conf,
+			// Api
+			app := api.New(
+				config,
 				log,
 				out,
-				appOptions...,
+				apiOptions...,
 			)
 
 			// Load project
-			proj, err := app.LoadProjectFrom(
+			project, err := app.LoadProjectFrom(
 				filepath.Clean(append(args, "")[0]),
 			)
 			if err != nil {
@@ -63,13 +63,13 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 			}
 
 			// Sync project
-			if err := app.SyncProject(proj); err != nil {
+			if err := app.SyncProject(project); err != nil {
 				return err
 			}
 
 			// Watch project
 			return app.WatchProject(
-				proj,
+				project,
 				all,
 				notify,
 			)

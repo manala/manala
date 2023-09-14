@@ -4,7 +4,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	"log/slog"
-	"manala/internal/errors/serrors"
+	"manala/internal/serrors"
 	"manala/internal/template"
 	"os"
 	"path/filepath"
@@ -12,26 +12,26 @@ import (
 	"testing"
 )
 
-type SyncerSuite struct {
+type Suite struct {
 	suite.Suite
 	syncer           *Syncer
 	templateProvider template.ProviderInterface
 }
 
-func TestSyncerSuite(t *testing.T) {
-	suite.Run(t, new(SyncerSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *SyncerSuite) SetupTest() {
+func (s *Suite) SetupTest() {
 	s.syncer = New(
 		slog.New(slog.NewTextHandler(io.Discard, nil)),
 	)
 	s.templateProvider = &template.Provider{}
 }
 
-func (s *SyncerSuite) TestSync() {
-	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSync/source")
-	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSync/destination")
+func (s *Suite) TestSync() {
+	sourcePath := filepath.FromSlash("testdata/TestSync/source")
+	destinationPath := filepath.FromSlash("testdata/TestSync/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
@@ -50,7 +50,7 @@ func (s *SyncerSuite) TestSync() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz"),
@@ -123,15 +123,15 @@ func (s *SyncerSuite) TestSync() {
 	})
 }
 
-func (s *SyncerSuite) TestSyncExecutable() {
+func (s *Suite) TestSyncExecutable() {
 	// Irrelevant on Windows
 	//goland:noinspection GoBoolExpressions
 	if runtime.GOOS == "windows" {
 		s.T().Skip()
 	}
 
-	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSyncExecutable/source")
-	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncExecutable/destination")
+	sourcePath := filepath.FromSlash("testdata/TestSyncExecutable/source")
+	destinationPath := filepath.FromSlash("testdata/TestSyncExecutable/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
@@ -181,9 +181,9 @@ func (s *SyncerSuite) TestSyncExecutable() {
 	})
 }
 
-func (s *SyncerSuite) TestSyncTemplate() {
-	sourcePath := filepath.FromSlash("testdata/SyncerSuite/TestSyncTemplate/source")
-	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncTemplate/destination")
+func (s *Suite) TestSyncTemplate() {
+	sourcePath := filepath.FromSlash("testdata/TestSyncTemplate/source")
+	destinationPath := filepath.FromSlash("testdata/TestSyncTemplate/destination")
 
 	_ = os.RemoveAll(destinationPath)
 	_ = os.Mkdir(destinationPath, 0755)
@@ -194,7 +194,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz.tmpl"),
@@ -230,16 +230,18 @@ func (s *SyncerSuite) TestSyncTemplate() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateProvider)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.WrapError{},
+			Type:    serrors.Error{},
 			Message: "template error",
-			Error: &serrors.Assert{
-				Type:    &template.Error{},
-				Message: "nil data; no entry for key \"foo\"",
-				Arguments: []any{
-					"file", filepath.Join(sourcePath, "invalid.tmpl"),
-					"context", ".foo",
-					"line", 1,
-					"column", 3,
+			Errors: []*serrors.Assert{
+				{
+					Type:    serrors.Error{},
+					Message: "nil data; no entry for key \"foo\"",
+					Arguments: []any{
+						"context", ".foo",
+						"line", 1,
+						"column", 3,
+						"file", filepath.Join(sourcePath, "invalid.tmpl"),
+					},
 				},
 			},
 		}, err)

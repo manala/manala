@@ -2,15 +2,17 @@ package heredoc
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"os"
 	"strings"
 )
 
-func Doc(doc string) string {
+func Doc(doc string, args ...any) string {
 	lines := strings.Split(doc, "\n")
 
 	// Remove first line if trailing
 	firstLine := lines[0]
-	if firstLine == "" {
+	if firstLine == "" && len(lines) != 2 {
 		lines = lines[1:]
 	}
 
@@ -39,7 +41,10 @@ func Doc(doc string) string {
 		lines[i], _ = strings.CutPrefix(line, shorterIndent)
 	}
 
-	return strings.Join(lines, "\n")
+	return fmt.Sprintf(
+		strings.Join(lines, "\n"),
+		args...,
+	)
 }
 
 func indent(s string) string {
@@ -54,6 +59,25 @@ func indent(s string) string {
 	return indent.String()
 }
 
-func Docf(doc string, args ...interface{}) string {
-	return fmt.Sprintf(Doc(doc), args...)
+func Equal(s *assert.Assertions, expected string, actual string, args ...any) {
+	// Trim actual
+	var actuals []string
+	for _, _actual := range strings.Split(actual, "\n") {
+		actuals = append(actuals, strings.TrimRight(_actual, " "))
+	}
+
+	s.Equal(
+		Doc(expected, args...),
+		strings.Join(actuals, "\n"),
+	)
+}
+
+func EqualFile(s *assert.Assertions, expected string, path string, args ...any) {
+	content, err := os.ReadFile(path)
+	s.NoError(err)
+
+	s.Equal(
+		Doc(expected, args...),
+		string(content),
+	)
 }

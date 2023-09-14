@@ -1,0 +1,15 @@
+manala:
+    description: An advanced example recipe
+    sync:
+      - .manala/Makefile.tmpl
+      - Makefile.dist
+
+########
+# Vars #
+########
+
+foo:
+  # @schema {"minLength": 3}
+  bar: baz
+  # @schema {"minimum": 1, "maximum": 6}
+  repeat: 1

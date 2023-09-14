@@ -2,20 +2,11 @@ package yaml
 
 import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
-	"github.com/stretchr/testify/suite"
-	"manala/internal/errors/serrors"
-	"manala/internal/testing/heredoc"
+	"manala/internal/serrors"
 	"path/filepath"
-	"testing"
 )
 
-type ParserSuite struct{ suite.Suite }
-
-func TestParserSuite(t *testing.T) {
-	suite.Run(t, new(ParserSuite))
-}
-
-func (s *ParserSuite) TestEmpty() {
+func (s *Suite) TestParserEmpty() {
 	parser := NewParser()
 
 	node, err := parser.ParseBytes(nil)
@@ -23,12 +14,12 @@ func (s *ParserSuite) TestEmpty() {
 	s.Nil(node)
 
 	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    &serrors.Error{},
+		Type:    serrors.Error{},
 		Message: "empty yaml file",
 	}, err)
 }
 
-func (s *ParserSuite) TestMultipleDocuments() {
+func (s *Suite) TestParserMultipleDocuments() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestMultipleDocuments")
 
 	parser := NewParser()
@@ -37,23 +28,23 @@ func (s *ParserSuite) TestMultipleDocuments() {
 	s.Nil(node)
 
 	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    &NodeError{},
+		Type:    serrors.Error{},
 		Message: "multiple documents yaml file",
 		Arguments: []any{
 			"line", 4,
 			"column", 1,
 		},
-		Details: heredoc.Doc(`
+		Details: `
 			   1 | ---
 			   2 | foo
 			   3 | ---
 			>  4 | bar
 			       ^
-		`),
+		`,
 	}, err)
 }
 
-func (s *ParserSuite) TestMappingComments() {
+func (s *Suite) TestParserMappingComments() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingComments")
 
 	parser := NewParser(WithComments())
@@ -74,7 +65,7 @@ func (s *ParserSuite) TestMappingComments() {
 	s.Equal("# Mapping Bar", mappingNode.Value.(*goYamlAst.MappingNode).Values[1].GetComment().String())
 }
 
-func (s *ParserSuite) TestIrregularMapKeys() {
+func (s *Suite) TestParserIrregularMapKeys() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assert
@@ -82,32 +73,32 @@ func (s *ParserSuite) TestIrregularMapKeys() {
 		{
 			test: "Integer",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "irregular map key",
 				Arguments: []any{
 					"line", 1,
 					"column", 2,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | 0: foo
 					        ^
-				`),
+				`,
 			},
 		},
 		{
 			test: "IntegerAnchor",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "irregular map key",
 				Arguments: []any{
 					"line", 2,
 					"column", 4,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					   1 | anchor: &anchor
 					>  2 |   0: foo
 					          ^
-				`),
+				`,
 			},
 		},
 	}
@@ -126,7 +117,7 @@ func (s *ParserSuite) TestIrregularMapKeys() {
 	}
 }
 
-func (s *ParserSuite) TestIrregularTypes() {
+func (s *Suite) TestParserIrregularTypes() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assert
@@ -134,31 +125,31 @@ func (s *ParserSuite) TestIrregularTypes() {
 		{
 			test: "Inf",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "irregular type",
 				Arguments: []any{
 					"line", 1,
 					"column", 6,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | foo: .inf
 					            ^
-				`),
+				`,
 			},
 		},
 		{
 			test: "Nan",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "irregular type",
 				Arguments: []any{
 					"line", 1,
 					"column", 6,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | foo: .nan
 					            ^
-				`),
+				`,
 			},
 		},
 	}
@@ -177,7 +168,7 @@ func (s *ParserSuite) TestIrregularTypes() {
 	}
 }
 
-func (s *ParserSuite) TestMappingKey() {
+func (s *Suite) TestParserMappingKey() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingKey")
 
 	parser := NewParser()
@@ -196,7 +187,7 @@ func (s *ParserSuite) TestMappingKey() {
 	s.Equal("bar", valueNode.(*goYamlAst.StringNode).Value)
 }
 
-func (s *ParserSuite) TestIrregularMappingKey() {
+func (s *Suite) TestParserIrregularMappingKey() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularMappingKey")
 
 	parser := NewParser()
@@ -205,20 +196,20 @@ func (s *ParserSuite) TestIrregularMappingKey() {
 	s.Nil(node)
 
 	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    &NodeError{},
+		Type:    serrors.Error{},
 		Message: "irregular map key",
 		Arguments: []any{
 			"line", 1,
 			"column", 6,
 		},
-		Details: heredoc.Doc(`
+		Details: `
 			>  1 | ? 123: bar
 			            ^
-		`),
+		`,
 	}, err)
 }
 
-func (s *ParserSuite) TestTags() {
+func (s *Suite) TestParserTags() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestTags")
 
 	parser := NewParser()
@@ -230,7 +221,7 @@ func (s *ParserSuite) TestTags() {
 	s.Equal("foo", node.(*goYamlAst.StringNode).Value)
 }
 
-func (s *ParserSuite) TestUnknownAnchors() {
+func (s *Suite) TestParserUnknownAnchors() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestUnknownAnchors")
 
 	parser := NewParser()
@@ -239,21 +230,21 @@ func (s *ParserSuite) TestUnknownAnchors() {
 	s.Nil(node)
 
 	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    &NodeError{},
+		Type:    serrors.Error{},
 		Message: "cannot find anchor",
 		Arguments: []any{
 			"line", 1,
 			"column", 2,
 			"anchor", "anchor",
 		},
-		Details: heredoc.Doc(`
+		Details: `
 			>  1 | *anchor
 			        ^
-		`),
+		`,
 	}, err)
 }
 
-func (s *ParserSuite) TestAnchors() {
+func (s *Suite) TestParserAnchors() {
 	s.Run("Anchors", func() {
 		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/Anchors")
 

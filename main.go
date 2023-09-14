@@ -9,5 +9,5 @@ import (
 var version = "dev"
 
 func main() {
-	cmd.Execute(version, os.Stdout, os.Stderr)
+	cmd.Execute(version, os.Stdin, os.Stdout, os.Stderr)
 }

@@ -5,13 +5,12 @@ import (
 	"io"
 	"log/slog"
 	"manala/app/config"
-	"manala/app/interfaces"
+	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"manala/internal/ui/output/lipgloss"
 	"os"
 )
 
-func newCmd(version string, conf interfaces.Config) *cobra.Command {
+func newCmd(version string, config config.Config) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "manala",
 		Version:           version,
@@ -26,28 +25,28 @@ Recipes are pulled from a git repository, or a local directory.`,
 	}
 
 	// Persistent flags
-	cmd.PersistentFlags().StringP("cache-dir", "c", conf.CacheDir(), "use cache directory")
-	conf.BindCacheDirFlag(cmd.PersistentFlags().Lookup("cache-dir"))
+	cmd.PersistentFlags().StringP("cache-dir", "c", config.CacheDir(), "use cache directory")
+	config.BindCacheDirFlag(cmd.PersistentFlags().Lookup("cache-dir"))
 
-	cmd.PersistentFlags().BoolP("debug", "d", conf.Debug(), "set debug mode")
-	conf.BindDebugFlag(cmd.PersistentFlags().Lookup("debug"))
+	cmd.PersistentFlags().BoolP("debug", "d", config.Debug(), "set debug mode")
+	config.BindDebugFlag(cmd.PersistentFlags().Lookup("debug"))
 
 	return cmd
 }
 
-func Execute(version string, stdout io.Writer, stderr io.Writer) {
+func Execute(version string, stdin io.Reader, stdout io.Writer, stderr io.Writer) {
 	// Config
-	conf := config.New()
+	config := config.NewViperConfig()
 
-	// Ui Output
-	out := lipgloss.New(stdout, stderr)
+	// Ui Adapter
+	ui := charm.New(stdin, stdout, stderr)
 
 	// Log handler
-	logHandler := log.NewSlogHandler(out)
+	logHandler := log.NewSlogHandler(ui)
 
 	// Debug
 	cobra.OnInitialize(func() {
-		if conf.Debug() {
+		if config.Debug() {
 			logHandler.LevelDebug()
 		}
 	})
@@ -56,17 +55,17 @@ func Execute(version string, stdout io.Writer, stderr io.Writer) {
 	logger := slog.New(logHandler)
 
 	// Root command
-	cmd := newCmd(version, conf)
+	cmd := newCmd(version, config)
 	cmd.SetOut(stdout)
 	cmd.SetErr(stderr)
 
 	// Sub commands
 	cmd.AddCommand(
-		newInitCmd(conf, logger, out),
-		newListCmd(conf, logger, out),
-		newMascotCmd(),
-		newUpdateCmd(conf, logger, out),
-		newWatchCmd(conf, logger, out),
+		newInitCmd(config, logger, ui, ui),
+		newListCmd(config, logger, ui),
+		newMascotCmd(ui),
+		newUpdateCmd(config, logger, ui),
+		newWatchCmd(config, logger, ui),
 	)
 
 	// Docs generation command
@@ -76,7 +75,7 @@ func Execute(version string, stdout io.Writer, stderr io.Writer) {
 
 	// Execute
 	if err := cmd.Execute(); err != nil {
-		out.Error(err)
+		ui.Error(err)
 		os.Exit(1)
 	}
 }

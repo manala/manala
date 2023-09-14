@@ -43,7 +43,7 @@ func (template *Template) WriteTo(writer io.Writer) error {
 		for _, file := range template.defaultFiles {
 			if _, err := _template.ParseFiles(file); err != nil {
 				return NewError(err).
-					WithFile(file)
+					WithArguments("file", file)
 			}
 		}
 	}
@@ -52,12 +52,12 @@ func (template *Template) WriteTo(writer io.Writer) error {
 	if template.file != "" {
 		if _, err := _template.ParseFiles(template.file); err != nil {
 			return NewError(err).
-				WithFile(template.file)
+				WithArguments("file", template.file)
 		}
 
 		if err := _template.ExecuteTemplate(writer, filepath.Base(template.file), template.data); err != nil {
 			return NewError(err).
-				WithFile(template.file)
+				WithArguments("file", template.file)
 		}
 
 		return nil

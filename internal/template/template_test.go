@@ -3,30 +3,30 @@ package template
 import (
 	"bytes"
 	"github.com/stretchr/testify/suite"
-	"manala/internal/errors/serrors"
+	"manala/internal/serrors"
 	"path/filepath"
 	"testing"
 )
 
-type TemplateSuite struct {
+type Suite struct {
 	suite.Suite
 	provider ProviderInterface
 	buffer   *bytes.Buffer
 }
 
-func TestTemplateSuite(t *testing.T) {
-	suite.Run(t, new(TemplateSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *TemplateSuite) SetupSuite() {
+func (s *Suite) SetupSuite() {
 	s.provider = &Provider{}
 }
 
-func (s *TemplateSuite) SetupTest() {
+func (s *Suite) SetupTest() {
 	s.buffer = &bytes.Buffer{}
 }
 
-func (s *TemplateSuite) TestWriteTo() {
+func (s *Suite) TestWriteTo() {
 	template := s.provider.Template()
 	err := template.WriteTo(s.buffer)
 
@@ -36,7 +36,7 @@ func (s *TemplateSuite) TestWriteTo() {
 	s.Run("DefaultFile", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/DefaultFile")
+		dir := filepath.FromSlash("testdata/TestWriteTo/DefaultFile")
 
 		template := s.provider.Template()
 		template.WithDefaultFile(filepath.Join(dir, "template.tmpl"))
@@ -50,7 +50,7 @@ func (s *TemplateSuite) TestWriteTo() {
 	s.Run("File", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/File")
+		dir := filepath.FromSlash("testdata/TestWriteTo/File")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
@@ -74,7 +74,7 @@ func (s *TemplateSuite) TestWriteTo() {
 	s.Run("FileOverDefaultContent", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/FileOverDefaultContent")
+		dir := filepath.FromSlash("testdata/TestWriteTo/FileOverDefaultContent")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
@@ -105,7 +105,7 @@ func (s *TemplateSuite) TestWriteTo() {
 		err := template.WriteTo(s.buffer)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &Error{},
+			Type:    serrors.Error{},
 			Message: "unexpected \"}\" in operand",
 			Arguments: []any{
 				"line", 1,
@@ -121,7 +121,7 @@ func (s *TemplateSuite) TestWriteTo() {
 		err := template.WriteTo(s.buffer)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &Error{},
+			Type:    serrors.Error{},
 			Message: "nil data; no entry for key \"foo\"",
 			Arguments: []any{
 				"context", ".foo",

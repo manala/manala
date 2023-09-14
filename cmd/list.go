@@ -1,15 +1,16 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"log/slog"
-	"manala/app/interfaces"
-	"manala/core/application"
-	"manala/internal/ui/components"
-	"manala/internal/ui/output"
+	"manala/app"
+	"manala/app/api"
+	"manala/app/config"
+	"manala/internal/ui"
 )
 
-func newListCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
+func newListCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
@@ -21,42 +22,48 @@ repository.
 
 Example: manala list -> resulting in a recipes list display`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application options
-			var appOptions []application.Option
+			// Api options
+			var apiOptions []api.Option
 
 			// Flag - Repository url
 			if cmd.Flags().Changed("repository") {
-				repoUrl, _ := cmd.Flags().GetString("repository")
-				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+				repositoryUrl, _ := cmd.Flags().GetString("repository")
+				apiOptions = append(apiOptions, api.WithRepositoryUrl(repositoryUrl))
 			}
 
 			// Flag - Repository ref
 			if cmd.Flags().Changed("ref") {
-				repoRef, _ := cmd.Flags().GetString("ref")
-				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+				repositoryRef, _ := cmd.Flags().GetString("ref")
+				apiOptions = append(apiOptions, api.WithRepositoryRef(repositoryRef))
 			}
 
-			// Application
-			app := application.NewApplication(
-				conf,
+			// Api
+			api := api.New(
+				config,
 				log,
 				out,
-				appOptions...,
+				apiOptions...,
 			)
 
-			table := &components.Table{}
+			// Load preceding repository
+			repository, err := api.LoadPrecedingRepository()
+			if err != nil {
+				return err
+			}
 
-			// Walk into recipes
-			if err := app.WalkRecipes(func(rec interfaces.Recipe) error {
-				table.AddRow(rec.Name(), rec.Description())
+			// List
+			var recipes []app.Recipe
+			if err := api.WalkRepositoryRecipes(repository, func(recipe app.Recipe) error {
+				recipes = append(recipes, recipe)
 				return nil
 			}); err != nil {
 				return err
 			}
 
-			out.Table(table)
-
-			return nil
+			return out.List(
+				fmt.Sprintf("Recipes available in %s", repository.Url()),
+				api.NewUiRecipeList(recipes),
+			)
 		},
 	}
 

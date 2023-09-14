@@ -1,33 +1,22 @@
 package yaml
 
-import (
-	"github.com/stretchr/testify/suite"
-	"testing"
-)
-
-type CommentSuite struct{ suite.Suite }
-
-func TestCommentSuite(t *testing.T) {
-	suite.Run(t, new(CommentSuite))
-}
-
-func (s *CommentSuite) TestParseCommentTags() {
-	docTags := &Tags{}
+func (s *Suite) TestParseCommentTags() {
+	tags := &Tags{}
 	ParseCommentTags(`
 	  # @foo bar
 	  # @bar baz
       # qux
-	`, docTags)
+	`, tags)
 	s.Equal(
 		&Tags{
 			{Name: "foo", Value: "bar"},
 			{Name: "bar", Value: "baz\nqux"},
 		},
-		docTags,
+		tags,
 	)
 }
 
-func (s *CommentSuite) TestTagsFilter() {
+func (s *Suite) TestTagsFilter() {
 	tags := &Tags{
 		&Tag{Name: "foo", Value: "bar"},
 		&Tag{Name: "bar", Value: "baz"},
