@@ -1,0 +1,14 @@
+manala:
+    description: An example recipe with advanced options
+    sync:
+      - README.md.tmpl
+
+ansible:
+    # @option {
+    #     "label": "Ansible core version",
+    #     "help": "see https://pypi.org/project/ansible-core/",
+    #     "type": "version",
+    #     "version_constraint": "^2.14.0"
+    # }
+    # @schema {"type": "string"}
+    version: ~
