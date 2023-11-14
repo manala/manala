@@ -16,7 +16,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
@@ -27,7 +27,7 @@ jobs:
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser release
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout packages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: manala/packages
           token: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
           name: release
           path: dist/
       - name: Import packages GPG private key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
       - name: Apt packages

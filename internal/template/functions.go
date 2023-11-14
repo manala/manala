@@ -1,8 +1,8 @@
 package template
 
 import (
-	"fmt"
 	goYaml "github.com/goccy/go-yaml"
+	"manala/internal/serrors"
 	"reflect"
 	"strings"
 	textTemplate "text/template"
@@ -16,7 +16,7 @@ func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
 }
 
 // As seen in helm
-func functionToYaml(value interface{}) string {
+func functionToYaml(value any) string {
 	marshalOptions := []goYaml.EncodeOption{
 		goYaml.Indent(4),
 		goYaml.UseSingleQuote(true),
@@ -38,13 +38,14 @@ func functionToYaml(value interface{}) string {
 }
 
 // As seen in helm
-func functionInclude(template *textTemplate.Template) func(name string, data interface{}) (string, error) {
+func functionInclude(template *textTemplate.Template) func(name string, data any) (string, error) {
 	includedNames := make(map[string]int)
-	return func(name string, data interface{}) (string, error) {
+	return func(name string, data any) (string, error) {
 		var buf strings.Builder
 		if v, ok := includedNames[name]; ok {
 			if v > 1000 {
-				return "", fmt.Errorf("rendering template has a nested reference name: %s", name)
+				return "", serrors.New("rendering template has a nested reference").
+					WithArguments("reference", name)
 			}
 			includedNames[name]++
 		} else {

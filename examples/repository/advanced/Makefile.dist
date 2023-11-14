@@ -1,0 +1,3 @@
+.SILENT:
+
+-include .manala/Makefile

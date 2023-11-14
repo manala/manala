@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-type BackwalkSuite struct{ suite.Suite }
+type Suite struct{ suite.Suite }
 
-func TestBackwalkSuite(t *testing.T) {
-	suite.Run(t, new(BackwalkSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *BackwalkSuite) Test() {
-	dir := filepath.FromSlash("testdata/BackwalkSuite/Test")
+func (s *Suite) Test() {
+	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0
 	err := Backwalk(

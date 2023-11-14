@@ -1,0 +1,19 @@
+manala:
+    description: An example recipe with a template
+    template: .manala.yaml.tmpl
+
+burn: false
+made_of_wood: false
+floats_in_water: true
+
+wood:
+    type: chestnut
+    taste: good
+
+duck:
+    breed: crested
+    appearance: glamorous
+
+witch:
+    name: Cythère
+    status: apprentice

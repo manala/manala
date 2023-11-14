@@ -3,13 +3,14 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"log/slog"
-	"manala/app/interfaces"
-	"manala/core/application"
-	"manala/internal/ui/output"
+	"manala/app"
+	"manala/app/api"
+	"manala/app/config"
+	"manala/internal/ui"
 	"path/filepath"
 )
 
-func newUpdateCmd(conf interfaces.Config, log *slog.Logger, out output.Output) *cobra.Command {
+func newUpdateCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "update [dir]",
 		Aliases:           []string{"up"},
@@ -21,36 +22,36 @@ repository's recipe and related variables defined in manifest (.manala.yaml).
 
 Example: manala update -> resulting in an update in a project dir (default to the current directory)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// Application options
-			var appOptions []application.Option
+			// Api options
+			var apiOptions []api.Option
 
 			// Flag - Repository url
 			if cmd.Flags().Changed("repository") {
-				repoUrl, _ := cmd.Flags().GetString("repository")
-				appOptions = append(appOptions, application.WithRepositoryUrl(repoUrl))
+				repositoryUrl, _ := cmd.Flags().GetString("repository")
+				apiOptions = append(apiOptions, api.WithRepositoryUrl(repositoryUrl))
 			}
 
 			// Flag - Repository ref
 			if cmd.Flags().Changed("ref") {
-				repoRef, _ := cmd.Flags().GetString("ref")
-				appOptions = append(appOptions, application.WithRepositoryRef(repoRef))
+				repositoryRef, _ := cmd.Flags().GetString("ref")
+				apiOptions = append(apiOptions, api.WithRepositoryRef(repositoryRef))
 			}
 
 			// Flag - Recipe name
 			if cmd.Flags().Changed("recipe") {
-				recName, _ := cmd.Flags().GetString("recipe")
-				appOptions = append(appOptions, application.WithRecipeName(recName))
+				recipeName, _ := cmd.Flags().GetString("recipe")
+				apiOptions = append(apiOptions, api.WithRecipeName(recipeName))
 			}
 
 			// Flag - Recursive
 			recursive, _ := cmd.Flags().GetBool("recursive")
 
-			// Application
-			app := application.NewApplication(
-				conf,
+			// Api
+			api := api.New(
+				config,
 				log,
 				out,
-				appOptions...,
+				apiOptions...,
 			)
 
 			// Get args
@@ -58,16 +59,16 @@ Example: manala update -> resulting in an update in a project dir (default to th
 
 			if recursive {
 				// Recursively load projects
-				return app.WalkProjects(
+				return api.WalkProjects(
 					dir,
-					func(proj interfaces.Project) error {
+					func(project app.Project) error {
 						// Sync project
-						return app.SyncProject(proj)
+						return api.SyncProject(project)
 					},
 				)
 			} else {
 				// Load project
-				proj, err := app.LoadProjectFrom(
+				project, err := api.LoadProjectFrom(
 					dir,
 				)
 				if err != nil {
@@ -75,7 +76,7 @@ Example: manala update -> resulting in an update in a project dir (default to th
 				}
 
 				// Sync project
-				return app.SyncProject(proj)
+				return api.SyncProject(project)
 			}
 		},
 	}

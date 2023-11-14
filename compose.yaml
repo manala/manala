@@ -5,7 +5,7 @@ services:
   ######
 
   go:
-    image: golang:${MANALA_GO_VERSION}-bullseye
+    image: golang:${MANALA_GO_VERSION}-bookworm
     volumes:
       - go:/go
       - .:/usr/src/manala

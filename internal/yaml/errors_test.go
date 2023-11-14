@@ -3,20 +3,11 @@ package yaml
 import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"
-	"github.com/stretchr/testify/suite"
-	"manala/internal/errors/serrors"
-	"manala/internal/testing/heredoc"
-	"testing"
+	"manala/internal/serrors"
 )
 
-type ErrorsSuite struct{ suite.Suite }
-
-func TestErrorsSuite(t *testing.T) {
-	suite.Run(t, new(ErrorsSuite))
-}
-
-func (s *ErrorsSuite) TestError() {
-	_, formattedErr := goYamlParser.ParseBytes([]byte(`&foo`), 0)
+func (s *Suite) TestError() {
+	_, err := goYamlParser.ParseBytes([]byte(`&foo`), 0)
 
 	tests := []struct {
 		test     string
@@ -25,26 +16,26 @@ func (s *ErrorsSuite) TestError() {
 	}{
 		{
 			test: "Unknown",
-			err:  serrors.New(`error`),
+			err:  serrors.New("error"),
 			expected: &serrors.Assert{
-				Type:    &Error{},
+				Type:    serrors.Error{},
 				Message: "error",
 			},
 		},
 		{
 			test: "Formatted",
-			err:  formattedErr,
+			err:  err,
 			expected: &serrors.Assert{
-				Type:    &Error{},
+				Type:    serrors.Error{},
 				Message: "unexpected anchor. anchor value is undefined",
 				Arguments: []any{
 					"line", 1,
 					"column", 2,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | &foo
 					        ^
-				`),
+				`,
 			},
 		},
 	}
@@ -58,8 +49,8 @@ func (s *ErrorsSuite) TestError() {
 	}
 }
 
-func (s *ErrorsSuite) TestNodeError() {
-	contentNode, _ := NewParser().ParseBytes([]byte(`foo: bar`))
+func (s *Suite) TestNodeError() {
+	node, _ := NewParser().ParseBytes([]byte(`foo: bar`))
 
 	tests := []struct {
 		test     string
@@ -68,18 +59,18 @@ func (s *ErrorsSuite) TestNodeError() {
 	}{
 		{
 			test: "Content",
-			node: contentNode,
+			node: node,
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "error",
 				Arguments: []any{
 					"line", 1,
 					"column", 4,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | foo: bar
 					          ^
-				`),
+				`,
 			},
 		},
 	}

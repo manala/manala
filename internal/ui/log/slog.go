@@ -3,11 +3,11 @@ package log
 import (
 	"context"
 	"log/slog"
+	"manala/internal/ui"
 	"manala/internal/ui/components"
-	"manala/internal/ui/output"
 )
 
-func NewSlogHandler(out output.Output) *SlogHandler {
+func NewSlogHandler(out ui.Output) *SlogHandler {
 	return &SlogHandler{
 		level: slog.LevelInfo,
 		out:   out,
@@ -16,7 +16,7 @@ func NewSlogHandler(out output.Output) *SlogHandler {
 
 type SlogHandler struct {
 	level  slog.Level
-	out    output.Output
+	out    ui.Output
 	attrs  []slog.Attr
 	groups []string
 }

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # See: https://github.com/timvink/mkdocs-git-revision-date-localized-plugin/issues/10
           fetch-depth: 0

@@ -4,8 +4,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"log/slog"
+	"manala/internal/ui"
 	"manala/internal/ui/components"
-	"manala/internal/ui/output"
 	"testing"
 )
 
@@ -18,7 +18,7 @@ func TestSlogSuite(t *testing.T) {
 }
 
 func (s *SlogSuite) TestHandler() {
-	outputMock := &output.Mock{}
+	outputMock := &ui.OutputMock{}
 	outputMock.On("Message", mock.Anything)
 
 	handler := NewSlogHandler(outputMock)

@@ -9,14 +9,14 @@ import (
 	"testing"
 )
 
-type WatcherSuite struct{ suite.Suite }
+type Suite struct{ suite.Suite }
 
-func TestWatcherSuite(t *testing.T) {
-	suite.Run(t, new(WatcherSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *WatcherSuite) TestGroups() {
-	path := filepath.FromSlash("testdata/WatcherSuite/TestGroups")
+func (s *Suite) TestGroups() {
+	path := filepath.FromSlash("testdata/TestGroups")
 	fooPath := filepath.Join(path, "foo")
 	barPath := filepath.Join(path, "bar")
 	bazPath := filepath.Join(path, "baz")

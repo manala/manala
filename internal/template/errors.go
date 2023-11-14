@@ -2,7 +2,7 @@ package template
 
 import (
 	"errors"
-	"manala/internal/errors/serrors"
+	"manala/internal/serrors"
 	"regexp"
 	"strconv"
 	textTemplate "text/template"
@@ -21,53 +21,36 @@ var executionErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): execut
 // 3: message
 var parsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
 
-func NewError(err error) *Error {
-	_err := &Error{
-		message:   err.Error(),
-		Arguments: serrors.NewArguments(),
-	}
+func NewError(err error) serrors.Error {
+	message := err.Error()
+	arguments := []any{}
 
 	// Execution error
 	var _execError textTemplate.ExecError
 	if errors.As(err, &_execError) {
-		if matches := executionErrorRegex.FindStringSubmatch(_err.message); matches != nil {
-			// Message
-			_err.message = matches[6]
-			// Context
-			_err.AppendArguments("context", matches[5])
+		if matches := executionErrorRegex.FindStringSubmatch(message); matches != nil {
+			message = matches[6]
+			arguments = append(arguments, "context", matches[5])
 			// Line
-			if line, __err := strconv.Atoi(matches[2]); __err == nil {
-				_err.AppendArguments("line", line)
+			if line, _err := strconv.Atoi(matches[2]); _err == nil {
+				arguments = append(arguments, "line", line)
 			}
 			// Column
-			if column, __err := strconv.Atoi(matches[3]); __err == nil {
-				_err.AppendArguments("column", column)
+			if column, _err := strconv.Atoi(matches[3]); _err == nil {
+				arguments = append(arguments, "column", column)
 			}
 		}
 	} else {
 		// Parsing error
-		if matches := parsingErrorRegex.FindStringSubmatch(_err.message); matches != nil {
-			_err.message = matches[3]
+		if matches := parsingErrorRegex.FindStringSubmatch(message); matches != nil {
+			message = matches[3]
 			// Line
-			if line, __err := strconv.Atoi(matches[2]); __err == nil {
-				_err.AppendArguments("line", line)
+			if line, _err := strconv.Atoi(matches[2]); _err == nil {
+				arguments = append(arguments, "line", line)
 			}
 		}
 	}
 
-	return _err
-}
-
-type Error struct {
-	message string
-	*serrors.Arguments
-}
-
-func (err *Error) Error() string {
-	return err.message
-}
-
-func (err *Error) WithFile(file string) *Error {
-	err.PrependArguments("file", file)
-	return err
+	return serrors.New(message).
+		WithArguments(arguments...)
 }

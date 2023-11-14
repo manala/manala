@@ -2,20 +2,11 @@ package yaml
 
 import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
-	"github.com/stretchr/testify/suite"
-	"manala/internal/errors/serrors"
-	"manala/internal/testing/heredoc"
+	"manala/internal/serrors"
 	"path/filepath"
-	"testing"
 )
 
-type ExtractorSuite struct{ suite.Suite }
-
-func TestExtractorSuite(t *testing.T) {
-	suite.Run(t, new(ExtractorSuite))
-}
-
-func (s *ExtractorSuite) TestExtractRootMapErrors() {
+func (s *Suite) TestExtractorRootMapErrors() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assert
@@ -23,29 +14,29 @@ func (s *ExtractorSuite) TestExtractRootMapErrors() {
 		{
 			test: "Empty",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "root must be a map",
 			},
 		},
 		{
 			test: "NonMap",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "root must be a map",
 				Arguments: []any{
 					"line", 1,
 					"column", 1,
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | foo
 					       ^
-				`),
+				`,
 			},
 		},
 		{
 			test: "SubjectNotFoundSingle",
 			expected: &serrors.Assert{
-				Type:    &serrors.Error{},
+				Type:    serrors.Error{},
 				Message: "unable to find map",
 				Arguments: []any{
 					"key", "subject",
@@ -55,7 +46,7 @@ func (s *ExtractorSuite) TestExtractRootMapErrors() {
 		{
 			test: "SubjectNotFoundMultiple",
 			expected: &serrors.Assert{
-				Type:    &serrors.Error{},
+				Type:    serrors.Error{},
 				Message: "unable to find map",
 				Arguments: []any{
 					"key", "subject",
@@ -65,34 +56,34 @@ func (s *ExtractorSuite) TestExtractRootMapErrors() {
 		{
 			test: "SubjectNonMapSingle",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "key is not a map",
 				Arguments: []any{
 					"line", 1,
 					"column", 10,
 					"key", "subject",
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | subject: 123
 					                ^
-				`),
+				`,
 			},
 		},
 		{
 			test: "SubjectNonMapMultiple",
 			expected: &serrors.Assert{
-				Type:    &NodeError{},
+				Type:    serrors.Error{},
 				Message: "key is not a map",
 				Arguments: []any{
 					"line", 1,
 					"column", 10,
 					"key", "subject",
 				},
-				Details: heredoc.Doc(`
+				Details: `
 					>  1 | subject: 123
 					                ^
 					   2 | foo: foo
-				`),
+				`,
 			},
 		},
 	}
@@ -114,11 +105,11 @@ func (s *ExtractorSuite) TestExtractRootMapErrors() {
 	}
 }
 
-func (s *ExtractorSuite) TestExtractRootMap() {
+func (s *Suite) TestExtractorRootMap() {
 	tests := []struct {
 		test            string
-		expectedSubject interface{}
-		expectedNode    interface{}
+		expectedSubject any
+		expectedNode    any
 	}{
 		{
 			test:            "SingleEmpty",

@@ -1,0 +1,16 @@
+# Options
+
+An example recipe with options
+
+## Knight
+
+- Name: {{ .Vars.knight.name }}
+- Quest: {{ .Vars.knight.quest }}
+- Favorite color: {{ .Vars.knight.favorite_color }}
+
+{{- if .Vars.capital_of_assyria }}
+
+## Assyria
+
+- Capital: {{ .Vars.capital_of_assyria }}
+{{- end }}

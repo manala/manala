@@ -14,7 +14,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
@@ -39,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
@@ -61,7 +61,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
@@ -72,7 +72,7 @@ jobs:
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser build
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         with:

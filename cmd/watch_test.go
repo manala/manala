@@ -5,22 +5,19 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/suite"
 	"log/slog"
-	"manala/app/mocks"
-	"manala/core"
-	"manala/internal/errors/serrors"
+	"manala/app"
+	"manala/app/config"
+	"manala/internal/serrors"
 	"manala/internal/testing/cmd"
-	"manala/internal/testing/heredoc"
+	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"manala/internal/ui/output/lipgloss"
-	"manala/internal/validation"
-	"manala/internal/yaml"
 	"path/filepath"
 	"testing"
 )
 
 type WatchSuite struct {
 	suite.Suite
-	configMock *mocks.ConfigMock
+	configMock *config.Mock
 	executor   *cmd.Executor
 }
 
@@ -29,13 +26,13 @@ func TestWatchSuite(t *testing.T) {
 }
 
 func (s *WatchSuite) SetupTest() {
-	s.configMock = &mocks.ConfigMock{}
+	s.configMock = &config.Mock{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
-		out := lipgloss.New(stdout, stderr)
+		ui := charm.New(nil, stdout, stderr)
 		return newWatchCmd(
 			s.configMock,
-			slog.New(log.NewSlogHandler(out)),
-			out,
+			slog.New(log.NewSlogHandler(ui)),
+			ui,
 		)
 	})
 }
@@ -46,102 +43,109 @@ func (s *WatchSuite) TestProjectErrors() {
 		On("Repository").Return("")
 
 	s.Run("ProjectNotFound", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/ProjectNotFound/project")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/ProjectNotFound/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "project not found",
 			Arguments: []any{
-				"dir", projDir,
+				"dir", projectDir,
 			},
 		}, err)
 	})
 
 	s.Run("WrongProjectManifest", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/WrongProjectManifest/project")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/WrongProjectManifest/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "project manifest is a directory",
 			Arguments: []any{
-				"dir", filepath.Join(projDir, ".manala.yaml"),
+				"dir", filepath.Join(projectDir, ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("EmptyProjectManifest", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/EmptyProjectManifest/project")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/EmptyProjectManifest/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.WrapError{},
+			Type:    serrors.Error{},
 			Message: "unable to read project manifest",
 			Arguments: []any{
-				"file", filepath.Join(projDir, ".manala.yaml"),
+				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Error: &serrors.Assert{
-				Type:    &serrors.WrapError{},
-				Message: "irregular project manifest",
-				Error: &serrors.Assert{
-					Type:    &serrors.Error{},
-					Message: "empty yaml file",
+			Errors: []*serrors.Assert{
+				{
+					Type:    serrors.Error{},
+					Message: "irregular project manifest",
+					Errors: []*serrors.Assert{
+						{
+							Type:    serrors.Error{},
+							Message: "empty yaml file",
+						},
+					},
 				},
 			},
 		}, err)
 	})
 
 	s.Run("InvalidProjectManifest", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/InvalidProjectManifest/project")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/InvalidProjectManifest/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.WrapError{},
+			Type:    serrors.Error{},
 			Message: "unable to read project manifest",
 			Arguments: []any{
-				"file", filepath.Join(projDir, ".manala.yaml"),
+				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Error: &serrors.Assert{
-				Type:    &validation.Error{},
-				Message: "invalid project manifest",
-				Errors: []*serrors.Assert{
-					{
-						Type:    &yaml.NodeValidationResultError{},
-						Message: "missing manala recipe field",
-						Arguments: []any{
-							"property", "recipe",
-							"line", 1,
-							"column", 9,
+			Errors: []*serrors.Assert{
+				{
+					Type:    serrors.Error{},
+					Message: "invalid project manifest",
+					Errors: []*serrors.Assert{
+						{
+							Type:    serrors.Error{},
+							Message: "missing manala recipe property",
+							Arguments: []any{
+								"path", "manala",
+								"property", "recipe",
+								"line", 1,
+								"column", 9,
+							},
+							Details: `
+								>  1 | manala: {}
+								               ^
+							`,
 						},
-						Details: heredoc.Doc(`
-							>  1 | manala: {}
-							               ^
-						`),
 					},
 				},
 			},
@@ -155,59 +159,59 @@ func (s *WatchSuite) TestRepositoryErrors() {
 		On("Repository").Return("")
 
 	s.Run("NoRepository", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/NoRepository/project")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/NoRepository/project")
 
 		err := s.executor.Execute([]string{
-			projDir,
+			projectDir,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnprocessableRepositoryUrlError{},
+			Type:    &app.UnprocessableRepositoryUrlError{},
 			Message: "unable to process repository url",
 		}, err)
 	})
 
 	s.Run("RepositoryNotFound", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/RepositoryNotFound/project")
-		repoUrl := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/RepositoryNotFound/repository")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/RepositoryNotFound/project")
+		repositoryUrl := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/RepositoryNotFound/repository")
 
 		err := s.executor.Execute([]string{
-			projDir,
-			"--repository", repoUrl,
+			projectDir,
+			"--repository", repositoryUrl,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnsupportedRepositoryError{},
+			Type:    &app.UnsupportedRepositoryError{},
 			Message: "unsupported repository url",
 			Arguments: []any{
-				"url", repoUrl,
+				"url", repositoryUrl,
 			},
 		}, err)
 	})
 
 	s.Run("WrongRepository", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/WrongRepository/project")
-		repoUrl := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/WrongRepository/repository")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/WrongRepository/project")
+		repositoryUrl := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/WrongRepository/repository")
 
 		err := s.executor.Execute([]string{
-			projDir,
-			"--repository", repoUrl,
+			projectDir,
+			"--repository", repositoryUrl,
 		})
 
 		s.Empty(s.executor.Stdout)
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.UnsupportedRepositoryError{},
+			Type:    &app.UnsupportedRepositoryError{},
 			Message: "unsupported repository url",
 			Arguments: []any{
-				"url", repoUrl,
+				"url", repositoryUrl,
 			},
 		}, err)
 	})
@@ -219,12 +223,12 @@ func (s *WatchSuite) TestRecipeErrors() {
 		On("Repository").Return("")
 
 	s.Run("RecipeNotFound", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/RecipeNotFound/project")
-		repoUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/RecipeNotFound/repository")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/RecipeNotFound/project")
+		repositoryUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/RecipeNotFound/repository")
 
 		err := s.executor.Execute([]string{
-			projDir,
-			"--repository", repoUrl,
+			projectDir,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -232,21 +236,21 @@ func (s *WatchSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &core.NotFoundRecipeManifestError{},
+			Type:    &app.NotFoundRecipeManifestError{},
 			Message: "recipe manifest not found",
 			Arguments: []any{
-				"file", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"file", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("WrongRecipeManifest", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/WrongRecipeManifest/project")
-		repoUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/WrongRecipeManifest/repository")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/WrongRecipeManifest/project")
+		repositoryUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/WrongRecipeManifest/repository")
 
 		err := s.executor.Execute([]string{
-			projDir,
-			"--repository", repoUrl,
+			projectDir,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -254,21 +258,21 @@ func (s *WatchSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.Error{},
+			Type:    serrors.Error{},
 			Message: "recipe manifest is a directory",
 			Arguments: []any{
-				"dir", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"dir", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("InvalidRecipeManifest", func() {
-		projDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/InvalidRecipeManifest/project")
-		repoUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/InvalidRecipeManifest/repository")
+		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/InvalidRecipeManifest/project")
+		repositoryUrl := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/InvalidRecipeManifest/repository")
 
 		err := s.executor.Execute([]string{
-			projDir,
-			"--repository", repoUrl,
+			projectDir,
+			"--repository", repositoryUrl,
 			"--recipe", "recipe",
 		})
 
@@ -276,27 +280,30 @@ func (s *WatchSuite) TestRecipeErrors() {
 		s.Empty(s.executor.Stderr)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    &serrors.WrapError{},
+			Type:    serrors.Error{},
 			Message: "unable to read recipe manifest",
 			Arguments: []any{
-				"file", filepath.Join(repoUrl, "recipe", ".manala.yaml"),
+				"file", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
 			},
-			Error: &serrors.Assert{
-				Type:    &validation.Error{},
-				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assert{
-					{
-						Type:    &yaml.NodeValidationResultError{},
-						Message: "missing manala description field",
-						Arguments: []any{
-							"property", "description",
-							"line", 1,
-							"column", 9,
+			Errors: []*serrors.Assert{
+				{
+					Type:    serrors.Error{},
+					Message: "invalid recipe manifest",
+					Errors: []*serrors.Assert{
+						{
+							Type:    serrors.Error{},
+							Message: "missing manala description property",
+							Arguments: []any{
+								"path", "manala",
+								"property", "description",
+								"line", 1,
+								"column", 9,
+							},
+							Details: `
+								>  1 | manala: {}
+								               ^
+							`,
 						},
-						Details: heredoc.Doc(`
-							>  1 | manala: {}
-							               ^
-						`),
 					},
 				},
 			},
