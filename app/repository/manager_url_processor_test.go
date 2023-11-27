@@ -32,9 +32,8 @@ func (s *UrlProcessorManagerSuite) TestLoadRepositoryErrors() {
 
 	repository, err := manager.LoadRepository("url")
 
-	s.Nil(repository)
-
-	s.Equal(err, cascadingError)
+	s.Equal(cascadingMock, repository)
+	s.Equal(cascadingError, err)
 }
 
 func (s *UrlProcessorManagerSuite) TestLoadRepository() {

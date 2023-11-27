@@ -39,17 +39,12 @@ func (manager *NameProcessorManager) LoadRecipe(repository app.Repository, name 
 	}
 
 	// Log
-	manager.log.Debug("cascade recipe loading…",
+	manager.log.Debug("cascading load recipe…",
 		"name", name,
 	)
 
 	// Cascading manager
-	recipe, err := manager.cascadingManager.LoadRecipe(repository, name)
-	if err != nil {
-		return nil, err
-	}
-
-	return recipe, nil
+	return manager.cascadingManager.LoadRecipe(repository, name)
 }
 
 func (manager *NameProcessorManager) LoadPrecedingRecipe(repository app.Repository) (app.Recipe, error) {
@@ -71,11 +66,17 @@ func (manager *NameProcessorManager) RepositoryRecipes(repository app.Repository
 }
 
 func (manager *NameProcessorManager) WatchRecipe(recipe app.Recipe, watcher *watcher.Watcher) error {
-	if err := manager.cascadingManager.WatchRecipe(recipe, watcher); err != nil {
-		return err
-	}
+	// Log
+	manager.log.Debug("watch recipe",
+		"name", recipe.Name(),
+	)
 
-	return nil
+	// Log
+	manager.log.Debug("cascading watch recipe…",
+		"name", recipe.Name(),
+	)
+
+	return manager.cascadingManager.WatchRecipe(recipe, watcher)
 }
 
 func (manager *NameProcessorManager) processName(name string) (string, error) {

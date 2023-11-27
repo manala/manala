@@ -36,7 +36,7 @@ func (manager *CacheManager) LoadRepository(url string) (app.Repository, error) 
 	}
 
 	// Log
-	manager.log.Debug("cascade repository loading…",
+	manager.log.Debug("cascading load repository…",
 		"url", url,
 	)
 

@@ -53,17 +53,12 @@ func (manager *UrlProcessorManager) LoadRepository(url string) (app.Repository, 
 	}
 
 	// Log
-	manager.log.Debug("cascade repository loading…",
+	manager.log.Debug("cascading load repository…",
 		"url", url,
 	)
 
 	// Cascading manager
-	repository, err := manager.cascadingManager.LoadRepository(url)
-	if err != nil {
-		return nil, err
-	}
-
-	return repository, err
+	return manager.cascadingManager.LoadRepository(url)
 }
 
 func (manager *UrlProcessorManager) LoadPrecedingRepository() (app.Repository, error) {
