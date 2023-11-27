@@ -102,15 +102,15 @@ func (manager *DirManager) LoadRecipe(repository app.Repository, name string) (a
 	), nil
 }
 
-func (manager *DirManager) WalkRecipes(repository app.Repository, walker func(recipe app.Recipe) error) error {
+func (manager *DirManager) RepositoryRecipes(repository app.Repository) ([]app.Recipe, error) {
 	// Log
-	manager.log.Debug("walk recipes",
+	manager.log.Debug("repository recipes",
 		"dir", repository.Dir(),
 	)
 
 	dir, err := os.Open(repository.Dir())
 	if err != nil {
-		return serrors.New("file system error").
+		return nil, serrors.New("file system error").
 			WithArguments("dir", repository.Dir()).
 			WithErrors(serrors.NewOs(err))
 	}
@@ -120,7 +120,7 @@ func (manager *DirManager) WalkRecipes(repository app.Repository, walker func(re
 
 	files, err := dir.ReadDir(0) // 0 to read all files and folders
 	if err != nil {
-		return serrors.New("file system error").
+		return nil, serrors.New("file system error").
 			WithArguments("dir", repository.Dir()).
 			WithErrors(serrors.NewOs(err))
 	}
@@ -128,7 +128,7 @@ func (manager *DirManager) WalkRecipes(repository app.Repository, walker func(re
 	// Sort alphabetically
 	sort.Slice(files, func(i, j int) bool { return files[i].Name() < files[j].Name() })
 
-	empty := true
+	var recipes []app.Recipe
 
 	for _, file := range files {
 		if !file.IsDir() {
@@ -151,21 +151,17 @@ func (manager *DirManager) WalkRecipes(repository app.Repository, walker func(re
 			if errors.As(err, &_notFoundRecipeManifestError) {
 				continue
 			}
-			return err
+			return nil, err
 		}
 
-		empty = false
-
-		if err := walker(recipe); err != nil {
-			return err
-		}
+		recipes = append(recipes, recipe)
 	}
 
-	if empty {
-		return &app.EmptyRepositoryError{Repository: repository}
+	if len(recipes) == 0 {
+		return nil, &app.EmptyRepositoryError{Repository: repository}
 	}
 
-	return nil
+	return recipes, nil
 }
 
 func (manager *DirManager) WatchRecipe(recipe app.Recipe, watcher *watcher.Watcher) error {

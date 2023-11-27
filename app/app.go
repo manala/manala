@@ -254,7 +254,7 @@ func (mock *RecipeOptionMock) Validate(value any) (validator.Violations, error) 
 // RecipeManager describe a recipe manager interface
 type RecipeManager interface {
 	LoadRecipe(repo Repository, name string) (Recipe, error)
-	WalkRecipes(repo Repository, walker func(rec Recipe) error) error
+	RepositoryRecipes(repository Repository) ([]Recipe, error)
 	WatchRecipe(rec Recipe, watcher *watcher.Watcher) error
 }
 
@@ -268,9 +268,9 @@ func (manager *RecipeManagerMock) LoadRecipe(repo Repository, name string) (Reci
 	return args.Get(0).(Recipe), args.Error(1)
 }
 
-func (manager *RecipeManagerMock) WalkRecipes(repo Repository, walker func(rec Recipe) error) error {
-	args := manager.Called(repo, walker)
-	return args.Error(0)
+func (manager *RecipeManagerMock) RepositoryRecipes(repository Repository) ([]Recipe, error) {
+	args := manager.Called(repository)
+	return args.Get(0).([]Recipe), args.Error(1)
 }
 
 func (manager *RecipeManagerMock) WatchRecipe(rec Recipe, watcher *watcher.Watcher) error {

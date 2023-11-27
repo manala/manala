@@ -10,10 +10,10 @@ func (api *Api) LoadPrecedingRepository() (app.Repository, error) {
 	return api.repositoryManager.LoadPrecedingRepository()
 }
 
-func (api *Api) WalkRepositoryRecipes(repository app.Repository, walker func(recipe app.Recipe) error) error {
+func (api *Api) RepositoryRecipes(repository app.Repository) ([]app.Recipe, error) {
 	// Log
-	api.log.Debug("walk repository recipes…")
+	api.log.Debug("repository recipes…")
 
 	// Walk repository recipes
-	return api.recipeManager.WalkRecipes(repository, walker)
+	return api.recipeManager.RepositoryRecipes(repository)
 }

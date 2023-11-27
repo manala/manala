@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"log/slog"
-	"manala/app"
 	"manala/app/api"
 	"manala/app/config"
 	"manala/internal/ui"
@@ -52,11 +51,8 @@ Example: manala list -> resulting in a recipes list display`,
 			}
 
 			// List
-			var recipes []app.Recipe
-			if err := api.WalkRepositoryRecipes(repository, func(recipe app.Recipe) error {
-				recipes = append(recipes, recipe)
-				return nil
-			}); err != nil {
+			recipes, err := api.RepositoryRecipes(repository)
+			if err != nil {
 				return err
 			}
 

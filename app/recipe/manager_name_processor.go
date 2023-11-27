@@ -56,22 +56,18 @@ func (manager *NameProcessorManager) LoadPrecedingRecipe(repository app.Reposito
 	return manager.LoadRecipe(repository, "")
 }
 
-func (manager *NameProcessorManager) WalkRecipes(repository app.Repository, walker func(recipe app.Recipe) error) error {
+func (manager *NameProcessorManager) RepositoryRecipes(repository app.Repository) ([]app.Recipe, error) {
 	// Log
-	manager.log.Debug("walk recipes",
+	manager.log.Debug("repository recipes",
 		"repository", repository.Url(),
 	)
 
 	// Log
-	manager.log.Debug("cascade recipes walking…",
+	manager.log.Debug("cascading repository recipes…",
 		"repository", repository.Url(),
 	)
 
-	if err := manager.cascadingManager.WalkRecipes(repository, walker); err != nil {
-		return err
-	}
-
-	return nil
+	return manager.cascadingManager.RepositoryRecipes(repository)
 }
 
 func (manager *NameProcessorManager) WatchRecipe(recipe app.Recipe, watcher *watcher.Watcher) error {

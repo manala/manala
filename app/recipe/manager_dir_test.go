@@ -100,54 +100,45 @@ func (s *DirManagerSuite) TestLoadRecipe() {
 	s.Equal(repositoryUrl, recipe.Repository().Url())
 }
 
-func (s *DirManagerSuite) TestWalkRecipes() {
+func (s *DirManagerSuite) TestRepositoryRecipes() {
 	manager := NewDirManager(
 		slog.New(slog.NewTextHandler(io.Discard, nil)),
 	)
 
 	s.Run("Default", func() {
-		repositoryUrl := filepath.FromSlash("testdata/DirManagerSuite/TestWalkRecipes/Default/repository")
+		repositoryUrl := filepath.FromSlash("testdata/DirManagerSuite/TestRepositoryRecipes/Default/repository")
 
 		repositoryMock := &app.RepositoryMock{}
 		repositoryMock.
 			On("Url").Return(repositoryUrl).
 			On("Dir").Return(repositoryUrl)
 
-		count := 1
-
-		err := manager.WalkRecipes(repositoryMock, func(recipe app.Recipe) error {
-			switch count {
-			case 1:
-				s.Equal(filepath.Join(repositoryUrl, "bar"), recipe.Dir())
-				s.Equal("bar", recipe.Name())
-				s.Equal("Bar", recipe.Description())
-				s.Equal(map[string]any{"bar": "bar"}, recipe.Vars())
-			case 2:
-				s.Equal(filepath.Join(repositoryUrl, "foo"), recipe.Dir())
-				s.Equal("foo", recipe.Name())
-				s.Equal("Foo", recipe.Description())
-				s.Equal(map[string]any{"foo": "foo"}, recipe.Vars())
-			}
-
-			count++
-
-			return nil
-		})
+		recipes, err := manager.RepositoryRecipes(repositoryMock)
 
 		s.NoError(err)
+
+		s.Equal(filepath.Join(repositoryUrl, "bar"), recipes[0].Dir())
+		s.Equal("bar", recipes[0].Name())
+		s.Equal("Bar", recipes[0].Description())
+		s.Equal(map[string]any{"bar": "bar"}, recipes[0].Vars())
+
+		s.Equal(filepath.Join(repositoryUrl, "foo"), recipes[1].Dir())
+		s.Equal("foo", recipes[1].Name())
+		s.Equal("Foo", recipes[1].Description())
+		s.Equal(map[string]any{"foo": "foo"}, recipes[1].Vars())
 	})
 
 	s.Run("Empty", func() {
-		repositoryUrl := filepath.FromSlash("testdata/DirManagerSuite/TestWalkRecipes/Empty/repository")
+		repositoryUrl := filepath.FromSlash("testdata/DirManagerSuite/TestRepositoryRecipes/Empty/repository")
 
 		repositoryMock := &app.RepositoryMock{}
 		repositoryMock.
 			On("Url").Return(repositoryUrl).
 			On("Dir").Return(repositoryUrl)
 
-		err := manager.WalkRecipes(repositoryMock, func(recipe app.Recipe) error {
-			return nil
-		})
+		recipes, err := manager.RepositoryRecipes(repositoryMock)
+
+		s.Nil(recipes)
 
 		serrors.Equal(s.Assert(), &serrors.Assert{
 			Type:    &app.EmptyRepositoryError{},

@@ -80,11 +80,8 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 
 				log.Debug("unable to load preceding recipe")
 
-				var recipes []app.Recipe
-				if err := api.WalkRepositoryRecipes(repository, func(recipe app.Recipe) error {
-					recipes = append(recipes, recipe)
-					return nil
-				}); err != nil {
+				recipes, err := api.RepositoryRecipes(repository)
+				if err != nil {
 					return err
 				}
 
