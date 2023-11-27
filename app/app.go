@@ -77,9 +77,9 @@ func (mock *ProjectManifestMock) Vars() map[string]any {
 // ProjectManager describe a project manager interface
 type ProjectManager interface {
 	IsProject(dir string) bool
-	CreateProject(dir string, rec Recipe, vars map[string]any) (Project, error)
+	CreateProject(dir string, recipe Recipe, vars map[string]any) (Project, error)
 	LoadProject(dir string) (Project, error)
-	WatchProject(proj Project, watcher *watcher.Watcher) error
+	WatchProject(project Project, watcher *watcher.Watcher) error
 }
 
 /**********/
@@ -253,9 +253,9 @@ func (mock *RecipeOptionMock) Validate(value any) (validator.Violations, error) 
 
 // RecipeManager describe a recipe manager interface
 type RecipeManager interface {
-	LoadRecipe(repo Repository, name string) (Recipe, error)
+	LoadRecipe(repository Repository, name string) (Recipe, error)
 	RepositoryRecipes(repository Repository) ([]Recipe, error)
-	WatchRecipe(rec Recipe, watcher *watcher.Watcher) error
+	WatchRecipe(recipe Recipe, watcher *watcher.Watcher) error
 }
 
 // RecipeManagerMock mock a recipe manager
@@ -263,8 +263,8 @@ type RecipeManagerMock struct {
 	mock.Mock
 }
 
-func (manager *RecipeManagerMock) LoadRecipe(repo Repository, name string) (Recipe, error) {
-	args := manager.Called(repo, name)
+func (manager *RecipeManagerMock) LoadRecipe(repository Repository, name string) (Recipe, error) {
+	args := manager.Called(repository, name)
 	return args.Get(0).(Recipe), args.Error(1)
 }
 
@@ -273,8 +273,8 @@ func (manager *RecipeManagerMock) RepositoryRecipes(repository Repository) ([]Re
 	return args.Get(0).([]Recipe), args.Error(1)
 }
 
-func (manager *RecipeManagerMock) WatchRecipe(rec Recipe, watcher *watcher.Watcher) error {
-	args := manager.Called(rec, watcher)
+func (manager *RecipeManagerMock) WatchRecipe(recipe Recipe, watcher *watcher.Watcher) error {
+	args := manager.Called(recipe, watcher)
 	return args.Error(0)
 }
 
