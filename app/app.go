@@ -91,6 +91,7 @@ type Recipe interface {
 	Dir() string
 	Name() string
 	Description() string
+	Icon() string
 	Vars() map[string]any
 	Sync() []syncer.UnitInterface
 	Schema() schema.Schema
@@ -117,6 +118,11 @@ func (mock *RecipeMock) Name() string {
 }
 
 func (mock *RecipeMock) Description() string {
+	args := mock.Called()
+	return args.String(0)
+}
+
+func (mock *RecipeMock) Icon() string {
 	args := mock.Called()
 	return args.String(0)
 }
@@ -164,6 +170,7 @@ func (mock *RecipeMock) ProjectValidator() validator.Validator {
 // RecipeManifest describe a recipe manifest interface
 type RecipeManifest interface {
 	Description() string
+	Icon() string
 	Template() string
 	Vars() map[string]any
 	Sync() []syncer.UnitInterface
@@ -177,6 +184,11 @@ type RecipeManifestMock struct {
 }
 
 func (mock *RecipeManifestMock) Description() string {
+	args := mock.Called()
+	return args.String(0)
+}
+
+func (mock *RecipeManifestMock) Icon() string {
 	args := mock.Called()
 	return args.String(0)
 }

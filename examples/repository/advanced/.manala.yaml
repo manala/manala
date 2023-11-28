@@ -1,5 +1,6 @@
 manala:
     description: An advanced example recipe
+    icon: https://raw.githubusercontent.com/manala/manala/main/examples/repository/advanced/icon.png
     sync:
       - .manala/Makefile.tmpl
       - Makefile.dist

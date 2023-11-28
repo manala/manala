@@ -25,6 +25,7 @@ func (s *RecipeSuite) Test() {
 	manifestMock := &app.RecipeManifestMock{}
 	manifestMock.
 		On("Description").Return("Description").
+		On("Icon").Return("Icon").
 		On("Template").Return(filepath.Join("templates", "foo.tmpl")).
 		On("Vars").Return(map[string]any{"foo": "bar"}).
 		On("Sync").Return([]syncer.UnitInterface(nil)).
@@ -40,6 +41,7 @@ func (s *RecipeSuite) Test() {
 	s.Equal(dir, recipe.Dir())
 	s.Equal("recipe", recipe.Name())
 	s.Equal("Description", recipe.Description())
+	s.Equal("Icon", recipe.Icon())
 	s.Equal(map[string]any{"foo": "bar"}, recipe.Vars())
 	s.Equal([]syncer.UnitInterface(nil), recipe.Sync())
 	s.Equal(schema.Schema{}, recipe.Schema())

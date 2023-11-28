@@ -22,6 +22,7 @@ func (s *ManifestSuite) Test() {
 	manifest := NewManifest()
 
 	s.Equal("", manifest.Description())
+	s.Equal("", manifest.Icon())
 	s.Equal("", manifest.Template())
 	s.Equal(map[string]any{}, manifest.Vars())
 	s.Equal([]syncer.UnitInterface{}, manifest.Sync())
@@ -315,6 +316,83 @@ func (s *ManifestSuite) TestReadFromErrors() {
 				},
 			},
 		},
+		// Config - Icon
+		{
+			test: "ConfigIconNotString",
+			expected: &serrors.Assert{
+				Type:    serrors.Error{},
+				Message: "invalid recipe manifest",
+				Errors: []*serrors.Assert{
+					{
+						Type:    serrors.Error{},
+						Message: "manala icon field must be a string",
+						Arguments: []any{
+							"expected", "string",
+							"actual", "array",
+							"path", "manala.icon",
+							"line", 3,
+							"column", 9,
+						},
+						Details: `
+							   1 | manala:
+							   2 |   description: description
+							>  3 |   icon: []
+							               ^
+						`,
+					},
+				},
+			},
+		},
+		{
+			test: "ConfigIconEmpty",
+			expected: &serrors.Assert{
+				Type:    serrors.Error{},
+				Message: "invalid recipe manifest",
+				Errors: []*serrors.Assert{
+					{
+						Type:    serrors.Error{},
+						Message: "empty manala icon field",
+						Arguments: []any{
+							"minimum", 1,
+							"path", "manala.icon",
+							"line", 3,
+							"column", 9,
+						},
+						Details: `
+							   1 | manala:
+							   2 |   description: description
+							>  3 |   icon: ""
+							               ^
+						`,
+					},
+				},
+			},
+		},
+		{
+			test: "ConfigIconTooLong",
+			expected: &serrors.Assert{
+				Type:    serrors.Error{},
+				Message: "invalid recipe manifest",
+				Errors: []*serrors.Assert{
+					{
+						Type:    serrors.Error{},
+						Message: "too long manala icon field",
+						Arguments: []any{
+							"maximum", 100,
+							"path", "manala.icon",
+							"line", 3,
+							"column", 9,
+						},
+						Details: `
+							   1 | manala:
+							   2 |   description: description
+							>  3 |   icon: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+							               ^
+						`,
+					},
+				},
+			},
+		},
 		// Config - Template
 		{
 			test: "ConfigTemplateNotString",
@@ -569,6 +647,7 @@ func (s *ManifestSuite) TestReadFrom() {
 	tests := []struct {
 		test                string
 		expectedDescription string
+		expectedIcon        string
 		expectedTemplate    string
 		expectedVars        map[string]any
 		expectedSync        *syncer.UnitsAssert
@@ -577,6 +656,7 @@ func (s *ManifestSuite) TestReadFrom() {
 		{
 			test:                "All",
 			expectedDescription: "description",
+			expectedIcon:        "icon",
 			expectedTemplate:    "template",
 			expectedVars: map[string]any{
 				"string":      "string",
@@ -715,6 +795,7 @@ func (s *ManifestSuite) TestReadFrom() {
 		{
 			test:                "ConfigTemplateAbsent",
 			expectedDescription: "description",
+			expectedIcon:        "",
 			expectedTemplate:    "",
 			expectedVars: map[string]any{
 				"foo": "bar",
@@ -733,6 +814,7 @@ func (s *ManifestSuite) TestReadFrom() {
 		{
 			test:                "VarsAbsent",
 			expectedDescription: "description",
+			expectedIcon:        "icon",
 			expectedTemplate:    "template",
 			expectedVars:        map[string]any{},
 			expectedSync:        &syncer.UnitsAssert{},
@@ -741,6 +823,7 @@ func (s *ManifestSuite) TestReadFrom() {
 		{
 			test:                "VarsKeys",
 			expectedDescription: "description",
+			expectedIcon:        "icon",
 			expectedTemplate:    "template",
 			expectedVars: map[string]any{
 				"underscore_key": "ok",
@@ -778,6 +861,7 @@ func (s *ManifestSuite) TestReadFrom() {
 			s.NoError(err)
 
 			s.Equal(test.expectedDescription, manifest.Description())
+			s.Equal(test.expectedIcon, manifest.Icon())
 			s.Equal(test.expectedTemplate, manifest.Template())
 			s.Equal(test.expectedVars, manifest.Vars())
 			syncer.EqualUnits(s.Assert(), test.expectedSync, manifest.Sync())
