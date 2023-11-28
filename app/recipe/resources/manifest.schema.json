@@ -5,6 +5,7 @@
       "type": "object",
       "properties": {
         "description": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "icon": { "type": "string", "minLength": 1, "maxLength": 100 },
         "template": { "type": "string", "minLength": 1, "maxLength": 100 },
         "sync": {
           "type": "array",

@@ -41,6 +41,10 @@ func (manifest *Manifest) Description() string {
 	return manifest.config.Description
 }
 
+func (manifest *Manifest) Icon() string {
+	return manifest.config.Icon
+}
+
 func (manifest *Manifest) Template() string {
 	return manifest.config.Template
 }
@@ -102,6 +106,10 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 			{Path: "manala.description", Type: validator.INVALID_TYPE, StructuredMessage: "manala description field must be a string"},
 			{Path: "manala.description", Type: validator.STRING_GTE, StructuredMessage: "empty manala description field"},
 			{Path: "manala.description", Type: validator.STRING_LTE, StructuredMessage: "too long manala description field"},
+			// Icon
+			{Path: "manala.icon", Type: validator.INVALID_TYPE, StructuredMessage: "manala icon field must be a string"},
+			{Path: "manala.icon", Type: validator.STRING_GTE, StructuredMessage: "empty manala icon field"},
+			{Path: "manala.icon", Type: validator.STRING_LTE, StructuredMessage: "too long manala icon field"},
 			// Template
 			{Path: "manala.template", Type: validator.INVALID_TYPE, StructuredMessage: "manala template field must be a string"},
 			{Path: "manala.template", Type: validator.STRING_GTE, StructuredMessage: "empty manala template field"},
@@ -164,6 +172,7 @@ func (manifest *Manifest) ValidatorFormatter() validator.Formatter {
 
 type manifestConfig struct {
 	Description string
+	Icon        string
 	Template    string
 	Sync        sync
 }

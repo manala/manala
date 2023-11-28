@@ -39,6 +39,10 @@ func (recipe *Recipe) Description() string {
 	return recipe.manifest.Description()
 }
 
+func (recipe *Recipe) Icon() string {
+	return recipe.manifest.Icon()
+}
+
 func (recipe *Recipe) Vars() map[string]any {
 	return recipe.manifest.Vars()
 }

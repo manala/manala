@@ -77,6 +77,7 @@ func (s *DirManagerSuite) TestLoadManifest() {
 	s.NoError(err)
 
 	s.Equal("Recipe", manifest.Description())
+	s.Equal("Icon", manifest.Icon())
 	s.Equal(map[string]any{"foo": "bar"}, manifest.Vars())
 }
 
@@ -120,11 +121,13 @@ func (s *DirManagerSuite) TestRepositoryRecipes() {
 		s.Equal(filepath.Join(repositoryUrl, "bar"), recipes[0].Dir())
 		s.Equal("bar", recipes[0].Name())
 		s.Equal("Bar", recipes[0].Description())
+		s.Equal("Bar Icon", recipes[0].Icon())
 		s.Equal(map[string]any{"bar": "bar"}, recipes[0].Vars())
 
 		s.Equal(filepath.Join(repositoryUrl, "foo"), recipes[1].Dir())
 		s.Equal("foo", recipes[1].Name())
 		s.Equal("Foo", recipes[1].Description())
+		s.Equal("Foo Icon", recipes[1].Icon())
 		s.Equal(map[string]any{"foo": "foo"}, recipes[1].Vars())
 	})
 

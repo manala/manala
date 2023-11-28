@@ -40,7 +40,8 @@ A recipe manifest file is made of two parts:
 # Config
 manala:
     description: Saucerful of secrets  # Mandatory description
-    template: .manala.yaml.tmpl        # Optional project manifest template 
+    icon: http://example.com/icon.png  # Optional icon url
+    template: .manala.yaml.tmpl        # Optional project manifest template
     sync:
       - .manala                        # ".manala" dir will be synchronized on project
 

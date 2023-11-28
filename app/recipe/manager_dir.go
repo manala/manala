@@ -73,6 +73,7 @@ func (manager *DirManager) loadManifest(file string) (*Manifest, error) {
 	// Log
 	manager.log.Debug("recipe manifest loaded",
 		"description", manifest.Description(),
+		"icon", manifest.Icon(),
 		"template", manifest.Template(),
 	)
 
