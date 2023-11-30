@@ -26,12 +26,13 @@ func (s *Suite) TestError() {
 				Type:    serrors.Error{},
 				Message: "message",
 				Arguments: []any{
+					"template", "foo.tmpl",
 					"line", 123,
 				},
 			},
 		},
 		{
-			test: "ContentLineColumn",
+			test: "ContextLineColumn",
 			err:  template.ExecError{Err: serrors.New(`template: :1:3: executing "" at <.foo>: nil data; no entry for key "foo"`)},
 			expected: &serrors.Assert{
 				Type:    serrors.Error{},
@@ -40,6 +41,20 @@ func (s *Suite) TestError() {
 					"context", ".foo",
 					"line", 1,
 					"column", 3,
+				},
+			},
+		},
+		{
+			test: "ContextTemplateLineColumn",
+			err:  template.ExecError{Err: serrors.New(`template: message.gohtml:3:23: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Message>: can't evaluate field Message in type []app.Recipe`)},
+			expected: &serrors.Assert{
+				Type:    serrors.Error{},
+				Message: "can't evaluate field Message in type []app.Recipe",
+				Arguments: []any{
+					"context", ".Message",
+					"template", "message.gohtml",
+					"line", 3,
+					"column", 23,
 				},
 			},
 		},

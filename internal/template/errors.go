@@ -5,7 +5,7 @@ import (
 	"manala/internal/serrors"
 	"regexp"
 	"strconv"
-	textTemplate "text/template"
+	"text/template"
 )
 
 // 1: template
@@ -14,7 +14,7 @@ import (
 // 4: name
 // 5: context
 // 6: message
-var executionErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
+var execErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
 
 // 1: template
 // 2: line
@@ -23,14 +23,18 @@ var parsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
 
 func NewError(err error) serrors.Error {
 	message := err.Error()
-	arguments := []any{}
+	var arguments []any
 
-	// Execution error
-	var _execError textTemplate.ExecError
+	// Exec error
+	var _execError template.ExecError
 	if errors.As(err, &_execError) {
-		if matches := executionErrorRegex.FindStringSubmatch(message); matches != nil {
+		if matches := execErrorRegex.FindStringSubmatch(message); matches != nil {
 			message = matches[6]
 			arguments = append(arguments, "context", matches[5])
+			// Template
+			if matches[1] != "" {
+				arguments = append(arguments, "template", matches[1])
+			}
 			// Line
 			if line, _err := strconv.Atoi(matches[2]); _err == nil {
 				arguments = append(arguments, "line", line)
@@ -44,6 +48,10 @@ func NewError(err error) serrors.Error {
 		// Parsing error
 		if matches := parsingErrorRegex.FindStringSubmatch(message); matches != nil {
 			message = matches[3]
+			// Template
+			if matches[1] != "" {
+				arguments = append(arguments, "template", matches[1])
+			}
 			// Line
 			if line, _err := strconv.Atoi(matches[2]); _err == nil {
 				arguments = append(arguments, "line", line)

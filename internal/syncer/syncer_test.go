@@ -238,6 +238,7 @@ func (s *Suite) TestSyncTemplate() {
 					Message: "nil data; no entry for key \"foo\"",
 					Arguments: []any{
 						"context", ".foo",
+						"template", "invalid.tmpl",
 						"line", 1,
 						"column", 3,
 						"file", filepath.Join(sourcePath, "invalid.tmpl"),
