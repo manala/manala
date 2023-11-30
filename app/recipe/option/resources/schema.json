@@ -4,7 +4,8 @@
     "name": { "type": "string", "minLength": 1, "maxLength": 100 },
     "label": { "type": "string", "minLength": 1, "maxLength": 100 },
     "help": { "type": "string", "minLength": 1, "maxLength": 100 },
-    "type": { "enum": [ "text", "select" ] }
+    "type": { "enum": [ "text", "select", "version" ] },
+    "version_constraint": { "type": "string", "maxLength": 100 }
   },
   "additionalProperties": false,
   "required": [ "label" ]
