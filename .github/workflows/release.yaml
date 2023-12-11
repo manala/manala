@@ -23,7 +23,7 @@ jobs:
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser release
