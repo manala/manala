@@ -18,7 +18,7 @@ jobs:
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/pull/704
@@ -43,7 +43,7 @@ jobs:
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Test
@@ -68,7 +68,7 @@ jobs:
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser build
