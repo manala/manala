@@ -1,0 +1,1089 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../usage/">
+      
+      <link rel="icon" href="../images/favicon-96x96.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.6">
+    
+    
+      
+        <title>Overview - Manala</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.558e4712.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="orange">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#a-basic-example-in-order-to-get-the-big-picture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Manala" class="md-header__button md-logo" aria-label="Manala" data-md-component="logo">
+      
+  <img src="../images/manala.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Manala
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/manala/manala/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Manala
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Manala" class="md-nav__button md-logo" aria-label="Manala" data-md-component="logo">
+      
+  <img src="../images/manala.svg" alt="logo">
+
+    </a>
+    Manala
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/manala/manala/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Manala
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Overview
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Overview
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-basic-example-in-order-to-get-the-big-picture" class="md-nav__link">
+    A basic example in order to get the big picture
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-scenario-of-our-example" class="md-nav__link">
+    The scenario of our example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#some-wording-project-vs-recipe-vs-repository" class="md-nav__link">
+    Some wording: project vs recipe vs repository
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-step-install-manala" class="md-nav__link">
+    First step: install manala
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-your-recipe-repository-and-your-first-template" class="md-nav__link">
+    Create your recipe repository and your first template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#embed-our-templates-in-a-php-project" class="md-nav__link">
+    Embed our templates in a PHP project
+  </a>
+  
+    <nav class="md-nav" aria-label="Embed our templates in a PHP project">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-php-project" class="md-nav__link">
+    Create a PHP project
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embed-our-php-templates-in-our-php-project" class="md-nav__link">
+    Embed our PHP templates in our PHP project
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and-use-our-shared-php-rules" class="md-nav__link">
+    And use our shared PHP rules
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-dynamic-parts-in-your-templates" class="md-nav__link">
+    Defining dynamic parts in your templates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-your-templates-with-your-colleagues" class="md-nav__link">
+    Share your templates with your colleagues
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        Usage
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5" tabindex="0" aria-expanded="false">
+          Commands
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Commands" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Commands
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala/" class="md-nav__link">
+        manala
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_init/" class="md-nav__link">
+        manala init
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_list/" class="md-nav__link">
+        manala list
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_update/" class="md-nav__link">
+        manala update
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_watch/" class="md-nav__link">
+        manala watch
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6" tabindex="0" aria-expanded="false">
+          Completion
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Completion" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Completion
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_completion/" class="md-nav__link">
+        help
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_completion_bash/" class="md-nav__link">
+        bash
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_completion_zsh/" class="md-nav__link">
+        zsh
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_completion_fish/" class="md-nav__link">
+        fish
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands/manala_completion_powershell/" class="md-nav__link">
+        powershell
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        Contributing
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#a-basic-example-in-order-to-get-the-big-picture" class="md-nav__link">
+    A basic example in order to get the big picture
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-scenario-of-our-example" class="md-nav__link">
+    The scenario of our example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#some-wording-project-vs-recipe-vs-repository" class="md-nav__link">
+    Some wording: project vs recipe vs repository
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-step-install-manala" class="md-nav__link">
+    First step: install manala
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-your-recipe-repository-and-your-first-template" class="md-nav__link">
+    Create your recipe repository and your first template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#embed-our-templates-in-a-php-project" class="md-nav__link">
+    Embed our templates in a PHP project
+  </a>
+  
+    <nav class="md-nav" aria-label="Embed our templates in a PHP project">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-php-project" class="md-nav__link">
+    Create a PHP project
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embed-our-php-templates-in-our-php-project" class="md-nav__link">
+    Embed our PHP templates in our PHP project
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#and-use-our-shared-php-rules" class="md-nav__link">
+    And use our shared PHP rules
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-dynamic-parts-in-your-templates" class="md-nav__link">
+    Defining dynamic parts in your templates
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-your-templates-with-your-colleagues" class="md-nav__link">
+    Share your templates with your colleagues
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+
+  <h1>Overview</h1>
+
+<h2 id="a-basic-example-in-order-to-get-the-big-picture">A basic example in order to get the big picture<a class="headerlink" href="#a-basic-example-in-order-to-get-the-big-picture" title="Permanent link">🔗</a></h2>
+<p>Roughly said, <code>manala</code> allows you to embed distributed templates in your projects and ease the synchronization of your projects when the reference templates are updated.</p>
+<p>In this usage example, we are going to implement a very basic feature, yet rich enough to measure the benefits of <code>manala</code> and to fully understand the basic concepts behind it.</p>
+<h2 id="the-scenario-of-our-example">The scenario of our example<a class="headerlink" href="#the-scenario-of-our-example" title="Permanent link">🔗</a></h2>
+<p>All your company's projects use <a href="https://github.com/FriendsOfPHP/PHP-CS-Fixer"><code>PHP-CS-fixer</code></a> in order to define your coding rules and apply them.</p>
+<p>Your company would like to always apply the same coding rules on all of its projects, but maintaining the same set of rules in every project can be tedious and error-prone. In an idealistic world, the coding rules should be maintained in one place and passed on to all your projects as seamlessly as possible.</p>
+<p>That's where manala enters the game ...</p>
+<h2 id="some-wording-project-vs-recipe-vs-repository">Some wording: <code>project</code> vs <code>recipe</code> vs <code>repository</code><a class="headerlink" href="#some-wording-project-vs-recipe-vs-repository" title="Permanent link">🔗</a></h2>
+<p>In manala's vocabulary, your projects (the company's PHP projects in our example) are called ... <code>projects</code>.</p>
+<p>In our example, our reference coding rules will be stored in a single place where they will be maintained. A <code>recipe</code> is a set of templates (the file containing your coding rules is one of these templates). All the recipes and templates you maintain are made accessible to your colleagues through a <code>repository</code>.</p>
+<h2 id="first-step-install-manala">First step: install manala<a class="headerlink" href="#first-step-install-manala" title="Permanent link">🔗</a></h2>
+<p>See <a href="../installation/">installation documentation</a></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Run <code>manala</code> in a console/terminal to obtain a list of available commands.</p>
+</div>
+<h2 id="create-your-recipe-repository-and-your-first-template">Create your recipe repository and your first template<a class="headerlink" href="#create-your-recipe-repository-and-your-first-template" title="Permanent link">🔗</a></h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>manala ships with some recipes by default. Run <code>manala list</code> to get the list of available recipes.</p>
+</div>
+<p>But in this example, we are going to create our own recipe repository to better understand how manala works under the hood and enable you to develop your own recipes and templates when the need arises.</p>
+<p>Run the following command to create your recipe repository: </p>
+<p><code>mkdir ~/my-manala-recipe-repository</code></p>
+<p>Within this repository, we are going to create a set of templates that will host our PHP rule template:</p>
+<p><code>mkdir mkdir ~/my-manala-recipe-repository/my-php-templates</code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In manala's philosophy, a repository is viewed as a company-wide repository where you can store recipes and templates for various purposes and many profiles: devops, hosting, backend developers, frontend developers, etc. In fact, your projects will not embed all the company's recipes but just the subset of recipes that are useful for your project. In our example, we are going to embed only the templates under <code>my-php-templates</code> in our PHP projects.</p>
+</div>
+<p>Let's create a <code>.manala.yaml</code> file under the <code>my-php-templates</code>:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">  </span><span class="nb">cd</span><span class="w"> </span>~/my-manala-recipe-repository/my-php-templates
+<span class="w">  </span>touch<span class="w"> </span>./.manala.yaml
+</code></pre></div></td></tr></table></div>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the <code>.manala.yaml</code> file acts as a manifest for your recipe. It holds its description, and indicates which files or folders must be put under synchronization.</p>
+</div>
+<p>Now edit this file and put the following content:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">manala</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">My company&#39;s PHP recipe</span>
+<span class="w">    </span><span class="nt">sync</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.manala</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Now we are going to create the <code>.manala</code> folder where all our PHP templates will be hosted:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>mkdir<span class="w"> </span>./.manala
+</code></pre></div></td></tr></table></div>
+
+<p>And finally, our PHP rule template:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>touch<span class="w"> </span>./.manala/php-cs-rules.php
+</code></pre></div></td></tr></table></div>
+
+<p>And paste the following content:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="cp">&lt;?php</span>
+
+<span class="nv">$header</span> <span class="o">=</span> <span class="s">&lt;&lt;&lt;&#39;</span><span class="dl">EOF</span><span class="s">&#39;</span>
+<span class="s">This file is part of the XXX project.</span>
+
+<span class="s">Copyright © My Company</span>
+
+<span class="s">@author My Company &lt;contact@my-company.com&gt;</span>
+<span class="dl">EOF</span><span class="p">;</span>
+
+<span class="k">return</span> <span class="p">[</span>
+    <span class="s1">&#39;@Symfony&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+    <span class="s1">&#39;psr0&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+    <span class="s1">&#39;phpdoc_summary&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+    <span class="s1">&#39;phpdoc_annotation_without_dot&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+    <span class="s1">&#39;phpdoc_order&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+    <span class="s1">&#39;array_syntax&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;syntax&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;short&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;ordered_imports&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+    <span class="s1">&#39;simplified_null_return&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+    <span class="s1">&#39;header_comment&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;header&#39;</span> <span class="o">=&gt;</span> <span class="nv">$header</span><span class="p">],</span>
+    <span class="s1">&#39;yoda_style&#39;</span> <span class="o">=&gt;</span> <span class="k">null</span><span class="p">,</span>
+    <span class="s1">&#39;native_function_invocation&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;include&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;@compiler_optimized&#39;</span><span class="p">]],</span>
+    <span class="s1">&#39;no_superfluous_phpdoc_tags&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+<span class="p">];</span>
+</code></pre></div></td></tr></table></div>
+
+<h2 id="embed-our-templates-in-a-php-project">Embed our templates in a PHP project<a class="headerlink" href="#embed-our-templates-in-a-php-project" title="Permanent link">🔗</a></h2>
+<h3 id="create-a-php-project">Create a PHP project<a class="headerlink" href="#create-a-php-project" title="Permanent link">🔗</a></h3>
+<p>For the sake of our example, we are going to create a blank PHP project, but you can of course skip this step if you already have a current PHP project that uses <code>PHP-CS-fixer</code>.</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code>mkdir<span class="w"> </span>~/my-php-project
+<span class="nb">cd</span><span class="w"> </span>~/my-php-project
+mkdir<span class="w"> </span>./src
+<span class="c1"># Let&#39;s create a PHP file to give some food to PHP-CS-fixer</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;?php\n echo \&quot;Coucou\&quot;;\n&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>./src/hello.php
+composer<span class="w"> </span>init
+composer<span class="w"> </span>require<span class="w"> </span>friendsofphp/php-cs-fixer
+touch<span class="w"> </span>./.php_cs.dist
+</code></pre></div></td></tr></table></div>
+
+<p>Add the following content in <code>./php_cs.dist</code>:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="cp">&lt;?php</span>
+
+<span class="nv">$header</span> <span class="o">=</span> <span class="s">&lt;&lt;&lt;&#39;</span><span class="dl">EOF</span><span class="s">&#39;</span>
+<span class="s">This file is part of the My-wonderful-project project.</span>
+
+<span class="s">Copyright © My company</span>
+
+<span class="s">@author My company &lt;contact@my-company.com&gt;</span>
+<span class="dl">EOF</span><span class="p">;</span>
+
+<span class="nv">$finder</span> <span class="o">=</span> <span class="nx">PhpCsFixer\Finder</span><span class="o">::</span><span class="na">create</span><span class="p">()</span>
+    <span class="o">-&gt;</span><span class="na">in</span><span class="p">([</span>
+        <span class="c1">// App</span>
+        <span class="no">__DIR__</span> <span class="o">.</span> <span class="s1">&#39;/src&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+<span class="p">;</span>
+
+<span class="k">return</span> <span class="nx">PhpCsFixer\Config</span><span class="o">::</span><span class="na">create</span><span class="p">()</span>
+    <span class="o">-&gt;</span><span class="na">setUsingCache</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setRiskyAllowed</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setFinder</span><span class="p">(</span><span class="nv">$finder</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setRules</span><span class="p">([</span>
+        <span class="s1">&#39;@Symfony&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+        <span class="s1">&#39;psr0&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+        <span class="s1">&#39;phpdoc_summary&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+        <span class="s1">&#39;phpdoc_annotation_without_dot&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+        <span class="s1">&#39;phpdoc_order&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+        <span class="s1">&#39;array_syntax&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;syntax&#39;</span> <span class="o">=&gt;</span> <span class="s1">&#39;short&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;ordered_imports&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+        <span class="s1">&#39;simplified_null_return&#39;</span> <span class="o">=&gt;</span> <span class="k">false</span><span class="p">,</span>
+        <span class="s1">&#39;header_comment&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;header&#39;</span> <span class="o">=&gt;</span> <span class="nv">$header</span><span class="p">],</span>
+        <span class="s1">&#39;yoda_style&#39;</span> <span class="o">=&gt;</span> <span class="k">null</span><span class="p">,</span>
+        <span class="s1">&#39;native_function_invocation&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;include&#39;</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">&#39;@compiler_optimized&#39;</span><span class="p">]],</span>
+        <span class="s1">&#39;no_superfluous_phpdoc_tags&#39;</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+    <span class="p">])</span>
+<span class="p">;</span>
+</code></pre></div></td></tr></table></div>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the moment, we have hard-coded our coding rules but in the next step, we will of course replace them with our shared rules.</p>
+</div>
+<p>Run <code>vendor/bin/php-cs-fixer fix --dry-run</code> to check that your PHP-CS-fix config is OK.</p>
+<h3 id="embed-our-php-templates-in-our-php-project">Embed our PHP templates in our PHP project<a class="headerlink" href="#embed-our-php-templates-in-our-php-project" title="Permanent link">🔗</a></h3>
+<p>Create a <code>.manala.yaml</code> at the root of your PHP project:</p>
+<p><code>touch ./.manala.yaml</code></p>
+<p>And add the following content:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nt">manala</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/your/home/my-manala-recipe-repository</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-php-templates</span>
+</code></pre></div></td></tr></table></div>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Update <code>/path/to/your/home/</code> to match your real home !!! Using <code>~</code> won't work !!!</p>
+</div>
+<p>And finally run the following command:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>manala<span class="w"> </span>up
+<span class="c1"># More verbose:</span>
+<span class="c1"># manala up --debug</span>
+</code></pre></div></td></tr></table></div>
+
+<p>This command should have created a <code>.manala</code> folder at the root of your project, including a <code>php-cs-rules.php</code> file.</p>
+<h3 id="and-use-our-shared-php-rules">And use our shared PHP rules<a class="headerlink" href="#and-use-our-shared-php-rules" title="Permanent link">🔗</a></h3>
+<p>Replace the content of the <code>.php_cs.dist</code> file with the following code, in order to include the rules that are defined from now on in <code>.manala/php-cs-rules.php</code>:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="cp">&lt;?php</span>
+
+<span class="nv">$finder</span> <span class="o">=</span> <span class="nx">PhpCsFixer\Finder</span><span class="o">::</span><span class="na">create</span><span class="p">()</span>
+    <span class="o">-&gt;</span><span class="na">in</span><span class="p">([</span>
+        <span class="c1">// App</span>
+        <span class="no">__DIR__</span> <span class="o">.</span> <span class="s1">&#39;/src&#39;</span><span class="p">,</span>
+    <span class="p">])</span>
+<span class="p">;</span>
+
+<span class="k">return</span> <span class="nx">PhpCsFixer\Config</span><span class="o">::</span><span class="na">create</span><span class="p">()</span>
+    <span class="o">-&gt;</span><span class="na">setUsingCache</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setRiskyAllowed</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setFinder</span><span class="p">(</span><span class="nv">$finder</span><span class="p">)</span>
+    <span class="o">-&gt;</span><span class="na">setRules</span><span class="p">(</span><span class="k">include</span><span class="p">(</span><span class="s1">&#39;.manala/php-cs-rules.php&#39;</span><span class="p">))</span>
+<span class="p">;</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Run <code>vendor/bin/php-cs-fixer fix --dry-run</code> to test that everything is OK !</p>
+<p>And finally run <code>vendor/bin/php-cs-fixer fix</code> to apply the coding rules.</p>
+<p>That's done !</p>
+<p>But, hey, just wait a minute ! What about the header of my coding rules ? My shared coding rules mention a hard-coded project name (<code>This file is part of the XXX project</code>), and I want this part to be dynamic, depending on the current project !</p>
+<h2 id="defining-dynamic-parts-in-your-templates">Defining dynamic parts in your templates<a class="headerlink" href="#defining-dynamic-parts-in-your-templates" title="Permanent link">🔗</a></h2>
+<p>In this chapter, we are going to define some dynamic parts in our templates and implement them in the projects embedding our recipe.</p>
+<p>For this, we must first update our template to include some dynamic parts.</p>
+<p>Rename the <code>php-cs-rules.php</code> to add a <code>tmpl</code> suffix:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">    </span>mv<span class="w"> </span>~/my-manala-recipe-repository/my-php-templates/php-cs-rules.php<span class="w"> </span>~/my-manala-recipe-repository/my-php-templates/php-cs-rules.php.tmpl
+</code></pre></div></td></tr></table></div>
+
+<p>And update its content:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gd">- This file is part of the XXX project.</span>
+<span class="gi">+ This file is part of the {{ .Vars.project_name }} project.</span>
+</code></pre></div></td></tr></table></div>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Templates must be written according to <a href="https://golang.org/pkg/text/template/">Golang template syntax</a>, plus some sugar functions brought by <a href="http://masterminds.github.io/sprig/">Sprig</a>.</p>
+</div>
+<p>Now edit the <code>.manala.yaml</code> file in your PHP project to add the following line:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="n">project_name</span><span class="o">:</span><span class="w"> </span><span class="n">My</span><span class="o">-</span><span class="n">awesome</span><span class="o">-</span><span class="n">project</span>
+</code></pre></div></td></tr></table></div>
+
+<p>Run the <code>manala up</code> command and look at the changes:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code>manala<span class="w"> </span>up
+cat<span class="w"> </span>./.manala/php-cs-rules.php
+</code></pre></div></td></tr></table></div>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Don't forget to run <code>manala up</code> each time you edit the <code>.manala.yaml</code> file !!!</p>
+</div>
+<h2 id="share-your-templates-with-your-colleagues">Share your templates with your colleagues<a class="headerlink" href="#share-your-templates-with-your-colleagues" title="Permanent link">🔗</a></h2>
+<p>As previously stated, recipes are meant to be distributed. GitHub is of course the right place to host your recipes!</p>
+<p>So, push your recipe to GitHub and don't forget to update your manala manifest (<code>.manala.yaml</code>) in the projects that consume your recipe:</p>
+<div class="codehilite"><table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="w">manala:</span>
+<span class="gd">-  repository: /path/to/your/home/my-manala-recipe-repository</span>
+<span class="w"># Public repository</span>
+<span class="gi">+  repository: https://github.com/my-company/manala-recipes.git</span>
+<span class="w"># Private repository</span>
+<span class="gi">+  repository: git@github.com:my-company/my-manala-recipe-repository.git</span>
+</code></pre></div></td></tr></table></div>
+
+<p>From now on, each time you push updates to your GitHub repository, simply run <code>manala up</code> in your projects to pass on the last updates.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.e5c33ebb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.51d95adb.min.js"></script>
+      
+    
+  </body>
+</html>
