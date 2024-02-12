@@ -24,7 +24,7 @@ jobs:
           # See: https://github.com/golangci/golangci-lint-action/pull/704
           cache: false
       - name: Lint - GolangCI
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: v${{ env.MANALA_GOLANGCI_LINT_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/issues/297
