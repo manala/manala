@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/go-getter/v2 v2.2.1
 	github.com/lrstanley/bubblezone v0.0.0-20230911164824-e3824f1adde9
 	github.com/muesli/termenv v0.15.2
-	github.com/ohler55/ojg v1.20.3
+	github.com/ohler55/ojg v1.21.2
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
