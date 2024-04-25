@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-func newWatchCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
+func newWatchCmd(conf *config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -48,7 +48,7 @@ Example: manala watch -> resulting in a watch in a project dir (default to the c
 
 			// Api
 			app := api.New(
-				config,
+				conf,
 				log,
 				out,
 				apiOptions...,

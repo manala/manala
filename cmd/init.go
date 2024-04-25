@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func newInitCmd(config config.Config, log *slog.Logger, out ui.Output, in ui.Input) *cobra.Command {
+func newInitCmd(conf *config.Config, log *slog.Logger, out ui.Output, in ui.Input) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "init [dir]",
 		Args:              cobra.MaximumNArgs(1),
@@ -45,7 +45,7 @@ Example: manala init -> resulting in a project init in a dir (default to the cur
 
 			// Api
 			api := api.New(
-				config,
+				conf,
 				log,
 				out,
 				apiOptions...,

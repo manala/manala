@@ -19,8 +19,8 @@ import (
 
 type UpdateSuite struct {
 	suite.Suite
-	configMock *config.Mock
-	executor   *cmd.Executor
+	config   *config.Config
+	executor *cmd.Executor
 }
 
 func TestUpdateSuite(t *testing.T) {
@@ -28,11 +28,11 @@ func TestUpdateSuite(t *testing.T) {
 }
 
 func (s *UpdateSuite) SetupTest() {
-	s.configMock = &config.Mock{}
+	s.config = &config.Config{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
 		ui := charm.New(nil, stdout, stderr)
 		return newUpdateCmd(
-			s.configMock,
+			s.config,
 			slog.New(log.NewSlogHandler(ui)),
 			ui,
 		)
@@ -40,9 +40,8 @@ func (s *UpdateSuite) SetupTest() {
 }
 
 func (s *UpdateSuite) TestProjectErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/UpdateSuite/TestProjectErrors/ProjectNotFound/project")
@@ -156,9 +155,8 @@ func (s *UpdateSuite) TestProjectErrors() {
 }
 
 func (s *UpdateSuite) TestRecursiveProjectErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/UpdateSuite/TestRecursiveProjectErrors/ProjectNotFound/project")
@@ -294,9 +292,8 @@ func (s *UpdateSuite) TestRecursiveProjectErrors() {
 }
 
 func (s *UpdateSuite) TestRepositoryErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("NoRepository", func() {
 		projectDir := filepath.FromSlash("testdata/UpdateSuite/TestRepositoryErrors/NoRepository/project")
@@ -363,9 +360,8 @@ func (s *UpdateSuite) TestRepositoryCustom() {
 
 	_ = os.Remove(filepath.Join(projectDir, "file.txt"))
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	err := s.executor.Execute([]string{
 		projectDir,
@@ -400,9 +396,8 @@ func (s *UpdateSuite) TestRepositoryConfig() {
 	_ = os.Remove(filepath.Join(projectDir, "file.txt"))
 	_ = os.Remove(filepath.Join(projectDir, "template"))
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return(repositoryUrl)
+	s.config.CacheDir = ""
+	s.config.Repository = repositoryUrl
 
 	err := s.executor.Execute([]string{
 		projectDir,
@@ -440,9 +435,8 @@ func (s *UpdateSuite) TestRepositoryConfig() {
 }
 
 func (s *UpdateSuite) TestRecipeErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("RecipeNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/UpdateSuite/TestRecipeErrors/RecipeNotFound/project")
@@ -539,9 +533,8 @@ func (s *UpdateSuite) TestRecipeCustom() {
 
 	_ = os.Remove(filepath.Join(projectDir, "file.txt"))
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return(repositoryUrl)
+	s.config.CacheDir = ""
+	s.config.Repository = repositoryUrl
 
 	err := s.executor.Execute([]string{
 		projectDir,

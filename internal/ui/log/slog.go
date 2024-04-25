@@ -21,8 +21,8 @@ type SlogHandler struct {
 	groups []string
 }
 
-func (handler *SlogHandler) LevelDebug() {
-	handler.level = slog.LevelDebug
+func (handler *SlogHandler) Level(level slog.Level) {
+	handler.level = level
 }
 
 func (handler *SlogHandler) Enabled(_ context.Context, level slog.Level) bool {

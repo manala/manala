@@ -9,7 +9,7 @@ import (
 	"manala/internal/ui"
 )
 
-func newListCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
+func newListCmd(conf *config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
@@ -38,7 +38,7 @@ Example: manala list -> resulting in a recipes list display`,
 
 			// Api
 			api := api.New(
-				config,
+				conf,
 				log,
 				out,
 				apiOptions...,

@@ -17,8 +17,8 @@ import (
 
 type WatchSuite struct {
 	suite.Suite
-	configMock *config.Mock
-	executor   *cmd.Executor
+	config   *config.Config
+	executor *cmd.Executor
 }
 
 func TestWatchSuite(t *testing.T) {
@@ -26,11 +26,11 @@ func TestWatchSuite(t *testing.T) {
 }
 
 func (s *WatchSuite) SetupTest() {
-	s.configMock = &config.Mock{}
+	s.config = &config.Config{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
 		ui := charm.New(nil, stdout, stderr)
 		return newWatchCmd(
-			s.configMock,
+			s.config,
 			slog.New(log.NewSlogHandler(ui)),
 			ui,
 		)
@@ -38,9 +38,8 @@ func (s *WatchSuite) SetupTest() {
 }
 
 func (s *WatchSuite) TestProjectErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/WatchSuite/TestProjectErrors/ProjectNotFound/project")
@@ -154,9 +153,8 @@ func (s *WatchSuite) TestProjectErrors() {
 }
 
 func (s *WatchSuite) TestRepositoryErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("NoRepository", func() {
 		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRepositoryErrors/NoRepository/project")
@@ -218,9 +216,8 @@ func (s *WatchSuite) TestRepositoryErrors() {
 }
 
 func (s *WatchSuite) TestRecipeErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("RecipeNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/WatchSuite/TestRecipeErrors/RecipeNotFound/project")
