@@ -19,8 +19,8 @@ import (
 
 type InitSuite struct {
 	suite.Suite
-	configMock *config.Mock
-	executor   *cmd.Executor
+	config   *config.Config
+	executor *cmd.Executor
 }
 
 func TestInitSuite(t *testing.T) {
@@ -28,11 +28,11 @@ func TestInitSuite(t *testing.T) {
 }
 
 func (s *InitSuite) SetupTest() {
-	s.configMock = &config.Mock{}
+	s.config = &config.Config{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
 		ui := charm.New(nil, stdout, stderr)
 		return newInitCmd(
-			s.configMock,
+			s.config,
 			slog.New(log.NewSlogHandler(ui)),
 			ui,
 			ui,
@@ -41,9 +41,8 @@ func (s *InitSuite) SetupTest() {
 }
 
 func (s *InitSuite) TestProjectErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("AlreadyExistingProject", func() {
 		projectDir := filepath.FromSlash("testdata/InitSuite/TestProjectErrors/AlreadyExistingProject/project")
@@ -66,9 +65,8 @@ func (s *InitSuite) TestProjectErrors() {
 }
 
 func (s *InitSuite) TestRepositoryErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("NoRepository", func() {
 		err := s.executor.Execute([]string{})
@@ -146,9 +144,8 @@ func (s *InitSuite) TestRepositoryCustom() {
 
 	_ = os.RemoveAll(projectDir)
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	err := s.executor.Execute([]string{
 		projectDir,
@@ -191,9 +188,8 @@ func (s *InitSuite) TestRepositoryConfig() {
 
 	_ = os.RemoveAll(projectDir)
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return(repositoryUrl)
+	s.config.CacheDir = ""
+	s.config.Repository = repositoryUrl
 
 	err := s.executor.Execute([]string{
 		projectDir,
@@ -245,9 +241,8 @@ func (s *InitSuite) TestRepositoryConfig() {
 }
 
 func (s *InitSuite) TestRecipeErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("RecipeNotFound", func() {
 		repositoryUrl := filepath.FromSlash("testdata/InitSuite/TestRecipeErrors/RecipeNotFound/repository")

@@ -14,15 +14,10 @@ import (
 )
 
 // New creates an api
-func New(config config.Config, log *slog.Logger, out ui.Output, opts ...Option) *Api {
-	// Log
-	log.Debug("config",
-		config.Args()...,
-	)
-
+func New(conf *config.Config, log *slog.Logger, out ui.Output, opts ...Option) *Api {
 	// Api
 	api := &Api{
-		config: config,
+		config: conf,
 		log:    log,
 		out:    out,
 		exclusionPaths: []string{
@@ -41,7 +36,7 @@ func New(config config.Config, log *slog.Logger, out ui.Output, opts ...Option) 
 
 	// Cache
 	cache := cache.New(
-		api.config.CacheDir(),
+		api.config.CacheDir,
 		cache.WithUserDir("manala"),
 	)
 
@@ -63,7 +58,7 @@ func New(config config.Config, log *slog.Logger, out ui.Output, opts ...Option) 
 		),
 	)
 	api.repositoryManager.AddUrl(
-		api.config.Repository(),
+		api.config.Repository,
 		-10,
 	)
 
@@ -92,7 +87,7 @@ func New(config config.Config, log *slog.Logger, out ui.Output, opts ...Option) 
 }
 
 type Api struct {
-	config            config.Config
+	config            *config.Config
 	log               *slog.Logger
 	out               ui.Output
 	syncer            *syncer.Syncer

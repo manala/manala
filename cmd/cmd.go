@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"io"
 	"log/slog"
 	"manala/app/config"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"os"
+	"strings"
 )
 
-func newCmd(version string, config config.Config) *cobra.Command {
+func Execute(version string, conf *config.Config, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
+	// Define root command
 	cmd := &cobra.Command{
 		Use:               "manala",
 		Version:           version,
@@ -24,48 +26,57 @@ such as makefile targets, virtualization and provisioning files...
 Recipes are pulled from a git repository, or a local directory.`,
 	}
 
-	// Persistent flags
-	cmd.PersistentFlags().StringP("cache-dir", "c", config.CacheDir(), "use cache directory")
-	config.BindCacheDirFlag(cmd.PersistentFlags().Lookup("cache-dir"))
+	// Set standard streams
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
 
-	cmd.PersistentFlags().BoolP("debug", "d", config.Debug(), "set debug mode")
-	config.BindDebugFlag(cmd.PersistentFlags().Lookup("debug"))
-
-	return cmd
-}
-
-func Execute(version string, stdin io.Reader, stdout io.Writer, stderr io.Writer) {
-	// Config
-	config := config.NewViperConfig()
+	// Set persistent flags
+	cmd.PersistentFlags().StringP("cache-dir", "c", conf.CacheDir, "use cache directory")
+	cmd.PersistentFlags().BoolP("debug", "d", conf.Debug, "set debug mode")
 
 	// Ui Adapter
 	ui := charm.New(stdin, stdout, stderr)
 
-	// Log handler
-	logHandler := log.NewSlogHandler(ui)
+	// Viper
+	v := viper.New()
+	v.AutomaticEnv()
+	v.SetEnvPrefix("MANALA")
+	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
-	// Debug
-	cobra.OnInitialize(func() {
-		if config.Debug() {
-			logHandler.LevelDebug()
-		}
-	})
+	// Bind command persistent flags
+	if err := v.BindPFlags(cmd.PersistentFlags()); err != nil {
+		ui.Error(err)
+		return 1
+	}
 
 	// Logger
-	logger := slog.New(logHandler)
+	loggerHandler := log.NewSlogHandler(ui)
+	logger := slog.New(loggerHandler)
 
-	// Root command
-	cmd := newCmd(version, config)
-	cmd.SetOut(stdout)
-	cmd.SetErr(stderr)
+	cobra.OnInitialize(func() {
+		// Unmarshall config
+		_ = v.Unmarshal(&conf)
+
+		// Debug
+		if conf.Debug {
+			loggerHandler.Level(slog.LevelDebug)
+		}
+
+		// Log config
+		logger.Debug("config",
+			"repository", conf.Repository,
+			"cache-dir", conf.CacheDir,
+			"debug", conf.Debug,
+		)
+	})
 
 	// Sub commands
 	cmd.AddCommand(
-		newInitCmd(config, logger, ui, ui),
-		newListCmd(config, logger, ui),
+		newInitCmd(conf, logger, ui, ui),
+		newListCmd(conf, logger, ui),
 		newMascotCmd(ui),
-		newUpdateCmd(config, logger, ui),
-		newWatchCmd(config, logger, ui),
+		newUpdateCmd(conf, logger, ui),
+		newWatchCmd(conf, logger, ui),
 	)
 
 	// Docs generation command
@@ -76,6 +87,8 @@ func Execute(version string, stdin io.Reader, stdout io.Writer, stderr io.Writer
 	// Execute
 	if err := cmd.Execute(); err != nil {
 		ui.Error(err)
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }

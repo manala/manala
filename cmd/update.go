@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 )
 
-func newUpdateCmd(config config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
+func newUpdateCmd(conf *config.Config, log *slog.Logger, out ui.Output) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "update [dir]",
 		Aliases:           []string{"up"},
@@ -48,7 +48,7 @@ Example: manala update -> resulting in an update in a project dir (default to th
 
 			// Api
 			api := api.New(
-				config,
+				conf,
 				log,
 				out,
 				apiOptions...,

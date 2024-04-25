@@ -18,8 +18,8 @@ import (
 
 type ListSuite struct {
 	suite.Suite
-	configMock *config.Mock
-	executor   *cmd.Executor
+	config   *config.Config
+	executor *cmd.Executor
 }
 
 func TestListSuite(t *testing.T) {
@@ -27,11 +27,11 @@ func TestListSuite(t *testing.T) {
 }
 
 func (s *ListSuite) SetupTest() {
-	s.configMock = &config.Mock{}
+	s.config = &config.Config{}
 	s.executor = cmd.NewExecutor(func(stdout *bytes.Buffer, stderr *bytes.Buffer) *cobra.Command {
 		ui := charm.New(nil, stdout, stderr)
 		return newListCmd(
-			s.configMock,
+			s.config,
 			slog.New(log.NewSlogHandler(ui)),
 			ui,
 		)
@@ -39,9 +39,8 @@ func (s *ListSuite) SetupTest() {
 }
 
 func (s *ListSuite) TestRepositoryErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("NoRepository", func() {
 		err := s.executor.Execute([]string{})
@@ -116,9 +115,8 @@ func (s *ListSuite) TestRepositoryErrors() {
 func (s *ListSuite) TestRepositoryCustom() {
 	repositoryUrl := filepath.FromSlash("testdata/ListSuite/TestRepositoryCustom/repository")
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	err := s.executor.Execute([]string{
 		"--repository", repositoryUrl,
@@ -143,9 +141,8 @@ func (s *ListSuite) TestRepositoryCustom() {
 func (s *ListSuite) TestRepositoryConfig() {
 	repositoryUrl := filepath.FromSlash("testdata/ListSuite/TestRepositoryConfig/repository")
 
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return(repositoryUrl)
+	s.config.CacheDir = ""
+	s.config.Repository = repositoryUrl
 
 	err := s.executor.Execute([]string{})
 
@@ -167,9 +164,8 @@ func (s *ListSuite) TestRepositoryConfig() {
 }
 
 func (s *ListSuite) TestRecipeErrors() {
-	s.configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	s.config.CacheDir = ""
+	s.config.Repository = ""
 
 	s.Run("WrongRecipeManifest", func() {
 		repositoryUrl := filepath.FromSlash("testdata/ListSuite/TestRecipeErrors/WrongRecipeManifest/repository")

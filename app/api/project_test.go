@@ -20,15 +20,15 @@ func (s *Suite) TestCreateProject() {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
-	configMock := &config.Mock{}
-	configMock.
-		On("CacheDir").Return("").
-		On("Repository").Return("")
+	conf := &config.Config{
+		CacheDir:   "",
+		Repository: "",
+	}
 
 	ui := charm.New(nil, stdout, stderr)
 
 	api := New(
-		configMock,
+		conf,
 		slog.New(log.NewSlogHandler(ui)),
 		ui,
 		WithRepositoryUrl(repositoryUrl),
