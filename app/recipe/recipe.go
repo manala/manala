@@ -2,7 +2,7 @@ package recipe
 
 import (
 	"manala/app"
-	option "manala/app/recipe/option"
+	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/syncer"
 	"manala/internal/template"
