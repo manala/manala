@@ -110,6 +110,8 @@ func New(reader io.Reader, optionSchema schema.Schema, optionPath path.Path) (ap
 		return NewTextOption(option, fields)
 	case "select":
 		return NewSelectOption(option, fields)
+	case "version":
+		return NewVersionOption(option, fields)
 	}
 
 	return nil, serrors.New("unknown recipe option type").

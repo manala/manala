@@ -57,8 +57,9 @@ Sleep 1s
 Enter
 Sleep 1s
 
-Down@500ms
-Down@500ms
+Down@300ms
+Down@300ms
+Down@300ms
 Up@500ms
 Enter@1s
 Sleep 1s

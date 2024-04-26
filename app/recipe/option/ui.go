@@ -12,6 +12,8 @@ func NewUiFormField(option app.RecipeOption, vars *map[string]any) (components.F
 		return NewSelectOptionUiFormField(option, vars)
 	case *TextOption:
 		return NewTextOptionUiFormField(option, vars)
+	case *VersionOption:
+		return NewVersionOptionUiFormField(option, vars)
 	}
 
 	return nil, serrors.New("unknown recipe option").
