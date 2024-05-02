@@ -17,7 +17,7 @@ func (s *Suite) Test() {
 	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0
-	err := Backwalk(
+	err := BackwalkDir(
 		filepath.Join(dir, "foo", "bar"),
 		func(path string, entry os.DirEntry, err error) error {
 			s.NoError(err)
@@ -31,7 +31,7 @@ func (s *Suite) Test() {
 			)
 			i = i + 1
 			if path == dir {
-				return filepath.SkipDir
+				return filepath.SkipAll
 			}
 			return nil
 		},

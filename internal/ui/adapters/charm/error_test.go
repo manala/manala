@@ -30,8 +30,7 @@ func (s *Suite) TestError() {
 			err: serrors.New("error").
 				WithArguments("foo", "bar"),
 			expected: `
-				 ⨯ error
-				   foo=bar
+				 ⨯ error                            foo=bar
 			`,
 		},
 	}
@@ -46,7 +45,7 @@ func (s *Suite) TestError() {
 			adapter.Error(test.err)
 
 			s.Empty(out)
-			heredoc.Equal(s.Assert(), test.expected, err.String())
+			heredoc.Equal(s.T(), test.expected, err)
 		})
 	}
 }

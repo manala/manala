@@ -12,7 +12,7 @@ import (
 	"manala/internal/validator"
 )
 
-//go:embed resources/schema.json
+//go:embed schema.json
 var _schemaSource []byte
 var _schema = schema.MustParse(_schemaSource)
 

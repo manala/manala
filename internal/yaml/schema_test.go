@@ -14,13 +14,12 @@ func (s *Suite) TestNodeSchemaInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "NonMap",
 			node: `string`,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to infer schema type",
 				Arguments: []any{
 					"line", 1,
@@ -37,8 +36,7 @@ func (s *Suite) TestNodeSchemaInferrerErrors() {
 			node: `
 node: ~  # @schema {"type": "string", "minLength": 1}
 `,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "misplaced schema tag",
 				Arguments: []any{
 					"line", 2,
@@ -56,8 +54,7 @@ node: ~  # @schema {"type": "string", "minLength": 1}
 # @schema foo
 node: ~
 `,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid character 'o' in literal false (expecting 'a')",
 				Arguments: []any{
 					"line", 2,
@@ -79,7 +76,7 @@ node: ~
 
 			err := NewNodeSchemaInferrer(node).Infer(schema)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -286,13 +283,12 @@ func (s *Suite) TestNodeTypeSchemaInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "UninferableNode",
 			node: `string`,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to infer schema type",
 				Arguments: []any{
 					"line", 1,
@@ -313,7 +309,7 @@ func (s *Suite) TestNodeTypeSchemaInferrerErrors() {
 			schema := schema.Schema{"foo": "bar"}
 			err := NewNodeTypeSchemaInferrer(node).Infer(schema)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -440,15 +436,14 @@ func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
 	tests := []struct {
 		test     string
 		tags     *Tags
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Syntax",
 			tags: &Tags{
 				&Tag{Name: "Tag", Value: `foo`},
 			},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid character 'o' in literal false (expecting 'a')",
 				Arguments: []any{
 					"offset", int64(2),
@@ -460,8 +455,7 @@ func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
 			tags: &Tags{
 				&Tag{Name: "Tag", Value: `[]`},
 			},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into value",
 				Arguments: []any{
 					"offset", int64(1),
@@ -478,7 +472,7 @@ func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
 
 			err := NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

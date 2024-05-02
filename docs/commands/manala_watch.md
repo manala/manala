@@ -6,7 +6,8 @@ Watch project
 
 Watch (manala watch) will watch project files, and launch update on changes.
 
-Example: manala watch -> resulting in a watch in a project dir (default to the current directory)
+Example: manala watch -> resulting in a watch in a project dir (default to the
+current directory)
 
 ```
 manala watch [dir] [flags]

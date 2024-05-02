@@ -55,7 +55,7 @@ func (s *Suite) TestFunctionToYaml() {
 			},
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			foo:
 			    bar: string
 			    baz:
@@ -89,7 +89,7 @@ func (s *Suite) TestFunctionToYaml() {
 			},
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			foo:
 			    BAZ: true
 			    QuuX: true
@@ -108,7 +108,7 @@ func (s *Suite) TestFunctionToYaml() {
 			},
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			bar: true
 			qux: true`,
 			content,
@@ -122,7 +122,7 @@ func (s *Suite) TestFunctionToYaml() {
 			"baz",
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			- foo
 			- bar
 			- baz`,
@@ -139,7 +139,7 @@ func (s *Suite) TestFunctionToYaml() {
 			},
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			nested:
 			    - foo
 			    - bar
@@ -151,7 +151,7 @@ func (s *Suite) TestFunctionToYaml() {
 	s.Run("Quotes", func() {
 		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
 
-		heredoc.Equal(s.Assert(),
+		heredoc.Equal(s.T(),
 			`'\'single\' "double"'`,
 			content,
 		)
@@ -164,7 +164,7 @@ bar\baz
 `,
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			scalar: |
 			  foo
 			  bar\baz`,
@@ -184,7 +184,7 @@ bar\baz
 			},
 		})
 
-		heredoc.Equal(s.Assert(), `
+		heredoc.Equal(s.T(), `
 			mapping:
 			    bar: baz
 			    foo: bar
@@ -206,7 +206,7 @@ func (s *Suite) TestFunctionInclude() {
 		"bar",
 	)
 
-	heredoc.Equal(s.Assert(),
+	heredoc.Equal(s.T(),
 		`foo bar`,
 		content,
 	)

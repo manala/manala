@@ -66,13 +66,12 @@ sequence_multiple:
 	tests := []struct {
 		test     string
 		path     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Root",
 			path: "baz",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to access yaml path",
 				Arguments: []any{
 					"path", "baz",
@@ -82,8 +81,7 @@ sequence_multiple:
 		{
 			test: "Leaf",
 			path: "bar.bar",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to access yaml path",
 				Arguments: []any{
 					"path", "bar.bar",
@@ -98,7 +96,7 @@ sequence_multiple:
 
 			_node, err := accessor.Get(node.Docs[0].Body)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 			s.Nil(_node)
 		})
 	}

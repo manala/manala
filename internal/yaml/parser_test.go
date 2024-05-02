@@ -13,8 +13,7 @@ func (s *Suite) TestParserEmpty() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    serrors.Error{},
+	serrors.Equal(s.T(), &serrors.Assertion{
 		Message: "empty yaml file",
 	}, err)
 }
@@ -27,8 +26,7 @@ func (s *Suite) TestParserMultipleDocuments() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    serrors.Error{},
+	serrors.Equal(s.T(), &serrors.Assertion{
 		Message: "multiple documents yaml file",
 		Arguments: []any{
 			"line", 4,
@@ -68,12 +66,11 @@ func (s *Suite) TestParserMappingComments() {
 func (s *Suite) TestParserIrregularMapKeys() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Integer",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular map key",
 				Arguments: []any{
 					"line", 1,
@@ -87,8 +84,7 @@ func (s *Suite) TestParserIrregularMapKeys() {
 		},
 		{
 			test: "IntegerAnchor",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular map key",
 				Arguments: []any{
 					"line", 2,
@@ -112,7 +108,7 @@ func (s *Suite) TestParserIrregularMapKeys() {
 
 			s.Nil(node)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -120,12 +116,11 @@ func (s *Suite) TestParserIrregularMapKeys() {
 func (s *Suite) TestParserIrregularTypes() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Inf",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular type",
 				Arguments: []any{
 					"line", 1,
@@ -139,8 +134,7 @@ func (s *Suite) TestParserIrregularTypes() {
 		},
 		{
 			test: "Nan",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular type",
 				Arguments: []any{
 					"line", 1,
@@ -163,7 +157,7 @@ func (s *Suite) TestParserIrregularTypes() {
 
 			s.Nil(node)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -195,8 +189,7 @@ func (s *Suite) TestParserIrregularMappingKey() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    serrors.Error{},
+	serrors.Equal(s.T(), &serrors.Assertion{
 		Message: "irregular map key",
 		Arguments: []any{
 			"line", 1,
@@ -229,8 +222,7 @@ func (s *Suite) TestParserUnknownAnchors() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.Assert(), &serrors.Assert{
-		Type:    serrors.Error{},
+	serrors.Equal(s.T(), &serrors.Assertion{
 		Message: "cannot find anchor",
 		Arguments: []any{
 			"line", 1,

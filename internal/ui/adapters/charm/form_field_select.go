@@ -139,15 +139,15 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for i := range model.options {
 				if model.zone.Get(fmt.Sprintf("%soption_%d", model.zonePrefix, i)).InBounds(msg) {
 					model.hoverIndex.Set(i)
-					if msg.Type == tea.MouseLeft {
+					if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 						cmds.Add(model.updateIndex(i))
 						model.Close()
 					}
 				}
 			}
 		} else {
-			switch msg.Type {
-			case tea.MouseLeft:
+			switch {
+			case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
 				// Open on left click
 				if model.zone.Get(model.zonePrefix + "select").InBounds(msg) {
 					model.Open(true)

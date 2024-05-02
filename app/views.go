@@ -25,15 +25,26 @@ type ProjectView struct {
 // NewRecipeView create a recipe view
 func NewRecipeView(recipe Recipe) *RecipeView {
 	return &RecipeView{
-		Name:       recipe.Name(),
-		Repository: NewRepositoryView(recipe.Repository()),
+		Name:        recipe.Name(),
+		Description: recipe.Description(),
+		Repository:  NewRepositoryView(recipe.Repository()),
 	}
+}
+
+// NewRecipesView create a slice of recipes view
+func NewRecipesView(recipes []Recipe) []*RecipeView {
+	views := make([]*RecipeView, len(recipes))
+	for i := range recipes {
+		views[i] = NewRecipeView(recipes[i])
+	}
+	return views
 }
 
 // RecipeView is a secure and lightweight facade of a recipe, dedicated to template usage
 type RecipeView struct {
-	Name       string
-	Repository *RepositoryView
+	Name        string
+	Description string
+	Repository  *RepositoryView
 }
 
 /**************/

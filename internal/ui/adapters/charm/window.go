@@ -131,10 +131,10 @@ func (scroll scrollModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Mouse
 	case tea.MouseMsg:
-		switch msg.Type {
-		case tea.MouseWheelUp:
+		switch {
+		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelUp:
 			scroll.upTo(scroll.line - 1)
-		case tea.MouseWheelDown:
+		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelDown:
 			scroll.upTo(scroll.line + 1)
 		}
 		msg.X -= leftFrameSize

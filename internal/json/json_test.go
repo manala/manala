@@ -17,13 +17,12 @@ func (s *Suite) TestUnmarshalErrors() {
 	tests := []struct {
 		test     string
 		data     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Syntax",
 			data: `foo`,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid character 'o' in literal false (expecting 'a')",
 				Arguments: []any{
 					"offset", int64(2),
@@ -36,7 +35,7 @@ func (s *Suite) TestUnmarshalErrors() {
 		s.Run(test.test, func() {
 			err := Unmarshal([]byte(test.data), nil)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

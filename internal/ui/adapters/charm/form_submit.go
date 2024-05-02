@@ -51,8 +51,8 @@ func (model formSubmitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch msg.Type {
-		case tea.MouseLeft:
+		switch {
+		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
 			// Submit on left click
 			if model.zone.Get(model.zonePrefix + "submit").InBounds(msg) {
 				cmds.Add(model.submit())

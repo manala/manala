@@ -99,7 +99,7 @@ func (model formModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.MouseMsg:
 		for i := range model.fields {
 			if model.zone.Get(fmt.Sprintf("field_%d", i)).InBounds(msg) {
-				if msg.Type == tea.MouseLeft {
+				if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 					// Focus field on left click
 					cmds.Add(model.Focus(i))
 				}

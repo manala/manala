@@ -1,0 +1,3 @@
+manala:
+  repository: testdata/Suite/TestSync/repository
+  recipe: recipe

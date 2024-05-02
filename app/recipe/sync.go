@@ -5,42 +5,46 @@ import (
 	"strings"
 )
 
-type sync []syncer.UnitInterface
+type Sync []syncer.UnitInterface
 
-func (sync *sync) UnmarshalYAML(unmarshal func(any) error) error {
+func (sync *Sync) UnmarshalYAML(unmarshal func(any) error) error {
 	var values []string
 	if err := unmarshal(&values); err != nil {
 		return err
 	}
 
 	for _, value := range values {
-		unit := &syncUnit{}
-
-		unit.source = value
-		unit.destination = unit.source
+		source, destination := value, value
 
 		// Separate source / destination
-		splits := strings.Split(unit.source, " ")
+		splits := strings.Split(source, " ")
 		if len(splits) > 1 {
-			unit.source = splits[0]
-			unit.destination = splits[1]
+			source = splits[0]
+			destination = splits[1]
 		}
 
-		*sync = append(*sync, unit)
+		*sync = append(*sync, NewSyncUnit(source, destination))
 	}
 
 	return nil
 }
 
-type syncUnit struct {
+func NewSyncUnit(source string, destination string) *SyncUnit {
+	return &SyncUnit{
+		source:      source,
+		destination: destination,
+	}
+}
+
+type SyncUnit struct {
 	source      string
 	destination string
 }
 
-func (unit *syncUnit) Source() string {
+func (unit *SyncUnit) Source() string {
 	return unit.source
 }
 
-func (unit *syncUnit) Destination() string {
+func (unit *SyncUnit) Destination() string {
 	return unit.destination
 }

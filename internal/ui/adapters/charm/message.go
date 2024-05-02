@@ -60,7 +60,7 @@ func (adapter *Adapter) message(message *components.Message, renderer *lipgloss.
 	}
 
 	if len(attributes) > 0 {
-		str = lipgloss.JoinVertical(lipgloss.Left,
+		str = lipgloss.JoinHorizontal(lipgloss.Top,
 			str,
 			attributesStyle.Render(
 				strings.Join(attributes, " "),

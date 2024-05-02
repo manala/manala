@@ -1,0 +1,5 @@
+manala:
+  recipe: recipe
+  repository: testdata/LoaderSuite/TestLoaderHandlerErrors/Vars/repository
+
+foo: bar

@@ -6,7 +6,8 @@ Init project
 
 Init (manala init) will init a project.
 
-Example: manala init -> resulting in a project init in a dir (default to the current directory)
+Example: manala init -> resulting in a project init in a dir (default to the
+current directory)
 
 ```
 manala init [dir] [flags]

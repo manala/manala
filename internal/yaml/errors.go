@@ -47,7 +47,6 @@ func NewError(err error) serrors.Error {
 	return serrors.New(message).
 		WithArguments(arguments...).
 		WithDetailsFunc(detailsFunc)
-
 }
 
 func NewNodeError(message string, node goYamlAst.Node) serrors.Error {

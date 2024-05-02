@@ -3,6 +3,7 @@ package template
 import (
 	"github.com/Masterminds/sprig/v3"
 	"io"
+	"manala/internal/serrors"
 	"path/filepath"
 	textTemplate "text/template"
 )
@@ -42,7 +43,7 @@ func (template *Template) WriteTo(writer io.Writer) error {
 	if len(template.defaultFiles) > 0 {
 		for _, file := range template.defaultFiles {
 			if _, err := _template.ParseFiles(file); err != nil {
-				return NewError(err).
+				return serrors.NewTemplate(err).
 					WithArguments("file", file)
 			}
 		}
@@ -51,12 +52,12 @@ func (template *Template) WriteTo(writer io.Writer) error {
 	// File
 	if template.file != "" {
 		if _, err := _template.ParseFiles(template.file); err != nil {
-			return NewError(err).
+			return serrors.NewTemplate(err).
 				WithArguments("file", template.file)
 		}
 
 		if err := _template.ExecuteTemplate(writer, filepath.Base(template.file), template.data); err != nil {
-			return NewError(err).
+			return serrors.NewTemplate(err).
 				WithArguments("file", template.file)
 		}
 
@@ -64,11 +65,11 @@ func (template *Template) WriteTo(writer io.Writer) error {
 	}
 
 	if _, err := _template.Parse(template.defaultContent); err != nil {
-		return NewError(err)
+		return serrors.NewTemplate(err)
 	}
 
 	if err := _template.Execute(writer, template.data); err != nil {
-		return NewError(err)
+		return serrors.NewTemplate(err)
 	}
 
 	return nil

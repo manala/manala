@@ -2,8 +2,7 @@ package syncer
 
 import (
 	"github.com/stretchr/testify/suite"
-	"io"
-	"log/slog"
+	"manala/internal/log"
 	"manala/internal/serrors"
 	"manala/internal/template"
 	"os"
@@ -23,9 +22,7 @@ func TestSuite(t *testing.T) {
 }
 
 func (s *Suite) SetupTest() {
-	s.syncer = New(
-		slog.New(slog.NewTextHandler(io.Discard, nil)),
-	)
+	s.syncer = New(log.Discard)
 	s.templateProvider = &template.Provider{}
 }
 
@@ -49,8 +46,7 @@ func (s *Suite) TestSync() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
 
-		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    serrors.Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz"),
@@ -193,8 +189,7 @@ func (s *Suite) TestSyncTemplate() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)
 
-		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    serrors.Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz.tmpl"),
@@ -229,12 +224,10 @@ func (s *Suite) TestSyncTemplate() {
 	s.Run("Invalid", func() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateProvider)
 
-		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    serrors.Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "template error",
-			Errors: []*serrors.Assert{
+			Errors: []*serrors.Assertion{
 				{
-					Type:    serrors.Error{},
 					Message: "nil data; no entry for key \"foo\"",
 					Arguments: []any{
 						"context", ".foo",
