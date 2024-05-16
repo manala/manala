@@ -3,6 +3,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
+	"manala/internal/serrors"
 )
 
 func Unmarshal(data []byte, value any) error {
@@ -10,7 +11,7 @@ func Unmarshal(data []byte, value any) error {
 	decoder.UseNumber()
 
 	if err := decoder.Decode(value); err != nil {
-		return NewError(err)
+		return serrors.NewJson(err)
 	}
 
 	return nil

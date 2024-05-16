@@ -12,21 +12,19 @@ func (s *Suite) TestError() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Unknown",
 			err:  serrors.New("error"),
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "error",
 			},
 		},
 		{
 			test: "Formatted",
 			err:  err,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unexpected anchor. anchor value is undefined",
 				Arguments: []any{
 					"line", 1,
@@ -44,7 +42,7 @@ func (s *Suite) TestError() {
 		s.Run(test.test, func() {
 			err := NewError(test.err)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -55,13 +53,12 @@ func (s *Suite) TestNodeError() {
 	tests := []struct {
 		test     string
 		node     goYamlAst.Node
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Content",
 			node: node,
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "error",
 				Arguments: []any{
 					"line", 1,
@@ -79,7 +76,7 @@ func (s *Suite) TestNodeError() {
 		s.Run(test.test, func() {
 			err := NewNodeError("error", test.node)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

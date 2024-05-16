@@ -102,8 +102,8 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch msg.Type {
-		case tea.MouseLeft:
+		switch {
+		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
 			zone := model.zone.Get(model.zonePrefix + "input")
 			// Set cursor position on left click
 			if zone.InBounds(msg) {

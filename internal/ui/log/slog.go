@@ -7,49 +7,43 @@ import (
 	"manala/internal/ui/components"
 )
 
-func NewSlogHandler(out ui.Output) *SlogHandler {
-	return &SlogHandler{
-		level: slog.LevelInfo,
-		out:   out,
+func NewSlogHandler(out ui.Output, opts ...SlogHandlerOption) *SlogHandler {
+	handler := &SlogHandler{
+		out: out,
 	}
+
+	for _, opt := range opts {
+		opt(handler)
+	}
+
+	return handler
 }
 
 type SlogHandler struct {
-	level  slog.Level
+	debug  bool
 	out    ui.Output
 	attrs  []slog.Attr
 	groups []string
 }
 
-func (handler *SlogHandler) Level(level slog.Level) {
-	handler.level = level
-}
-
 func (handler *SlogHandler) Enabled(_ context.Context, level slog.Level) bool {
-	return level >= handler.level
+	if handler.debug {
+		return level >= slog.LevelDebug
+	}
+
+	return level >= slog.LevelInfo
 }
 
 func (handler *SlogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	clone := handler.clone()
+	clone := *handler
 	clone.attrs = append(clone.attrs, attrs...)
-
-	return clone
+	return &clone
 }
 
 func (handler *SlogHandler) WithGroup(group string) slog.Handler {
-	clone := handler.clone()
+	clone := *handler
 	clone.groups = append(clone.groups, group)
-
-	return clone
-}
-
-func (handler *SlogHandler) clone() *SlogHandler {
-	return &SlogHandler{
-		level:  handler.level,
-		out:    handler.out,
-		attrs:  handler.attrs,
-		groups: handler.groups,
-	}
+	return &clone
 }
 
 func (handler *SlogHandler) Handle(_ context.Context, record slog.Record) error {
@@ -88,4 +82,12 @@ func (handler *SlogHandler) Handle(_ context.Context, record slog.Record) error 
 	handler.out.Message(message)
 
 	return nil
+}
+
+type SlogHandlerOption func(handler *SlogHandler)
+
+func WithSlogHandlerDebug(debug bool) SlogHandlerOption {
+	return func(handler *SlogHandler) {
+		handler.debug = debug
+	}
 }

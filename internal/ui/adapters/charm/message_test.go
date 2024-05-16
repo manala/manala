@@ -38,8 +38,7 @@ func (s *Suite) TestMessage() {
 				},
 			},
 			expected: `
-				 • message
-				   foo=bar
+				 • message                          foo=bar
 			`,
 		},
 		{
@@ -53,8 +52,7 @@ func (s *Suite) TestMessage() {
 				Details: "details",
 			},
 			expected: `
-				 • message
-				   foo=bar
+				 • message                          foo=bar
 
 				   details
 			`,
@@ -94,8 +92,8 @@ func (s *Suite) TestMessage() {
 				Details: "Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.",
 			},
 			expected: `
-				 • Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-				   foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar
+				 • Lorem ipsum dolor sit amet,      foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar
+				   consectetur adipiscing elit.
 
 				   Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.
 			`,
@@ -139,20 +137,16 @@ func (s *Suite) TestMessage() {
 				},
 			},
 			expected: `
-				 • message 1
-				   foo=bar
+				 • message 1                        foo=bar
 
 				   details 1
-				   • message 2
-				     foo=bar
+				   • message 2                        foo=bar
 
 				     details 2
-				     • message 3
-				       foo=bar
+				     • message 3                        foo=bar
 
 				       details 3
-				     • message 4
-				       foo=bar
+				     • message 4                        foo=bar
 
 				       details 4
 			`,
@@ -169,7 +163,7 @@ func (s *Suite) TestMessage() {
 			adapter.Message(test.message)
 
 			s.Empty(out)
-			heredoc.Equal(s.Assert(), test.expected, err.String())
+			heredoc.Equal(s.T(), test.expected, err)
 		})
 	}
 }

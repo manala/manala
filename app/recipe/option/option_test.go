@@ -36,18 +36,16 @@ func (s *Suite) TestNewFromErrors() {
 		test     string
 		data     string
 		schema   schema.Schema
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test:   "Syntax",
 			data:   `foo`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
-				Errors: []*serrors.Assert{
+				Errors: []*serrors.Assertion{
 					{
-						Type:    serrors.Error{},
 						Message: "invalid character 'o' in literal false (expecting 'a')",
 						Arguments: []any{
 							"offset", int64(2),
@@ -60,12 +58,10 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "Type",
 			data:   `[]`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
-				Errors: []*serrors.Assert{
+				Errors: []*serrors.Assertion{
 					{
-						Type:    serrors.Error{},
 						Message: "cannot unmarshal into value",
 						Arguments: []any{
 							"offset", int64(1),
@@ -80,19 +76,16 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "Validation",
 			data:   `{"foo": "bar"}`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid recipe option",
-				Errors: []*serrors.Assert{
+				Errors: []*serrors.Assertion{
 					{
-						Type:    serrors.Error{},
 						Message: "missing property",
 						Arguments: []any{
 							"property", "label",
 						},
 					},
 					{
-						Type:    serrors.Error{},
 						Message: "additional property is not allowed",
 						Arguments: []any{
 							"path", "foo",
@@ -105,8 +98,7 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "AutoDetection",
 			data:   `{"label": "Label"}`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to auto detect recipe option type",
 				Arguments: []any{
 					"label", "Label",
@@ -117,8 +109,7 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "InvalidTextMissingType",
 			data:   `{"label": "Label", "type": "text"}`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid recipe option string type",
 				Arguments: []any{
 					"label", "Label",
@@ -129,8 +120,7 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "InvalidTextWrongType",
 			data:   `{"label": "Label", "type": "text"}`,
 			schema: schema.Schema{"type": nil},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid recipe option string type",
 				Arguments: []any{
 					"label", "Label",
@@ -141,8 +131,7 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "InvalidSelectMissingEnum",
 			data:   `{"label": "Label", "type": "select"}`,
 			schema: schema.Schema{},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid recipe option enum",
 				Arguments: []any{
 					"label", "Label",
@@ -154,8 +143,7 @@ func (s *Suite) TestNewFromErrors() {
 			data:   `{"label": "Label", "type": "select"}`,
 			schema: schema.Schema{"enum": nil},
 
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "invalid recipe option enum",
 				Arguments: []any{
 					"label", "Label",
@@ -166,8 +154,7 @@ func (s *Suite) TestNewFromErrors() {
 			test:   "InvalidTextEmptyEnum",
 			data:   `{"label": "Label", "type": "select"}`,
 			schema: schema.Schema{"enum": []any{}},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "empty recipe option enum",
 				Arguments: []any{
 					"label", "Label",
@@ -183,7 +170,7 @@ func (s *Suite) TestNewFromErrors() {
 			option, err := New(strings.NewReader(test.data), test.schema, path)
 
 			s.Nil(option)
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

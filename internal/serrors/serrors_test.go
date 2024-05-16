@@ -16,7 +16,7 @@ func (s *Suite) TestError() {
 	s.Run("New", func() {
 		err := New("error")
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: "error",
 		}, err)
@@ -28,7 +28,7 @@ func (s *Suite) TestError() {
 		err := New("error").
 			WithMessage(message)
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: message,
 		}, err)
@@ -41,7 +41,7 @@ func (s *Suite) TestError() {
 		err := New("error").
 			WithArguments(foo, bar)
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: "error",
 			Arguments: []any{
@@ -56,7 +56,7 @@ func (s *Suite) TestError() {
 		err := New("error").
 			WithDetails(details)
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: "error",
 			Details: details,
@@ -71,7 +71,7 @@ func (s *Suite) TestError() {
 		err := New("error").
 			WithDetailsFunc(detailsFunc)
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: "error",
 			Details: "details func false",
@@ -85,10 +85,10 @@ func (s *Suite) TestError() {
 		err := New("error").
 			WithErrors(foo, bar)
 
-		Equal(s.Assert(), &Assert{
+		Equal(s.T(), &Assertion{
 			Type:    Error{},
 			Message: "error",
-			Errors: []*Assert{
+			Errors: []*Assertion{
 				{
 					Type:    Error{},
 					Message: "foo",

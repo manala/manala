@@ -13,13 +13,12 @@ func (s *Suite) TestAccessorGetErrors() {
 	tests := []struct {
 		test     string
 		path     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Root",
 			path: "baz",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to access path",
 				Arguments: []any{
 					"path", "baz",
@@ -29,8 +28,7 @@ func (s *Suite) TestAccessorGetErrors() {
 		{
 			test: "Leaf",
 			path: "bar.bar",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to access path",
 				Arguments: []any{
 					"path", "bar.bar",
@@ -48,7 +46,7 @@ func (s *Suite) TestAccessorGetErrors() {
 
 			value, err := accessor.Get()
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 			s.Nil(value)
 		})
 	}

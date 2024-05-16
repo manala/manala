@@ -3,35 +3,39 @@ package serrors
 import (
 	"github.com/stretchr/testify/assert"
 	"manala/internal/testing/heredoc"
+	"testing"
 )
 
-type Assert struct {
+type Assertion struct {
 	Type      any
 	Message   string
 	Arguments []any
 	Details   string
-	Errors    []*Assert
+	Errors    []*Assertion
 }
 
-func Equal(s *assert.Assertions, assert *Assert, err error) {
-	s.IsType(assert.Type, err)
-	s.EqualError(err, assert.Message)
+func Equal(t *testing.T, assertion *Assertion, err error) {
+	if assertion.Type != nil {
+		assert.IsType(t, assertion.Type, err)
+	}
+
+	assert.EqualError(t, err, assertion.Message)
 
 	// Arguments
 	if _err, ok := err.(ErrorArguments); ok {
-		s.Equal(assert.Arguments, _err.ErrorArguments())
+		assert.Equal(t, assertion.Arguments, _err.ErrorArguments())
 	} else {
-		if assert.Arguments != nil {
-			s.Fail("Error does not contains arguments")
+		if assertion.Arguments != nil {
+			assert.Fail(t, "Error does not contains arguments")
 		}
 	}
 
 	// Details
 	if _err, ok := err.(ErrorDetails); ok {
-		heredoc.Equal(s, assert.Details, _err.ErrorDetails(false))
+		heredoc.Equal(t, assertion.Details, _err.ErrorDetails(false))
 	} else {
-		if assert.Details != "" {
-			s.Fail("Error does not contains details")
+		if assertion.Details != "" {
+			assert.Fail(t, "Error does not contains details")
 		}
 	}
 
@@ -41,22 +45,22 @@ func Equal(s *assert.Assertions, assert *Assert, err error) {
 	}); ok {
 		__errs := _err.Unwrap()
 		if __errs == nil {
-			if assert.Errors != nil {
-				s.Fail("Error contains nil errors")
+			if assertion.Errors != nil {
+				assert.Fail(t, "Error contains nil errors")
 			}
 		} else {
-			if assert.Errors == nil {
-				s.Fail("Error contains errors")
+			if assertion.Errors == nil {
+				assert.Fail(t, "Error contains errors")
 			} else {
-				s.Len(__errs, len(assert.Errors), "Incorrect error's errors length")
-				for i, _assert := range assert.Errors {
-					Equal(s, _assert, __errs[i])
+				assert.Len(t, __errs, len(assertion.Errors), "Incorrect error's errors length")
+				for i, _assert := range assertion.Errors {
+					Equal(t, _assert, __errs[i])
 				}
 			}
 		}
 	} else {
-		if assert.Errors != nil {
-			s.Fail("Error does not contains errors")
+		if assertion.Errors != nil {
+			assert.Fail(t, "Error does not contains errors")
 		}
 	}
 }

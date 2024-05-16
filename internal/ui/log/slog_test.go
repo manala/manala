@@ -18,19 +18,54 @@ func TestSlogSuite(t *testing.T) {
 }
 
 func (s *SlogSuite) TestHandler() {
-	outputMock := &ui.OutputMock{}
-	outputMock.On("Message", mock.Anything)
+	s.Run("Default", func() {
+		outputMock := &ui.OutputMock{}
+		outputMock.On("Message", mock.Anything)
 
-	handler := NewSlogHandler(outputMock)
-	logger := slog.New(handler)
+		handler := NewSlogHandler(outputMock)
+		log := slog.New(handler)
 
-	logger.Info("message", "foo", "bar")
+		log.Info("info", "foo", "bar")
+		log.Debug("debug", "foo", "bar")
 
-	outputMock.AssertCalled(s.T(), "Message", &components.Message{
-		Type:    components.InfoMessageType,
-		Message: "message",
-		Attributes: []*components.MessageAttribute{
-			{Key: "foo", Value: "bar"},
-		},
+		outputMock.AssertNumberOfCalls(s.T(), "Message", 1)
+		outputMock.AssertCalled(s.T(), "Message", &components.Message{
+			Type:    components.InfoMessageType,
+			Message: "info",
+			Attributes: []*components.MessageAttribute{
+				{Key: "foo", Value: "bar"},
+			},
+		})
+	})
+
+	s.Run("WithDebug", func() {
+		outputMock := &ui.OutputMock{}
+		outputMock.On("Message", mock.Anything)
+
+		handler := NewSlogHandler(outputMock,
+			WithSlogHandlerDebug(true),
+		)
+		log := slog.New(handler)
+
+		log.Info("info", "foo", "bar")
+		log.Debug("debug", "foo", "bar")
+
+		outputMock.AssertExpectations(s.T())
+
+		outputMock.AssertNumberOfCalls(s.T(), "Message", 2)
+		outputMock.AssertCalled(s.T(), "Message", &components.Message{
+			Type:    components.InfoMessageType,
+			Message: "info",
+			Attributes: []*components.MessageAttribute{
+				{Key: "foo", Value: "bar"},
+			},
+		})
+		outputMock.AssertCalled(s.T(), "Message", &components.Message{
+			Type:    components.DebugMessageType,
+			Message: "debug",
+			Attributes: []*components.MessageAttribute{
+				{Key: "foo", Value: "bar"},
+			},
+		})
 	})
 }

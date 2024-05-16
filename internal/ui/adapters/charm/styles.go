@@ -86,10 +86,12 @@ var (
 	)
 	messageMessageStyle = newStyleDefinition(
 		lipgloss.NewStyle().
+			Width(32).
 			Foreground(messageColor),
 	)
 	messageAttributesStyle = newStyleDefinition(
-		lipgloss.NewStyle(),
+		lipgloss.NewStyle().
+			PaddingLeft(1),
 	)
 	messageAttributeValueStyle = newStyleDefinition(
 		lipgloss.NewStyle().
@@ -157,10 +159,6 @@ var (
 		lipgloss.NewStyle().
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
-	)
-	// Animation
-	animationStyle = newStyleDefinition(
-		lipgloss.NewStyle(),
 	)
 	// Scroll
 	scrollStyle = newStyleDefinition(

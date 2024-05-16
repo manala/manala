@@ -8,12 +8,12 @@ func (s *Suite) TestOs() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *Assert
+		expected *Assertion
 	}{
 		{
 			test: "Unknown",
 			err:  New("unknown"),
-			expected: &Assert{
+			expected: &Assertion{
 				Type:    Error{},
 				Message: "unknown",
 			},
@@ -25,7 +25,7 @@ func (s *Suite) TestOs() {
 				Path: "path",
 				Err:  New("path"),
 			},
-			expected: &Assert{
+			expected: &Assertion{
 				Type:    Error{},
 				Message: "path",
 				Arguments: []any{
@@ -40,7 +40,7 @@ func (s *Suite) TestOs() {
 				Syscall: "syscall",
 				Err:     New("syscall"),
 			},
-			expected: &Assert{
+			expected: &Assertion{
 				Type:    Error{},
 				Message: "syscall",
 				Arguments: []any{
@@ -54,7 +54,7 @@ func (s *Suite) TestOs() {
 		s.Run(test.test, func() {
 			err := NewOs(test.err)
 
-			Equal(s.Assert(), test.expected, err)
+			Equal(s.T(), test.expected, err)
 		})
 	}
 }

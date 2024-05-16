@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 )
 
-// backwalk ascends path, calling backwalkFn.
-func backwalk(path string, file os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
-	if err := walkDirFunc(path, file, nil); err != nil || !file.IsDir() {
-		if err == filepath.SkipDir && file.IsDir() {
+// backwalkDir ascends path, calling backwalkDirFunc.
+func backwalkDir(path string, dir os.DirEntry, backwalkDirFunc fs.WalkDirFunc) error {
+	if err := backwalkDirFunc(path, dir, nil); err != nil || !dir.IsDir() {
+		if err == filepath.SkipAll && dir.IsDir() {
 			// Successfully skipped directory
 			err = nil
 		}
@@ -19,18 +19,18 @@ func backwalk(path string, file os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 	pathAbs, err := filepath.Abs(path)
 	if err != nil {
 		// Second call, to report Abs error
-		err = walkDirFunc(path, file, err)
+		err = backwalkDirFunc(path, dir, err)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Get parent dir
-	parentPath := filepath.Join(path, "..")
-	parentPathAbs, err := filepath.Abs(parentPath)
+	parent := filepath.Join(path, "..")
+	parentAbs, err := filepath.Abs(parent)
 	if err != nil {
 		// Second call, to report parent Abs error
-		err = walkDirFunc(parentPath, file, err)
+		err = backwalkDirFunc(parent, dir, err)
 		if err != nil {
 			return err
 		}
@@ -38,21 +38,21 @@ func backwalk(path string, file os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 
 	// If absolute parent path equals to absolute path,
 	// we have reached the filesystem root
-	if parentPathAbs == pathAbs {
+	if parentAbs == pathAbs {
 		return nil
 	}
 
-	info, err := os.Lstat(parentPath)
+	info, err := os.Lstat(parent)
 	if err != nil {
 		// Second call, to report Stat error.
-		err = walkDirFunc(parentPath, file, err)
+		err = backwalkDirFunc(parent, dir, err)
 		if err != nil {
 			return err
 		}
 	}
 
-	if err := backwalk(parentPath, fs.FileInfoToDirEntry(info), walkDirFunc); err != nil {
-		if err == filepath.SkipDir {
+	if err := backwalkDir(parent, fs.FileInfoToDirEntry(info), backwalkDirFunc); err != nil {
+		if err == filepath.SkipAll {
 			// Successfully skipped directory
 			err = nil
 		}
@@ -62,17 +62,17 @@ func backwalk(path string, file os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 	return nil
 }
 
-// Backwalk backwalks the file tree at path, calling fn for each
+// BackwalkDir backwalks the file tree at path, calling fn for each
 // directory in the tree, including root.
 // Greatly inspired by filepath.WalkDir
-func Backwalk(path string, walkDirFunc fs.WalkDirFunc) error {
-	info, err := os.Lstat(path)
+func BackwalkDir(dir string, fn fs.WalkDirFunc) error {
+	info, err := os.Lstat(dir)
 	if err != nil {
-		err = walkDirFunc(path, nil, err)
+		err = fn(dir, nil, err)
 	} else {
-		err = backwalk(path, fs.FileInfoToDirEntry(info), walkDirFunc)
+		err = backwalkDir(dir, fs.FileInfoToDirEntry(info), fn)
 	}
-	if err == filepath.SkipDir {
+	if err == filepath.SkipAll {
 		return nil
 	}
 	return err

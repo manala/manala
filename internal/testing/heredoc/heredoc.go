@@ -1,10 +1,12 @@
 package heredoc
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"strings"
+	"testing"
 )
 
 func Doc(doc string, args ...any) string {
@@ -59,24 +61,27 @@ func indent(s string) string {
 	return indent.String()
 }
 
-func Equal(s *assert.Assertions, expected string, actual string, args ...any) {
+func Equal(t *testing.T, expected string, actual any, args ...any) {
 	// Trim actual
 	var actuals []string
-	for _, _actual := range strings.Split(actual, "\n") {
+	for _, _actual := range strings.Split(fmt.Sprintf("%s", actual), "\n") {
 		actuals = append(actuals, strings.TrimRight(_actual, " "))
 	}
 
-	s.Equal(
+	assert.Equal(t,
 		Doc(expected, args...),
 		strings.Join(actuals, "\n"),
 	)
 }
 
-func EqualFile(s *assert.Assertions, expected string, path string, args ...any) {
+func EqualFile(t *testing.T, expected string, path string, args ...any) {
 	content, err := os.ReadFile(path)
-	s.NoError(err)
+	assert.NoError(t, err)
 
-	s.Equal(
+	// Fix line endings
+	content = bytes.ReplaceAll(content, []byte("\r\n"), []byte{'\n'})
+
+	assert.Equal(t,
 		Doc(expected, args...),
 		string(content),
 	)

@@ -19,40 +19,48 @@ func (s *ErrorsSuite) TestProject() {
 		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
 	})
 
-	s.Run("NotFoundProjectManifestError", func() {
-		err := &NotFoundProjectManifestError{File: "file"}
+	s.Run("NotFoundProjectError", func() {
+		err := &NotFoundProjectError{Dir: "dir"}
 
-		s.EqualError(err, "project manifest not found")
-		s.Equal([]any{"file", "file"}, err.ErrorArguments())
+		s.EqualError(err, "project not found")
+		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
 	})
 }
 
 func (s *ErrorsSuite) TestRecipe() {
-	s.Run("NotFoundRecipeManifestError", func() {
-		err := &NotFoundRecipeManifestError{File: "file"}
+	s.Run("NotFoundRecipeError", func() {
+		repositoryMock := &RepositoryMock{}
+		repositoryMock.
+			On("Url").Return("url")
 
-		s.EqualError(err, "recipe manifest not found")
-		s.Equal([]any{"file", "file"}, err.ErrorArguments())
-	})
+		err := &NotFoundRecipeError{Repository: repositoryMock, Name: "name"}
 
-	s.Run("UnprocessableRecipeNameError", func() {
-		err := &UnprocessableRecipeNameError{}
-
-		s.EqualError(err, "unable to process recipe name")
+		s.EqualError(err, "recipe not found")
+		s.Equal([]any{"repository", "url", "name", "name"}, err.ErrorArguments())
 	})
 }
 
 func (s *ErrorsSuite) TestRepository() {
+	s.Run("NotFoundRepositoryError", func() {
+		err := &NotFoundRepositoryError{Url: "url"}
+
+		s.EqualError(err, "repository not found")
+		s.Equal([]any{"url", "url"}, err.ErrorArguments())
+	})
 	s.Run("UnsupportedRepositoryError", func() {
 		err := &UnsupportedRepositoryError{Url: "url"}
 
 		s.EqualError(err, "unsupported repository url")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
+	s.Run("EmptyRepositoryError", func() {
+		repositoryMock := &RepositoryMock{}
+		repositoryMock.
+			On("Url").Return("url")
 
-	s.Run("UnprocessableRepositoryUrlError", func() {
-		err := &UnprocessableRepositoryUrlError{}
+		err := &EmptyRepositoryError{Repository: repositoryMock}
 
-		s.EqualError(err, "unable to process repository url")
+		s.EqualError(err, "empty repository")
+		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 }

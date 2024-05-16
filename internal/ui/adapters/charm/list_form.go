@@ -115,7 +115,7 @@ func (model listFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.MouseMsg:
 		for i := range model.items {
 			if model.zone.Get(fmt.Sprintf("item_%d", i)).InBounds(msg) {
-				if msg.Type == tea.MouseLeft {
+				if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 					cmds.AddSequence(
 						model.updateIndex(i), model.submit(),
 					)

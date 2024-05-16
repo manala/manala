@@ -9,19 +9,17 @@ import (
 func (s *Suite) TestExtractorRootMapErrors() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assert
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Empty",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "root must be a map",
 			},
 		},
 		{
 			test: "NonMap",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "root must be a map",
 				Arguments: []any{
 					"line", 1,
@@ -35,8 +33,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 		},
 		{
 			test: "SubjectNotFoundSingle",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to find map",
 				Arguments: []any{
 					"key", "subject",
@@ -45,8 +42,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 		},
 		{
 			test: "SubjectNotFoundMultiple",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "unable to find map",
 				Arguments: []any{
 					"key", "subject",
@@ -55,8 +51,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 		},
 		{
 			test: "SubjectNonMapSingle",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "key is not a map",
 				Arguments: []any{
 					"line", 1,
@@ -71,8 +66,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 		},
 		{
 			test: "SubjectNonMapMultiple",
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "key is not a map",
 				Arguments: []any{
 					"line", 1,
@@ -100,7 +94,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 
 			s.Nil(subjectNode)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

@@ -4,8 +4,8 @@ Let your project's plumbing up to date
 
 ### Synopsis
 
-Manala synchronize some boring parts of your projects,
-such as makefile targets, virtualization and provisioning files...
+Manala synchronize some boring parts of your projects, such as makefile targets,
+virtualization and provisioning files...
 
 Recipes are pulled from a git repository, or a local directory.
 

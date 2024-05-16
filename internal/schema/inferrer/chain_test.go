@@ -9,7 +9,7 @@ func (s *Suite) TestChainErrors() {
 	tests := []struct {
 		test      string
 		inferrers []Inferrer
-		expected  *serrors.Assert
+		expected  *serrors.Assertion
 	}{
 		{
 			test: "Error",
@@ -18,8 +18,7 @@ func (s *Suite) TestChainErrors() {
 					return serrors.New("foo")
 				}),
 			},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "foo",
 			},
 		},
@@ -31,7 +30,7 @@ func (s *Suite) TestChainErrors() {
 
 			err := NewChain(test.inferrers...).Infer(schema)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

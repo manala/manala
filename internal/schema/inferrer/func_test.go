@@ -9,15 +9,14 @@ func (s *Suite) TestFuncErrors() {
 	tests := []struct {
 		test       string
 		schemaFunc func(schema schema.Schema) error
-		expected   *serrors.Assert
+		expected   *serrors.Assertion
 	}{
 		{
 			test: "Error",
 			schemaFunc: func(_ schema.Schema) error {
 				return serrors.New("foo")
 			},
-			expected: &serrors.Assert{
-				Type:    serrors.Error{},
+			expected: &serrors.Assertion{
 				Message: "foo",
 			},
 		},
@@ -29,7 +28,7 @@ func (s *Suite) TestFuncErrors() {
 
 			err := NewFunc(test.schemaFunc).Infer(schema)
 
-			serrors.Equal(s.Assert(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

@@ -1,0 +1,63 @@
+package getter
+
+import (
+	"github.com/stretchr/testify/suite"
+	"manala/app/repository"
+	"manala/internal/cache"
+	"manala/internal/log"
+	"manala/internal/testing/heredoc"
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+type HttpSuite struct{ suite.Suite }
+
+func TestHttpSuite(t *testing.T) {
+	suite.Run(t, new(HttpSuite))
+}
+
+func (s *HttpSuite) TestLoaderHandler() {
+	cacheDir := filepath.FromSlash("testdata/cache")
+	cache := cache.New(cacheDir)
+
+	s.Run("Zip", func() {
+		_ = os.RemoveAll(cacheDir)
+
+		url := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip"
+
+		chainMock := &repository.LoaderHandlerChainMock{}
+
+		handler := NewHttpLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+
+		s.NotNil(repository)
+		s.NoError(err)
+		chainMock.AssertExpectations(s.T())
+
+		s.DirExists(filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97"))
+		heredoc.EqualFile(s.T(), `
+			Hello World!
+		`, filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97", "Hello-World-master", "README"))
+	})
+
+	s.Run("ZipSubdirectory", func() {
+		_ = os.RemoveAll(cacheDir)
+
+		url := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip//Hello-World-master"
+
+		chainMock := &repository.LoaderHandlerChainMock{}
+
+		handler := NewHttpLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+
+		s.NotNil(repository)
+		s.NoError(err)
+		chainMock.AssertExpectations(s.T())
+
+		s.DirExists(filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8"))
+		heredoc.EqualFile(s.T(), `
+			Hello World!
+		`, filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8", "README"))
+	})
+}

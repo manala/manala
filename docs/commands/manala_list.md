@@ -4,8 +4,7 @@ List recipes
 
 ### Synopsis
 
-List (manala list) will list recipes available on
-repository.
+List (manala list) will list recipes available on repository.
 
 Example: manala list -> resulting in a recipes list display
 

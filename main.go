@@ -1,25 +1,100 @@
 package main
 
 import (
-	"manala/app/config"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"log/slog"
+	"manala/app/api"
 	"manala/cmd"
+	cmdDocs "manala/cmd/docs"
+	cmdInit "manala/cmd/init"
+	cmdList "manala/cmd/list"
+	cmdMascot "manala/cmd/mascot"
+	cmdUpdate "manala/cmd/update"
+	cmdWatch "manala/cmd/watch"
+	"manala/internal/cache"
+	"manala/internal/notifier"
+	"manala/internal/ui/adapters/charm"
+	"manala/internal/ui/log"
 	"os"
 )
 
 // Set at build time, by goreleaser, via ldflags
 var version = "dev"
 
-// Default repository
-const repository = "https://github.com/manala/manala-recipes.git"
+// Default repository url
+const defaultRepositoryUrl = "https://github.com/manala/manala-recipes.git"
 
 func main() {
-	conf := &config.Config{
-		Debug:      false,
-		Repository: repository,
-		CacheDir:   "",
+	// Standard streams
+	stdIn := os.Stdin
+	stdOut := os.Stdout
+	stdErr := os.Stderr
+
+	// User interface
+	ui := charm.New(stdIn, stdOut, stdErr)
+
+	// Notify
+	notify := notifier.NewBeeep("Manala")
+
+	// Declare app api
+	var appApi = new(api.Api)
+
+	// App commands
+	appCmd := cmd.NewCmd(version, stdOut, stdErr)
+	appCmd.AddCommand(
+		cmdInit.NewCmd(appApi, ui),
+		cmdList.NewCmd(appApi, ui),
+		cmdMascot.NewCmd(stdOut),
+		cmdUpdate.NewCmd(appApi),
+		cmdWatch.NewCMd(appApi, ui, notify),
+	)
+
+	// App commands persistent flags
+	appCmd.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
+	appCmd.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
+
+	// Docs app command only available in dev
+	if version == "dev" {
+		appCmd.AddCommand(cmdDocs.NewCmd(appCmd))
 	}
 
-	code := cmd.Execute(version, conf, os.Stdin, os.Stdout, os.Stderr)
+	cobra.OnInitialize(func() {
+		// Viper
+		_ = viper.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
+		_ = viper.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
+		viper.SetDefault("default_repository", defaultRepositoryUrl)
 
-	os.Exit(code)
+		// Viper - Env
+		viper.AutomaticEnv()
+		viper.SetEnvPrefix("MANALA")
+
+		// App log
+		appLogHandler := log.NewSlogHandler(ui,
+			log.WithSlogHandlerDebug(viper.GetBool("debug")),
+		)
+		appLog := slog.New(appLogHandler)
+
+		// App cache
+		appCache := cache.New(viper.GetString("cache_dir")).
+			WithUserDir("manala")
+
+		// Deferred app api instantiation
+		*appApi = *api.New(appLog, appCache,
+			api.WithDefaultRepositoryUrl(viper.GetString("default_repository")),
+		)
+
+		// Log config
+		appLog.Debug("config",
+			"default_repository", viper.GetString("default_repository"),
+			"cache_dir", viper.GetString("cache_dir"),
+			"debug", viper.GetBool("debug"),
+		)
+	})
+
+	// Execute app command
+	if err := appCmd.Execute(); err != nil {
+		ui.Error(err)
+		os.Exit(1)
+	}
 }

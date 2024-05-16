@@ -104,8 +104,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ .foo }`)
 		err := template.WriteTo(s.buffer)
 
-		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    serrors.Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "unexpected \"}\" in operand",
 			Arguments: []any{
 				"line", 1,
@@ -120,8 +119,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ .foo }}`)
 		err := template.WriteTo(s.buffer)
 
-		serrors.Equal(s.Assert(), &serrors.Assert{
-			Type:    serrors.Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "nil data; no entry for key \"foo\"",
 			Arguments: []any{
 				"context", ".foo",
