@@ -110,8 +110,6 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		switch n.Start.Value {
 		case "|":
 			n.Value.Value = strings.TrimRight(n.Value.Value, "\n") + "\n"
-		case "|-":
-			n.Value.Value = strings.TrimRight(n.Value.Value, "\n")
 		}
 	}
 

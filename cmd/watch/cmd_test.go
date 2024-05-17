@@ -27,10 +27,12 @@ func (s *Suite) execute(defaultRepositoryUrl string, args ...string) (*bytes.Buf
 	stdErr := &bytes.Buffer{}
 
 	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := NewCMd(
+	cmd := NewCmd(
+		log,
 		api.New(
-			slog.New(log.NewSlogHandler(ui)),
+			log,
 			cache.New(""),
 			api.WithDefaultRepositoryUrl(defaultRepositoryUrl),
 		),
@@ -171,7 +173,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -195,7 +196,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -219,7 +219,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -246,8 +245,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -273,8 +270,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -298,8 +293,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{

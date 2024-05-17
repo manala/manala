@@ -8,19 +8,15 @@ import (
 
 func New(log *slog.Logger) *Syncer {
 	return &Syncer{
-		log:    log,
 		syncer: syncer.New(log),
 	}
 }
 
 type Syncer struct {
-	log    *slog.Logger
 	syncer *syncer.Syncer
 }
 
 func (syncer *Syncer) Sync(project app.Project) error {
-	syncer.log.Info("syncing project…")
-
 	// Loop over project recipe sync units
 	for _, unit := range project.Recipe().Sync() {
 		if err := syncer.syncer.Sync(

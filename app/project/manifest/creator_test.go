@@ -6,7 +6,6 @@ import (
 	"manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
-	"manala/internal/filepath/filter"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
@@ -25,16 +24,20 @@ func (s *CreatorSuite) TestCreateErrors() {
 	repositoryUrl := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/repository")
 	recipeName := "recipe"
 
-	repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
 	repository, _ := repositoryLoader.Load(repositoryUrl)
 
-	recipeLoader := recipe.NewLoader(log.Discard, filter.New(), manifest.NewLoaderHandler(log.Discard))
+	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+		manifest.NewLoaderHandler(log.Discard),
+	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
 	s.Run("File", func() {
 		projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/File/project")
 
-		creator := NewCreator(log.Discard)
+		creator := NewCreator()
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
@@ -56,17 +59,21 @@ func (s *CreatorSuite) TestCreate() {
 
 	_ = os.RemoveAll(projectDir)
 
-	repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
 	repository, _ := repositoryLoader.Load(repositoryUrl)
 
-	recipeLoader := recipe.NewLoader(log.Discard, filter.New(), manifest.NewLoaderHandler(log.Discard))
+	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+		manifest.NewLoaderHandler(log.Discard),
+	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
 	vars := recipe.Vars()
 	vars["string_float_int"] = "3.0"
 	vars["string_asterisk"] = "*"
 
-	creator := NewCreator(log.Discard)
+	creator := NewCreator()
 	project, err := creator.Create(projectDir, recipe, vars)
 
 	s.NotNil(project)

@@ -5,21 +5,21 @@ go 1.22.3
 require (
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/aws/aws-sdk-go v1.48.16
+	github.com/aws/aws-sdk-go v1.53.4
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.2
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/faiface/beep v1.1.0
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/gen2brain/beeep v0.0.0-20230907135156-1a38885a97fc
-	github.com/goccy/go-yaml v1.11.2
-	github.com/gosimple/slug v1.13.1
+	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
+	github.com/goccy/go-yaml v1.11.3
+	github.com/gosimple/slug v1.14.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.1
 	github.com/hashicorp/go-getter/v2 v2.2.1
 	github.com/johannesboyne/gofakes3 v0.0.0-20240513200200-99de01ee122d
-	github.com/lrstanley/bubblezone v0.0.0-20230911164824-e3824f1adde9
+	github.com/lrstanley/bubblezone v0.0.0-20240125042004-b7bafc493195
 	github.com/muesli/termenv v0.15.2
-	github.com/ohler55/ojg v1.20.3
+	github.com/ohler55/ojg v1.22.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0

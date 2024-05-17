@@ -1,6 +1,7 @@
 package manifest
 
 import (
+	"io/fs"
 	"manala/app"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
@@ -71,4 +72,22 @@ func (recipe *Recipe) ProjectValidator() validator.Validator {
 		schema.NewValidator(recipe.Schema()),
 		validator.Validators(optionValidators...),
 	)
+}
+
+func (recipe *Recipe) Watches() ([]string, error) {
+	var dirs []string
+
+	if err := filepath.WalkDir(
+		recipe.Dir(),
+		func(path string, entry fs.DirEntry, err error) error {
+			if entry.IsDir() {
+				dirs = append(dirs, path)
+			}
+			return nil
+		},
+	); err != nil {
+		return nil, err
+	}
+
+	return dirs, nil
 }

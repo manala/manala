@@ -37,6 +37,11 @@ func (mock *ProjectMock) Template() *template.Template {
 	return args.Get(0).(*template.Template)
 }
 
+func (mock *ProjectMock) Watches() ([]string, error) {
+	args := mock.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
 /**********/
 /* Recipe */
 /**********/
@@ -104,6 +109,11 @@ func (mock *RecipeMock) ProjectManifestTemplate() *template.Template {
 func (mock *RecipeMock) ProjectValidator() validator.Validator {
 	args := mock.Called()
 	return args.Get(0).(validator.Validator)
+}
+
+func (mock *RecipeMock) Watches() ([]string, error) {
+	args := mock.Called()
+	return args.Get(0).([]string), args.Error(1)
 }
 
 /**************/

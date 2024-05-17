@@ -21,7 +21,9 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 	s.Run("Directory", func() {
 		repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Directory/repository")
 
-		repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+			getter.NewFileLoaderHandler(log.Discard),
+		))
 		repository, _ := repositoryLoader.Load(repositoryUrl)
 
 		chainMock := &recipe.LoaderHandlerChainMock{}
@@ -44,7 +46,9 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 func (s *LoaderSuite) TestLoaderHandler() {
 	repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandler/repository")
 
-	repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
 	repository, _ := repositoryLoader.Load(repositoryUrl)
 
 	chainMock := &recipe.LoaderHandlerChainMock{}

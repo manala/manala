@@ -7,7 +7,6 @@ import (
 	"manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
-	"manala/internal/filepath/filter"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"path/filepath"
@@ -24,8 +23,8 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 	s.Run("Directory", func() {
 		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Directory/project")
 
-		repositoryLoader := repository.NewLoader(log.Discard)
-		recipeLoader := recipe.NewLoader(log.Discard, filter.New())
+		repositoryLoader := repository.NewLoader()
+		recipeLoader := recipe.NewLoader(log.Discard)
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
@@ -45,8 +44,12 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 	s.Run("Vars", func() {
 		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Vars/project")
 
-		repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
-		recipeLoader := recipe.NewLoader(log.Discard, filter.New(), manifest.NewLoaderHandler(log.Discard))
+		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+			getter.NewFileLoaderHandler(log.Discard),
+		))
+		recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+			manifest.NewLoaderHandler(log.Discard),
+		))
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
@@ -88,8 +91,12 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 func (s *LoaderSuite) TestLoaderHandler() {
 	projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandler/project")
 
-	repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
-	recipeLoader := recipe.NewLoader(log.Discard, filter.New(), manifest.NewLoaderHandler(log.Discard))
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
+	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+		manifest.NewLoaderHandler(log.Discard),
+	))
 
 	chainMock := &project.LoaderHandlerChainMock{}
 

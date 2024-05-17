@@ -48,7 +48,7 @@ brews:
     commit_author:
       name: manala-bot
       email: contact@manala.io
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/manala/manala
     description: Let your project's plumbing up to date
     test: |

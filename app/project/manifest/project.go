@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"manala/app"
 	"manala/internal/template"
+	"path/filepath"
 )
 
 func NewProject(dir string, manifest *Manifest, recipe app.Recipe) *Project {
@@ -41,4 +42,10 @@ func (project *Project) Vars() map[string]any {
 func (project *Project) Template() *template.Template {
 	return project.recipe.Template().
 		WithData(app.NewProjectView(project))
+}
+
+func (project *Project) Watches() ([]string, error) {
+	return []string{
+		filepath.Join(project.Dir(), filename),
+	}, nil
 }

@@ -27,10 +27,12 @@ func (s *Suite) execute(defaultRepositoryUrl string, args ...string) (*bytes.Buf
 	stdErr := &bytes.Buffer{}
 
 	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
 
 	cmd := NewCmd(
+		log,
 		api.New(
-			slog.New(log.NewSlogHandler(ui)),
+			log,
 			cache.New(""),
 			api.WithDefaultRepositoryUrl(defaultRepositoryUrl),
 		),

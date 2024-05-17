@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"github.com/stretchr/testify/suite"
-	"manala/internal/log"
 	"path/filepath"
 	"testing"
 )
@@ -16,7 +15,7 @@ func TestFinderSuite(t *testing.T) {
 func (s *FinderSuite) Test() {
 	projectsDir := filepath.FromSlash("testdata/FinderSuite/projects")
 
-	finder := NewFinder(log.Discard)
+	finder := NewFinder()
 
 	s.Run("Found", func() {
 		s.True(finder.Find(

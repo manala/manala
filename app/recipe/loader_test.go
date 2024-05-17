@@ -6,7 +6,6 @@ import (
 	"manala/app"
 	"manala/app/repository"
 	"manala/app/repository/getter"
-	"manala/internal/filepath/filter"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"path/filepath"
@@ -20,7 +19,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := NewLoader(log.Discard, filter.New())
+	loader := NewLoader(log.Discard)
 
 	s.Run("NotFound", func() {
 		repositoryMock := &app.RepositoryMock{}
@@ -49,9 +48,7 @@ func (s *LoaderSuite) TestLoad() {
 	handlerMock.
 		On("Handle", &LoaderQuery{Repository: repositoryMock, Name: "name"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := NewLoader(log.Discard, filter.New(),
-		handlerMock,
-	)
+	loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
 	recipe, err := loader.Load(repositoryMock, "name")
 
@@ -61,12 +58,14 @@ func (s *LoaderSuite) TestLoad() {
 }
 
 func (s *LoaderSuite) TestLoadAllErrors() {
-	loader := NewLoader(log.Discard, filter.New())
+	loader := NewLoader(log.Discard)
 
 	s.Run("EmptyRepository", func() {
 		repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoadAllErrors/EmptyRepository/repository")
 
-		repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+			getter.NewFileLoaderHandler(log.Discard),
+		))
 		repository, _ := repositoryLoader.Load(repositoryUrl)
 
 		recipes, err := loader.LoadAll(repository)
@@ -85,7 +84,9 @@ func (s *LoaderSuite) TestLoadAllErrors() {
 func (s *LoaderSuite) TestLoadAll() {
 	repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoadAll/repository")
 
-	repositoryLoader := repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard))
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
 	repository, _ := repositoryLoader.Load(repositoryUrl)
 
 	recipeMock := &app.RecipeMock{}
@@ -95,9 +96,7 @@ func (s *LoaderSuite) TestLoadAll() {
 		On("Handle", &LoaderQuery{Repository: repository, Name: "foo"}, mock.Anything).Return(recipeMock, nil).
 		On("Handle", &LoaderQuery{Repository: repository, Name: "bar"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := NewLoader(log.Discard, filter.New(),
-		handlerMock,
-	)
+	loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
 	recipes, err := loader.LoadAll(repository)
 

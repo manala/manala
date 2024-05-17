@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"manala/app"
-	"manala/internal/filepath/filter"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"path/filepath"
@@ -18,7 +17,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := NewLoader(log.Discard, filter.New())
+	loader := NewLoader(log.Discard)
 
 	s.Run("NotFound", func() {
 		project, err := loader.Load("dir")
@@ -41,7 +40,7 @@ func (s *LoaderSuite) TestLoad() {
 	handlerMock.
 		On("Handle", &LoaderQuery{Dir: "dir"}, mock.Anything).Return(projectMock, nil)
 
-	loader := NewLoader(log.Discard, filter.New(), handlerMock)
+	loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
 	project, err := loader.Load("dir")
 
@@ -54,7 +53,7 @@ func (s *LoaderSuite) TestLoadRecursiveErrors() {
 	s.Run("NotFound", func() {
 		handlerMock := &LoaderHandlerMock{}
 
-		loader := NewLoader(log.Discard, filter.New(), handlerMock)
+		loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
 		err := loader.LoadRecursive("dir", func(project app.Project) error {
 			return nil
@@ -81,7 +80,7 @@ func (s *LoaderSuite) TestLoadRecursive() {
 		On("Handle", &LoaderQuery{Dir: filepath.Join(projectsDir, "bar", "baz")}, mock.Anything).Return(projectMock, nil).
 		On("Handle", &LoaderQuery{Dir: filepath.Join(projectsDir, "foo")}, mock.Anything).Return(projectMock, nil)
 
-	loader := NewLoader(log.Discard, filter.New(), handlerMock)
+	loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
 	err := loader.LoadRecursive(projectsDir, func(project app.Project) error {
 		s.Equal(projectMock, project)

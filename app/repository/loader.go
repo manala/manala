@@ -2,26 +2,26 @@ package repository
 
 import (
 	"github.com/stretchr/testify/mock"
-	"log/slog"
 	"manala/app"
 )
 
-func NewLoader(log *slog.Logger, handlers ...LoaderHandler) *Loader {
-	return &Loader{
-		log:      log,
-		handlers: handlers,
+func NewLoader(opts ...LoaderOption) *Loader {
+	loader := &Loader{}
+
+	// Options
+	for _, opt := range opts {
+		opt(loader)
 	}
+
+	return loader
 }
 
 type Loader struct {
-	log      *slog.Logger
 	handlers []LoaderHandler
 }
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(url string) (app.Repository, error) {
-	loader.log.Info("loading repository…")
-
 	// Prepare query
 	query := &LoaderQuery{Url: url}
 
@@ -44,6 +44,14 @@ func (loader Loader) Next(query *LoaderQuery) (app.Repository, error) {
 //goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Repository, error) {
 	return nil, &app.NotFoundRepositoryError{Url: query.Url}
+}
+
+type LoaderOption func(loader *Loader)
+
+func WithLoaderHandlers(handlers ...LoaderHandler) LoaderOption {
+	return func(loader *Loader) {
+		loader.handlers = append(loader.handlers, handlers...)
+	}
 }
 
 type LoaderQuery struct {

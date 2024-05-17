@@ -11,12 +11,17 @@ import (
 	"sort"
 )
 
-func NewLoader(log *slog.Logger, filter *filter.Filter, handlers ...LoaderHandler) *Loader {
-	return &Loader{
-		log:      log,
-		filter:   filter,
-		handlers: handlers,
+func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
+	loader := &Loader{
+		log: log,
 	}
+
+	// Options
+	for _, opt := range opts {
+		opt(loader)
+	}
+
+	return loader
 }
 
 type Loader struct {
@@ -27,8 +32,6 @@ type Loader struct {
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(repository app.Repository, name string) (app.Recipe, error) {
-	loader.log.Info("loading recipe…")
-
 	// Prepare query
 	query := &LoaderQuery{Repository: repository, Name: name}
 
@@ -38,8 +41,6 @@ func (loader *Loader) Load(repository app.Repository, name string) (app.Recipe, 
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
-	loader.log.Info("loading recipes…")
-
 	dir, err := os.Open(repository.Dir())
 	if err != nil {
 		return nil, serrors.New("file system error").
@@ -67,10 +68,12 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 			continue
 		}
 
-		// Exclusions
-		if loader.filter.Excluded(file.Name()) {
-			loader.log.Debug("exclude recipe path", "path", file.Name())
-			continue
+		if loader.filter != nil {
+			// Exclusions
+			if loader.filter.Excluded(file.Name()) {
+				loader.log.Debug("exclude recipe path", "path", file.Name())
+				continue
+			}
 		}
 
 		recipe, err := loader.Load(repository, file.Name())
@@ -107,6 +110,20 @@ func (loader Loader) Next(query *LoaderQuery) (app.Recipe, error) {
 //goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Recipe, error) {
 	return nil, &app.NotFoundRecipeError{Repository: query.Repository, Name: query.Name}
+}
+
+type LoaderOption func(loader *Loader)
+
+func WithLoaderFilter(filter *filter.Filter) LoaderOption {
+	return func(loader *Loader) {
+		loader.filter = filter
+	}
+}
+
+func WithLoaderHandlers(handlers ...LoaderHandler) LoaderOption {
+	return func(loader *Loader) {
+		loader.handlers = append(loader.handlers, handlers...)
+	}
 }
 
 type LoaderQuery struct {
