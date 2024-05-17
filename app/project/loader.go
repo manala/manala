@@ -11,12 +11,17 @@ import (
 	"path/filepath"
 )
 
-func NewLoader(log *slog.Logger, filter *filter.Filter, handlers ...LoaderHandler) *Loader {
-	return &Loader{
-		log:      log,
-		filter:   filter,
-		handlers: handlers,
+func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
+	loader := &Loader{
+		log: log,
 	}
+
+	// Options
+	for _, opt := range opts {
+		opt(loader)
+	}
+
+	return loader
 }
 
 type Loader struct {
@@ -27,8 +32,6 @@ type Loader struct {
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(dir string) (app.Project, error) {
-	loader.log.Info("loading project…")
-
 	// Prepare query
 	query := &LoaderQuery{Dir: dir}
 
@@ -38,8 +41,6 @@ func (loader *Loader) Load(dir string) (app.Project, error) {
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) error) error {
-	loader.log.Info("loading projects recursive…")
-
 	err := filepath.WalkDir(dir,
 		func(path string, entry os.DirEntry, err error) error {
 			if err != nil {
@@ -57,10 +58,12 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 				return nil
 			}
 
-			// Exclusions
-			if loader.filter.Excluded(entry.Name()) {
-				loader.log.Debug("exclude project path", "path", path)
-				return filepath.SkipDir
+			if loader.filter != nil {
+				// Exclusions
+				if loader.filter.Excluded(entry.Name()) {
+					loader.log.Debug("exclude project path", "path", path)
+					return filepath.SkipDir
+				}
 			}
 
 			// Load project
@@ -96,6 +99,20 @@ func (loader Loader) Next(query *LoaderQuery) (app.Project, error) {
 //goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Project, error) {
 	return nil, &app.NotFoundProjectError{Dir: query.Dir}
+}
+
+type LoaderOption func(loader *Loader)
+
+func WithLoaderFilter(filter *filter.Filter) LoaderOption {
+	return func(loader *Loader) {
+		loader.filter = filter
+	}
+}
+
+func WithLoaderHandlers(handlers ...LoaderHandler) LoaderOption {
+	return func(loader *Loader) {
+		loader.handlers = append(loader.handlers, handlers...)
+	}
 }
 
 type LoaderQuery struct {

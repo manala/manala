@@ -3,26 +3,19 @@ package manifest
 import (
 	"bytes"
 	"errors"
-	"log/slog"
 	"manala/app"
 	"manala/internal/serrors"
 	"os"
 	"path/filepath"
 )
 
-func NewCreator(log *slog.Logger) *Creator {
-	return &Creator{
-		log: log,
-	}
+func NewCreator() *Creator {
+	return &Creator{}
 }
 
-type Creator struct {
-	log *slog.Logger
-}
+type Creator struct{}
 
 func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]any) (app.Project, error) {
-	creator.log.Info("creating project…")
-
 	template := recipe.ProjectManifestTemplate().
 		WithData(&app.ProjectView{
 			Vars:   vars,

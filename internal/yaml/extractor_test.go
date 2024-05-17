@@ -84,7 +84,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ExtractorSuite/TestExtractRootMapErrors/" + test.test)
+			dir := filepath.FromSlash("testdata/TestExtractorRootMapErrors/" + test.test)
 
 			parser := NewParser()
 			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
@@ -154,7 +154,7 @@ func (s *Suite) TestExtractorRootMap() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ExtractorSuite/TestExtractRootMap/" + test.test)
+			dir := filepath.FromSlash("testdata/TestExtractorRootMap/" + test.test)
 
 			parser := NewParser()
 			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))

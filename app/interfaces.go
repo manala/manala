@@ -18,6 +18,7 @@ type Project interface {
 	Recipe() Recipe
 	Vars() map[string]any
 	Template() *template.Template
+	Watches() ([]string, error)
 }
 
 /**********/
@@ -38,6 +39,7 @@ type Recipe interface {
 	Template() *template.Template
 	ProjectManifestTemplate() *template.Template
 	ProjectValidator() validator.Validator
+	Watches() ([]string, error)
 }
 
 // RecipeOption describe a recipe option interface

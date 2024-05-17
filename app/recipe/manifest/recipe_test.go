@@ -18,7 +18,7 @@ func TestRecipeSuite(t *testing.T) {
 }
 
 func (s *RecipeSuite) Test() {
-	recipeDir := filepath.FromSlash("testdata/RecipeSuite/Test/recipe")
+	dir := filepath.FromSlash("testdata/RecipeSuite/Test/recipe")
 
 	repositoryMock := &app.RepositoryMock{}
 
@@ -34,13 +34,13 @@ func (s *RecipeSuite) Test() {
 	}
 
 	recipe := NewRecipe(
-		recipeDir,
+		dir,
 		"recipe",
 		manifest,
 		repositoryMock,
 	)
 
-	s.Equal(recipeDir, recipe.Dir())
+	s.Equal(dir, recipe.Dir())
 	s.Equal("recipe", recipe.Name())
 	s.Equal("description", recipe.Description())
 	s.Equal("icon", recipe.Icon())
@@ -72,5 +72,15 @@ func (s *RecipeSuite) Test() {
 		s.NoError(err)
 
 		s.Equal("bar", out.String())
+	})
+
+	s.Run("Watches", func() {
+		watches, err := recipe.Watches()
+
+		s.Equal([]string{
+			dir,
+			filepath.Join(dir, "templates"),
+		}, watches)
+		s.NoError(err)
 	})
 }

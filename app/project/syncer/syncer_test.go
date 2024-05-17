@@ -8,7 +8,6 @@ import (
 	recipeManifest "manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
-	"manala/internal/filepath/filter"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
 	"os"
@@ -27,10 +26,18 @@ func (s *Suite) TestSync() {
 
 	_ = os.Remove(filepath.Join(projectDir, "file.txt"))
 
-	projectLoader := project.NewLoader(log.Discard, filter.New(), manifest.NewLoaderHandler(log.Discard,
-		repository.NewLoader(log.Discard, getter.NewFileLoaderHandler(log.Discard)),
-		recipe.NewLoader(log.Discard, filter.New(), recipeManifest.NewLoaderHandler(log.Discard)),
-	))
+	projectLoader := project.NewLoader(log.Discard,
+		project.WithLoaderHandlers(
+			manifest.NewLoaderHandler(log.Discard,
+				repository.NewLoader(repository.WithLoaderHandlers(
+					getter.NewFileLoaderHandler(log.Discard),
+				)),
+				recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+					recipeManifest.NewLoaderHandler(log.Discard),
+				)),
+			),
+		),
+	)
 
 	project, _ := projectLoader.Load(projectDir)
 

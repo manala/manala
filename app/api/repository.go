@@ -26,13 +26,15 @@ func (api *Api) NewRepositoryLoader(opts ...RepositoryLoaderOption) *repository.
 		urlProcessor.AddQuery("ref", options.ref, 20)
 	}
 
-	return repository.NewLoader(api.log,
-		url.NewProcessorLoaderHandler(api.log, urlProcessor),
-		cache.NewLoaderHandler(api.log, cache.New()),
-		getter.NewGitLoaderHandler(api.log, api.cache),
-		getter.NewS3LoaderHandler(api.log, api.cache),
-		getter.NewHttpLoaderHandler(api.log, api.cache),
-		getter.NewFileLoaderHandler(api.log),
+	return repository.NewLoader(
+		repository.WithLoaderHandlers(
+			url.NewProcessorLoaderHandler(api.log, urlProcessor),
+			cache.NewLoaderHandler(api.log, cache.New()),
+			getter.NewGitLoaderHandler(api.log, api.cache),
+			getter.NewS3LoaderHandler(api.log, api.cache),
+			getter.NewHttpLoaderHandler(api.log, api.cache),
+			getter.NewFileLoaderHandler(api.log),
+		),
 	)
 }
 

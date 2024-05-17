@@ -26,10 +26,12 @@ func (s *Suite) execute(defaultRepositoryUrl string, args ...string) (*bytes.Buf
 	stdErr := &bytes.Buffer{}
 
 	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
 
 	cmd := NewCmd(
+		log,
 		api.New(
-			slog.New(log.NewSlogHandler(ui)),
+			log,
 			cache.New(""),
 			api.WithDefaultRepositoryUrl(defaultRepositoryUrl),
 		),
@@ -148,8 +150,6 @@ func (s *Suite) TestRepositoryCustom() {
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
-		 • loading recipe…
-		 • loading recipe…
 	`, stdErr)
 }
 
@@ -171,8 +171,6 @@ func (s *Suite) TestRepositoryConfig() {
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
-		 • loading recipe…
-		 • loading recipe…
 	`, stdErr)
 }
 
@@ -188,7 +186,6 @@ func (s *Suite) TestRecipeErrors() {
 		heredoc.Equal(s.T(), `
 			 • loading repository…
 			 • loading recipes…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -210,7 +207,6 @@ func (s *Suite) TestRecipeErrors() {
 		heredoc.Equal(s.T(), `
 			 • loading repository…
 			 • loading recipes…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{

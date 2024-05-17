@@ -76,4 +76,13 @@ func (s *ProjectSuite) Test() {
 			baz: project
 			foo: recipe`, out)
 	})
+
+	s.Run("Watches", func() {
+		watches, err := project.Watches()
+
+		s.Equal([]string{
+			filepath.Join(dir, filename),
+		}, watches)
+		s.NoError(err)
+	})
 }

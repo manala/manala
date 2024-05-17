@@ -37,17 +37,19 @@ func main() {
 	// Notify
 	notify := notifier.NewBeeep("Manala")
 
-	// Declare app api
-	var appApi = new(api.Api)
+	var (
+		appLog = new(slog.Logger)
+		appApi = new(api.Api)
+	)
 
 	// App commands
 	appCmd := cmd.NewCmd(version, stdOut, stdErr)
 	appCmd.AddCommand(
-		cmdInit.NewCmd(appApi, ui),
-		cmdList.NewCmd(appApi, ui),
+		cmdInit.NewCmd(appLog, appApi, ui),
+		cmdList.NewCmd(appLog, appApi, ui),
 		cmdMascot.NewCmd(stdOut),
-		cmdUpdate.NewCmd(appApi),
-		cmdWatch.NewCMd(appApi, ui, notify),
+		cmdUpdate.NewCmd(appLog, appApi),
+		cmdWatch.NewCmd(appLog, appApi, ui, notify),
 	)
 
 	// App commands persistent flags
@@ -69,15 +71,15 @@ func main() {
 		viper.AutomaticEnv()
 		viper.SetEnvPrefix("MANALA")
 
-		// App log
-		appLogHandler := log.NewSlogHandler(ui,
-			log.WithSlogHandlerDebug(viper.GetBool("debug")),
-		)
-		appLog := slog.New(appLogHandler)
-
 		// App cache
 		appCache := cache.New(viper.GetString("cache_dir")).
 			WithUserDir("manala")
+
+		// Deferred app log instantiation
+		appLogHandler := log.NewSlogHandler(ui,
+			log.WithSlogHandlerDebug(viper.GetBool("debug")),
+		)
+		*appLog = *slog.New(appLogHandler)
 
 		// Deferred app api instantiation
 		*appApi = *api.New(appLog, appCache,

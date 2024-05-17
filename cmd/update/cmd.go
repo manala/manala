@@ -2,12 +2,13 @@ package update
 
 import (
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"path/filepath"
 )
 
-func NewCmd(api *api.Api) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef, recipeName string
 	var recursive bool
@@ -28,7 +29,7 @@ current directory)`,
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(api, dir, repositoryUrl, repositoryRef, recipeName, recursive)
+			return run(log, api, dir, repositoryUrl, repositoryRef, recipeName, recursive)
 		},
 	}
 
@@ -41,7 +42,7 @@ current directory)`,
 	return cmd
 }
 
-func run(api *api.Api, dir, repositoryUrl, repositoryRef, recipeName string, recursive bool) error {
+func run(log *slog.Logger, api *api.Api, dir, repositoryUrl, repositoryRef, recipeName string, recursive bool) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(
 		api.WithRepositoryLoaderUrl(repositoryUrl),
@@ -58,9 +59,11 @@ func run(api *api.Api, dir, repositoryUrl, repositoryRef, recipeName string, rec
 		projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader)
 
 		// Recursively load projects
+		log.Info("loading projects recursive…")
 		return projectLoader.LoadRecursive(dir,
 			func(project app.Project) error {
 				// Sync project
+				log.Info("syncing project…")
 				return api.NewProjectSyncer().Sync(project)
 			},
 		)
@@ -71,6 +74,7 @@ func run(api *api.Api, dir, repositoryUrl, repositoryRef, recipeName string, rec
 		)
 
 		// Load project
+		log.Info("loading project…")
 		project, err := projectLoader.Load(dir)
 		if err != nil {
 			return err

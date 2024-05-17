@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"manala/app"
-	"manala/internal/log"
 	"manala/internal/serrors"
 	"testing"
 )
@@ -16,7 +15,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := NewLoader(log.Discard)
+	loader := NewLoader()
 
 	s.Run("NotFound", func() {
 		repository, err := loader.Load("url")
@@ -39,9 +38,7 @@ func (s *LoaderSuite) TestLoad() {
 	handlerMock.
 		On("Handle", &LoaderQuery{Url: "url"}, mock.Anything).Return(repositoryMock, nil)
 
-	loader := NewLoader(log.Discard,
-		handlerMock,
-	)
+	loader := NewLoader(WithLoaderHandlers(handlerMock))
 
 	repository, err := loader.Load("url")
 

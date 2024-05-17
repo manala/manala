@@ -2,6 +2,7 @@ package watch
 
 import (
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/notifier"
@@ -12,7 +13,7 @@ import (
 	"syscall"
 )
 
-func NewCMd(api *api.Api, out ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef, recipeName string
 	var all, notify bool
@@ -31,7 +32,7 @@ current directory)`,
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(api, out, notifier, dir, repositoryUrl, repositoryRef, recipeName, all, notify)
+			return run(log, api, out, notifier, dir, repositoryUrl, repositoryRef, recipeName, all, notify)
 		},
 	}
 
@@ -45,7 +46,7 @@ current directory)`,
 	return cmd
 }
 
-func run(api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositoryUrl, repositoryRef, recipeName string, all, notify bool) error {
+func run(log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositoryUrl, repositoryRef, recipeName string, all, notify bool) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(
 		api.WithRepositoryLoaderUrl(repositoryUrl),
@@ -63,6 +64,7 @@ func run(api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositor
 	)
 
 	// Load project
+	log.Info("loading project…")
 	project, err := projectLoader.Load(dir)
 	if err != nil {
 		return err
@@ -72,8 +74,10 @@ func run(api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositor
 	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
 
 	// Watch project
-	if err = api.NewProjectWatcher().Watch(project, all, func(project app.Project) app.Project {
+	log.Info("watching project…")
+	if err = watch(log, project, all, func(project app.Project) app.Project {
 		// Load project
+		log.Info("loading project…")
 		if project, err = projectLoader.Load(project.Dir()); err != nil {
 			out.Error(err)
 			if notify {
@@ -83,6 +87,7 @@ func run(api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositor
 		}
 
 		// Sync project
+		log.Info("syncing project…")
 		if err = api.NewProjectSyncer().Sync(project); err != nil {
 			out.Error(err)
 			if notify {

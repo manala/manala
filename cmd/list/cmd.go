@@ -3,11 +3,12 @@ package list
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app/api"
 	"manala/internal/ui"
 )
 
-func NewCmd(api *api.Api, out ui.Output) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, out ui.Output) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef string
 
@@ -22,7 +23,7 @@ func NewCmd(api *api.Api, out ui.Output) *cobra.Command {
 
 Example: manala list -> resulting in a recipes list display`,
 		RunE: func(_ *cobra.Command, args []string) error {
-			return run(api, out, repositoryUrl, repositoryRef)
+			return run(log, api, out, repositoryUrl, repositoryRef)
 		},
 	}
 
@@ -33,13 +34,14 @@ Example: manala list -> resulting in a recipes list display`,
 	return cmd
 }
 
-func run(api *api.Api, out ui.Output, repositoryUrl, repositoryRef string) error {
+func run(log *slog.Logger, api *api.Api, out ui.Output, repositoryUrl, repositoryRef string) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(
 		api.WithRepositoryLoaderRef(repositoryRef),
 	)
 
 	// Load repository
+	log.Info("loading repository…")
 	repository, err := repositoryLoader.Load(repositoryUrl)
 	if err != nil {
 		return err
@@ -49,6 +51,7 @@ func run(api *api.Api, out ui.Output, repositoryUrl, repositoryRef string) error
 	recipeLoader := api.NewRecipeLoader()
 
 	// Load recipes
+	log.Info("loading recipes…")
 	recipes, err := recipeLoader.LoadAll(repository)
 	if err != nil {
 		return err

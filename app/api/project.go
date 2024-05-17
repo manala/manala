@@ -29,17 +29,21 @@ func (api *Api) NewProjectLoader(repositoryLoader *repository.Loader, recipeLoad
 	}
 
 	return project.NewLoader(api.log,
-		filter.New(
-			filter.WithDotfiles(false),
-			filter.Without(
-				"node_modules", // NodeJS
-				"vendor",       // Composer
-				"venv",         // Python
+		project.WithLoaderFilter(
+			filter.New(
+				filter.WithDotfiles(false),
+				filter.Without(
+					"node_modules", // NodeJS
+					"vendor",       // Composer
+					"venv",         // Python
+				),
 			),
 		),
-		append(handlers,
-			manifest.NewLoaderHandler(api.log, repositoryLoader, recipeLoader),
-		)...,
+		project.WithLoaderHandlers(
+			append(handlers,
+				manifest.NewLoaderHandler(api.log, repositoryLoader, recipeLoader),
+			)...,
+		),
 	)
 }
 
@@ -56,11 +60,7 @@ func (api *Api) WithProjectLoaderFrom(from bool) ProjectLoaderOption {
 }
 
 func (api *Api) NewProjectFinder() *manifest.Finder {
-	return manifest.NewFinder(api.log)
-}
-
-func (api *Api) NewProjectWatcher() *manifest.Watcher {
-	return manifest.NewWatcher(api.log)
+	return manifest.NewFinder()
 }
 
 func (api *Api) NewProjectSyncer() *syncer.Syncer {
@@ -68,5 +68,5 @@ func (api *Api) NewProjectSyncer() *syncer.Syncer {
 }
 
 func (api *Api) NewProjectCreator() *manifest.Creator {
-	return manifest.NewCreator(api.log)
+	return manifest.NewCreator()
 }

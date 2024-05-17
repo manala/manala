@@ -3,13 +3,14 @@ package init
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
 	"path/filepath"
 )
 
-func NewCmd(api *api.Api, in ui.Input) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, in ui.Input) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef, recipeName string
 
@@ -27,7 +28,7 @@ current directory)`,
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(api, in, dir, repositoryUrl, repositoryRef, recipeName)
+			return run(log, api, in, dir, repositoryUrl, repositoryRef, recipeName)
 		},
 	}
 
@@ -39,11 +40,12 @@ current directory)`,
 	return cmd
 }
 
-func run(api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeName string) error {
+func run(log *slog.Logger, api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeName string) error {
 	// Get project finder
 	projectFinder := api.NewProjectFinder()
 
 	// Check already existing project
+	log.Info("finding project…")
 	if projectFinder.Find(dir) {
 		return &app.AlreadyExistingProjectError{Dir: dir}
 	}
@@ -54,6 +56,7 @@ func run(api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeNam
 	)
 
 	// Load repository
+	log.Info("loading repository…")
 	repository, err := repositoryLoader.Load(repositoryUrl)
 	if err != nil {
 		return err
@@ -66,11 +69,13 @@ func run(api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeNam
 
 	if recipeName != "" {
 		// Load recipe by flag
+		log.Info("loading recipe…")
 		if recipe, err = recipeLoader.Load(repository, recipeName); err != nil {
 			return err
 		}
 	} else {
 		// Select recipe
+		log.Info("loading recipes…")
 		recipes, err := recipeLoader.LoadAll(repository)
 		if err != nil {
 			return err
@@ -108,11 +113,13 @@ func run(api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeNam
 	}
 
 	// Create project
+	log.Info("creating project…")
 	project, err := api.NewProjectCreator().Create(dir, recipe, vars)
 	if err != nil {
 		return err
 	}
 
 	// Sync project
+	log.Info("syncing project…")
 	return api.NewProjectSyncer().Sync(project)
 }

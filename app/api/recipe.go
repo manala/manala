@@ -21,11 +21,15 @@ func (api *Api) NewRecipeLoader(opts ...RecipeLoaderOption) *recipe.Loader {
 	}
 
 	return recipe.NewLoader(api.log,
-		filter.New(
-			filter.WithDotfiles(false),
+		recipe.WithLoaderFilter(
+			filter.New(
+				filter.WithDotfiles(false),
+			),
 		),
-		name.NewProcessorLoaderHandler(api.log, nameProcessor),
-		manifest.NewLoaderHandler(api.log),
+		recipe.WithLoaderHandlers(
+			name.NewProcessorLoaderHandler(api.log, nameProcessor),
+			manifest.NewLoaderHandler(api.log),
+		),
 	)
 }
 

@@ -27,10 +27,12 @@ func (s *Suite) execute(defaultRepositoryUrl string, args ...string) (*bytes.Buf
 	stdErr := &bytes.Buffer{}
 
 	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
 
 	cmd := NewCmd(
+		log,
 		api.New(
-			slog.New(log.NewSlogHandler(ui)),
+			log,
 			cache.New(""),
 			api.WithDefaultRepositoryUrl(defaultRepositoryUrl),
 		),
@@ -172,7 +174,6 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading projects recursive…
-			 • loading project…
 		`, stdErr)
 	})
 
@@ -187,7 +188,6 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading projects recursive…
-			 • loading project…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -209,7 +209,6 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading projects recursive…
-			 • loading project…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -241,7 +240,6 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading projects recursive…
-			 • loading project…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -284,7 +282,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -308,7 +305,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -332,7 +328,6 @@ func (s *Suite) TestRepositoryErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -361,9 +356,6 @@ func (s *Suite) TestRepositoryCustom() {
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
-		 • loading repository…
-		 • loading recipe…
-		 • syncing project…
 		 • file synced                      path=file.txt
 	`, stdErr)
 
@@ -388,9 +380,6 @@ func (s *Suite) TestRepositoryConfig() {
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
-		 • loading repository…
-		 • loading recipe…
-		 • syncing project…
 		 • file synced                      path=file.txt
 		 • file synced                      path=template
 	`, stdErr)
@@ -420,8 +409,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -447,8 +434,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -472,8 +457,6 @@ func (s *Suite) TestRecipeErrors() {
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading project…
-			 • loading repository…
-			 • loading recipe…
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
@@ -521,9 +504,6 @@ func (s *Suite) TestRecipeCustom() {
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
-		 • loading repository…
-		 • loading recipe…
-		 • syncing project…
 		 • file synced                      path=file.txt
 	`, stdErr)
 
