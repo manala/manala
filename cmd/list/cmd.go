@@ -22,7 +22,7 @@ func NewCmd(log *slog.Logger, api *api.Api, out ui.Output) *cobra.Command {
 		Long: `List (manala list) will list recipes available on repository.
 
 Example: manala list -> resulting in a recipes list display`,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return run(log, api, out, repositoryUrl, repositoryRef)
 		},
 	}
