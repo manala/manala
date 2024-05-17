@@ -1,0 +1,16 @@
+{{ define "title" }}Recipe List{{ end }}
+
+{{ define "content" }}
+    {{ range $recipe := .Recipes }}
+        <div class="card shadow mb-3">
+            <div class="card-body">
+                {{ if $recipe.Icon }}
+                    <img width="128" class="rounded float-start me-3" src="{{ $recipe.Icon }}" alt="{{ $recipe.Name }}">
+                {{ end }}
+                <h5 class="card-title">{{ $recipe.Name }}</h5>
+                <p class="card-text">{{ $recipe.Description }}</p>
+                <a href="#" class="btn btn-primary position-absolute bottom-0 end-0 m-3">Init</a>
+            </div>
+        </div>
+    {{ end }}
+{{ end }}

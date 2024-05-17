@@ -1,0 +1,55 @@
+{{ define "title" }}{{ .Message.Message }}{{ end }}
+
+{{ define "content" }}
+    {{ template "message" dict "Message" .Message "Level" 1 }}
+{{ end }}
+
+{{ define "message" }}
+
+    <div class="alert alert-{{ .Message.Type | messageTypeClass }} align-items-center" role="alert">
+
+        <h{{ .Level }} class="alert-heading">
+            {{ if eq .Level 1 }}
+                {{ if eq (.Message.Type | messageTypeClass) "warning" }}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="d-inline-block align-text-top" viewBox="0 0 16 16">
+                        <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.116.116 0 0 1-.066.017H1.146a.115.115 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                        <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                    </svg>
+                {{ else if eq (.Message.Type | messageTypeClass) "danger" }}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="d-inline-block align-text-top" viewBox="0 0 16 16">
+                        <path d="M4.54.146A.5.5 0 0 1 4.893 0h6.214a.5.5 0 0 1 .353.146l4.394 4.394a.5.5 0 0 1 .146.353v6.214a.5.5 0 0 1-.146.353l-4.394 4.394a.5.5 0 0 1-.353.146H4.893a.5.5 0 0 1-.353-.146L.146 11.46A.5.5 0 0 1 0 11.107V4.893a.5.5 0 0 1 .146-.353L4.54.146zM5.1 1 1 5.1v5.8L5.1 15h5.8l4.1-4.1V5.1L10.9 1z"/>
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                {{ end }}
+            {{ end }}
+            {{ .Message.Message }}
+        </h{{ .Level }}>
+
+        {{ if .Message.Attributes }}
+            <hr>
+            <table class="table table-{{ .Message.Type | messageTypeClass }} table-sm table-borderless table-hover">
+                <tbody>
+                {{ range $i, $attribute := .Message.Attributes }}
+                    <tr>
+                        <th scope="row">{{ $attribute.Key }}</th>
+                        <td>{{ $attribute.Value }}</td>
+                    </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        {{ end }}
+
+        {{ if .Message.Details }}
+            <hr>
+            <pre class="bg-secondary font-monospace p-2">{{ .Message.Details | ansiToHTML }}</pre>
+        {{ end }}
+
+        {{ if .Message.Messages }}
+            {{ range $i, $message := .Message.Messages }}
+                {{ template "message" dict "Message" $message "Level" (add $.Level 1) }}
+            {{ end }}
+        {{ end }}
+
+    </div>
+
+{{ end }}

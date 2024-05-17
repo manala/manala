@@ -8,6 +8,7 @@ require (
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.4
 	github.com/charmbracelet/lipgloss v0.11.0
+	github.com/charmbracelet/x/exp/open v0.0.0-20240603171354-f37319acd141
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/goccy/go-yaml v1.11.3
@@ -19,6 +20,7 @@ require (
 	github.com/lrstanley/bubblezone v0.0.0-20240602193536-d14e6b69d7f9
 	github.com/muesli/termenv v0.15.2
 	github.com/ohler55/ojg v1.22.0
+	github.com/robert-nix/ansihtml v1.0.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0

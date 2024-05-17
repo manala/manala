@@ -10,6 +10,7 @@ import (
 	cmdMascot "manala/cmd/mascot"
 	cmdUpdate "manala/cmd/update"
 	cmdWatch "manala/cmd/watch"
+	cmdWeb "manala/cmd/web"
 	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/ui/adapters/charm"
@@ -49,6 +50,7 @@ func main() {
 		cmdMascot.NewCmd(),
 		cmdUpdate.NewCmd(appLog, appAPI),
 		cmdWatch.NewCmd(appLog, appAPI, ui, notify),
+		cmdWeb.NewCmd(appLog, appAPI, ui),
 	)
 
 	// App commands persistent flags
