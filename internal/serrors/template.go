@@ -2,9 +2,10 @@ package serrors
 
 import (
 	"errors"
+	htmlTemplate "html/template"
 	"regexp"
 	"strconv"
-	"text/template"
+	textTemplate "text/template"
 )
 
 // 1: template
@@ -13,21 +14,39 @@ import (
 // 4: name
 // 5: context
 // 6: message
-var execErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
+var textExecErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
 
 // 1: template
 // 2: line
 // 3: message
-var parsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
+var textParsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
+
+// 1: template
+// 2: line
+// 3: column
+// 4: message
+var htmlLineColumnErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+):(\d+): (.*)`)
+
+// 1: template
+// 2: line
+// 3: message
+var htmlLineErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+): (.*)`)
+
+// 2: template (optional)
+// 3: message
+var htmlErrorRegex = regexp.MustCompile(`html/template:((.*):)? (.*)`)
 
 func NewTemplate(err error) Error {
 	message := err.Error()
 	var arguments []any
 
-	// Exec error
-	var _execError template.ExecError
-	if errors.As(err, &_execError) {
-		if matches := execErrorRegex.FindStringSubmatch(message); matches != nil {
+	var _textExecError textTemplate.ExecError
+	var _htmlError = &htmlTemplate.Error{}
+
+	switch {
+	// Text exec error
+	case errors.As(err, &_textExecError):
+		if matches := textExecErrorRegex.FindStringSubmatch(message); matches != nil {
 			message = matches[6]
 			arguments = append(arguments, "context", matches[5])
 			// Template
@@ -43,9 +62,42 @@ func NewTemplate(err error) Error {
 				arguments = append(arguments, "column", column)
 			}
 		}
-	} else {
-		// Parsing error
-		if matches := parsingErrorRegex.FindStringSubmatch(message); matches != nil {
+	// Html error
+	case errors.As(err, &_htmlError):
+		if matches := htmlLineColumnErrorRegex.FindStringSubmatch(message); matches != nil {
+			message = matches[4]
+			// Template
+			if matches[1] != "" {
+				arguments = append(arguments, "template", matches[1])
+			}
+			// Line
+			if line, _err := strconv.Atoi(matches[2]); _err == nil {
+				arguments = append(arguments, "line", line)
+			}
+			// Column
+			if column, _err := strconv.Atoi(matches[3]); _err == nil {
+				arguments = append(arguments, "column", column)
+			}
+		} else if matches := htmlLineErrorRegex.FindStringSubmatch(message); matches != nil {
+			message = matches[3]
+			// Template
+			if matches[1] != "" {
+				arguments = append(arguments, "template", matches[1])
+			}
+			// Line
+			if line, _err := strconv.Atoi(matches[2]); _err == nil {
+				arguments = append(arguments, "line", line)
+			}
+		} else if matches := htmlErrorRegex.FindStringSubmatch(message); matches != nil {
+			message = matches[3]
+			// Template
+			if matches[2] != "" {
+				arguments = append(arguments, "template", matches[2])
+			}
+		}
+	default:
+		// Text parsing error
+		if matches := textParsingErrorRegex.FindStringSubmatch(message); matches != nil {
 			message = matches[3]
 			// Template
 			if matches[1] != "" {

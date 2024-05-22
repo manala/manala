@@ -1,7 +1,8 @@
 package serrors
 
 import (
-	"text/template"
+	htmlTemplate "html/template"
+	textTemplate "text/template"
 )
 
 func (s *Suite) TestTemplate() {
@@ -14,43 +15,124 @@ func (s *Suite) TestTemplate() {
 			test: "Unknown",
 			err:  New(`error`),
 			expected: &Assertion{
-				Message: "error",
+				Message: `error`,
 			},
 		},
 		{
-			test: "TemplateLine",
-			err:  New(`template: foo.tmpl:123: message`),
+			test: "TextTemplateLine",
+			err:  New(`template: foo.tmpl:12: message`),
 			expected: &Assertion{
-				Message: "message",
+				Message: `message`,
 				Arguments: []any{
 					"template", "foo.tmpl",
-					"line", 123,
+					"line", 12,
 				},
 			},
 		},
 		{
-			test: "ContextLineColumn",
-			err:  template.ExecError{Err: New(`template: :1:3: executing "" at <.foo>: nil data; no entry for key "foo"`)},
+			test: "TextEmptyTemplateLine",
+			err:  New(`template: :12: message`),
 			expected: &Assertion{
-				Message: "nil data; no entry for key \"foo\"",
+				Message: `message`,
 				Arguments: []any{
-					"context", ".foo",
-					"line", 1,
-					"column", 3,
+					"line", 12,
 				},
 			},
 		},
 		{
-			test: "ContextTemplateLineColumn",
-			err:  template.ExecError{Err: New(`template: message.gohtml:3:23: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Message>: can't evaluate field Message in type []app.Recipe`)},
+			test: "TextTemplateLineColumnContext",
+			err:  textTemplate.ExecError{Err: New(`template: foo.gohtml:12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
 			expected: &Assertion{
-				Message: "can't evaluate field Message in type []app.Recipe",
+				Message: `can't evaluate field Bar in type []foo.Bar`,
 				Arguments: []any{
-					"context", ".Message",
-					"template", "message.gohtml",
-					"line", 3,
-					"column", 23,
+					"context", ".Bar",
+					"template", "foo.gohtml",
+					"line", 12,
+					"column", 34,
 				},
+			},
+		},
+		{
+			test: "TextEmptyTemplateLineColumnContext",
+			err:  textTemplate.ExecError{Err: New(`template: :12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
+			expected: &Assertion{
+				Message: `can't evaluate field Bar in type []foo.Bar`,
+				Arguments: []any{
+					"context", ".Bar",
+					"line", 12,
+					"column", 34,
+				},
+			},
+		},
+		{
+			test: "HtmlTemplateLineColumn",
+			err:  &htmlTemplate.Error{Name: `foo.gohtml:12:34`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"template", "foo.gohtml",
+					"line", 12,
+					"column", 34,
+				},
+			},
+		},
+		{
+			test: "HtmlEmptyTemplateLineColumn",
+			err:  &htmlTemplate.Error{Name: `:12:34`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"line", 12,
+					"column", 34,
+				},
+			},
+		},
+		{
+			test: "HtmlTemplateLine",
+			err:  &htmlTemplate.Error{Name: `foo.gohtml:12`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"template", "foo.gohtml",
+					"line", 12,
+				},
+			},
+		},
+		{
+			test: "HtmlEmptyTemplateLine",
+			err:  &htmlTemplate.Error{Name: `:12`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"line", 12,
+				},
+			},
+		},
+		{
+			test: "HtmlTemplate",
+			err:  &htmlTemplate.Error{Name: `foo.gohtml`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"template", "foo.gohtml",
+				},
+			},
+		},
+		{
+			test: "HtmlEmptyTemplate",
+			err:  &htmlTemplate.Error{Name: `:12`, Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
+				Arguments: []any{
+					"line", 12,
+				},
+			},
+		},
+		{
+			test: "Html",
+			err:  &htmlTemplate.Error{Description: `no such template "bar"`},
+			expected: &Assertion{
+				Message: `no such template "bar"`,
 			},
 		},
 	}
