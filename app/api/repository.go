@@ -1,29 +1,25 @@
 package api
 
 import (
+	"context"
+	"manala/app"
 	"manala/app/repository"
 	"manala/app/repository/cache"
 	"manala/app/repository/getter"
 	"manala/app/repository/url"
 )
 
-func (api *Api) NewRepositoryLoader(opts ...RepositoryLoaderOption) *repository.Loader {
-	// Options
-	options := &repositoryLoaderOptions{}
-	for _, opt := range opts {
-		opt(options)
-	}
-
+func (api *Api) NewRepositoryLoader(ctx context.Context) *repository.Loader {
 	// Url processor
 	urlProcessor := url.NewProcessor(api.log)
 	if api.defaultRepositoryUrl != "" {
 		urlProcessor.Add(api.defaultRepositoryUrl, -10)
 	}
-	if options.url != "" {
-		urlProcessor.Add(options.url, 10)
+	if url, ok := app.RepositoryUrl(ctx); ok {
+		urlProcessor.Add(url, 10)
 	}
-	if options.ref != "" {
-		urlProcessor.AddQuery("ref", options.ref, 20)
+	if ref, ok := app.RepositoryRef(ctx); ok {
+		urlProcessor.AddQuery("ref", ref, 20)
 	}
 
 	return repository.NewLoader(
@@ -36,23 +32,4 @@ func (api *Api) NewRepositoryLoader(opts ...RepositoryLoaderOption) *repository.
 			getter.NewFileLoaderHandler(api.log),
 		),
 	)
-}
-
-type repositoryLoaderOptions struct {
-	url string
-	ref string
-}
-
-type RepositoryLoaderOption func(options *repositoryLoaderOptions)
-
-func (api *Api) WithRepositoryLoaderUrl(url string) RepositoryLoaderOption {
-	return func(options *repositoryLoaderOptions) {
-		options.url = url
-	}
-}
-
-func (api *Api) WithRepositoryLoaderRef(ref string) RepositoryLoaderOption {
-	return func(options *repositoryLoaderOptions) {
-		options.ref = ref
-	}
 }

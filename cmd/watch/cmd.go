@@ -1,6 +1,7 @@
 package watch
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
@@ -28,11 +29,17 @@ func NewCmd(log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Not
 
 Example: manala watch -> resulting in a watch in a project dir (default to the
 current directory)`,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(log, api, out, notifier, dir, repositoryUrl, repositoryRef, recipeName, all, notify)
+			// Context
+			ctx := cmd.Context()
+			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryRef(ctx, repositoryRef)
+			ctx = app.WithRecipeName(ctx, recipeName)
+
+			return run(ctx, log, api, out, notifier, dir, all, notify)
 		},
 	}
 
@@ -46,17 +53,12 @@ current directory)`,
 	return cmd
 }
 
-func run(log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier, dir, repositoryUrl, repositoryRef, recipeName string, all, notify bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
 	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(
-		api.WithRepositoryLoaderUrl(repositoryUrl),
-		api.WithRepositoryLoaderRef(repositoryRef),
-	)
+	repositoryLoader := api.NewRepositoryLoader(ctx)
 
 	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader(
-		api.WithRecipeLoaderName(recipeName),
-	)
+	recipeLoader := api.NewRecipeLoader(ctx)
 
 	// Get project loader
 	projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,

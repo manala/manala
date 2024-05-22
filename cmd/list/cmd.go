@@ -1,9 +1,11 @@
 package list
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log/slog"
+	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
 )
@@ -22,8 +24,13 @@ func NewCmd(log *slog.Logger, api *api.Api, out ui.Output) *cobra.Command {
 		Long: `List (manala list) will list recipes available on repository.
 
 Example: manala list -> resulting in a recipes list display`,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return run(log, api, out, repositoryUrl, repositoryRef)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			// Context
+			ctx := cmd.Context()
+			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryRef(ctx, repositoryRef)
+
+			return run(ctx, log, api, out)
 		},
 	}
 
@@ -34,21 +41,19 @@ Example: manala list -> resulting in a recipes list display`,
 	return cmd
 }
 
-func run(log *slog.Logger, api *api.Api, out ui.Output, repositoryUrl, repositoryRef string) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output) error {
 	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(
-		api.WithRepositoryLoaderRef(repositoryRef),
-	)
+	repositoryLoader := api.NewRepositoryLoader(ctx)
 
 	// Load repository
 	log.Info("loading repository…")
-	repository, err := repositoryLoader.Load(repositoryUrl)
+	repository, err := repositoryLoader.Load("")
 	if err != nil {
 		return err
 	}
 
 	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader()
+	recipeLoader := api.NewRecipeLoader(ctx)
 
 	// Load recipes
 	log.Info("loading recipes…")

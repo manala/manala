@@ -1,6 +1,7 @@
 package update
 
 import (
+	"context"
 	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
@@ -25,11 +26,17 @@ and related variables defined in manifest (.manala.yaml).
 
 Example: manala update -> resulting in an update in a project dir (default to the
 current directory)`,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(log, api, dir, repositoryUrl, repositoryRef, recipeName, recursive)
+			// Context
+			ctx := cmd.Context()
+			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryRef(ctx, repositoryRef)
+			ctx = app.WithRecipeName(ctx, recipeName)
+
+			return run(ctx, log, api, dir, recursive)
 		},
 	}
 
@@ -42,17 +49,12 @@ current directory)`,
 	return cmd
 }
 
-func run(log *slog.Logger, api *api.Api, dir, repositoryUrl, repositoryRef, recipeName string, recursive bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, dir string, recursive bool) error {
 	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(
-		api.WithRepositoryLoaderUrl(repositoryUrl),
-		api.WithRepositoryLoaderRef(repositoryRef),
-	)
+	repositoryLoader := api.NewRepositoryLoader(ctx)
 
 	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader(
-		api.WithRecipeLoaderName(recipeName),
-	)
+	recipeLoader := api.NewRecipeLoader(ctx)
 
 	if recursive {
 		// Get project loader

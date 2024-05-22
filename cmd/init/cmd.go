@@ -1,6 +1,7 @@
 package init
 
 import (
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log/slog"
@@ -24,11 +25,17 @@ func NewCmd(log *slog.Logger, api *api.Api, in ui.Input) *cobra.Command {
 
 Example: manala init -> resulting in a project init in a dir (default to the
 current directory)`,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
-			return run(log, api, in, dir, repositoryUrl, repositoryRef, recipeName)
+			// Context
+			ctx := cmd.Context()
+			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryRef(ctx, repositoryRef)
+			ctx = app.WithRecipeName(ctx, recipeName)
+
+			return run(ctx, log, api, in, dir)
 		},
 	}
 
@@ -40,7 +47,7 @@ current directory)`,
 	return cmd
 }
 
-func run(log *slog.Logger, api *api.Api, in ui.Input, dir, repositoryUrl, repositoryRef, recipeName string) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, in ui.Input, dir string) error {
 	// Get project finder
 	projectFinder := api.NewProjectFinder()
 
@@ -51,26 +58,24 @@ func run(log *slog.Logger, api *api.Api, in ui.Input, dir, repositoryUrl, reposi
 	}
 
 	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(
-		api.WithRepositoryLoaderRef(repositoryRef),
-	)
+	repositoryLoader := api.NewRepositoryLoader(ctx)
 
 	// Load repository
 	log.Info("loading repository…")
-	repository, err := repositoryLoader.Load(repositoryUrl)
+	repository, err := repositoryLoader.Load("")
 	if err != nil {
 		return err
 	}
 
 	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader()
+	recipeLoader := api.NewRecipeLoader(ctx)
 
 	var recipe app.Recipe
 
-	if recipeName != "" {
-		// Load recipe by flag
+	if _, ok := app.RecipeName(ctx); ok {
+		// Load recipe by context
 		log.Info("loading recipe…")
-		if recipe, err = recipeLoader.Load(repository, recipeName); err != nil {
+		if recipe, err = recipeLoader.Load(repository, ""); err != nil {
 			return err
 		}
 	} else {
