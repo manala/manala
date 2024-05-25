@@ -8,7 +8,6 @@ import (
 	"manala/app/api"
 	"manala/internal/notifier"
 	"manala/internal/ui"
-	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
@@ -72,40 +71,34 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output, not
 		return err
 	}
 
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	// Watch project
 	log.Info("watching project…")
-	if err = watch(log, project, all, func(project app.Project) app.Project {
-		// Load project
-		log.Info("loading project…")
-		if project, err = projectLoader.Load(project.Dir()); err != nil {
-			out.Error(err)
-			if notify {
-				notifier.Error(err)
+	return NewWatcher(log, all).
+		Watch(ctx, project, func(project app.Project) app.Project {
+			// Load project
+			log.Info("loading project…")
+			if project, err = projectLoader.Load(project.Dir()); err != nil {
+				out.Error(err)
+				if notify {
+					notifier.Error(err)
+				}
+				return nil
 			}
-			return nil
-		}
 
-		// Sync project
-		log.Info("syncing project…")
-		if err = api.NewProjectSyncer().Sync(project); err != nil {
-			out.Error(err)
-			if notify {
-				notifier.Error(err)
+			// Sync project
+			log.Info("syncing project…")
+			if err = api.NewProjectSyncer().Sync(project); err != nil {
+				out.Error(err)
+				if notify {
+					notifier.Error(err)
+				}
+			} else {
+				notifier.Message("Project synced")
 			}
+
 			return project
-		}
-
-		if notify {
-			notifier.Message("Project synced")
-		}
-
-		return project
-	}, done); err != nil {
-		return err
-	}
-
-	return nil
+		})
 }
