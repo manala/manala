@@ -7,6 +7,7 @@ package app
 // NewProjectView create a project view
 func NewProjectView(project Project) *ProjectView {
 	return &ProjectView{
+		Dir:    project.Dir(),
 		Vars:   project.Vars(),
 		Recipe: NewRecipeView(project.Recipe()),
 	}
@@ -14,8 +15,9 @@ func NewProjectView(project Project) *ProjectView {
 
 // ProjectView is a secure and lightweight facade of a project, dedicated to template usage
 type ProjectView struct {
-	Vars   map[string]any
-	Recipe *RecipeView
+	Dir    string         `json:"dir"`
+	Vars   map[string]any `json:"vars"`
+	Recipe *RecipeView    `json:"recipe"`
 }
 
 /**********/
@@ -27,25 +29,29 @@ func NewRecipeView(recipe Recipe) *RecipeView {
 	return &RecipeView{
 		Name:        recipe.Name(),
 		Description: recipe.Description(),
+		Icon:        recipe.Icon(),
 		Repository:  NewRepositoryView(recipe.Repository()),
 	}
 }
 
+// RecipeView is a secure and lightweight facade of a recipe, dedicated to template usage
+type RecipeView struct {
+	Name        string          `json:"name"`
+	Description string          `json:"description,omitempty"`
+	Icon        string          `json:"icon,omitempty"`
+	Repository  *RepositoryView `json:"-"`
+}
+
 // NewRecipesView create a slice of recipes view
-func NewRecipesView(recipes []Recipe) []*RecipeView {
-	views := make([]*RecipeView, len(recipes))
+func NewRecipesView(recipes []Recipe) RecipesView {
+	views := make(RecipesView, len(recipes))
 	for i := range recipes {
 		views[i] = NewRecipeView(recipes[i])
 	}
 	return views
 }
 
-// RecipeView is a secure and lightweight facade of a recipe, dedicated to template usage
-type RecipeView struct {
-	Name        string
-	Description string
-	Repository  *RepositoryView
-}
+type RecipesView []*RecipeView
 
 /**************/
 /* Repository */
