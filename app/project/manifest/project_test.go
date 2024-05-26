@@ -28,6 +28,7 @@ func (s *ProjectSuite) Test() {
 	recipeMock.
 		On("Name").Return("recipe").
 		On("Description").Return("description").
+		On("Icon").Return("icon").
 		On("Vars").Return(map[string]any{
 		"foo": "recipe",
 		"bar": "recipe",
