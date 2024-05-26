@@ -442,11 +442,11 @@ func (s *style) GetVerticalFrameSize() int {
 }
 
 func (s *style) Fit(str string, width int, height int) string {
-	style := s.style.Copy()
+	style := s.style
 
 	if width > 0 {
 		if lipgloss.Width(str) < width {
-			style.Width(width)
+			style = style.Width(width)
 		} else {
 			style = style.MaxWidth(width)
 		}
@@ -454,7 +454,7 @@ func (s *style) Fit(str string, width int, height int) string {
 
 	if height > 0 {
 		if lipgloss.Height(str) < height {
-			style.Height(height)
+			style = style.Height(height)
 		} else {
 			style = style.MaxHeight(height)
 		}
