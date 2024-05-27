@@ -1,5 +1,7 @@
 package serrors
 
+import "slices"
+
 func New(message string) Error {
 	return Error{
 		message: message,
@@ -55,6 +57,12 @@ func (err Error) Unwrap() []error {
 }
 
 func (err Error) WithErrors(errors ...error) Error {
-	err.errors = append(err.errors, errors...)
+	// Add only non nil errors
+	err.errors = append(err.errors, slices.DeleteFunc(
+		errors,
+		func(err error) bool {
+			return err == nil
+		},
+	)...)
 	return err
 }

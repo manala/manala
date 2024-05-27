@@ -100,4 +100,22 @@ func (s *Suite) TestError() {
 			},
 		}, err)
 	})
+
+	s.Run("NilErrors", func() {
+		foo := New("foo")
+
+		err := New("error").
+			WithErrors(nil, foo, nil)
+
+		Equal(s.T(), &Assertion{
+			Type:    Error{},
+			Message: "error",
+			Errors: []*Assertion{
+				{
+					Type:    Error{},
+					Message: "foo",
+				},
+			},
+		}, err)
+	})
 }
