@@ -2,7 +2,6 @@ package getter
 
 import (
 	"errors"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
 	"testing"
@@ -53,6 +52,14 @@ func (s *ErrorsSuite) TestIsNotDetected() {
 	}
 }
 
+// Mimic an aws sdk error to avoid direct dependency on it
+type awsErrorTest struct{}
+
+func (awsErrorTest) Error() string   { return "error" }
+func (awsErrorTest) Code() string    { return "code" }
+func (awsErrorTest) Message() string { return "message" }
+func (awsErrorTest) OrigErr() error  { return nil }
+
 func (s *ErrorsSuite) TestError() {
 	tests := []struct {
 		test     string
@@ -78,10 +85,14 @@ func (s *ErrorsSuite) TestError() {
 		},
 		{
 			test: "Aws",
-			err:  awserr.New("code", "message", nil),
+			err:  awsErrorTest{},
 			expected: &serrors.Assertion{
-				Message: "aws sdk error",
-				Details: "code: message",
+				Message: "aws error",
+				Details: "error",
+				Arguments: []any{
+					"code", "code",
+					"message", "message",
+				},
 			},
 		},
 		{

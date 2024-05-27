@@ -1,7 +1,6 @@
 package getter
 
 import (
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"manala/internal/serrors"
 	"regexp"
 	"strconv"
@@ -27,6 +26,14 @@ var commandErrorRegex = regexp.MustCompile(`(?s)error running ([^(: )]+): (.*)$`
 // 1: details
 var multiErrorRegex = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(.*)\n\n$`)
 
+// Mimic the aws sdk error interface to avoid direct dependency on it
+type awsError interface {
+	error
+	Code() string
+	Message() string
+	OrigErr() error
+}
+
 func NewError(err error) serrors.Error {
 	message := err.Error()
 
@@ -34,9 +41,18 @@ func NewError(err error) serrors.Error {
 		return serrors.New("subdir out of repository")
 	} else
 	// Aws error
-	if awsErr, ok := err.(awserr.Error); ok {
-		return serrors.New("aws sdk error").
-			WithDetails(awsErr.Error())
+	if err, ok := err.(awsError); ok {
+		arguments := []any{}
+		if code := err.Code(); code != "" {
+			arguments = append(arguments, "code", code)
+		}
+		if message := err.Message(); message != "" {
+			arguments = append(arguments, "message", message)
+		}
+		return serrors.New("aws error").
+			WithArguments(arguments...).
+			WithErrors(err.OrigErr()).
+			WithDetails(err.Error())
 	} else
 	// Command error code
 	if matches := commandErrorCodeRegex.FindStringSubmatch(message); matches != nil {
