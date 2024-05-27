@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func NewCmd(version string, stdOut io.Writer, stdErr io.Writer) *cobra.Command {
+func NewCmd(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {
 	// Command
 	cmd := &cobra.Command{
 		Use:               "manala",
@@ -21,8 +21,9 @@ Recipes are pulled from a git repository, or a local directory.`,
 	}
 
 	// Set streams
-	cmd.SetOut(stdOut)
-	cmd.SetErr(stdErr)
+	cmd.SetIn(in)
+	cmd.SetOut(out)
+	cmd.SetErr(err)
 
 	return cmd
 }

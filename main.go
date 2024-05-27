@@ -26,13 +26,11 @@ var version = "dev"
 const defaultRepositoryUrl = "https://github.com/manala/manala-recipes.git"
 
 func main() {
-	// Standard streams
-	stdIn := os.Stdin
-	stdOut := os.Stdout
-	stdErr := os.Stderr
+	// Streams
+	in, out, err := os.Stdin, os.Stdout, os.Stderr
 
 	// User interface
-	ui := charm.New(stdIn, stdOut, stdErr)
+	ui := charm.New(in, out, err)
 
 	// Notify
 	notify := notifier.NewBeeep("Manala")
@@ -43,11 +41,11 @@ func main() {
 	)
 
 	// App commands
-	appCmd := cmd.NewCmd(version, stdOut, stdErr)
+	appCmd := cmd.NewCmd(version, in, out, err)
 	appCmd.AddCommand(
 		cmdInit.NewCmd(appLog, appApi, ui),
 		cmdList.NewCmd(appLog, appApi, ui),
-		cmdMascot.NewCmd(stdOut),
+		cmdMascot.NewCmd(),
 		cmdUpdate.NewCmd(appLog, appApi),
 		cmdWatch.NewCmd(appLog, appApi, ui, notify),
 	)

@@ -10,7 +10,7 @@ import (
 	"manala/internal/ui"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, out ui.Output) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, output ui.Output) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef string
 
@@ -30,7 +30,7 @@ Example: manala list -> resulting in a recipes list display`,
 			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 
-			return run(ctx, log, api, out)
+			return run(ctx, log, api, output)
 		},
 	}
 
@@ -41,7 +41,7 @@ Example: manala list -> resulting in a recipes list display`,
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(ctx)
 
@@ -62,7 +62,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output) err
 		return err
 	}
 
-	return out.List(
+	return output.List(
 		fmt.Sprintf("Recipes available in %s", repository.Url()),
 		NewUiRecipeList(recipes),
 	)

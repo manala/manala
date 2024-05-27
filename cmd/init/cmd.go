@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, in ui.Input) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, input ui.Input) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef, recipeName string
 
@@ -35,7 +35,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, in, dir)
+			return run(ctx, log, api, input, dir)
 		},
 	}
 
@@ -47,7 +47,7 @@ current directory)`,
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, in ui.Input, dir string) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, input ui.Input, dir string) error {
 	// Get project finder
 	projectFinder := api.NewProjectFinder()
 
@@ -91,7 +91,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, in ui.Input, dir s
 			return err
 		}
 
-		if err := in.ListForm(
+		if err := input.ListForm(
 			"Please, select a recipe…",
 			form,
 		); err != nil {
@@ -109,7 +109,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, in ui.Input, dir s
 			return err
 		}
 
-		if err := in.Form(
+		if err := input.Form(
 			fmt.Sprintf("Please, enter \"%s\" recipe options…", recipe.Name()),
 			form,
 		); err != nil {

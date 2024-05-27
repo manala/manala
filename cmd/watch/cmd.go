@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.Api, output ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
 	var repositoryUrl, repositoryRef, recipeName string
 	var all, notify bool
@@ -38,7 +38,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, out, notifier, dir, all, notify)
+			return run(ctx, log, api, output, notifier, dir, all, notify)
 		},
 	}
 
@@ -52,7 +52,7 @@ current directory)`,
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(ctx)
 
@@ -81,7 +81,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output, not
 			// Load project
 			log.Info("loading project…")
 			if project, err = projectLoader.Load(project.Dir()); err != nil {
-				out.Error(err)
+				output.Error(err)
 				if notify {
 					notifier.Error(err)
 				}
@@ -91,7 +91,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, out ui.Output, not
 			// Sync project
 			log.Info("syncing project…")
 			if err = api.NewProjectSyncer().Sync(project); err != nil {
-				out.Error(err)
+				output.Error(err)
 				if notify {
 					notifier.Error(err)
 				}

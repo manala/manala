@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-func NewCmd(out io.Writer) *cobra.Command {
+func NewCmd() *cobra.Command {
 	// Flags
 	var repeat int
 
@@ -16,8 +16,8 @@ func NewCmd(out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "duck",
 		Hidden: true,
-		RunE: func(_ *cobra.Command, _ []string) error {
-			return run(out, repeat)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return run(cmd.OutOrStdout(), repeat)
 		},
 	}
 
@@ -45,7 +45,7 @@ func run(out io.Writer, repeat int) error {
 			frame:     &frame,
 			frameYell: &frameYell,
 		},
-		tea.WithOutput(renderer.Output().TTY()),
+		tea.WithOutput(out),
 		tea.WithAltScreen(),
 	).Run()
 
