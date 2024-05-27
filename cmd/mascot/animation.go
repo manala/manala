@@ -20,11 +20,11 @@ type animation struct {
 	err       error
 }
 
-func (m animation) Init() tea.Cmd {
+func (model animation) Init() tea.Cmd {
 	return tea.Sequence(
 		tea.SetWindowTitle("Quack Quack"),
 		func() tea.Msg {
-			if m.repeat == 0 {
+			if model.repeat == 0 {
 				return animationStopMsg{}
 			}
 
@@ -33,87 +33,87 @@ func (m animation) Init() tea.Cmd {
 	)
 }
 
-func (m animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var c tea.Cmd
+func (model animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	// Size
 	case tea.WindowSizeMsg:
-		m.width, m.height = msg.Width, msg.Height
+		model.width, model.height = msg.Width, msg.Height
 	// Error
 	case error:
-		m.err = msg
-		c = tea.Quit
+		model.err = msg
+		cmd = tea.Quit
 	// Keys
 	case tea.KeyMsg:
 		switch msg.String() {
 		// Keys - Quit
 		case "ctrl+c", "esc", "q":
-			c = tea.Quit
+			cmd = tea.Quit
 		}
 	// Animation - Stop
 	case animationStopMsg:
-		c = tea.Quit
+		cmd = tea.Quit
 	// Animation - Yell
 	case animationYellMsg:
-		m.yell = bool(msg)
+		model.yell = bool(msg)
 		if msg {
-			c = m.yellStart
+			cmd = model.yellStart
 		} else {
-			if m.repeat > 0 {
-				m.repeat--
+			if model.repeat > 0 {
+				model.repeat--
 			}
-			c = m.yellStop
+			cmd = model.yellStop
 		}
 	}
 
-	return m, c
+	return model, cmd
 }
 
-func (m animation) View() string {
-	frame := m.frame
-	if m.yell {
-		frame = m.frameYell
+func (model animation) View() string {
+	frame := model.frame
+	if model.yell {
+		frame = model.frameYell
 	}
 
 	// Render
 	return lipgloss.Place(
-		m.width, m.height,
+		model.width, model.height,
 		lipgloss.Center, lipgloss.Center,
-		m.style.
-			MaxWidth(m.width).
-			MaxHeight(m.height).
+		model.style.
+			MaxWidth(model.width).
+			MaxHeight(model.height).
 			Render(*frame),
 	)
 }
 
-func (m animation) yellStart() tea.Msg {
+func (model animation) yellStart() tea.Msg {
 	// Has yell audio ?
-	var modelInterface any = m
+	var modelInterface any = model
 	if _model, ok := modelInterface.(interface{ yellAudio() error }); ok {
 		if err := _model.yellAudio(); err != nil {
 			return err
 		}
 	} else {
-		m.pause()
+		model.pause()
 	}
 
 	// Yell is finished, stop it
 	return animationYellMsg(false)
 }
 
-func (m animation) yellStop() tea.Msg {
-	m.pause()
+func (model animation) yellStop() tea.Msg {
+	model.pause()
 
-	if m.repeat == 0 {
+	if model.repeat == 0 {
 		return animationStopMsg{}
 	}
 
 	return animationYellMsg(true)
 }
 
-func (m animation) pause() {
-	duration := (m.duration / 2) + rand.IntN(m.duration)
+func (model animation) pause() {
+	duration := (model.duration / 2) + rand.IntN(model.duration)
 	time.Sleep(time.Duration(duration) * time.Millisecond)
 }
 

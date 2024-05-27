@@ -18,7 +18,7 @@ var (
 	audioStreamer beep.StreamSeekCloser
 )
 
-func (m animation) yellAudio() error {
+func (model animation) yellAudio() error {
 	// Lazy load streamer and init speaker at the same time
 	if audioStreamer == nil {
 		var format beep.Format
