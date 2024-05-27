@@ -2,29 +2,33 @@ package mascot
 
 import (
 	_ "embed"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"math/rand/v2"
 	"time"
 )
 
-type animation struct {
-	duration  int
-	repeat    int
-	style     lipgloss.Style
-	frame     *string
-	frameYell *string
-	yell      bool
+type Animation struct {
+	Title     string
+	Duration  int
+	Repeat    int
+	Style     lipgloss.Style
+	QuitKey   key.Binding
+	Frame     *string
+	FrameYell *string
+	AudioYell *[]byte
+	Err       error
 	width     int
 	height    int
-	err       error
+	yell      bool
 }
 
-func (model animation) Init() tea.Cmd {
+func (model Animation) Init() tea.Cmd {
 	return tea.Sequence(
-		tea.SetWindowTitle("Quack Quack"),
+		tea.SetWindowTitle(model.Title),
 		func() tea.Msg {
-			if model.repeat == 0 {
+			if model.Repeat == 0 {
 				return animationStopMsg{}
 			}
 
@@ -33,7 +37,7 @@ func (model animation) Init() tea.Cmd {
 	)
 }
 
-func (model animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -42,13 +46,13 @@ func (model animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.width, model.height = msg.Width, msg.Height
 	// Error
 	case error:
-		model.err = msg
+		model.Err = msg
 		cmd = tea.Quit
 	// Keys
 	case tea.KeyMsg:
-		switch msg.String() {
+		switch {
 		// Keys - Quit
-		case "ctrl+c", "esc", "q":
+		case key.Matches(msg, model.QuitKey):
 			cmd = tea.Quit
 		}
 	// Animation - Stop
@@ -60,8 +64,8 @@ func (model animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg {
 			cmd = model.yellStart
 		} else {
-			if model.repeat > 0 {
-				model.repeat--
+			if model.Repeat > 0 {
+				model.Repeat--
 			}
 			cmd = model.yellStop
 		}
@@ -70,24 +74,24 @@ func (model animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmd
 }
 
-func (model animation) View() string {
-	frame := model.frame
+func (model Animation) View() string {
+	frame := model.Frame
 	if model.yell {
-		frame = model.frameYell
+		frame = model.FrameYell
 	}
 
 	// Render
 	return lipgloss.Place(
 		model.width, model.height,
 		lipgloss.Center, lipgloss.Center,
-		model.style.
+		model.Style.
 			MaxWidth(model.width).
 			MaxHeight(model.height).
 			Render(*frame),
 	)
 }
 
-func (model animation) yellStart() tea.Msg {
+func (model Animation) yellStart() tea.Msg {
 	// Has yell audio ?
 	var modelInterface any = model
 	if _model, ok := modelInterface.(interface{ yellAudio() error }); ok {
@@ -102,18 +106,18 @@ func (model animation) yellStart() tea.Msg {
 	return animationYellMsg(false)
 }
 
-func (model animation) yellStop() tea.Msg {
+func (model Animation) yellStop() tea.Msg {
 	model.pause()
 
-	if model.repeat == 0 {
+	if model.Repeat == 0 {
 		return animationStopMsg{}
 	}
 
 	return animationYellMsg(true)
 }
 
-func (model animation) pause() {
-	duration := (model.duration / 2) + rand.IntN(model.duration)
+func (model Animation) pause() {
+	duration := (model.Duration / 2) + rand.IntN(model.Duration)
 	time.Sleep(time.Duration(duration) * time.Millisecond)
 }
 

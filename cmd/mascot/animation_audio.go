@@ -4,7 +4,6 @@ package mascot
 
 import (
 	"bytes"
-	_ "embed"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/speaker"
 	"github.com/faiface/beep/wav"
@@ -12,18 +11,14 @@ import (
 	"time"
 )
 
-var (
-	//go:embed assets/audio_yell.wav
-	audioYell     []byte
-	audioStreamer beep.StreamSeekCloser
-)
+var animationAudioStreamer beep.StreamSeekCloser
 
-func (model animation) yellAudio() error {
+func (model Animation) yellAudio() error {
 	// Lazy load streamer and init speaker at the same time
-	if audioStreamer == nil {
+	if animationAudioStreamer == nil {
 		var format beep.Format
 		var err error
-		audioStreamer, format, err = wav.Decode(bytes.NewReader(audioYell))
+		animationAudioStreamer, format, err = wav.Decode(bytes.NewReader(*model.AudioYell))
 		if err != nil {
 			return err
 		}
@@ -33,12 +28,12 @@ func (model animation) yellAudio() error {
 		}
 	}
 
-	if err := audioStreamer.Seek(0); err != nil {
+	if err := animationAudioStreamer.Seek(0); err != nil {
 		return err
 	}
 
 	// Random resampling ratio
-	streamer := beep.ResampleRatio(4, rand.Float64()+0.5, audioStreamer)
+	streamer := beep.ResampleRatio(4, rand.Float64()+0.5, animationAudioStreamer)
 
 	// Play
 	done := make(chan bool)

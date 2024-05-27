@@ -2,6 +2,7 @@ package mascot
 
 import (
 	_ "embed"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -32,18 +33,25 @@ var (
 	frame string
 	//go:embed assets/frame_yell.txt
 	frameYell string
+	//go:embed assets/audio_yell.wav
+	audioYell []byte
 )
 
 func run(out io.Writer, repeat int) error {
 	renderer := lipgloss.NewRenderer(out)
 
 	model, err := tea.NewProgram(
-		animation{
-			duration:  345,
-			repeat:    repeat,
-			style:     lipgloss.NewStyle().Renderer(renderer),
-			frame:     &frame,
-			frameYell: &frameYell,
+		Animation{
+			Title:    "Quack Quack",
+			Duration: 345,
+			Repeat:   repeat,
+			Style:    lipgloss.NewStyle().Renderer(renderer),
+			QuitKey: key.NewBinding(
+				key.WithKeys("ctrl+c", "esc", "q"),
+			),
+			Frame:     &frame,
+			FrameYell: &frameYell,
+			AudioYell: &audioYell,
 		},
 		tea.WithOutput(out),
 		tea.WithAltScreen(),
@@ -53,5 +61,5 @@ func run(out io.Writer, repeat int) error {
 		return err
 	}
 
-	return model.(animation).err
+	return model.(Animation).Err
 }
