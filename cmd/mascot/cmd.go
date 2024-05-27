@@ -45,7 +45,7 @@ func run(out io.Writer, repeat int) error {
 			frame:     &frame,
 			frameYell: &frameYell,
 		},
-		tea.WithOutput(renderer.Output()),
+		tea.WithOutput(renderer.Output().TTY()),
 		tea.WithAltScreen(),
 	).Run()
 

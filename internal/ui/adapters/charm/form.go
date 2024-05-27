@@ -40,7 +40,7 @@ func (adapter *Adapter) Form(header string, form *components.Form) error {
 	_model, err := tea.NewProgram(
 		newWindowModel(header, model, renderer),
 		tea.WithInput(adapter.in),
-		tea.WithOutput(renderer.Output()),
+		tea.WithOutput(renderer.Output().TTY()),
 		tea.WithAltScreen(),
 		tea.WithMouseAllMotion(),
 		tea.WithoutSignalHandler(),
