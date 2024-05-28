@@ -398,7 +398,7 @@ func (s *style) update() {
 		style = *s.definition.hoverStyle
 	}
 
-	s.style = style.Copy().Renderer(s.renderer)
+	s.style = style.Renderer(s.renderer)
 }
 
 func (s *style) Style() lipgloss.Style {
