@@ -18,7 +18,7 @@ func NewCmd() *cobra.Command {
 		Use:    "duck",
 		Hidden: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return run(cmd.OutOrStdout(), repeat)
+			return run(cmd.InOrStdin(), cmd.OutOrStdout(), repeat)
 		},
 	}
 
@@ -37,7 +37,7 @@ var (
 	audioYell []byte
 )
 
-func run(out io.Writer, repeat int) error {
+func run(in io.Reader, out io.Writer, repeat int) error {
 	renderer := lipgloss.NewRenderer(out)
 
 	model, err := tea.NewProgram(
@@ -53,6 +53,7 @@ func run(out io.Writer, repeat int) error {
 			FrameYell: &frameYell,
 			AudioYell: &audioYell,
 		},
+		tea.WithInput(in),
 		tea.WithOutput(out),
 		tea.WithAltScreen(),
 	).Run()
