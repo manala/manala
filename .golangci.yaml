@@ -1,0 +1,22 @@
+linters:
+  # See: https://golangci-lint.run/usage/linters/
+  enable:
+    - exportloopref
+    # - gocritic
+    # - godot
+    # - goimports
+    - nilerr
+    # - nlreturn
+    # - nonamedreturns
+    # - perfsprint
+    # - prealloc
+    - predeclared
+    # - revive
+    # - stylecheck
+    # - testpackage
+    # - testifylint
+    # - thelper
+    - unconvert
+    # - unparam
+    # - whitespace
+    # - wsl
