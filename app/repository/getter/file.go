@@ -50,6 +50,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, serrors.New("file system error").
 			WithArguments("path", request.Src).
 			WithErrors(serrors.NewOs(err))
@@ -73,6 +74,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 

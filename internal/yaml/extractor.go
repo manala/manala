@@ -35,6 +35,7 @@ func (extractor *Extractor) ExtractRootMap(key string) (goYamlAst.Node, error) {
 				if len(node.Values) == 1 {
 					*extractor.node = node.Values[0]
 				}
+
 				break
 			}
 		}

@@ -17,10 +17,12 @@ type InputMock struct {
 
 func (mock *InputMock) ListForm(header string, form *components.ListForm) error {
 	args := mock.Called(header, form)
+
 	return args.Error(0)
 }
 
 func (mock *InputMock) Form(header string, form *components.Form) error {
 	args := mock.Called(header, form)
+
 	return args.Error(0)
 }

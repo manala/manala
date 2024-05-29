@@ -32,6 +32,7 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, serrors.New("unable to stat recipe manifest").
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))

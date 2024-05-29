@@ -26,5 +26,6 @@ func (mock *OutputMock) Error(err error) {
 
 func (mock *OutputMock) List(header string, list []components.ListItem) error {
 	args := mock.Called(header, list)
+
 	return args.Error(0)
 }

@@ -43,6 +43,7 @@ func (s *Suite) TestFunc() {
 			test: "Extend",
 			schemaFunc: func(schema schema.Schema) error {
 				schema["bar"] = "baz"
+
 				return nil
 			},
 			expected: schema.Schema{"foo": "bar", "bar": "baz"},
@@ -51,6 +52,7 @@ func (s *Suite) TestFunc() {
 			test: "Override",
 			schemaFunc: func(schema schema.Schema) error {
 				schema["foo"] = "baz"
+
 				return nil
 			},
 			expected: schema.Schema{"foo": "baz"},

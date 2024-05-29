@@ -102,6 +102,7 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 			return parser
 		}
 		parser.err = NewNodeError("irregular map key", node)
+
 		return nil
 	}
 
@@ -140,6 +141,7 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	default:
 		// Irregular types
 		parser.err = NewNodeError("irregular type", node)
+
 		return nil
 	}
 
@@ -190,6 +192,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				for i, dv := range deduplicatedValues {
 					if mv.Key.GetToken().Value == dv.Key.GetToken().Value {
 						deduplicatedValues = append(deduplicatedValues[:i], deduplicatedValues[i+1:]...)
+
 						break
 					}
 				}
@@ -211,6 +214,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 		} else {
 			if m, ok := n.(*goYamlAst.MappingNode); ok {
 				m.Values = deduplicatedValues
+
 				return m, nil
 			}
 
@@ -218,6 +222,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				BaseNode: &goYamlAst.BaseNode{},
 			}
 			m.Values = deduplicatedValues
+
 			return m, nil
 		}
 	case *goYamlAst.TagNode:
@@ -239,6 +244,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 			return nil, NewNodeError("cannot find anchor", n.Value).
 				WithArguments("anchor", alias)
 		}
+
 		return parser.resolve(anchor)
 	case *goYamlAst.AnchorNode:
 		return parser.resolve(n.Value)

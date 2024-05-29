@@ -49,6 +49,7 @@ func NewError(err error) serrors.Error {
 		if message := err.Message(); message != "" {
 			arguments = append(arguments, "message", message)
 		}
+
 		return serrors.New("aws error").
 			WithArguments(arguments...).
 			WithErrors(err.OrigErr()).
@@ -62,6 +63,7 @@ func NewError(err error) serrors.Error {
 		if code, _err := strconv.Atoi(matches[2]); _err == nil {
 			err = err.WithArguments("code", code)
 		}
+
 		return err
 	} else
 	// Command error

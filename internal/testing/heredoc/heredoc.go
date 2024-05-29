@@ -59,6 +59,7 @@ func indent(s string) string {
 			break
 		}
 	}
+
 	return indent.String()
 }
 

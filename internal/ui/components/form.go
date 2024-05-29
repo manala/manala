@@ -19,5 +19,6 @@ func (form *Form) Submit() (bool, error) {
 		}
 		ok = _ok && ok
 	}
+
 	return ok, nil
 }

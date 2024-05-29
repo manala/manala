@@ -73,9 +73,11 @@ func (model *formSubmitModel) submit() tea.Cmd {
 		for i, field := range model.form.Fields {
 			if len(field.Violations()) != 0 {
 				index = i
+
 				break
 			}
 		}
+
 		return formFieldFocusCmd(index)
 	}
 

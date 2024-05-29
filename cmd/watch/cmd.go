@@ -77,6 +77,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, 
 
 	// Watch project
 	log.Info("watching project…")
+
 	return NewWatcher(log, all).
 		Watch(ctx, project, func(project app.Project) app.Project {
 			// Load project
@@ -86,6 +87,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, 
 				if notify {
 					notifier.Error(err)
 				}
+
 				return nil
 			}
 

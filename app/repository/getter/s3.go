@@ -59,6 +59,7 @@ func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repo
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 

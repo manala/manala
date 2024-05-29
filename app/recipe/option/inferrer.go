@@ -64,6 +64,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 				if err != nil {
 					inf.err = yaml.NewNodeError("unable to read recipe option", _node.GetComment()).
 						WithErrors(err)
+
 					return nil
 				}
 
@@ -72,6 +73,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		} else {
 			// Misplaced tag
 			inf.err = yaml.NewNodeError("misplaced recipe option tag", node.GetComment())
+
 			return nil
 		}
 	}

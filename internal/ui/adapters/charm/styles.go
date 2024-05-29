@@ -358,6 +358,7 @@ func (definition *styleDefinition) New(renderer *lipgloss.Renderer) *style {
 		renderer:   renderer,
 	}
 	style.update()
+
 	return style
 }
 

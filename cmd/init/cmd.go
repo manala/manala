@@ -127,5 +127,6 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, input ui.Input, di
 
 	// Sync project
 	log.Info("syncing project…")
+
 	return api.NewProjectSyncer().Sync(project)
 }

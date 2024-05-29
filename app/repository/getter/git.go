@@ -70,6 +70,7 @@ func (handler *GitLoaderHandler) Handle(query *repository.LoaderQuery, chain rep
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 

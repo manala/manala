@@ -92,6 +92,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 		if err == io.EOF {
 			return n, serrors.New("empty content")
 		}
+
 		return n, yaml.NewError(err)
 	}
 

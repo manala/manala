@@ -65,6 +65,7 @@ func (handler *HttpLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 

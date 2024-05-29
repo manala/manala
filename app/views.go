@@ -48,6 +48,7 @@ func NewRecipesView(recipes []Recipe) RecipesView {
 	for i := range recipes {
 		views[i] = NewRecipeView(recipes[i])
 	}
+
 	return views
 }
 

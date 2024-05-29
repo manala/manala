@@ -105,8 +105,10 @@ func (v *Validator) violation(resultError gojsonschema.ResultError) validator.Vi
 func (v *Validator) lcFirst(str string) string {
 	for _, v := range str {
 		u := string(unicode.ToLower(v))
+
 		return u + str[len(u):]
 	}
+
 	return ""
 }
 

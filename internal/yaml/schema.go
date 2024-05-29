@@ -87,6 +87,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	} else if len(*schemaTags) > 0 {
 		// Misplaced tag
 		inf.err = NewNodeError("misplaced schema tag", node.GetComment())
+
 		return nil
 	}
 

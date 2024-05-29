@@ -49,6 +49,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 					return serrors.New("dir not found").
 						WithArguments("dir", path)
 				}
+
 				return serrors.New("file system error").
 					WithArguments("path", path).
 					WithErrors(serrors.NewOs(err))
@@ -63,6 +64,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 				// Exclusions
 				if loader.filter.Excluded(entry.Name()) {
 					loader.log.Debug("exclude project path", "path", path)
+
 					return filepath.SkipDir
 				}
 			}
@@ -74,6 +76,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 				if errors.As(err, &_notFoundProjectError) {
 					err = nil
 				}
+
 				return err
 			}
 
@@ -130,6 +133,7 @@ type LoaderHandlerMock struct {
 
 func (mock *LoaderHandlerMock) Handle(query *LoaderQuery, chain LoaderHandlerChain) (app.Project, error) {
 	args := mock.Called(query, chain)
+
 	return args.Get(0).(app.Project), args.Error(1)
 }
 
@@ -144,10 +148,12 @@ type LoaderHandlerChainMock struct {
 
 func (mock *LoaderHandlerChainMock) Next(query *LoaderQuery) (app.Project, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Project), args.Error(1)
 }
 
 func (mock *LoaderHandlerChainMock) Last(query *LoaderQuery) (app.Project, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Project), args.Error(1)
 }

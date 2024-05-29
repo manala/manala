@@ -10,5 +10,6 @@ func MustParse(source []byte) Schema {
 	if err != nil {
 		panic(err)
 	}
+
 	return schema
 }

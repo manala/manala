@@ -84,6 +84,7 @@ func (violations Violations) Errors() []error {
 	for i := range violations {
 		errs[i] = violations[i].Error()
 	}
+
 	return errs
 }
 
@@ -92,6 +93,7 @@ func (violations Violations) StructuredErrors() []error {
 	for i := range violations {
 		errs[i] = violations[i].StructuredError()
 	}
+
 	return errs
 }
 
@@ -103,11 +105,13 @@ func CompareViolations(a Violation, b Violation) int {
 		if a.Line < b.Line {
 			return -1
 		}
+
 		return 1
 	} else {
 		if a.Line > b.Line {
 			return 1
 		}
+
 		return -1
 	}
 }

@@ -37,12 +37,14 @@ func (handler *SlogHandler) Enabled(_ context.Context, level slog.Level) bool {
 func (handler *SlogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	clone := *handler
 	clone.attrs = append(clone.attrs, attrs...)
+
 	return &clone
 }
 
 func (handler *SlogHandler) WithGroup(group string) slog.Handler {
 	clone := *handler
 	clone.groups = append(clone.groups, group)
+
 	return &clone
 }
 
@@ -69,6 +71,7 @@ func (handler *SlogHandler) Handle(_ context.Context, record slog.Record) error 
 	attrs = append(attrs, handler.attrs...)
 	record.Attrs(func(attr slog.Attr) bool {
 		attrs = append(attrs, attr)
+
 		return true
 	})
 

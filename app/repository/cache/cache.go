@@ -14,6 +14,7 @@ type Cache struct {
 
 func (cache *Cache) Get(url string) (app.Repository, bool) {
 	repository, ok := cache.repositories[url]
+
 	return repository, ok
 }
 

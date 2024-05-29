@@ -83,6 +83,7 @@ func (recipe *Recipe) Watches() ([]string, error) {
 			if entry.IsDir() {
 				dirs = append(dirs, path)
 			}
+
 			return nil
 		},
 	); err != nil {

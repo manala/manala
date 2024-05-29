@@ -66,5 +66,6 @@ func (tags *Tags) Filter(name string) *Tags {
 		}
 		_tags = append(_tags, tag)
 	}
+
 	return &_tags
 }

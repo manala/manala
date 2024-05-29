@@ -51,6 +51,7 @@ func (watcher *Watcher) Watch(ctx context.Context, project app.Project, fn func(
 						"path", event.Name,
 						"operation", event.Op,
 					)
+
 					break
 				}
 

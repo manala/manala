@@ -30,17 +30,20 @@ func (accessor *indexAccessor[I]) GetIndex() (int, error) {
 	if index == -1 {
 		return 0, serrors.New("invalid item")
 	}
+
 	return index, nil
 }
 
 func (accessor *indexAccessor[I]) SetIndex(index int) error {
 	if index == -1 {
 		accessor.item = nil
+
 		return nil
 	}
 	if index < 0 || index >= len(accessor.items) {
 		return serrors.New("invalid item index")
 	}
 	*accessor.item = accessor.items[index]
+
 	return nil
 }

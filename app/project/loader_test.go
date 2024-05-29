@@ -85,6 +85,7 @@ func (s *LoaderSuite) TestLoadRecursive() {
 
 	err := loader.LoadRecursive(projectsDir, func(project app.Project) error {
 		s.Equal(projectMock, project)
+
 		return nil
 	})
 

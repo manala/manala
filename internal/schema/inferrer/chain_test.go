@@ -51,10 +51,12 @@ func (s *Suite) TestChain() {
 			inferrers: []Inferrer{
 				NewFunc(func(schema schema.Schema) error {
 					schema["foo"] = "baz"
+
 					return nil
 				}),
 				NewFunc(func(schema schema.Schema) error {
 					schema["bar"] = "baz"
+
 					return nil
 				}),
 			},

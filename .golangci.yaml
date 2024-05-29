@@ -6,7 +6,7 @@ linters:
     - godot
     - goimports
     - nilerr
-    # - nlreturn
+    - nlreturn
     # - nonamedreturns
     # - perfsprint
     # - prealloc

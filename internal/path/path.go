@@ -10,5 +10,6 @@ func (p Path) Join(seg string) Path {
 	if p != "" {
 		seg = "." + seg
 	}
+
 	return Path(string(p) + seg)
 }

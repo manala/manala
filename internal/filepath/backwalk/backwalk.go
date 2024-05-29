@@ -13,6 +13,7 @@ func backwalkDir(path string, dir os.DirEntry, backwalkDirFunc fs.WalkDirFunc) e
 			// Successfully skipped directory
 			err = nil
 		}
+
 		return err
 	}
 
@@ -56,6 +57,7 @@ func backwalkDir(path string, dir os.DirEntry, backwalkDirFunc fs.WalkDirFunc) e
 			// Successfully skipped directory
 			err = nil
 		}
+
 		return err
 	}
 
@@ -75,5 +77,6 @@ func BackwalkDir(dir string, fn fs.WalkDirFunc) error {
 	if err == filepath.SkipAll {
 		return nil
 	}
+
 	return err
 }

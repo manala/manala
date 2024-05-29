@@ -42,6 +42,7 @@ func (window windowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Error
 	case error:
 		window.err = msg
+
 		return window, tea.Quit
 	// Size
 	case tea.WindowSizeMsg:
@@ -233,6 +234,7 @@ func toZoneCmd(zone *zone.ZoneInfo) tea.Cmd {
 		if zone == nil {
 			return nil
 		}
+
 		return toZoneMsg(zone)
 	}
 }

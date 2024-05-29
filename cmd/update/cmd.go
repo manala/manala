@@ -63,10 +63,12 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, dir string, recurs
 
 		// Recursively load projects
 		log.Info("loading projects recursive…")
+
 		return projectLoader.LoadRecursive(dir,
 			func(project app.Project) error {
 				// Sync project
 				log.Info("syncing project…")
+
 				return api.NewProjectSyncer().Sync(project)
 			},
 		)

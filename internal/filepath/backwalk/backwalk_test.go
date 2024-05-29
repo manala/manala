@@ -34,6 +34,7 @@ func (s *Suite) Test() {
 			if path == dir {
 				return filepath.SkipAll
 			}
+
 			return nil
 		},
 	)
