@@ -1,8 +1,9 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/serrors"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewExtractor(node *goYamlAst.Node) *Extractor {

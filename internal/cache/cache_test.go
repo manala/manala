@@ -1,10 +1,11 @@
 package cache
 
 import (
-	"github.com/stretchr/testify/suite"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type CacheSuite struct{ suite.Suite }

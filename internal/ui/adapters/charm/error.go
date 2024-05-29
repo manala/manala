@@ -1,8 +1,9 @@
 package charm
 
 import (
-	"github.com/muesli/termenv"
 	"manala/internal/ui/components"
+
+	"github.com/muesli/termenv"
 )
 
 func (adapter *Adapter) Error(err error) {

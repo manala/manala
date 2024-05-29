@@ -1,11 +1,12 @@
 package getter
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
 	"manala/internal/log"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type FileSuite struct{ suite.Suite }

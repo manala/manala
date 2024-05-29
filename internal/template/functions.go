@@ -1,11 +1,12 @@
 package template
 
 import (
-	goYaml "github.com/goccy/go-yaml"
 	"manala/internal/serrors"
 	"reflect"
 	"strings"
 	textTemplate "text/template"
+
+	goYaml "github.com/goccy/go-yaml"
 )
 
 func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {

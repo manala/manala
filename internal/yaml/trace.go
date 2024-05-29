@@ -1,9 +1,10 @@
 package yaml
 
 import (
+	"strings"
+
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlPrinter "github.com/goccy/go-yaml/printer"
-	"strings"
 )
 
 func NewNodeTrace(node goYamlAst.Node) NodeTrace {

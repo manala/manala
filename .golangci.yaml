@@ -4,7 +4,7 @@ linters:
     - exportloopref
     - gocritic
     - godot
-    # - goimports
+    - goimports
     - nilerr
     # - nlreturn
     # - nonamedreturns

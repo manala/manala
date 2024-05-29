@@ -2,7 +2,6 @@ package watch
 
 import (
 	"context"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
@@ -11,6 +10,8 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(log *slog.Logger, api *api.Api, output ui.Output, notifier notifier.Notifier) *cobra.Command {

@@ -2,11 +2,12 @@ package update
 
 import (
 	"context"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(log *slog.Logger, api *api.Api) *cobra.Command {

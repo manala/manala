@@ -2,9 +2,10 @@ package charm
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
 	"manala/internal/ui/components"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (adapter *Adapter) Message(message *components.Message) {

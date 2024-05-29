@@ -1,11 +1,12 @@
 package app
 
 import (
-	"github.com/stretchr/testify/mock"
 	"manala/internal/schema"
 	"manala/internal/syncer"
 	"manala/internal/template"
 	"manala/internal/validator"
+
+	"github.com/stretchr/testify/mock"
 )
 
 /***********/

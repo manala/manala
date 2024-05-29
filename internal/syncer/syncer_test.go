@@ -1,7 +1,6 @@
 package syncer
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"manala/internal/template"
@@ -9,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct {

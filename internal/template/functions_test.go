@@ -2,9 +2,10 @@ package template
 
 import (
 	"bytes"
-	"github.com/Masterminds/sprig/v3"
 	"manala/internal/testing/heredoc"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 func (s *Suite) execute(content string, data any) string {

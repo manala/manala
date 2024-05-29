@@ -1,8 +1,9 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/validator"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NodeValidatorFormatter(node goYamlAst.Node) validator.Formatter {

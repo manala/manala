@@ -2,13 +2,14 @@ package getter
 
 import (
 	"context"
-	"github.com/hashicorp/go-getter/s3/v2"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/cache"
 	"time"
+
+	"github.com/hashicorp/go-getter/s3/v2"
+	"github.com/hashicorp/go-getter/v2"
 )
 
 func NewS3LoaderHandler(log *slog.Logger, cache *cache.Cache) *S3LoaderHandler {

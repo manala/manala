@@ -2,11 +2,12 @@ package schema
 
 import (
 	"fmt"
-	"github.com/xeipuuv/gojsonschema"
 	"manala/internal/path"
 	"manala/internal/validator"
 	"regexp"
 	"unicode"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 func NewValidator(schema Schema) *Validator {

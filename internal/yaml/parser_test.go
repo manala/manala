@@ -1,9 +1,10 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/serrors"
 	"path/filepath"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func (s *Suite) TestParserEmpty() {

@@ -1,8 +1,9 @@
 package charm
 
 import (
-	"github.com/charmbracelet/lipgloss"
 	"io"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (s *Suite) TestStyleFit() {

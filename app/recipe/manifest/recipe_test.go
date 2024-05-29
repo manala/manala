@@ -3,12 +3,13 @@ package manifest
 import (
 	"bytes"
 	_ "embed"
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/internal/schema"
 	"manala/internal/syncer"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type RecipeSuite struct{ suite.Suite }

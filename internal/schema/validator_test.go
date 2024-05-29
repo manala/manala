@@ -1,9 +1,10 @@
 package schema
 
 import (
-	"github.com/xeipuuv/gojsonschema"
 	"manala/internal/path"
 	"manala/internal/validator"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 func (s *Suite) TestValidatorViolation() {

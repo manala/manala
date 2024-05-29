@@ -3,13 +3,14 @@ package getter
 import (
 	"context"
 	"errors"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/serrors"
 	"os"
 	"path/filepath"
+
+	"github.com/hashicorp/go-getter/v2"
 )
 
 func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {

@@ -1,11 +1,12 @@
 package manifest
 
 import (
-	"dario.cat/mergo"
 	_ "embed"
 	"manala/app"
 	"manala/internal/template"
 	"path/filepath"
+
+	"dario.cat/mergo"
 )
 
 func NewProject(dir string, manifest *Manifest, recipe app.Recipe) *Project {

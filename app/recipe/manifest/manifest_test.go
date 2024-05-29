@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/suite"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/serrors"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ManifestSuite struct{ suite.Suite }

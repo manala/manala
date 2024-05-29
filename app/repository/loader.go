@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"github.com/stretchr/testify/mock"
 	"manala/app"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func NewLoader(opts ...LoaderOption) *Loader {

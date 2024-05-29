@@ -2,11 +2,12 @@ package watch
 
 import (
 	"context"
-	"github.com/fsnotify/fsnotify"
-	"golang.org/x/sync/errgroup"
 	"log/slog"
 	"manala/app"
 	"slices"
+
+	"github.com/fsnotify/fsnotify"
+	"golang.org/x/sync/errgroup"
 )
 
 func NewWatcher(log *slog.Logger, recipe bool) *Watcher {

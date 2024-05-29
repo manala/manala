@@ -1,9 +1,10 @@
 package name
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/internal/log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ProcessorSuite struct{ suite.Suite }

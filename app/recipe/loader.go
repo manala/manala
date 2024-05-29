@@ -2,13 +2,14 @@ package recipe
 
 import (
 	"errors"
-	"github.com/stretchr/testify/mock"
 	"log/slog"
 	"manala/app"
 	"manala/internal/filepath/filter"
 	"manala/internal/serrors"
 	"os"
 	"sort"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {

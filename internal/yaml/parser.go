@@ -1,11 +1,12 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlParser "github.com/goccy/go-yaml/parser"
 	"manala/internal/serrors"
 	"os"
 	"strings"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlParser "github.com/goccy/go-yaml/parser"
 )
 
 func NewParser(opts ...ParserOption) *Parser {

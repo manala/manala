@@ -1,8 +1,9 @@
 package app
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ErrorsSuite struct{ suite.Suite }

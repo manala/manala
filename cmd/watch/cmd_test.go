@@ -2,7 +2,6 @@ package watch
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/suite"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
@@ -14,6 +13,8 @@ import (
 	"manala/internal/ui/log"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }

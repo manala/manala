@@ -1,11 +1,12 @@
 package charm
 
 import (
+	"math"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"math"
-	"strings"
 )
 
 func newWindowModel(header string, model tea.Model, renderer *lipgloss.Renderer) windowModel {

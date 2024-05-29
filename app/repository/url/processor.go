@@ -2,13 +2,14 @@ package url
 
 import (
 	"cmp"
-	"dario.cat/mergo"
 	"fmt"
 	"log/slog"
 	"manala/internal/serrors"
 	netUrl "net/url"
 	"slices"
 	"strings"
+
+	"dario.cat/mergo"
 )
 
 func NewProcessor(log *slog.Logger) *Processor {

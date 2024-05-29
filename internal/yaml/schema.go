@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/json"
 	"manala/internal/schema"
 	"manala/internal/schema/inferrer"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewNodeSchemaInferrer(node goYamlAst.Node) *NodeSchemaInferrer {

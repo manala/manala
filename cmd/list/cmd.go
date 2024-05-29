@@ -3,11 +3,12 @@ package list
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(log *slog.Logger, api *api.Api, output ui.Output) *cobra.Command {

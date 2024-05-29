@@ -1,12 +1,13 @@
 package option
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/internal/path"
 	"manala/internal/schema"
 	"manala/internal/serrors"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }

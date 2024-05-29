@@ -2,9 +2,10 @@ package json
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }

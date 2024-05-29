@@ -2,12 +2,13 @@ package getter
 
 import (
 	"context"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/cache"
 	"time"
+
+	"github.com/hashicorp/go-getter/v2"
 )
 
 func NewHttpLoaderHandler(log *slog.Logger, cache *cache.Cache) *HttpLoaderHandler {

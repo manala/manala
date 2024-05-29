@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/recipe"
 	"manala/app/recipe/manifest"
 	"manala/app/repository"
@@ -12,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type CreatorSuite struct{ suite.Suite }

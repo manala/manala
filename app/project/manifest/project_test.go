@@ -3,12 +3,13 @@ package manifest
 import (
 	"bytes"
 	_ "embed"
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/internal/template"
 	"manala/internal/testing/heredoc"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ProjectSuite struct {

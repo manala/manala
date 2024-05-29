@@ -1,11 +1,12 @@
 package cache
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }

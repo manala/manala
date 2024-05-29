@@ -1,9 +1,10 @@
 package serrors
 
 import (
-	"github.com/stretchr/testify/assert"
 	"manala/internal/testing/heredoc"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type Assertion struct {

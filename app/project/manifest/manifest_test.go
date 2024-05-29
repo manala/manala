@@ -1,11 +1,12 @@
 package manifest
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ManifestSuite struct{ suite.Suite }

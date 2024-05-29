@@ -1,12 +1,13 @@
 package log
 
 import (
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 	"log/slog"
 	"manala/internal/ui"
 	"manala/internal/ui/components"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
 type SlogSuite struct {

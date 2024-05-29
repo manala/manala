@@ -2,11 +2,12 @@ package mascot
 
 import (
 	_ "embed"
+	"math/rand/v2"
+	"time"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"math/rand/v2"
-	"time"
 )
 
 type Animation struct {

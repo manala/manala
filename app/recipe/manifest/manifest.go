@@ -2,8 +2,6 @@ package manifest
 
 import (
 	_ "embed"
-	goYaml "github.com/goccy/go-yaml"
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"io"
 	"manala/app"
 	"manala/app/recipe"
@@ -14,6 +12,9 @@ import (
 	"manala/internal/validator"
 	"manala/internal/yaml"
 	"regexp"
+
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 const filename = ".manala.yaml"

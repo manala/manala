@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/recipe"
 	"manala/app/repository"
 	"manala/app/repository/getter"
@@ -9,6 +8,8 @@ import (
 	"manala/internal/serrors"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }

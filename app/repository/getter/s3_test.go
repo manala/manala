@@ -2,9 +2,6 @@ package getter
 
 import (
 	"fmt"
-	"github.com/johannesboyne/gofakes3"
-	"github.com/johannesboyne/gofakes3/backend/s3mem"
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
 	"manala/internal/cache"
 	"manala/internal/log"
@@ -15,6 +12,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/johannesboyne/gofakes3"
+	"github.com/johannesboyne/gofakes3/backend/s3mem"
+	"github.com/stretchr/testify/suite"
 )
 
 type S3Suite struct{ suite.Suite }

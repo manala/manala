@@ -1,9 +1,10 @@
 package cache
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }

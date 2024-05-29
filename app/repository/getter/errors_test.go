@@ -2,9 +2,10 @@ package getter
 
 import (
 	"errors"
-	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ErrorsSuite struct{ suite.Suite }

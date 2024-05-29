@@ -1,12 +1,13 @@
 package charm
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	zone "github.com/lrstanley/bubblezone"
 	"manala/internal/serrors"
 	"manala/internal/ui/components"
 	"manala/internal/validator"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 func newFormFieldModel(field components.FormField, renderer *lipgloss.Renderer, zone *zone.Manager) (tea.Model, error) {

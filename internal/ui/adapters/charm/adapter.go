@@ -1,11 +1,12 @@
 package charm
 
 import (
+	"io"
+	"slices"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"io"
-	"slices"
 )
 
 func New(in io.Reader, out io.Writer, err io.Writer) *Adapter {

@@ -3,12 +3,13 @@ package init
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(log *slog.Logger, api *api.Api, input ui.Input) *cobra.Command {

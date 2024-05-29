@@ -4,11 +4,12 @@ package mascot
 
 import (
 	"bytes"
+	"math/rand/v2"
+	"time"
+
 	"github.com/gopxl/beep"
 	"github.com/gopxl/beep/speaker"
 	"github.com/gopxl/beep/wav"
-	"math/rand/v2"
-	"time"
 )
 
 var animationAudioStreamer beep.StreamSeekCloser

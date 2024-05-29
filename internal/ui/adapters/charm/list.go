@@ -1,9 +1,10 @@
 package charm
 
 import (
+	"manala/internal/ui/components"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"manala/internal/ui/components"
 )
 
 func (adapter *Adapter) List(header string, list []components.ListItem) error {

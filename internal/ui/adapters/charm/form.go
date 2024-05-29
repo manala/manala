@@ -2,13 +2,14 @@ package charm
 
 import (
 	"fmt"
+	"manala/internal/ui"
+	"manala/internal/ui/components"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"manala/internal/ui"
-	"manala/internal/ui/components"
 )
 
 func (adapter *Adapter) Form(header string, form *components.Form) error {

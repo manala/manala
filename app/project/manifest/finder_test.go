@@ -1,9 +1,10 @@
 package manifest
 
 import (
-	"github.com/stretchr/testify/suite"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type FinderSuite struct{ suite.Suite }

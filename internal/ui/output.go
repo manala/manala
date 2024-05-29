@@ -1,8 +1,9 @@
 package ui
 
 import (
-	"github.com/stretchr/testify/mock"
 	"manala/internal/ui/components"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type Output interface {

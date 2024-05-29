@@ -1,7 +1,6 @@
 package syncer
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/project"
 	"manala/app/project/manifest"
 	"manala/app/recipe"
@@ -13,6 +12,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }

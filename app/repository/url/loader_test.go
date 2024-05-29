@@ -1,12 +1,13 @@
 package url
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }

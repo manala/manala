@@ -2,11 +2,12 @@ package charm
 
 import (
 	"fmt"
+	"manala/internal/ui/components"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"manala/internal/ui/components"
 )
 
 func newFormFieldSelectModel(field *components.FormFieldSelect, renderer *lipgloss.Renderer, zone *zone.Manager) formFieldSelectModel {

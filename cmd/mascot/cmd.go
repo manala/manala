@@ -2,11 +2,12 @@ package mascot
 
 import (
 	_ "embed"
+	"io"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
-	"io"
 )
 
 func NewCmd() *cobra.Command {

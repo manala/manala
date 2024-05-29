@@ -1,8 +1,9 @@
 package path
 
 import (
-	"github.com/ohler55/ojg/jp"
 	"manala/internal/serrors"
+
+	"github.com/ohler55/ojg/jp"
 )
 
 func NewAccessor(path Path, data any) Accessor {

@@ -2,10 +2,11 @@ package template
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct {

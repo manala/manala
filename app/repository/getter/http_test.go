@@ -1,7 +1,6 @@
 package getter
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
 	"manala/internal/cache"
 	"manala/internal/log"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type HttpSuite struct{ suite.Suite }

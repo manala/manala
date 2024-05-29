@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log/slog"
 	"manala/app/api"
 	"manala/cmd"
@@ -17,6 +15,9 @@ import (
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
 	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // Set at build time, by goreleaser, via ldflags.

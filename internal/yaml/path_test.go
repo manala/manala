@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlParser "github.com/goccy/go-yaml/parser"
 	"manala/internal/path"
 	"manala/internal/serrors"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlParser "github.com/goccy/go-yaml/parser"
 )
 
 func (s *Suite) TestNodePath() {

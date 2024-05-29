@@ -1,8 +1,6 @@
 package recipe
 
 import (
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/app/repository"
 	"manala/app/repository/getter"
@@ -10,6 +8,9 @@ import (
 	"manala/internal/serrors"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }

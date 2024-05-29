@@ -35,8 +35,7 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 		return nil, serrors.New("unable to stat recipe manifest").
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))
-	} else if
-	fileInfo.IsDir() {
+	} else if fileInfo.IsDir() {
 		return nil, serrors.New("recipe manifest is a directory").
 			WithArguments("dir", file)
 
