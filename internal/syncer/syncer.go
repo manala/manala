@@ -28,7 +28,7 @@ type UnitInterface interface {
 	Destination() string
 }
 
-// Sync a source with a destination
+// Sync a source with a destination.
 func (syncer *Syncer) Sync(
 	srcDir string,
 	src string,

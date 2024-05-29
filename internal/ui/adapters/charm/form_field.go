@@ -41,7 +41,7 @@ func formFieldInput() tea.Msg {
 	return formFieldInputMsg{}
 }
 
-// Field has just got user input
+// Field has just got user input.
 type formFieldInputMsg struct{}
 
 func formFieldFocusCmd(index int) tea.Cmd {
@@ -50,5 +50,5 @@ func formFieldFocusCmd(index int) tea.Cmd {
 	}
 }
 
-// Focus on field index
+// Focus on field index.
 type formFieldFocusMsg int

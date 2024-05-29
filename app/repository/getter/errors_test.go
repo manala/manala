@@ -52,7 +52,7 @@ func (s *ErrorsSuite) TestIsNotDetected() {
 	}
 }
 
-// Mimic an aws sdk error to avoid direct dependency on it
+// Mimic an aws sdk error to avoid direct dependency on it.
 type awsErrorTest struct{}
 
 func (awsErrorTest) Error() string   { return "error" }

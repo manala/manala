@@ -26,7 +26,7 @@ var commandErrorRegex = regexp.MustCompile(`(?s)error running ([^(: )]+): (.*)$`
 // 1: details
 var multiErrorRegex = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(.*)\n\n$`)
 
-// Mimic the aws sdk error interface to avoid direct dependency on it
+// Mimic the aws sdk error interface to avoid direct dependency on it.
 type awsError interface {
 	error
 	Code() string

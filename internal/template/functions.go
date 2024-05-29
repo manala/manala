@@ -15,7 +15,7 @@ func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
 	}
 }
 
-// As seen in helm
+// As seen in helm.
 func functionToYaml(value any) string {
 	marshalOptions := []goYaml.EncodeOption{
 		goYaml.Indent(4),
@@ -37,7 +37,7 @@ func functionToYaml(value any) string {
 	return strings.TrimSuffix(string(data), "\n")
 }
 
-// As seen in helm
+// As seen in helm.
 func functionInclude(template *textTemplate.Template) func(name string, data any) (string, error) {
 	includedNames := make(map[string]int)
 	return func(name string, data any) (string, error) {

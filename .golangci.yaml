@@ -3,7 +3,7 @@ linters:
   enable:
     - exportloopref
     - gocritic
-    # - godot
+    - godot
     # - goimports
     - nilerr
     # - nlreturn

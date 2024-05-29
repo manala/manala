@@ -19,10 +19,10 @@ import (
 	"os"
 )
 
-// Set at build time, by goreleaser, via ldflags
+// Set at build time, by goreleaser, via ldflags.
 var version = "dev"
 
-// Default repository url
+// Default repository url.
 const defaultRepositoryUrl = "https://github.com/manala/manala-recipes.git"
 
 func main() {

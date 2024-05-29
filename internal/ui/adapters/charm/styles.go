@@ -22,9 +22,9 @@ var (
 		Light: lipgloss.CompleteColor{ANSI: "12", ANSI256: "57", TrueColor: "#5F00FF"},
 		Dark:  lipgloss.CompleteColor{ANSI: "6", ANSI256: "79", TrueColor: "#5FD7AF"},
 	}
-	// Message
+	// Message.
 	messageColor = primaryDarkColor
-	// Levels
+	// Levels.
 	debugColor = primaryColor
 	infoColor  = secondaryColor
 	warnColor  = lipgloss.CompleteAdaptiveColor{
@@ -38,7 +38,7 @@ var (
 )
 
 var (
-	// Levels
+	// Levels.
 	debugStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(debugColor),
@@ -79,7 +79,7 @@ var (
 			Border(crossBorder, false, false, false, true).
 			BorderForeground(errorColor),
 	)
-	// Message
+	// Message.
 	messageStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
@@ -101,14 +101,14 @@ var (
 		lipgloss.NewStyle().
 			PaddingTop(1),
 	)
-	// Header
+	// Header.
 	headerStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryColor).
 			Border(lipgloss.NormalBorder(), false, false, true, false).
 			BorderForeground(primaryColor),
 	)
-	// List
+	// List.
 	listItemStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
@@ -126,7 +126,7 @@ var (
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
 	)
-	// List Form
+	// List Form.
 	listFormItemStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
@@ -160,11 +160,11 @@ var (
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
 	)
-	// Scroll
+	// Scroll.
 	scrollStyle = newStyleDefinition(
 		lipgloss.NewStyle(),
 	)
-	// Form
+	// Form.
 	formFieldStyle = newStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(2),

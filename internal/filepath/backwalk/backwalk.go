@@ -64,7 +64,7 @@ func backwalkDir(path string, dir os.DirEntry, backwalkDirFunc fs.WalkDirFunc) e
 
 // BackwalkDir backwalks the file tree at path, calling fn for each
 // directory in the tree, including root.
-// Greatly inspired by filepath.WalkDir
+// Greatly inspired by filepath.WalkDir.
 func BackwalkDir(dir string, fn fs.WalkDirFunc) error {
 	info, err := os.Lstat(dir)
 	if err != nil {

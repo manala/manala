@@ -12,7 +12,7 @@ import (
 /* Project */
 /***********/
 
-// Project describe a project interface
+// Project describe a project interface.
 type Project interface {
 	Dir() string
 	Recipe() Recipe
@@ -25,7 +25,7 @@ type Project interface {
 /* Recipe */
 /**********/
 
-// Recipe describe a recipe interface
+// Recipe describe a recipe interface.
 type Recipe interface {
 	Dir() string
 	Name() string
@@ -42,7 +42,7 @@ type Recipe interface {
 	Watches() ([]string, error)
 }
 
-// RecipeOption describe a recipe option interface
+// RecipeOption describe a recipe option interface.
 type RecipeOption interface {
 	Name() string
 	Label() string
@@ -56,7 +56,7 @@ type RecipeOption interface {
 /* Repository */
 /**************/
 
-// Repository describe a repository interface
+// Repository describe a repository interface.
 type Repository interface {
 	Url() string
 	Dir() string

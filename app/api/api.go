@@ -5,7 +5,7 @@ import (
 	"manala/internal/cache"
 )
 
-// New creates an api
+// New creates an api.
 func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *Api {
 	api := &Api{
 		log:   log,
