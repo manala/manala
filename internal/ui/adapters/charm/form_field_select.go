@@ -145,13 +145,10 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			}
-		} else {
-			switch {
-			case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
-				// Open on left click
-				if model.zone.Get(model.zonePrefix + "select").InBounds(msg) {
-					model.Open(true)
-				}
+		} else if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
+			// Open on left click
+			if model.zone.Get(model.zonePrefix + "select").InBounds(msg) {
+				model.Open(true)
 			}
 		}
 	}

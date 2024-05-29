@@ -2,7 +2,7 @@ linters:
   # See: https://golangci-lint.run/usage/linters/
   enable:
     - exportloopref
-    # - gocritic
+    - gocritic
     # - godot
     # - goimports
     - nilerr

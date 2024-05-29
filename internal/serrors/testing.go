@@ -24,19 +24,16 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 	// Arguments
 	if _err, ok := err.(ErrorArguments); ok {
 		assert.Equal(t, assertion.Arguments, _err.ErrorArguments())
-	} else {
-		if assertion.Arguments != nil {
-			assert.Fail(t, "Error does not contains arguments")
-		}
+	} else if assertion.Arguments != nil {
+		assert.Fail(t, "Error does not contains arguments")
+
 	}
 
 	// Details
 	if _err, ok := err.(ErrorDetails); ok {
 		heredoc.Equal(t, assertion.Details, _err.ErrorDetails(false))
-	} else {
-		if assertion.Details != "" {
-			assert.Fail(t, "Error does not contains details")
-		}
+	} else if assertion.Details != "" {
+		assert.Fail(t, "Error does not contains details")
 	}
 
 	// Errors
@@ -58,9 +55,7 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 				}
 			}
 		}
-	} else {
-		if assertion.Errors != nil {
-			assert.Fail(t, "Error does not contains errors")
-		}
+	} else if assertion.Errors != nil {
+		assert.Fail(t, "Error does not contains errors")
 	}
 }

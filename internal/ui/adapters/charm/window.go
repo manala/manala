@@ -173,12 +173,13 @@ func (scroll *scrollModel) to(lineTop int, lineBottom int) {
 }
 
 func (scroll *scrollModel) upTo(line int) {
-	if line < 0 {
+	switch {
+	case line < 0:
 		scroll.line = 0
-	} else if len(scroll.lines) <= scroll.height {
+	case len(scroll.lines) <= scroll.height:
 		// Content height inferior to height
 		scroll.line = 0
-	} else {
+	default:
 		// Content height superior to height
 		scroll.line = min(line, len(scroll.lines)-scroll.height)
 	}

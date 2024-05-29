@@ -43,11 +43,9 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 		return nil, serrors.New("unable to stat project manifest").
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))
-	} else {
-		if fileInfo.IsDir() {
-			return nil, serrors.New("project manifest is a directory").
-				WithArguments("dir", file)
-		}
+	} else if fileInfo.IsDir() {
+		return nil, serrors.New("project manifest is a directory").
+			WithArguments("dir", file)
 	}
 
 	manifest := New()

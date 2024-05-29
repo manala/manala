@@ -107,8 +107,7 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	// Remove literal string's trailing new lines pollution
 	// See: https://github.com/goccy/go-yaml/issues/406
 	if n, ok := node.(*goYamlAst.LiteralNode); ok {
-		switch n.Start.Value {
-		case "|":
+		if n.Start.Value == "|" {
 			n.Value.Value = strings.TrimRight(n.Value.Value, "\n") + "\n"
 		}
 	}

@@ -45,14 +45,12 @@ func (model formSubmitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
-		switch {
-		case key.Matches(msg, SelectKeys):
+		if key.Matches(msg, SelectKeys) {
 			cmds.Add(model.submit())
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch {
-		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 			// Submit on left click
 			if model.zone.Get(model.zonePrefix + "submit").InBounds(msg) {
 				cmds.Add(model.submit())

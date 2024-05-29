@@ -42,7 +42,7 @@ func ParseCommentTags(comment string, tags *Tags) {
 	}
 }
 
-var tagRegex, _ = regexp.Compile(
+var tagRegex = regexp.MustCompile(
 	`(?m)` +
 		`(\s+)` +
 		`|([ \t]*#+[ \t]*@(?P<Tag>[a-zA-Z][\w-]*)[ \t]+)` +

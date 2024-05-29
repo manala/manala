@@ -36,7 +36,7 @@ func (s *ProjectSuite) Test() {
 		On("Repository").Return(repositoryMock).
 		On("Template").Return(template.NewTemplate())
 
-	dir := filepath.Join("dir")
+	dir := "dir"
 
 	manifest := &Manifest{
 		vars: map[string]any{

@@ -50,9 +50,8 @@ func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = tea.Quit
 	// Keys
 	case tea.KeyMsg:
-		switch {
-		// Keys - Quit
-		case key.Matches(msg, model.QuitKey):
+		// Quit
+		if key.Matches(msg, model.QuitKey) {
 			cmd = tea.Quit
 		}
 	// Animation - Stop

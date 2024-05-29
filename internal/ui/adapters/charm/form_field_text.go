@@ -96,14 +96,12 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
-		switch {
-		case key.Matches(msg, SelectKeys):
+		if key.Matches(msg, SelectKeys) {
 			cmds.Add(formFieldInput)
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch {
-		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 			zone := model.zone.Get(model.zonePrefix + "input")
 			// Set cursor position on left click
 			if zone.InBounds(msg) {
