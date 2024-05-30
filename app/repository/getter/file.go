@@ -33,11 +33,11 @@ type FileLoaderHandler struct {
 }
 
 func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.Url)
+	handler.log.Debug("handle repository", "url", query.URL)
 
 	// Request
 	request := &getter.Request{
-		Src:     query.Url,
+		Src:     query.URL,
 		GetMode: getter.ModeDir,
 		// In local file mode, the returned operation will simply contain the source file path
 		Inplace: true,
@@ -87,5 +87,5 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 		}
 	}
 
-	return NewRepository(query.Url, response.Dst), nil
+	return NewRepository(query.URL, response.Dst), nil
 }

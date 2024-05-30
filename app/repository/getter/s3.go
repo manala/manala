@@ -36,11 +36,11 @@ type S3LoaderHandler struct {
 }
 
 func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.Url)
+	handler.log.Debug("handle repository", "url", query.URL)
 
 	// Cache dir
 	cacheDir, err := handler.cache.
-		WithHashDir(query.Url).
+		WithHashDir(query.URL).
 		Dir()
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repo
 
 	// Request
 	request := &getter.Request{
-		Src:     query.Url,
+		Src:     query.URL,
 		Dst:     cacheDir,
 		GetMode: getter.ModeDir,
 	}
@@ -63,5 +63,5 @@ func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repo
 		return nil, NewError(err)
 	}
 
-	return NewRepository(query.Url, response.Dst), nil
+	return NewRepository(query.URL, response.Dst), nil
 }

@@ -23,7 +23,7 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: "foo?bar;baz"}, chainMock)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
 	serrors.Equal(s.T(), &serrors.Assertion{
@@ -50,9 +50,9 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 	chainMock.
-		On("Next", &repository.LoaderQuery{Url: "url"}).Return(repositoryMock, nil)
+		On("Next", &repository.LoaderQuery{URL: "url"}).Return(repositoryMock, nil)
 
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: ""}, chainMock)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: ""}, chainMock)
 
 	s.Equal(repositoryMock, repository)
 	s.NoError(err)

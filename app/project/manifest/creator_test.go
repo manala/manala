@@ -22,13 +22,13 @@ func TestCreatorSuite(t *testing.T) {
 }
 
 func (s *CreatorSuite) TestCreateErrors() {
-	repositoryUrl := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/repository")
+	repositoryURL := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/repository")
 	recipeName := "recipe"
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
-	repository, _ := repositoryLoader.Load(repositoryUrl)
+	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
 		manifest.NewLoaderHandler(log.Discard),
@@ -53,7 +53,7 @@ func (s *CreatorSuite) TestCreateErrors() {
 }
 
 func (s *CreatorSuite) TestCreate() {
-	repositoryUrl := filepath.FromSlash("testdata/CreatorSuite/TestCreate/repository")
+	repositoryURL := filepath.FromSlash("testdata/CreatorSuite/TestCreate/repository")
 	recipeName := "recipe"
 
 	projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreate/project")
@@ -63,7 +63,7 @@ func (s *CreatorSuite) TestCreate() {
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
-	repository, _ := repositoryLoader.Load(repositoryUrl)
+	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
 		manifest.NewLoaderHandler(log.Discard),

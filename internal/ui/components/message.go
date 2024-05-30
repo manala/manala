@@ -62,8 +62,8 @@ func MessageFromError(err error, ansi bool) *Message {
 	case interface{ Unwrap() error }:
 		message.Messages = append(message.Messages, MessageFromError(_err.Unwrap(), ansi))
 	case interface{ Unwrap() []error }:
-		for _, __err := range _err.Unwrap() {
-			message.Messages = append(message.Messages, MessageFromError(__err, ansi))
+		for _, _err := range _err.Unwrap() {
+			message.Messages = append(message.Messages, MessageFromError(_err, ansi))
 		}
 	}
 

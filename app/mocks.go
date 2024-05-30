@@ -144,7 +144,7 @@ type RepositoryMock struct {
 	mock.Mock
 }
 
-func (mock *RepositoryMock) Url() string {
+func (mock *RepositoryMock) URL() string {
 	args := mock.Called()
 
 	return args.String(0)

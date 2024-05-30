@@ -58,6 +58,6 @@ type RecipeOption interface {
 
 // Repository describe a repository interface.
 type Repository interface {
-	Url() string
+	URL() string
 	Dir() string
 }

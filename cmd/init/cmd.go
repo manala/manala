@@ -12,9 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, input ui.Input) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.API, input ui.Input) *cobra.Command {
 	// Flags
-	var repositoryUrl, repositoryRef, recipeName string
+	var repositoryURL, repositoryRef, recipeName string
 
 	// Command
 	cmd := &cobra.Command{
@@ -32,7 +32,7 @@ current directory)`,
 
 			// Context
 			ctx := cmd.Context()
-			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
@@ -41,14 +41,14 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryUrl, "repository", "o", "", "use repository")
+	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
 	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
 	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
 
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, input ui.Input, dir string) error {
+func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, dir string) error {
 	// Get project finder
 	projectFinder := api.NewProjectFinder()
 
@@ -87,7 +87,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, input ui.Input, di
 			return err
 		}
 
-		form, err := NewUiRecipeListForm(recipes, &recipe)
+		form, err := NewUIRecipeListForm(recipes, &recipe)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, input ui.Input, di
 
 	// Recipe options
 	if len(recipe.Options()) > 0 {
-		form, err := NewUiRecipeOptionsForm(recipe, &vars)
+		form, err := NewUIRecipeOptionsForm(recipe, &vars)
 		if err != nil {
 			return err
 		}

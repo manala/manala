@@ -80,7 +80,7 @@ func (s *Suite) TestJson() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewJson(test.err)
+			err := NewJSON(test.err)
 
 			Equal(s.T(), test.expected, err)
 		})

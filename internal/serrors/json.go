@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-func NewJson(err error) Error {
+func NewJSON(err error) Error {
 	message := err.Error()
 	arguments := []any{}
 

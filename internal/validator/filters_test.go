@@ -54,7 +54,7 @@ func (s *Suite) TestFilter() {
 		{
 			test: "TypeMatch",
 			filter: Filter{
-				Type:              REQUIRED,
+				Type:              Required,
 				Message:           "message",
 				StructuredMessage: "structured message",
 			},
@@ -64,7 +64,7 @@ func (s *Suite) TestFilter() {
 		{
 			test: "TypeNotMatch",
 			filter: Filter{
-				Type:              INVALID_TYPE,
+				Type:              InvalidType,
 				Message:           "message",
 				StructuredMessage: "structured message",
 			},
@@ -97,7 +97,7 @@ func (s *Suite) TestFilter() {
 		s.Run(test.test, func() {
 			violation := NewViolation("")
 			violation.Path = "path"
-			violation.Type = REQUIRED
+			violation.Type = Required
 			violation.Property = "property"
 
 			test.filter.Format(&violation)

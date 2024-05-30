@@ -60,10 +60,10 @@ type RecipesView []*RecipeView
 
 // NewRepositoryView create a repository view.
 func NewRepositoryView(repository Repository) *RepositoryView {
-	url := repository.Url()
+	url := repository.URL()
 
 	return &RepositoryView{
-		Url:    url,
+		URL:    url,
 		Path:   url,
 		Source: url,
 	}
@@ -71,7 +71,7 @@ func NewRepositoryView(repository Repository) *RepositoryView {
 
 // RepositoryView is a secure and lightweight facade of a repository, dedicated to template usage.
 type RepositoryView struct {
-	Url string
+	URL string
 	// Path ensure backward compatibility, when "path" was used instead of "url" to define repository origin
 	Path string
 	// Source ensure backward compatibility, when "source" was used instead of "path" to define repository origin

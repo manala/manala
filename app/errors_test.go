@@ -32,7 +32,7 @@ func (s *ErrorsSuite) TestRecipe() {
 	s.Run("NotFoundRecipeError", func() {
 		repositoryMock := &RepositoryMock{}
 		repositoryMock.
-			On("Url").Return("url")
+			On("URL").Return("url")
 
 		err := &NotFoundRecipeError{Repository: repositoryMock, Name: "name"}
 
@@ -43,13 +43,13 @@ func (s *ErrorsSuite) TestRecipe() {
 
 func (s *ErrorsSuite) TestRepository() {
 	s.Run("NotFoundRepositoryError", func() {
-		err := &NotFoundRepositoryError{Url: "url"}
+		err := &NotFoundRepositoryError{URL: "url"}
 
 		s.EqualError(err, "repository not found")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 	s.Run("UnsupportedRepositoryError", func() {
-		err := &UnsupportedRepositoryError{Url: "url"}
+		err := &UnsupportedRepositoryError{URL: "url"}
 
 		s.EqualError(err, "unsupported repository url")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
@@ -57,7 +57,7 @@ func (s *ErrorsSuite) TestRepository() {
 	s.Run("EmptyRepositoryError", func() {
 		repositoryMock := &RepositoryMock{}
 		repositoryMock.
-			On("Url").Return("url")
+			On("URL").Return("url")
 
 		err := &EmptyRepositoryError{Repository: repositoryMock}
 

@@ -19,11 +19,11 @@ type LoaderHandler struct {
 }
 
 func (handler *LoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository cache", "url", query.Url)
+	handler.log.Debug("handle repository cache", "url", query.URL)
 
 	// Check if repository already in cache
-	if repository, ok := handler.cache.Get(query.Url); ok {
-		handler.log.Debug("hit repository cache", "url", query.Url)
+	if repository, ok := handler.cache.Get(query.URL); ok {
+		handler.log.Debug("hit repository cache", "url", query.URL)
 
 		return repository, nil
 	}
@@ -33,7 +33,7 @@ func (handler *LoaderHandler) Handle(query *repository.LoaderQuery, chain reposi
 
 	// Cache repository
 	if repository != nil && err == nil {
-		handler.cache.Set(query.Url, repository)
+		handler.cache.Set(query.URL, repository)
 	}
 
 	return repository, err

@@ -20,7 +20,7 @@ func (s *ProcessorSuite) TestProcess() {
 		url         string
 		urls        map[int]string
 		queries     map[int]map[string]string
-		expectedUrl string
+		expectedURL string
 		expectedErr *serrors.Assertion
 	}{
 		{
@@ -45,25 +45,25 @@ func (s *ProcessorSuite) TestProcess() {
 				10:  "",
 				-10: "",
 			},
-			expectedUrl: "",
+			expectedURL: "",
 		},
 		{
-			test: "TailUrl",
+			test: "TailURL",
 			url:  "",
 			urls: map[int]string{
 				10:  "",
 				-10: "tail_url",
 			},
-			expectedUrl: "tail_url",
+			expectedURL: "tail_url",
 		},
 		{
-			test: "UrlAndTailUrl",
+			test: "URLAndTailURL",
 			url:  "url",
 			urls: map[int]string{
 				10:  "",
 				-10: "tail_url",
 			},
-			expectedUrl: "url",
+			expectedURL: "url",
 		},
 		{
 			test: "All",
@@ -72,38 +72,38 @@ func (s *ProcessorSuite) TestProcess() {
 				10:  "head_url",
 				-10: "tail_url",
 			},
-			expectedUrl: "head_url",
+			expectedURL: "head_url",
 		},
 		{
-			test: "HeadUrlAndTailUrl",
+			test: "HeadURLAndTailURL",
 			url:  "",
 			urls: map[int]string{
 				10:  "head_url",
 				-10: "tail_url",
 			},
-			expectedUrl: "head_url",
+			expectedURL: "head_url",
 		},
 		{
 			test:        "Windows",
 			url:         `foo\bar`,
-			expectedUrl: `foo\bar`,
+			expectedURL: `foo\bar`,
 		},
 		{
 			test:        "Query",
 			url:         "?query=query",
-			expectedUrl: "",
+			expectedURL: "",
 		},
 		{
-			test: "QueryAndTailUrl",
+			test: "QueryAndTailURL",
 			url:  "?query=query",
 			urls: map[int]string{
 				10:  "",
 				-10: "tail_url",
 			},
-			expectedUrl: "tail_url?query=query",
+			expectedURL: "tail_url?query=query",
 		},
 		{
-			test: "UrlAndHeadQueryAndTailUrl",
+			test: "URLAndHeadQueryAndTailURL",
 			url:  "url",
 			urls: map[int]string{
 				-10: "tail_url",
@@ -111,19 +111,19 @@ func (s *ProcessorSuite) TestProcess() {
 			queries: map[int]map[string]string{
 				10: {"head_query": "head_query"},
 			},
-			expectedUrl: "url?head_query=head_query",
+			expectedURL: "url?head_query=head_query",
 		},
 		{
-			test: "UrlQueryAndHeadUrlQueryAndTailUrl",
+			test: "URLQueryAndHeadURLQueryAndTailURL",
 			url:  "url?query=query",
 			urls: map[int]string{
 				10:  "head_url?head_query=head_query",
 				-10: "tail_url",
 			},
-			expectedUrl: "head_url?head_query=head_query",
+			expectedURL: "head_url?head_query=head_query",
 		},
 		{
-			test: "QueryAndHeadQueryAndTailUrlQuery",
+			test: "QueryAndHeadQueryAndTailURLQuery",
 			url:  "?query=query",
 			urls: map[int]string{
 				-10: "tail_url?tail_query=tail_query",
@@ -131,7 +131,7 @@ func (s *ProcessorSuite) TestProcess() {
 			queries: map[int]map[string]string{
 				10: {"head_query": "head_query"},
 			},
-			expectedUrl: "tail_url?head_query=head_query&query=query&tail_query=tail_query",
+			expectedURL: "tail_url?head_query=head_query&query=query&tail_query=tail_query",
 		},
 	}
 
@@ -154,7 +154,7 @@ func (s *ProcessorSuite) TestProcess() {
 				s.Empty(url)
 				serrors.Equal(s.T(), test.expectedErr, err)
 			} else {
-				s.Equal(test.expectedUrl, url)
+				s.Equal(test.expectedURL, url)
 				s.NoError(err)
 			}
 		})

@@ -12,7 +12,7 @@ type Repository struct {
 	dir string
 }
 
-func (repository *Repository) Url() string {
+func (repository *Repository) URL() string {
 	return repository.url
 }
 

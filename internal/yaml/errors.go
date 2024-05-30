@@ -24,11 +24,11 @@ func NewError(err error) serrors.Error {
 		// Message
 		message = matches[5]
 		// Line
-		if line, __err := strconv.Atoi(matches[3]); __err == nil {
+		if line, _err := strconv.Atoi(matches[3]); _err == nil {
 			arguments = append(arguments, "line", line)
 		}
 		// Column
-		if column, __err := strconv.Atoi(matches[4]); __err == nil {
+		if column, _err := strconv.Atoi(matches[4]); _err == nil {
 			arguments = append(arguments, "column", column)
 		}
 	}

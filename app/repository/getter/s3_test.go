@@ -47,7 +47,7 @@ func (s *S3Suite) TestLoaderHandler() {
 	chainMock := &repository.LoaderHandlerChainMock{}
 
 	handler := NewS3LoaderHandler(log.Discard, cache)
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 	s.NotNil(repository)
 	s.NoError(err)

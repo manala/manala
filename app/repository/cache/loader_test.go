@@ -19,8 +19,8 @@ func (s *LoaderSuite) TestHandler() {
 	cache := New()
 
 	handler := NewLoaderHandler(log.Discard, cache)
-	handlerQueryFoo := &repository.LoaderQuery{Url: "foo"}
-	handlerQueryBar := &repository.LoaderQuery{Url: "bar"}
+	handlerQueryFoo := &repository.LoaderQuery{URL: "foo"}
+	handlerQueryBar := &repository.LoaderQuery{URL: "bar"}
 
 	repositoryMock := &app.RepositoryMock{}
 

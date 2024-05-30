@@ -9,13 +9,13 @@ import (
 	"manala/app/repository/url"
 )
 
-func (api *Api) NewRepositoryLoader(ctx context.Context) *repository.Loader {
-	// Url processor
+func (api *API) NewRepositoryLoader(ctx context.Context) *repository.Loader {
+	// URL processor
 	urlProcessor := url.NewProcessor(api.log)
-	if api.defaultRepositoryUrl != "" {
-		urlProcessor.Add(api.defaultRepositoryUrl, -10)
+	if api.defaultRepositoryURL != "" {
+		urlProcessor.Add(api.defaultRepositoryURL, -10)
 	}
-	if url, ok := app.RepositoryUrl(ctx); ok {
+	if url, ok := app.RepositoryURL(ctx); ok {
 		urlProcessor.Add(url, 10)
 	}
 	if ref, ok := app.RepositoryRef(ctx); ok {
@@ -28,7 +28,7 @@ func (api *Api) NewRepositoryLoader(ctx context.Context) *repository.Loader {
 			cache.NewLoaderHandler(api.log, cache.New()),
 			getter.NewGitLoaderHandler(api.log, api.cache),
 			getter.NewS3LoaderHandler(api.log, api.cache),
-			getter.NewHttpLoaderHandler(api.log, api.cache),
+			getter.NewHTTPLoaderHandler(api.log, api.cache),
 			getter.NewFileLoaderHandler(api.log),
 		),
 	)

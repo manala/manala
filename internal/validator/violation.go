@@ -9,11 +9,11 @@ import (
 type ViolationType int
 
 const (
-	REQUIRED ViolationType = iota + 1
-	INVALID_TYPE
-	ADDITIONAL_PROPERTY_NOT_ALLOWED
-	STRING_GTE
-	STRING_LTE
+	Required ViolationType = iota + 1
+	InvalidType
+	AdditionalPropertyNotAllowed
+	StringGte
+	StringLte
 )
 
 func NewViolation(message string) Violation {

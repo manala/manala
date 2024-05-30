@@ -6,8 +6,8 @@ import (
 )
 
 // New creates an api.
-func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *Api {
-	api := &Api{
+func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *API {
+	api := &API{
 		log:   log,
 		cache: cache,
 	}
@@ -20,16 +20,16 @@ func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *Api {
 	return api
 }
 
-type Api struct {
+type API struct {
 	log                  *slog.Logger
 	cache                *cache.Cache
-	defaultRepositoryUrl string
+	defaultRepositoryURL string
 }
 
-type Option func(api *Api)
+type Option func(api *API)
 
-func WithDefaultRepositoryUrl(url string) Option {
-	return func(api *Api) {
-		api.defaultRepositoryUrl = url
+func WithDefaultRepositoryURL(url string) Option {
+	return func(api *API) {
+		api.defaultRepositoryURL = url
 	}
 }

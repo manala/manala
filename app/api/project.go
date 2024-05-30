@@ -13,7 +13,7 @@ import (
 /* Project */
 /***********/
 
-func (api *Api) NewProjectLoader(repositoryLoader *repository.Loader, recipeLoader *recipe.Loader, opts ...ProjectLoaderOption) *project.Loader {
+func (api *API) NewProjectLoader(repositoryLoader *repository.Loader, recipeLoader *recipe.Loader, opts ...ProjectLoaderOption) *project.Loader {
 	var handlers []project.LoaderHandler
 
 	// Options
@@ -53,20 +53,20 @@ type projectLoaderOptions struct {
 
 type ProjectLoaderOption func(options *projectLoaderOptions)
 
-func (api *Api) WithProjectLoaderFrom(from bool) ProjectLoaderOption {
+func (api *API) WithProjectLoaderFrom(from bool) ProjectLoaderOption {
 	return func(options *projectLoaderOptions) {
 		options.from = from
 	}
 }
 
-func (api *Api) NewProjectFinder() *manifest.Finder {
+func (api *API) NewProjectFinder() *manifest.Finder {
 	return manifest.NewFinder()
 }
 
-func (api *Api) NewProjectSyncer() *syncer.Syncer {
+func (api *API) NewProjectSyncer() *syncer.Syncer {
 	return syncer.New(api.log)
 }
 
-func (api *Api) NewProjectCreator() *manifest.Creator {
+func (api *API) NewProjectCreator() *manifest.Creator {
 	return manifest.NewCreator()
 }

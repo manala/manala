@@ -12,13 +12,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type HttpSuite struct{ suite.Suite }
+type HTTPSuite struct{ suite.Suite }
 
 func TestHttpSuite(t *testing.T) {
-	suite.Run(t, new(HttpSuite))
+	suite.Run(t, new(HTTPSuite))
 }
 
-func (s *HttpSuite) TestLoaderHandler() {
+func (s *HTTPSuite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
 	cache := cache.New(cacheDir)
 
@@ -29,8 +29,8 @@ func (s *HttpSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewHttpLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := NewHTTPLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.NotNil(repository)
 		s.NoError(err)
@@ -49,8 +49,8 @@ func (s *HttpSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewHttpLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := NewHTTPLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.NotNil(repository)
 		s.NoError(err)

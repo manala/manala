@@ -37,7 +37,7 @@ func (s *LoaderSuite) TestLoad() {
 
 	handlerMock := &LoaderHandlerMock{}
 	handlerMock.
-		On("Handle", &LoaderQuery{Url: "url"}, mock.Anything).Return(repositoryMock, nil)
+		On("Handle", &LoaderQuery{URL: "url"}, mock.Anything).Return(repositoryMock, nil)
 
 	loader := NewLoader(WithLoaderHandlers(handlerMock))
 

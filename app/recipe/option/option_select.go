@@ -39,7 +39,7 @@ func NewSelectOption(option *option, fields map[string]any) (*SelectOption, erro
 	return selectOption, nil
 }
 
-func NewSelectOptionUiFormField(option *SelectOption, vars *map[string]any) (components.FormField, error) {
+func NewSelectOptionUIFormField(option *SelectOption, vars *map[string]any) (components.FormField, error) {
 	// Field
 	field, err := components.NewFormFieldSelect(
 		option.Name(),

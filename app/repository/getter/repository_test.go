@@ -15,6 +15,6 @@ func TestRepositorySuite(t *testing.T) {
 func (s *RepositorySuite) Test() {
 	repository := NewRepository("url", "dir")
 
-	s.Equal("url", repository.Url())
+	s.Equal("url", repository.URL())
 	s.Equal("dir", repository.Dir())
 }

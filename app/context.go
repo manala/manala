@@ -2,31 +2,31 @@ package app
 
 import "context"
 
-type repositoryUrlKey struct{}
+type repositoryURLKey struct{}
 
-func WithRepositoryUrl(ctx context.Context, repositoryUrl string) context.Context {
-	if repositoryUrl == "" {
+func WithRepositoryURL(ctx context.Context, repositoryURL string) context.Context {
+	if repositoryURL == "" {
 		return ctx
 	}
 
-	return context.WithValue(ctx, repositoryUrlKey{}, repositoryUrl)
+	return context.WithValue(ctx, repositoryURLKey{}, repositoryURL)
 }
 
-// RepositoryUrl gets the repository url from the context.
-func RepositoryUrl(ctx context.Context) (string, bool) {
-	value, ok := ctx.Value(repositoryUrlKey{}).(string)
+// RepositoryURL gets the repository URL from the context.
+func RepositoryURL(ctx context.Context) (string, bool) {
+	value, ok := ctx.Value(repositoryURLKey{}).(string)
 
 	return value, ok
 }
 
 type repositoryRefKey struct{}
 
-func WithRepositoryRef(ctx context.Context, repositoryUrl string) context.Context {
-	if repositoryUrl == "" {
+func WithRepositoryRef(ctx context.Context, repositoryURL string) context.Context {
+	if repositoryURL == "" {
 		return ctx
 	}
 
-	return context.WithValue(ctx, repositoryRefKey{}, repositoryUrl)
+	return context.WithValue(ctx, repositoryRefKey{}, repositoryURL)
 }
 
 // RepositoryRef gets the repository ref from the context.

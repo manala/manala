@@ -24,7 +24,7 @@ import (
 var version = "dev"
 
 // Default repository url.
-const defaultRepositoryUrl = "https://github.com/manala/manala-recipes.git"
+const defaultRepositoryURL = "https://github.com/manala/manala-recipes.git"
 
 func main() {
 	// Streams
@@ -38,17 +38,17 @@ func main() {
 
 	var (
 		appLog = new(slog.Logger)
-		appApi = new(api.Api)
+		appAPI = new(api.API)
 	)
 
 	// App commands
 	appCmd := cmd.NewCmd(version, in, out, err)
 	appCmd.AddCommand(
-		cmdInit.NewCmd(appLog, appApi, ui),
-		cmdList.NewCmd(appLog, appApi, ui),
+		cmdInit.NewCmd(appLog, appAPI, ui),
+		cmdList.NewCmd(appLog, appAPI, ui),
 		cmdMascot.NewCmd(),
-		cmdUpdate.NewCmd(appLog, appApi),
-		cmdWatch.NewCmd(appLog, appApi, ui, notify),
+		cmdUpdate.NewCmd(appLog, appAPI),
+		cmdWatch.NewCmd(appLog, appAPI, ui, notify),
 	)
 
 	// App commands persistent flags
@@ -64,7 +64,7 @@ func main() {
 		// Viper
 		_ = viper.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
 		_ = viper.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
-		viper.SetDefault("default_repository", defaultRepositoryUrl)
+		viper.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
 		viper.AutomaticEnv()
@@ -81,8 +81,8 @@ func main() {
 		*appLog = *slog.New(appLogHandler)
 
 		// Deferred app api instantiation
-		*appApi = *api.New(appLog, appCache,
-			api.WithDefaultRepositoryUrl(viper.GetString("default_repository")),
+		*appAPI = *api.New(appLog, appCache,
+			api.WithDefaultRepositoryURL(viper.GetString("default_repository")),
 		)
 
 		// Log config

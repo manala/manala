@@ -25,7 +25,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 	s.Run("NotFound", func() {
 		repositoryMock := &app.RepositoryMock{}
 		repositoryMock.
-			On("Url").Return("url")
+			On("URL").Return("url")
 
 		recipe, err := loader.Load(repositoryMock, "name")
 
@@ -62,12 +62,12 @@ func (s *LoaderSuite) TestLoadAllErrors() {
 	loader := NewLoader(log.Discard)
 
 	s.Run("EmptyRepository", func() {
-		repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoadAllErrors/EmptyRepository/repository")
+		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAllErrors/EmptyRepository/repository")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 			getter.NewFileLoaderHandler(log.Discard),
 		))
-		repository, _ := repositoryLoader.Load(repositoryUrl)
+		repository, _ := repositoryLoader.Load(repositoryURL)
 
 		recipes, err := loader.LoadAll(repository)
 
@@ -76,19 +76,19 @@ func (s *LoaderSuite) TestLoadAllErrors() {
 			Type:    &app.EmptyRepositoryError{},
 			Message: "empty repository",
 			Arguments: []any{
-				"url", repositoryUrl,
+				"url", repositoryURL,
 			},
 		}, err)
 	})
 }
 
 func (s *LoaderSuite) TestLoadAll() {
-	repositoryUrl := filepath.FromSlash("testdata/LoaderSuite/TestLoadAll/repository")
+	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAll/repository")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
-	repository, _ := repositoryLoader.Load(repositoryUrl)
+	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeMock := &app.RecipeMock{}
 

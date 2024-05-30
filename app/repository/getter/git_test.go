@@ -30,7 +30,7 @@ func (s *GitSuite) TestLoaderHandler() {
 		chainMock := &repository.LoaderHandlerChainMock{}
 
 		handler := NewGitLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.NotNil(repository)
 		s.NoError(err)
@@ -50,7 +50,7 @@ func (s *GitSuite) TestLoaderHandler() {
 		chainMock := &repository.LoaderHandlerChainMock{}
 
 		handler := NewGitLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.NotNil(repository)
 		s.NoError(err)

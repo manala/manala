@@ -23,7 +23,7 @@ func TestProjectSuite(t *testing.T) {
 func (s *ProjectSuite) Test() {
 	repositoryMock := &app.RepositoryMock{}
 	repositoryMock.
-		On("Url").Return("repository")
+		On("URL").Return("repository")
 
 	recipeMock := &app.RecipeMock{}
 	recipeMock.

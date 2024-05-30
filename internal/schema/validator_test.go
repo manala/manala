@@ -51,7 +51,7 @@ func (s *Suite) TestValidatorViolation() {
 			test:        "InvalidTypeError",
 			resultError: invalidTypeError,
 			expected: validator.Violation{
-				Type:              validator.INVALID_TYPE,
+				Type:              validator.InvalidType,
 				Message:           "invalid type, expected expected, actual given",
 				StructuredMessage: "invalid type",
 				Arguments: []any{
@@ -66,7 +66,7 @@ func (s *Suite) TestValidatorViolation() {
 			test:        "RequiredError",
 			resultError: requiredError,
 			expected: validator.Violation{
-				Type:              validator.REQUIRED,
+				Type:              validator.Required,
 				Message:           "missing property property",
 				StructuredMessage: "missing property",
 				Arguments:         []any(nil),
@@ -78,7 +78,7 @@ func (s *Suite) TestValidatorViolation() {
 			test:        "AdditionalPropertyNotAllowedError",
 			resultError: additionalPropertyNotAllowedError,
 			expected: validator.Violation{
-				Type:              validator.ADDITIONAL_PROPERTY_NOT_ALLOWED,
+				Type:              validator.AdditionalPropertyNotAllowed,
 				Message:           "additional property property is not allowed",
 				StructuredMessage: "additional property is not allowed",
 				Arguments:         []any(nil),

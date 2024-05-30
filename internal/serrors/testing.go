@@ -41,8 +41,8 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 	if _err, ok := err.(interface {
 		Unwrap() []error
 	}); ok {
-		__errs := _err.Unwrap()
-		if __errs == nil {
+		_errs := _err.Unwrap()
+		if _errs == nil {
 			if assertion.Errors != nil {
 				assert.Fail(t, "Error contains nil errors")
 			}
@@ -50,9 +50,9 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 			if assertion.Errors == nil {
 				assert.Fail(t, "Error contains errors")
 			} else {
-				assert.Len(t, __errs, len(assertion.Errors), "Incorrect error's errors length")
+				assert.Len(t, _errs, len(assertion.Errors), "Incorrect error's errors length")
 				for i, _assert := range assertion.Errors {
-					Equal(t, _assert, __errs[i])
+					Equal(t, _assert, _errs[i])
 				}
 			}
 		}
