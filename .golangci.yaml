@@ -7,7 +7,7 @@ linters:
     - goimports
     - nilerr
     - nlreturn
-    # - nonamedreturns
+    - nonamedreturns
     # - perfsprint
     # - prealloc
     - predeclared

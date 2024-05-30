@@ -47,10 +47,10 @@ func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
+func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	// Read content
 	content, err := io.ReadAll(reader)
-	n = int64(len(content))
+	n := int64(len(content))
 	if err != nil {
 		return n, serrors.New("unable to read project manifest").
 			WithErrors(err)

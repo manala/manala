@@ -69,10 +69,10 @@ func (manifest *Manifest) Options() []app.RecipeOption {
 	return manifest.options
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
+func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	// Read content
 	content, err := io.ReadAll(reader)
-	n = int64(len(content))
+	n := int64(len(content))
 	if err != nil {
 		return n, serrors.New("unable to read recipe manifest").
 			WithErrors(err)
