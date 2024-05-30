@@ -4,9 +4,9 @@ package mascot
 
 import (
 	"bytes"
-	"github.com/faiface/beep"
-	"github.com/faiface/beep/speaker"
-	"github.com/faiface/beep/wav"
+	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/speaker"
+	"github.com/gopxl/beep/wav"
 	"math/rand/v2"
 	"time"
 )
