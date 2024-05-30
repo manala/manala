@@ -8,7 +8,7 @@ linters:
     - nilerr
     - nlreturn
     - nonamedreturns
-    # - perfsprint
+    - perfsprint
     # - prealloc
     - predeclared
     # - revive

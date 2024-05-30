@@ -2,7 +2,6 @@ package list
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
@@ -64,7 +63,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output) 
 	}
 
 	return output.List(
-		fmt.Sprintf("Recipes available in %s", repository.Url()),
+		"Recipes available in "+repository.Url(),
 		NewUiRecipeList(recipes),
 	)
 }
