@@ -64,10 +64,12 @@ func indent(s string) string {
 }
 
 func Equal(t *testing.T, expected string, actual any, args ...any) {
-	// Trim actual
-	var actuals []string
-	for _, _actual := range strings.Split(fmt.Sprintf("%s", actual), "\n") {
-		actuals = append(actuals, strings.TrimRight(_actual, " "))
+	strs := strings.Split(fmt.Sprintf("%s", actual), "\n")
+
+	// Trim actual strings
+	actuals := make([]string, len(strs))
+	for i, str := range strs {
+		actuals[i] = strings.TrimRight(str, " ")
 	}
 
 	assert.Equal(t,

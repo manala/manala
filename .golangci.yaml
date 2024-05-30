@@ -9,7 +9,7 @@ linters:
     - nlreturn
     - nonamedreturns
     - perfsprint
-    # - prealloc
+    - prealloc
     - predeclared
     # - revive
     - stylecheck

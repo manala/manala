@@ -62,7 +62,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	// Sort alphabetically
 	sort.Slice(files, func(a, b int) bool { return files[a].Name() < files[b].Name() })
 
-	var recipes []app.Recipe
+	recipes := make([]app.Recipe, 0)
 
 	for _, file := range files {
 		if !file.IsDir() {

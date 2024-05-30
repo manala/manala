@@ -62,15 +62,17 @@ func (recipe *Recipe) ProjectManifestTemplate() *template.Template {
 }
 
 func (recipe *Recipe) ProjectValidator() validator.Validator {
-	// Option validators
-	var optionValidators []validator.Validator
-	for _, _option := range recipe.Options() {
-		optionValidators = append(optionValidators, option.NewPathedValidator(_option))
+	options := recipe.Options()
+
+	// Validators
+	validators := make([]validator.Validator, len(options))
+	for i, _option := range options {
+		validators[i] = option.NewPathedValidator(_option)
 	}
 
 	return validator.Validators(
 		schema.NewValidator(recipe.Schema()),
-		validator.Validators(optionValidators...),
+		validator.Validators(validators...),
 	)
 }
 
