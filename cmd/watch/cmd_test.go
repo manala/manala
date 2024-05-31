@@ -23,7 +23,7 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
 
-func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
@@ -35,7 +35,6 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 		api.New(
 			log,
 			cache.New(""),
-			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 		ui,
 		notifier.NewNil(),
@@ -54,7 +53,7 @@ func (s *Suite) TestProjectErrors() {
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/ProjectNotFound/project")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 		)
 
@@ -75,7 +74,7 @@ func (s *Suite) TestProjectErrors() {
 	s.Run("WrongProjectManifest", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/WrongProjectManifest/project")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 		)
 
@@ -95,7 +94,7 @@ func (s *Suite) TestProjectErrors() {
 	s.Run("EmptyProjectManifest", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/EmptyProjectManifest/project")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 		)
 
@@ -125,7 +124,7 @@ func (s *Suite) TestProjectErrors() {
 	s.Run("InvalidProjectManifest", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/InvalidProjectManifest/project")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 		)
 
@@ -167,7 +166,7 @@ func (s *Suite) TestRepositoryErrors() {
 	s.Run("NoRepository", func() {
 		projectDir := filepath.FromSlash("testdata/TestRepositoryErrors/NoRepository/project")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 		)
 
@@ -189,7 +188,7 @@ func (s *Suite) TestRepositoryErrors() {
 		projectDir := filepath.FromSlash("testdata/TestRepositoryErrors/RepositoryNotFound/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/RepositoryNotFound/repository")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 			"--repository", repositoryURL,
 		)
@@ -212,7 +211,7 @@ func (s *Suite) TestRepositoryErrors() {
 		projectDir := filepath.FromSlash("testdata/TestRepositoryErrors/WrongRepository/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/WrongRepository/repository")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 			"--repository", repositoryURL,
 		)
@@ -237,7 +236,7 @@ func (s *Suite) TestRecipeErrors() {
 		projectDir := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 			"--repository", repositoryURL,
 			"--recipe", "recipe",
@@ -262,7 +261,7 @@ func (s *Suite) TestRecipeErrors() {
 		projectDir := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 			"--repository", repositoryURL,
 			"--recipe", "recipe",
@@ -285,7 +284,7 @@ func (s *Suite) TestRecipeErrors() {
 		projectDir := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
 
-		stdOut, stdErr, err := s.execute("",
+		stdOut, stdErr, err := s.execute(
 			projectDir,
 			"--repository", repositoryURL,
 			"--recipe", "recipe",

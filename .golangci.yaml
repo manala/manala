@@ -17,6 +17,6 @@ linters:
     - testifylint
     - thelper
     - unconvert
-    # - unparam
+    - unparam
     # - whitespace
     # - wsl
