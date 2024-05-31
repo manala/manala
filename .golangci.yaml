@@ -14,7 +14,7 @@ linters:
     # - revive
     - stylecheck
     # - testpackage
-    # - testifylint
+    - testifylint
     # - thelper
     - unconvert
     # - unparam

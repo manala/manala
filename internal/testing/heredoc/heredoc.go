@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Doc(doc string, args ...any) string {
@@ -80,7 +81,7 @@ func Equal(t *testing.T, expected string, actual any, args ...any) {
 
 func EqualFile(t *testing.T, expected string, path string, args ...any) {
 	content, err := os.ReadFile(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Fix line endings
 	content = bytes.ReplaceAll(content, []byte("\r\n"), []byte{'\n'})

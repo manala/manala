@@ -53,8 +53,8 @@ func (s *LoaderSuite) TestLoad() {
 
 	recipe, err := loader.Load(repositoryMock, "name")
 
+	s.Require().NoError(err)
 	s.Equal(recipeMock, recipe)
-	s.NoError(err)
 	handlerMock.AssertExpectations(s.T())
 }
 
@@ -101,10 +101,10 @@ func (s *LoaderSuite) TestLoadAll() {
 
 	recipes, err := loader.LoadAll(repository)
 
+	s.Require().NoError(err)
 	s.Equal([]app.Recipe{
 		recipeMock,
 		recipeMock,
 	}, recipes)
-	s.NoError(err)
 	handlerMock.AssertExpectations(s.T())
 }

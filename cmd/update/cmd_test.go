@@ -170,8 +170,7 @@ func (s *Suite) TestRecursiveProjectErrors() {
 			"--recursive",
 		)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		s.Empty(stdOut)
 		heredoc.Equal(s.T(), `
 			 • loading projects recursive…
@@ -352,8 +351,7 @@ func (s *Suite) TestRepositoryCustom() {
 		"--repository", repositoryURL,
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
@@ -376,8 +374,7 @@ func (s *Suite) TestRepositoryConfig() {
 		projectDir,
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
@@ -500,8 +497,7 @@ func (s *Suite) TestRecipeCustom() {
 		"--recipe", "recipe",
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…

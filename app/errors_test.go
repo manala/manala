@@ -16,14 +16,14 @@ func (s *ErrorsSuite) TestProject() {
 	s.Run("AlreadyExistingProjectError", func() {
 		err := &AlreadyExistingProjectError{Dir: "dir"}
 
-		s.EqualError(err, "already existing project")
+		s.Require().EqualError(err, "already existing project")
 		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
 	})
 
 	s.Run("NotFoundProjectError", func() {
 		err := &NotFoundProjectError{Dir: "dir"}
 
-		s.EqualError(err, "project not found")
+		s.Require().EqualError(err, "project not found")
 		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
 	})
 }
@@ -36,7 +36,7 @@ func (s *ErrorsSuite) TestRecipe() {
 
 		err := &NotFoundRecipeError{Repository: repositoryMock, Name: "name"}
 
-		s.EqualError(err, "recipe not found")
+		s.Require().EqualError(err, "recipe not found")
 		s.Equal([]any{"repository", "url", "name", "name"}, err.ErrorArguments())
 	})
 }
@@ -45,13 +45,13 @@ func (s *ErrorsSuite) TestRepository() {
 	s.Run("NotFoundRepositoryError", func() {
 		err := &NotFoundRepositoryError{URL: "url"}
 
-		s.EqualError(err, "repository not found")
+		s.Require().EqualError(err, "repository not found")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 	s.Run("UnsupportedRepositoryError", func() {
 		err := &UnsupportedRepositoryError{URL: "url"}
 
-		s.EqualError(err, "unsupported repository url")
+		s.Require().EqualError(err, "unsupported repository url")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 	s.Run("EmptyRepositoryError", func() {
@@ -61,7 +61,7 @@ func (s *ErrorsSuite) TestRepository() {
 
 		err := &EmptyRepositoryError{Repository: repositoryMock}
 
-		s.EqualError(err, "empty repository")
+		s.Require().EqualError(err, "empty repository")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
 }

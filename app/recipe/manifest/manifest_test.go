@@ -809,7 +809,7 @@ func (s *ManifestSuite) TestReadFrom() {
 			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
 			_, err := manifest.ReadFrom(manifestFile)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 
 			s.Equal(test.expectedDescription, manifest.Description())
 			s.Equal(test.expectedIcon, manifest.Icon())
@@ -831,7 +831,7 @@ func (s *ManifestSuite) TestOptions() {
 
 	options := manifest.Options()
 
-	s.NoError(err)
+	s.Require().NoError(err)
 
 	s.Len(options, 13)
 

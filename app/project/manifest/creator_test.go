@@ -77,8 +77,8 @@ func (s *CreatorSuite) TestCreate() {
 	creator := NewCreator()
 	project, err := creator.Create(projectDir, recipe, vars)
 
+	s.Require().NoError(err)
 	s.NotNil(project)
-	s.NoError(err)
 
 	heredoc.EqualFile(s.T(), `
 		manala:

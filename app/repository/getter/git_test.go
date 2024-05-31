@@ -32,8 +32,8 @@ func (s *GitSuite) TestLoaderHandler() {
 		handler := NewGitLoaderHandler(log.Discard, cache)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.NotNil(repository)
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 
 		s.DirExists(filepath.Join(cacheDir, "repositories", "0abe222eb5c9f101220b454d055bd5cbbb419722eddec6ad296f343f"))
@@ -52,8 +52,8 @@ func (s *GitSuite) TestLoaderHandler() {
 		handler := NewGitLoaderHandler(log.Discard, cache)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.NotNil(repository)
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 
 		s.DirExists(filepath.Join(cacheDir, "repositories", "fb19e43b4b91cd3024866d556a7d04f40cc66e18c5f7098b9a4af8d0"))

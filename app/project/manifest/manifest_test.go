@@ -421,8 +421,7 @@ func (s *ManifestSuite) TestReadFrom() {
 			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
 			_, err := manifest.ReadFrom(manifestFile)
 
-			s.NoError(err)
-
+			s.Require().NoError(err)
 			s.Equal(test.expectedRecipe, manifest.Recipe())
 			s.Equal(test.expectedRepository, manifest.Repository())
 			s.Equal(test.expectedVars, manifest.Vars())

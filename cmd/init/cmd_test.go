@@ -171,8 +171,7 @@ func (s *Suite) TestRepositoryCustom() {
 		"--recipe", "recipe",
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • finding project…
@@ -207,8 +206,7 @@ func (s *Suite) TestRepositoryConfig() {
 		"--recipe", "recipe",
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	s.Empty(stdOut)
 	heredoc.Equal(s.T(), `
 		 • finding project…

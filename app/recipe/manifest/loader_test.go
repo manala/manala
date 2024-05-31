@@ -57,8 +57,8 @@ func (s *LoaderSuite) TestLoaderHandler() {
 	handler := NewLoaderHandler(log.Discard)
 	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(filepath.Join(repositoryURL, "recipe"), recipe.Dir())
 	s.Equal(repositoryURL, recipe.Repository().URL())
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

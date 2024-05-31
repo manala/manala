@@ -43,7 +43,7 @@ func (s *LoaderSuite) TestLoad() {
 
 	repository, err := loader.Load("url")
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	handlerMock.AssertExpectations(s.T())
 }

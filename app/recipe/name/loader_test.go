@@ -30,7 +30,7 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repositoryMock, Name: ""}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(recipeMock, recipe)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

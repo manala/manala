@@ -138,8 +138,7 @@ func (s *Suite) TestRepositoryCustom() {
 		"--repository", repositoryURL,
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
 		Recipes available in %[1]s
 		─────────────────────────────────────────────────────────────
@@ -159,8 +158,7 @@ func (s *Suite) TestRepositoryConfig() {
 
 	stdOut, stdErr, err := s.execute(repositoryURL)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
 		Recipes available in %[1]s
 		─────────────────────────────────────────────────────────────

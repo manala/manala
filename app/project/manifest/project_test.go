@@ -71,8 +71,7 @@ func (s *ProjectSuite) Test() {
 			WithDefaultContent(`{{ .Vars | toYaml }}`).
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		heredoc.Equal(s.T(), `
 			bar: project
 			baz: project

@@ -49,8 +49,8 @@ func (s *S3Suite) TestLoaderHandler() {
 	handler := NewS3LoaderHandler(log.Discard, cache)
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+	s.Require().NoError(err)
 	s.NotNil(repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 
 	s.DirExists(filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b"))

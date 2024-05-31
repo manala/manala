@@ -58,8 +58,7 @@ func (s *RecipeSuite) Test() {
 			WithDefaultContent(`{{ template "_helpers" }}`).
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		s.Equal("_helpers", out.String())
 	})
 
@@ -70,8 +69,7 @@ func (s *RecipeSuite) Test() {
 		err := template.
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		s.Equal("bar", out.String())
 	})
 

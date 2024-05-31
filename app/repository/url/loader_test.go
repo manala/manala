@@ -54,7 +54,7 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: ""}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

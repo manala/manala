@@ -45,8 +45,8 @@ func (s *LoaderSuite) TestLoad() {
 
 	project, err := loader.Load("dir")
 
+	s.Require().NoError(err)
 	s.Equal(projectMock, project)
-	s.NoError(err)
 	handlerMock.AssertExpectations(s.T())
 }
 
@@ -89,6 +89,6 @@ func (s *LoaderSuite) TestLoadRecursive() {
 		return nil
 	})
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	handlerMock.AssertExpectations(s.T())
 }

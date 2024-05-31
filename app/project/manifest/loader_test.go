@@ -104,8 +104,8 @@ func (s *LoaderSuite) TestLoaderHandler() {
 	handler := NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
 	project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(projectDir, project.Dir())
 	s.Equal(map[string]any{"foo": "bar"}, project.Vars())
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

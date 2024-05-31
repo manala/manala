@@ -95,7 +95,7 @@ func (s *Suite) TestUnmarshal() {
 
 			err := Unmarshal([]byte(test.data), &value)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, value)
 		})
 	}

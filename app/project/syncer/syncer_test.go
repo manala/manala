@@ -45,7 +45,7 @@ func (s *Suite) TestSync() {
 	syncer := New(log.Discard)
 	err := syncer.Sync(project)
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	heredoc.EqualFile(s.T(), `
 		File
 	`, filepath.Join(projectDir, "file.txt"))

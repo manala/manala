@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type Assertion struct {
@@ -20,7 +21,7 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 		assert.IsType(t, assertion.Type, err)
 	}
 
-	assert.EqualError(t, err, assertion.Message)
+	require.EqualError(t, err, assertion.Message)
 
 	// Arguments
 	if _err, ok := err.(ErrorArguments); ok {

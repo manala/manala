@@ -32,8 +32,8 @@ func (s *LoaderSuite) TestHandler() {
 
 	repository, err := handler.Handle(handlerQueryFoo, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 
 	// Second call with same name should extract from cache, and not chain to next handler
@@ -41,8 +41,8 @@ func (s *LoaderSuite) TestHandler() {
 
 	repository, err = handler.Handle(handlerQueryFoo, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 
 	// Third call with different name should chain to next handler
@@ -51,7 +51,7 @@ func (s *LoaderSuite) TestHandler() {
 
 	repository, err = handler.Handle(handlerQueryBar, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

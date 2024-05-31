@@ -18,7 +18,7 @@ func (s *Suite) TestGet() {
 	accessor := New(&value)
 	_value, err := accessor.Get()
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal("foo", _value)
 }
 
@@ -28,6 +28,6 @@ func (s *Suite) TestSet() {
 	accessor := New(&value)
 	err := accessor.Set("bar")
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal("bar", value)
 }

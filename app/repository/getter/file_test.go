@@ -24,8 +24,8 @@ func (s *FileSuite) TestLoaderHandler() {
 		handler := NewFileLoaderHandler(log.Discard)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.Equal(url, repository.URL())
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 	})
 
@@ -38,8 +38,8 @@ func (s *FileSuite) TestLoaderHandler() {
 		handler := NewFileLoaderHandler(log.Discard)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.Equal(url, repository.URL())
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 	})
 }

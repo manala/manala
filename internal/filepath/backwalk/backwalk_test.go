@@ -21,7 +21,7 @@ func (s *Suite) Test() {
 	err := BackwalkDir(
 		filepath.Join(dir, "foo", "bar"),
 		func(path string, entry os.DirEntry, err error) error {
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(
 				[]string{
 					filepath.Join(dir, "foo", "bar"),

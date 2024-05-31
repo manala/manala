@@ -31,7 +31,7 @@ func (s *Suite) TestWriteTo() {
 	template := s.provider.Template()
 	err := template.WriteTo(s.buffer)
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal("", s.buffer.String())
 
 	s.Run("DefaultFile", func() {
@@ -44,7 +44,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ template "foo" . }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
@@ -57,7 +57,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
@@ -68,7 +68,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ "baz" }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("baz", s.buffer.String())
 	})
 
@@ -82,7 +82,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ "baz" }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
@@ -94,7 +94,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithData("foo")
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("foo", s.buffer.String())
 	})
 
