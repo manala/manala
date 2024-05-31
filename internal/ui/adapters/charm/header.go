@@ -10,7 +10,6 @@ func newHeaderModel(header string, renderer *lipgloss.Renderer) headerModel {
 		header: header,
 		style:  headerStyle.New(renderer),
 	}
-
 }
 
 type headerModel struct {

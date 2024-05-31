@@ -25,7 +25,6 @@ func (s *Suite) execute(content string, data any) string {
 }
 
 func (s *Suite) TestFunctionToYaml() {
-
 	s.Run("Default", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]any{
 			"foo": map[string]any{

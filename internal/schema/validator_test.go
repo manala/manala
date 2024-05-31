@@ -139,7 +139,6 @@ func (s *Suite) TestValidatorPath() {
 			path := validator.path(test.field)
 
 			s.Equal(test.expected, path.String())
-
 		})
 	}
 }

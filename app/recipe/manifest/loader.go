@@ -39,7 +39,6 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 	} else if fileInfo.IsDir() {
 		return nil, serrors.New("recipe manifest is a directory").
 			WithArguments("dir", file)
-
 	}
 
 	manifest := New()

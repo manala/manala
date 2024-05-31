@@ -21,7 +21,6 @@ func NewJSON(err error) Error {
 				"field", err.Field,
 				"type", err.Type.String(),
 			)
-
 		} else {
 			message = "cannot unmarshal into value"
 			arguments = append(arguments,

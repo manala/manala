@@ -18,5 +18,5 @@ linters:
     - thelper
     - unconvert
     - unparam
-    # - whitespace
+    - whitespace
     # - wsl

@@ -26,7 +26,6 @@ func (syncer *Syncer) Sync(project app.Project) error {
 			unit.Destination(),
 			project,
 		); err != nil {
-
 			return err
 		}
 	}

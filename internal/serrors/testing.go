@@ -30,7 +30,6 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 		assert.Equal(t, assertion.Arguments, _err.ErrorArguments())
 	} else if assertion.Arguments != nil {
 		assert.Fail(t, "Error does not contains arguments")
-
 	}
 
 	// Details

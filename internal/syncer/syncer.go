@@ -124,7 +124,6 @@ func (syncer *Syncer) syncNode(node *node) error {
 		}
 
 		return nil
-
 	} else {
 		// Log
 		syncer.log.Debug("sync file",
