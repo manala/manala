@@ -65,6 +65,8 @@ func indent(s string) string {
 }
 
 func Equal(t *testing.T, expected string, actual any, args ...any) {
+	t.Helper()
+
 	strs := strings.Split(fmt.Sprintf("%s", actual), "\n")
 
 	// Trim actual strings
@@ -80,6 +82,8 @@ func Equal(t *testing.T, expected string, actual any, args ...any) {
 }
 
 func EqualFile(t *testing.T, expected string, path string, args ...any) {
+	t.Helper()
+
 	content, err := os.ReadFile(path)
 	require.NoError(t, err)
 

@@ -12,6 +12,7 @@ type UnitsAssertion []struct {
 }
 
 func EqualUnits(t *testing.T, assertion *UnitsAssertion, units []UnitInterface) {
+	t.Helper()
 	assert.Len(t, units, len(*assertion))
 	for i, a := range *assertion {
 		assert.Equal(t, a.Source, units[i].Source())

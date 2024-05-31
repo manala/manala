@@ -17,6 +17,8 @@ type Assertion struct {
 }
 
 func Equal(t *testing.T, assertion *Assertion, err error) {
+	t.Helper()
+
 	if assertion.Type != nil {
 		assert.IsType(t, assertion.Type, err)
 	}
