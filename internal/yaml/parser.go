@@ -44,7 +44,7 @@ func (parser *Parser) ParseFile(filename string) (goYamlAst.Node, error) {
 
 func (parser *Parser) ParseBytes(bytes []byte) (goYamlAst.Node, error) {
 	// Parse with comments ?
-	var mode goYamlParser.Mode = 0
+	var mode goYamlParser.Mode
 	if parser.comments {
 		mode = goYamlParser.ParseComments
 	}

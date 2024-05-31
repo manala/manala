@@ -52,17 +52,18 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	manifest := New()
 
 	// Open file
-	if reader, err := os.Open(file); err != nil {
+	reader, err := os.Open(file)
+	if err != nil {
 		return nil, serrors.New("unable to open project manifest").
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))
-	} else {
-		// Read from file
-		if _, err = manifest.ReadFrom(reader); err != nil {
-			return nil, serrors.New("unable to read project manifest").
-				WithArguments("file", file).
-				WithErrors(err)
-		}
+	}
+
+	// Read from file
+	if _, err = manifest.ReadFrom(reader); err != nil {
+		return nil, serrors.New("unable to read project manifest").
+			WithArguments("file", file).
+			WithErrors(err)
 	}
 
 	handler.log.Debug("project manifest loaded", "file", file,
@@ -119,8 +120,8 @@ func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain proje
 	var project app.Project
 
 	// Backwalk from dir
-	if err := backwalk.BackwalkDir(dir,
-		func(path string, entry os.DirEntry, err error) error {
+	if err := backwalk.WalkDir(dir,
+		func(path string, _ os.DirEntry, err error) error {
 			if err != nil {
 				return serrors.New("file system error").
 					WithArguments("path", path).

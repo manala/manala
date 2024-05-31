@@ -1,7 +1,6 @@
 package manifest
 
 import (
-	_ "embed"
 	"manala/app"
 	"manala/internal/template"
 	"path/filepath"

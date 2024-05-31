@@ -74,21 +74,21 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recurs
 				return api.NewProjectSyncer().Sync(project)
 			},
 		)
-	} else {
-		// Get project loader
-		projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,
-			api.WithProjectLoaderFrom(true),
-		)
-
-		// Load project
-		log.Info("loading project…")
-
-		project, err := projectLoader.Load(dir)
-		if err != nil {
-			return err
-		}
-
-		// Sync project
-		return api.NewProjectSyncer().Sync(project)
 	}
+
+	// Get project loader
+	projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,
+		api.WithProjectLoaderFrom(true),
+	)
+
+	// Load project
+	log.Info("loading project…")
+
+	project, err := projectLoader.Load(dir)
+	if err != nil {
+		return err
+	}
+
+	// Sync project
+	return api.NewProjectSyncer().Sync(project)
 }

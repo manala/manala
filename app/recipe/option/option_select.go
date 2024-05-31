@@ -9,7 +9,7 @@ import (
 	"manala/internal/validator"
 )
 
-func NewSelectOption(option *option, fields map[string]any) (*SelectOption, error) {
+func NewSelectOption(option *option, _ map[string]any) (*SelectOption, error) {
 	// Option
 	selectOption := &SelectOption{
 		option: option,

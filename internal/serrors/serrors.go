@@ -44,7 +44,7 @@ func (err Error) ErrorDetails(ansi bool) string {
 }
 
 func (err Error) WithDetails(details string) Error {
-	err.detailsFunc = func(ansi bool) string {
+	err.detailsFunc = func(_ bool) string {
 		return details
 	}
 

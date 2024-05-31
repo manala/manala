@@ -121,7 +121,8 @@ func (s *ErrorsSuite) TestError() {
 		},
 		{
 			test: "MultiError",
-			err:  errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
+			//revive:disable:error-strings
+			err: errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
 			expected: &serrors.Assertion{
 				Message: "unable to handle repository",
 				Details: "bar\nbaz",

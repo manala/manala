@@ -11,7 +11,7 @@ linters:
     - perfsprint
     - prealloc
     - predeclared
-    # - revive
+    - revive
     - stylecheck
     # - testpackage
     - testifylint

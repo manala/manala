@@ -127,138 +127,138 @@ func (syncer *Syncer) syncNode(node *node) error {
 		}
 
 		return nil
-	} else {
-		// Log
-		syncer.log.Debug("sync file",
-			"src", relSrcPath,
-			"dst", relDstPath,
-		)
+	}
 
-		if node.Dst.IsExist {
-			// Destination is a directory; remove
-			if node.Dst.IsDir {
-				if err := os.RemoveAll(node.Dst.Path); err != nil {
-					return serrors.New("file system error").
-						WithArguments("dir", node.Dst.Path).
-						WithErrors(serrors.NewOs(err))
-				}
+	// Log
+	syncer.log.Debug("sync file",
+		"src", relSrcPath,
+		"dst", relDstPath,
+	)
 
-				node.Dst.IsExist = false
-				node.Dst.IsDir = false
-			}
-			// Node is a dist and destination already exists (or was a directory); exit
-			if node.IsDist {
-				return nil
-			}
-		} else {
-			// Ensure destination parents directories exists
-			if dir := filepath.Dir(node.Dst.Path); dir != "." {
-				if err := os.MkdirAll(dir, 0755); err != nil {
-					return serrors.New("file system error").
-						WithArguments("dir", dir).
-						WithErrors(serrors.NewOs(err))
-				}
-			}
-		}
-
-		equal := false
-
-		var srcReader io.Reader
-
-		if node.IsTmpl {
-			// Write template
-			buffer := &bytes.Buffer{}
-			if err := node.TemplateProvider.Template().WithFile(node.Src.Path).WriteTo(buffer); err != nil {
-				return serrors.New("template error").
-					WithErrors(err)
-			}
-
-			srcReader = bytes.NewReader(buffer.Bytes())
-
-			if node.Dst.IsExist {
-				// Get template hash
-				hash := sha1.New()
-				if _, err := io.Copy(hash, buffer); err != nil {
-					return err
-				}
-
-				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
-			}
-		} else {
-			// Node is not a template, let's go buffering \o/
-			srcFile, err := os.Open(node.Src.Path)
-			if err != nil {
+	if node.Dst.IsExist {
+		// Destination is a directory; remove
+		if node.Dst.IsDir {
+			if err := os.RemoveAll(node.Dst.Path); err != nil {
 				return serrors.New("file system error").
-					WithArguments("file", node.Src.Path).
+					WithArguments("dir", node.Dst.Path).
 					WithErrors(serrors.NewOs(err))
 			}
 
-			//goland:noinspection GoUnhandledErrorResult
-			defer srcFile.Close()
-
-			if node.Dst.IsExist {
-				// Get source hash
-				hash := sha1.New()
-				if _, err := io.Copy(hash, srcFile); err != nil {
-					return err
-				}
-
-				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
-
-				if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
-					return err
-				}
+			node.Dst.IsExist = false
+			node.Dst.IsDir = false
+		}
+		// Node is a dist and destination already exists (or was a directory); exit
+		if node.IsDist {
+			return nil
+		}
+	} else {
+		// Ensure destination parents directories exists
+		if dir := filepath.Dir(node.Dst.Path); dir != "." {
+			if err := os.MkdirAll(dir, 0755); err != nil {
+				return serrors.New("file system error").
+					WithArguments("dir", dir).
+					WithErrors(serrors.NewOs(err))
 			}
+		}
+	}
 
-			srcReader = srcFile
+	equal := false
+
+	var srcReader io.Reader
+
+	if node.IsTmpl {
+		// Write template
+		buffer := &bytes.Buffer{}
+		if err := node.TemplateProvider.Template().WithFile(node.Src.Path).WriteTo(buffer); err != nil {
+			return serrors.New("template error").
+				WithErrors(err)
 		}
 
-		// Files are not equals or destination does not exists
-		if !equal {
-			// Destination file mode
-			var dstMode os.FileMode = 0666
-			if node.Src.IsExecutable {
-				dstMode = 0777
+		srcReader = bytes.NewReader(buffer.Bytes())
+
+		if node.Dst.IsExist {
+			// Get template hash
+			hash := sha1.New()
+			if _, err := io.Copy(hash, buffer); err != nil {
+				return err
 			}
 
-			// Create or truncate destination file
-			dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
-			if err != nil {
+			equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
+		}
+	} else {
+		// Node is not a template, let's go buffering \o/
+		srcFile, err := os.Open(node.Src.Path)
+		if err != nil {
+			return serrors.New("file system error").
+				WithArguments("file", node.Src.Path).
+				WithErrors(serrors.NewOs(err))
+		}
+
+		//goland:noinspection GoUnhandledErrorResult
+		defer srcFile.Close()
+
+		if node.Dst.IsExist {
+			// Get source hash
+			hash := sha1.New()
+			if _, err := io.Copy(hash, srcFile); err != nil {
+				return err
+			}
+
+			equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
+
+			if _, err := srcFile.Seek(0, io.SeekStart); err != nil {
+				return err
+			}
+		}
+
+		srcReader = srcFile
+	}
+
+	// Files are not equals or destination does not exists
+	if !equal {
+		// Destination file mode
+		var dstMode os.FileMode = 0666
+		if node.Src.IsExecutable {
+			dstMode = 0777
+		}
+
+		// Create or truncate destination file
+		dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
+		if err != nil {
+			return serrors.New("file system error").
+				WithArguments("file", node.Dst.Path).
+				WithErrors(serrors.NewOs(err))
+		}
+
+		//goland:noinspection GoUnhandledErrorResult
+		defer dstFile.Close()
+
+		// Copy from source to destination
+		_, err = io.Copy(dstFile, srcReader)
+		if err != nil {
+			return err
+		}
+
+		// Log
+		syncer.log.Info("file synced",
+			"path", relDstPath,
+		)
+	} else {
+		dstMode := node.Dst.Mode &^ 0111
+		if node.Src.IsExecutable {
+			dstMode = node.Dst.Mode | 0111
+		}
+
+		if dstMode != node.Dst.Mode {
+			if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
 				return serrors.New("file system error").
 					WithArguments("file", node.Dst.Path).
 					WithErrors(serrors.NewOs(err))
 			}
-
-			//goland:noinspection GoUnhandledErrorResult
-			defer dstFile.Close()
-
-			// Copy from source to destination
-			_, err = io.Copy(dstFile, srcReader)
-			if err != nil {
-				return err
-			}
-
-			// Log
-			syncer.log.Info("file synced",
-				"path", relDstPath,
-			)
-		} else {
-			dstMode := node.Dst.Mode &^ 0111
-			if node.Src.IsExecutable {
-				dstMode = node.Dst.Mode | 0111
-			}
-
-			if dstMode != node.Dst.Mode {
-				if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
-					return serrors.New("file system error").
-						WithArguments("file", node.Dst.Path).
-						WithErrors(serrors.NewOs(err))
-				}
-			}
 		}
-
-		return nil
 	}
+
+	return nil
 }
 
 type node struct {
@@ -301,11 +301,11 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 		if errors.Is(err, os.ErrNotExist) {
 			return nil, serrors.New("no source file or directory").
 				WithArguments("path", srcPath)
-		} else {
-			return nil, serrors.New("file system error").
-				WithArguments("path", srcPath).
-				WithErrors(serrors.NewOs(err))
 		}
+
+		return nil, serrors.New("file system error").
+			WithArguments("path", srcPath).
+			WithErrors(serrors.NewOs(err))
 	}
 
 	node.Src.IsDir = srcStat.IsDir()

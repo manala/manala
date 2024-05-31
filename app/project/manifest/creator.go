@@ -56,22 +56,23 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 			WithArguments("path", _dir)
 	}
 
-	if writer, err := os.Create(manifestFile); err != nil {
+	writer, err := os.Create(manifestFile)
+	if err != nil {
 		return nil, serrors.New("unable to create project manifest file").
 			WithArguments("file", manifestFile).
 			WithErrors(serrors.NewOs(err))
-	} else {
-		if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
-			return nil, serrors.New("unable to save project manifest file").
-				WithArguments("file", manifestFile).
-				WithErrors(err)
-		}
+	}
 
-		if err := writer.Sync(); err != nil {
-			return nil, serrors.New("unable to sync project manifest file").
-				WithArguments("file", manifestFile).
-				WithErrors(err)
-		}
+	if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
+		return nil, serrors.New("unable to save project manifest file").
+			WithArguments("file", manifestFile).
+			WithErrors(err)
+	}
+
+	if err := writer.Sync(); err != nil {
+		return nil, serrors.New("unable to sync project manifest file").
+			WithArguments("file", manifestFile).
+			WithErrors(err)
 	}
 
 	// Final project

@@ -56,7 +56,7 @@ func (s *LoaderSuite) TestLoadRecursiveErrors() {
 
 		loader := NewLoader(log.Discard, WithLoaderHandlers(handlerMock))
 
-		err := loader.LoadRecursive("dir", func(project app.Project) error {
+		err := loader.LoadRecursive("dir", func(_ app.Project) error {
 			return nil
 		})
 

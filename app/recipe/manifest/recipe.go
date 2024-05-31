@@ -81,7 +81,7 @@ func (recipe *Recipe) Watches() ([]string, error) {
 
 	if err := filepath.WalkDir(
 		recipe.Dir(),
-		func(path string, entry fs.DirEntry, err error) error {
+		func(path string, entry fs.DirEntry, _ error) error {
 			if entry.IsDir() {
 				dirs = append(dirs, path)
 			}

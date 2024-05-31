@@ -18,9 +18,9 @@ func (s *Suite) Test() {
 	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0
-	err := BackwalkDir(
+	err := WalkDir(
 		filepath.Join(dir, "foo", "bar"),
-		func(path string, entry os.DirEntry, err error) error {
+		func(path string, _ os.DirEntry, err error) error {
 			s.Require().NoError(err)
 			s.Equal(
 				[]string{

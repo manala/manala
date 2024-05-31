@@ -44,17 +44,18 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 	manifest := New()
 
 	// Open file
-	if reader, err := os.Open(file); err != nil {
+	reader, err := os.Open(file)
+	if err != nil {
 		return nil, serrors.New("unable to open recipe manifest").
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))
-	} else {
-		// Read from file
-		if _, err = manifest.ReadFrom(reader); err != nil {
-			return nil, serrors.New("unable to read recipe manifest").
-				WithArguments("file", file).
-				WithErrors(err)
-		}
+	}
+
+	// Read from file
+	if _, err = manifest.ReadFrom(reader); err != nil {
+		return nil, serrors.New("unable to read recipe manifest").
+			WithArguments("file", file).
+			WithErrors(err)
 	}
 
 	handler.log.Debug("recipe manifest loaded", "file", file)

@@ -9,7 +9,7 @@ import (
 	"manala/internal/validator"
 )
 
-func NewTextOption(option *option, fields map[string]any) (*TextOption, error) {
+func NewTextOption(option *option, _ map[string]any) (*TextOption, error) {
 	// Schema type *MUST* be string
 	if t, ok := option.schema["type"]; !ok || t != "string" {
 		return nil, serrors.New("invalid recipe option string type").

@@ -1,7 +1,6 @@
 package mascot
 
 import (
-	_ "embed"
 	"math/rand/v2"
 	"time"
 

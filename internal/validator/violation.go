@@ -109,11 +109,11 @@ func CompareViolations(a Violation, b Violation) int {
 		}
 
 		return 1
-	} else {
-		if a.Line > b.Line {
-			return 1
-		}
-
-		return -1
 	}
+
+	if a.Line > b.Line {
+		return 1
+	}
+
+	return -1
 }
