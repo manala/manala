@@ -39,6 +39,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	comment := node.GetComment()
 	if comment != nil {
 		var tags yaml.Tags
+
 		yaml.ParseCommentTags(comment.String(), &tags)
 		optionTags = tags.Filter("option")
 		schemaTags = tags.Filter("schema")

@@ -41,6 +41,7 @@ func MessageFromError(err error, ansi bool) *Message {
 				if len(arguments) == 1 {
 					arguments = nil
 				}
+
 				message.Attributes = append(message.Attributes, &MessageAttribute{
 					Key:   key,
 					Value: arguments[1],

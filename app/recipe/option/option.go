@@ -94,6 +94,7 @@ func New(reader io.Reader, optionSchema schema.Schema, optionPath path.Path) (ap
 
 	// Type
 	var optionType string
+
 	if optionType, ok = fields["type"].(string); !ok {
 		// Auto detection
 		if _, ok := optionSchema["enum"]; ok {

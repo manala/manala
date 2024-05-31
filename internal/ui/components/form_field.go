@@ -63,9 +63,11 @@ func (field *formField) Submit() (bool, error) {
 	if err := field.validate(); err != nil {
 		return false, err
 	}
+
 	if len(field.violations) != 0 {
 		return false, nil
 	}
+
 	if err := field.accessor.Set(field.value); err != nil {
 		return false, err
 	}

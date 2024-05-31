@@ -63,6 +63,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 	if !filepath.IsAbs(request.Src) {
 		var err error
 		request.Pwd, err = os.Getwd()
+
 		if err != nil {
 			return nil, serrors.New("unable to get current directory")
 		}
@@ -81,6 +82,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 	// Switch back to relative dst
 	if request.Pwd != "" {
 		var err error
+
 		response.Dst, err = filepath.Rel(request.Pwd, response.Dst)
 		if err != nil {
 			return nil, serrors.New("unable to get relative path")

@@ -103,6 +103,7 @@ func (watcher *Watcher) syncWatches(fsWatcher *fsnotify.Watcher, project app.Pro
 	for _, path := range watches {
 		if !slices.Contains(currentWatches, path) {
 			watcher.log.Debug("add watch", "path", path)
+
 			if err := fsWatcher.Add(path); err != nil {
 				return err
 			}
@@ -113,6 +114,7 @@ func (watcher *Watcher) syncWatches(fsWatcher *fsnotify.Watcher, project app.Pro
 	for _, path := range currentWatches {
 		if !slices.Contains(watches, path) {
 			watcher.log.Debug("remove watch", "path", path)
+
 			if err := fsWatcher.Remove(path); err != nil {
 				return err
 			}

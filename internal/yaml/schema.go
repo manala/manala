@@ -39,6 +39,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	comment := node.GetComment()
 	if comment != nil {
 		var tags Tags
+
 		ParseCommentTags(comment.String(), &tags)
 		schemaTags = tags.Filter("schema")
 	}
@@ -73,6 +74,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		// Ensure schema is set
 		inf.schema["type"] = "object"
 		inf.schema["additionalProperties"] = false
+
 		if _, ok := inf.schema["properties"]; !ok {
 			inf.schema["properties"] = map[string]any{}
 		}

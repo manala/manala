@@ -67,6 +67,7 @@ func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if model.Repeat > 0 {
 				model.Repeat--
 			}
+
 			cmd = model.yellStop
 		}
 	}

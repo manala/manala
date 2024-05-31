@@ -59,6 +59,7 @@ func (processor *Processor) Process(url string) (string, error) {
 					WithArguments("query", entryQuery).
 					WithErrors(err)
 			}
+
 			_ = mergo.Merge(&entry.query, values)
 		}
 

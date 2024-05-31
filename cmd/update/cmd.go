@@ -12,8 +12,10 @@ import (
 
 func NewCmd(log *slog.Logger, api *api.API) *cobra.Command {
 	// Flags
-	var repositoryURL, repositoryRef, recipeName string
-	var recursive bool
+	var (
+		repositoryURL, repositoryRef, recipeName string
+		recursive                                bool
+	)
 
 	// Command
 	cmd := &cobra.Command{
@@ -80,6 +82,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recurs
 
 		// Load project
 		log.Info("loading project…")
+
 		project, err := projectLoader.Load(dir)
 		if err != nil {
 			return err

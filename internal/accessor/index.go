@@ -26,6 +26,7 @@ func (accessor *indexAccessor[I]) GetIndex() (int, error) {
 	if *accessor.item == *new(I) {
 		return -1, nil
 	}
+
 	index := slices.Index(accessor.items, *accessor.item)
 	if index == -1 {
 		return 0, serrors.New("invalid item")
@@ -40,9 +41,11 @@ func (accessor *indexAccessor[I]) SetIndex(index int) error {
 
 		return nil
 	}
+
 	if index < 0 || index >= len(accessor.items) {
 		return serrors.New("invalid item index")
 	}
+
 	*accessor.item = accessor.items[index]
 
 	return nil

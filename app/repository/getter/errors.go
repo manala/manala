@@ -46,6 +46,7 @@ func NewError(err error) serrors.Error {
 		if code := err.Code(); code != "" {
 			arguments = append(arguments, "code", code)
 		}
+
 		if message := err.Message(); message != "" {
 			arguments = append(arguments, "message", message)
 		}

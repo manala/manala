@@ -51,6 +51,7 @@ func (i *modelsIndex) Next() int {
 	if i.Circular {
 		return (i.index + 1) % len(*i.models)
 	}
+
 	index := i.index + 1
 	if index == len(*i.models) {
 		index--

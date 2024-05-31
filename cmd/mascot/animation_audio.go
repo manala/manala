@@ -17,8 +17,11 @@ var animationAudioStreamer beep.StreamSeekCloser
 func (model Animation) yellAudio() error {
 	// Lazy load streamer and init speaker at the same time
 	if animationAudioStreamer == nil {
-		var format beep.Format
-		var err error
+		var (
+			format beep.Format
+			err    error
+		)
+
 		animationAudioStreamer, format, err = wav.Decode(bytes.NewReader(*model.AudioYell))
 		if err != nil {
 			return err
@@ -38,9 +41,11 @@ func (model Animation) yellAudio() error {
 
 	// Play
 	done := make(chan bool)
+
 	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
 		done <- true
 	})))
+
 	<-done
 
 	return nil

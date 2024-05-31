@@ -5,6 +5,7 @@ import "regexp"
 func ParseCommentTags(comment string, tags *Tags) {
 	// Lexer
 	tokens := make([][2]string, 0)
+
 	for _, submatch := range tagRegex.FindAllStringSubmatch(comment, -1) {
 		for i, match := range submatch {
 			if i != 0 && match != "" {
@@ -17,6 +18,7 @@ func ParseCommentTags(comment string, tags *Tags) {
 	}
 	// Parser
 	tag := &Tag{}
+
 	for _, token := range tokens {
 		switch token[0] {
 		case "Tag":
@@ -24,8 +26,10 @@ func ParseCommentTags(comment string, tags *Tags) {
 				if tag.Value != "" {
 					*tags = append(*tags, tag)
 				}
+
 				tag = &Tag{}
 			}
+
 			tag.Name = token[1]
 		case "String":
 			if tag.Name != "" {
@@ -37,6 +41,7 @@ func ParseCommentTags(comment string, tags *Tags) {
 			}
 		}
 	}
+
 	if tag.Name != "" && tag.Value != "" {
 		*tags = append(*tags, tag)
 	}
@@ -60,10 +65,12 @@ type Tags []*Tag
 
 func (tags *Tags) Filter(name string) *Tags {
 	_tags := Tags{}
+
 	for _, tag := range *tags {
 		if tag.Name != name {
 			continue
 		}
+
 		_tags = append(_tags, tag)
 	}
 

@@ -142,6 +142,7 @@ func (s *ProcessorSuite) TestProcess() {
 			for weight, url := range test.urls {
 				processor.Add(url, weight)
 			}
+
 			for weight, queries := range test.queries {
 				for key, value := range queries {
 					processor.AddQuery(key, value, weight)

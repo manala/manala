@@ -98,9 +98,11 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		if _, ok := n.Key.(*goYamlAst.MergeKeyNode); ok {
 			return parser
 		}
+
 		if _, ok := n.Key.(*goYamlAst.StringNode); ok {
 			return parser
 		}
+
 		parser.err = NewNodeError("irregular map key", node)
 
 		return nil
@@ -163,14 +165,17 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 		for _, v := range values {
 			// Merge values
 			mergedValues := make([]*goYamlAst.MappingValueNode, 0)
+
 			if _, ok := v.Key.(*goYamlAst.MergeKeyNode); ok {
 				if vv, ok := v.Value.(*goYamlAst.AliasNode); ok {
 					alias := vv.Value.GetToken().Value
+
 					anchor := parser.anchors[alias]
 					if anchor == nil {
 						return nil, NewNodeError("cannot find anchor", vv.Value).
 							WithArguments("anchor", alias)
 					}
+
 					switch a := anchor.(type) {
 					case *goYamlAst.MappingNode:
 						mergedValues = a.Values
@@ -196,6 +201,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 						break
 					}
 				}
+
 				deduplicatedValues = append(deduplicatedValues, mv)
 
 				// Resolve
@@ -203,6 +209,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				if err != nil {
 					return nil, err
 				}
+
 				mv.Value = value
 			}
 		}
@@ -235,11 +242,13 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			n.Values[idx] = value
 		}
 	case *goYamlAst.AliasNode:
 		alias := n.Value.GetToken().Value
 		anchor := parser.anchors[alias]
+
 		if anchor == nil {
 			return nil, NewNodeError("cannot find anchor", n.Value).
 				WithArguments("anchor", alias)

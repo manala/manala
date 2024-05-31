@@ -73,6 +73,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	// Read content
 	content, err := io.ReadAll(reader)
 	n := int64(len(content))
+
 	if err != nil {
 		return n, serrors.New("unable to read recipe manifest").
 			WithErrors(err)

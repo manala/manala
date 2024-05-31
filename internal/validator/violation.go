@@ -44,6 +44,7 @@ func (violation Violation) StructuredError() serrors.Error {
 	if violation.StructuredMessage != "" {
 		message = violation.StructuredMessage
 	}
+
 	err := serrors.New(message)
 
 	// Arguments
@@ -101,6 +102,7 @@ func CompareViolations(a Violation, b Violation) int {
 	if a.Column == b.Column && a.Line == b.Line {
 		return 0
 	}
+
 	if a.Column >= b.Column {
 		if a.Line < b.Line {
 			return -1

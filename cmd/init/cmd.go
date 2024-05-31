@@ -54,6 +54,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, di
 
 	// Check already existing project
 	log.Info("finding project…")
+
 	if projectFinder.Find(dir) {
 		return &app.AlreadyExistingProjectError{Dir: dir}
 	}
@@ -63,6 +64,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, di
 
 	// Load repository
 	log.Info("loading repository…")
+
 	repository, err := repositoryLoader.Load("")
 	if err != nil {
 		return err
@@ -76,12 +78,14 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, di
 	if _, ok := app.RecipeName(ctx); ok {
 		// Load recipe by context
 		log.Info("loading recipe…")
+
 		if recipe, err = recipeLoader.Load(repository, ""); err != nil {
 			return err
 		}
 	} else {
 		// Select recipe
 		log.Info("loading recipes…")
+
 		recipes, err := recipeLoader.LoadAll(repository)
 		if err != nil {
 			return err
@@ -120,6 +124,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, di
 
 	// Create project
 	log.Info("creating project…")
+
 	project, err := api.NewProjectCreator().Create(dir, recipe, vars)
 	if err != nil {
 		return err

@@ -31,6 +31,7 @@ func (validator *validator) Validate(value any) (Violations, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		violations = append(violations, _violations...)
 	}
 
@@ -63,11 +64,13 @@ type validators []Validator
 
 func (validators validators) Validate(value any) (Violations, error) {
 	var violations Violations
+
 	for _, validator := range validators {
 		_violations, err := validator.Validate(value)
 		if err != nil {
 			return nil, err
 		}
+
 		violations = append(violations, _violations...)
 	}
 

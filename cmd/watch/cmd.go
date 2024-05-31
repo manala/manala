@@ -16,8 +16,10 @@ import (
 
 func NewCmd(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
-	var repositoryURL, repositoryRef, recipeName string
-	var all, notify bool
+	var (
+		repositoryURL, repositoryRef, recipeName string
+		all, notify                              bool
+	)
 
 	// Command
 	cmd := &cobra.Command{
@@ -67,6 +69,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 
 	// Load project
 	log.Info("loading project…")
+
 	project, err := projectLoader.Load(dir)
 	if err != nil {
 		return err
@@ -82,8 +85,10 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 		Watch(ctx, project, func(project app.Project) app.Project {
 			// Load project
 			log.Info("loading project…")
+
 			if project, err = projectLoader.Load(project.Dir()); err != nil {
 				output.Error(err)
+
 				if notify {
 					notifier.Error(err)
 				}
@@ -93,8 +98,10 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 
 			// Sync project
 			log.Info("syncing project…")
+
 			if err = api.NewProjectSyncer().Sync(project); err != nil {
 				output.Error(err)
+
 				if notify {
 					notifier.Error(err)
 				}

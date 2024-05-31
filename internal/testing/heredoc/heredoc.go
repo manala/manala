@@ -33,6 +33,7 @@ func Doc(doc string, args ...any) string {
 
 	// Find shorter line indentation
 	shorterIndent := ""
+
 	for _, line := range lines {
 		lineIndent := indent(line)
 		if lineIndent != "" && (len(lineIndent) < len(shorterIndent) || shorterIndent == "") {
@@ -53,6 +54,7 @@ func Doc(doc string, args ...any) string {
 
 func indent(s string) string {
 	var indent strings.Builder
+
 	for _, r := range s {
 		if r == '\t' {
 			indent.WriteRune(r)

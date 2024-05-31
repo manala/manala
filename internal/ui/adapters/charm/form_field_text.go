@@ -97,6 +97,7 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
+
 		if key.Matches(msg, SelectKeys) {
 			cmds.Add(formFieldInput)
 		}

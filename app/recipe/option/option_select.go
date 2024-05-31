@@ -21,6 +21,7 @@ func NewSelectOption(option *option, fields map[string]any) (*SelectOption, erro
 		return nil, serrors.New("invalid recipe option enum").
 			WithArguments("label", option.label)
 	}
+
 	if len(enum) == 0 {
 		return nil, serrors.New("empty recipe option enum").
 			WithArguments("label", option.label)
@@ -28,6 +29,7 @@ func NewSelectOption(option *option, fields map[string]any) (*SelectOption, erro
 
 	// Values
 	selectOption.Values = make([]any, len(enum))
+
 	for i := range enum {
 		if value, ok := json.NumberType(enum[i]); ok {
 			selectOption.Values[i] = value.Normalize()

@@ -69,6 +69,7 @@ func (handler *SlogHandler) Handle(_ context.Context, record slog.Record) error 
 
 	// Collect attrs
 	attrs = append(attrs, handler.attrs...)
+
 	record.Attrs(func(attr slog.Attr) bool {
 		attrs = append(attrs, attr)
 

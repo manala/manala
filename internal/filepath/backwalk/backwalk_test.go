@@ -30,7 +30,9 @@ func (s *Suite) Test() {
 				}[i],
 				path,
 			)
+
 			i++
+
 			if path == dir {
 				return filepath.SkipAll
 			}

@@ -51,6 +51,7 @@ func (syncer *Syncer) Sync(
 func (syncer *Syncer) syncNode(node *node) error {
 	relSrcPath, _ := filepath.Rel(node.Src.Dir, node.Src.Path)
 	relDstPath, _ := filepath.Rel(node.Dst.Dir, node.Dst.Path)
+
 	if node.Src.IsDir {
 		// Log
 		syncer.log.Debug("sync dir",
@@ -65,6 +66,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 					WithArguments("file", node.Dst.Path).
 					WithErrors(serrors.NewOs(err))
 			}
+
 			node.Dst.IsExist = false
 		}
 
@@ -85,6 +87,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Iterate over source files
 		// Make a map of destination files map for quick lookup; used in deletion below
 		dstMap := make(map[string]bool)
+
 		for _, file := range node.Src.Files {
 			fileNode, err := newNode(
 				node.Src.Dir,
@@ -139,6 +142,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 						WithArguments("dir", node.Dst.Path).
 						WithErrors(serrors.NewOs(err))
 				}
+
 				node.Dst.IsExist = false
 				node.Dst.IsDir = false
 			}
@@ -177,6 +181,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 				if _, err := io.Copy(hash, buffer); err != nil {
 					return err
 				}
+
 				equal = bytes.Equal(hash.Sum(nil), node.Dst.Hash)
 			}
 		} else {
@@ -302,6 +307,7 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 				WithErrors(serrors.NewOs(err))
 		}
 	}
+
 	node.Src.IsDir = srcStat.IsDir()
 
 	if node.Src.IsDir {
@@ -340,6 +346,7 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 				WithArguments("path", dstPath).
 				WithErrors(serrors.NewOs(err))
 		}
+
 		node.Dst.IsExist = false
 	} else {
 		node.Dst.IsExist = true
@@ -357,6 +364,7 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 					WithArguments("dir", dstPath).
 					WithErrors(serrors.NewOs(err))
 			}
+
 			for _, file := range files {
 				node.Dst.Files = append(node.Dst.Files, file.Name())
 			}

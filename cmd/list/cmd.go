@@ -47,6 +47,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output) 
 
 	// Load repository
 	log.Info("loading repository…")
+
 	repository, err := repositoryLoader.Load("")
 	if err != nil {
 		return err
@@ -57,6 +58,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output) 
 
 	// Load recipes
 	log.Info("loading recipes…")
+
 	recipes, err := recipeLoader.LoadAll(repository)
 	if err != nil {
 		return err

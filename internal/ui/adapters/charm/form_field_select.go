@@ -102,6 +102,7 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
+
 		if model.open {
 			switch {
 			case key.Matches(msg, NextKeys):
@@ -140,6 +141,7 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for i := range model.options {
 				if model.zone.Get(fmt.Sprintf("%soption_%d", model.zonePrefix, i)).InBounds(msg) {
 					model.hoverIndex.Set(i)
+
 					if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 						cmds.Add(model.updateIndex(i))
 						model.Close()
@@ -187,6 +189,7 @@ func (model *formFieldSelectModel) Open(resetHover bool) {
 	if resetHover {
 		model.hoverIndex.Reset()
 	}
+
 	model.open = true
 }
 

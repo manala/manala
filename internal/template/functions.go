@@ -45,15 +45,18 @@ func functionInclude(template *textTemplate.Template) func(name string, data any
 
 	return func(name string, data any) (string, error) {
 		var buf strings.Builder
+
 		if v, ok := includedNames[name]; ok {
 			if v > 1000 {
 				return "", serrors.New("rendering template has a nested reference").
 					WithArguments("reference", name)
 			}
+
 			includedNames[name]++
 		} else {
 			includedNames[name] = 1
 		}
+
 		err := template.ExecuteTemplate(&buf, name, data)
 
 		return buf.String(), err

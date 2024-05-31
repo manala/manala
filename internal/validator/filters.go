@@ -35,6 +35,7 @@ func (filter Filter) Format(violation *Violation) {
 	if filter.Message != "" {
 		violation.Message = filter.Message
 	}
+
 	if filter.StructuredMessage != "" {
 		violation.StructuredMessage = filter.StructuredMessage
 	}

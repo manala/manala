@@ -13,8 +13,10 @@ func NewJSON(err error) Error {
 		arguments = append(arguments, "offset", err.Offset)
 	case *json.UnmarshalTypeError:
 		arguments = append(arguments, "offset", err.Offset)
+
 		if err.Struct != "" || err.Field != "" {
 			message = "cannot unmarshal into struct field"
+
 			arguments = append(arguments,
 				"value", err.Value,
 				"struct", err.Struct,
@@ -23,6 +25,7 @@ func NewJSON(err error) Error {
 			)
 		} else {
 			message = "cannot unmarshal into value"
+
 			arguments = append(arguments,
 				"value", err.Value,
 				"type", err.Type.String(),
@@ -30,6 +33,7 @@ func NewJSON(err error) Error {
 		}
 	case *json.InvalidUnmarshalError:
 		message = "invalid unmarshal argument"
+
 		arguments = append(arguments, "type", err.Type.String())
 	}
 

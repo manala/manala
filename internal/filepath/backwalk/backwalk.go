@@ -29,6 +29,7 @@ func backwalkDir(path string, dir os.DirEntry, backwalkDirFunc fs.WalkDirFunc) e
 	// Get parent dir
 	parent := filepath.Join(path, "..")
 	parentAbs, err := filepath.Abs(parent)
+
 	if err != nil {
 		// Second call, to report parent Abs error
 		err = backwalkDirFunc(parent, dir, err)
@@ -74,6 +75,7 @@ func BackwalkDir(dir string, fn fs.WalkDirFunc) error {
 	} else {
 		err = backwalkDir(dir, fs.FileInfoToDirEntry(info), fn)
 	}
+
 	if err == filepath.SkipAll {
 		return nil
 	}

@@ -139,6 +139,7 @@ func (scroll scrollModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelDown:
 			scroll.upTo(scroll.line + 1)
 		}
+
 		msg.X -= leftFrameSize
 		msg.Y -= topFrameSize - scroll.line
 		scroll.model = cmds.Update(

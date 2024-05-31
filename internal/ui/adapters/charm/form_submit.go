@@ -46,6 +46,7 @@ func (model formSubmitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
+
 		if key.Matches(msg, SelectKeys) {
 			cmds.Add(model.submit())
 		}
@@ -67,9 +68,11 @@ func (model *formSubmitModel) submit() tea.Cmd {
 	if err != nil {
 		return errCmd(err)
 	}
+
 	if !ok {
 		// Find thirst field with violations
 		var index int
+
 		for i, field := range model.form.Fields {
 			if len(field.Violations()) != 0 {
 				index = i

@@ -15,9 +15,11 @@ func (api *API) NewRepositoryLoader(ctx context.Context) *repository.Loader {
 	if api.defaultRepositoryURL != "" {
 		urlProcessor.Add(api.defaultRepositoryURL, -10)
 	}
+
 	if url, ok := app.RepositoryURL(ctx); ok {
 		urlProcessor.Add(url, 10)
 	}
+
 	if ref, ok := app.RepositoryRef(ctx); ok {
 		urlProcessor.AddQuery("ref", ref, 20)
 	}
