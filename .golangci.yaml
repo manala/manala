@@ -1,11 +1,16 @@
 linters:
   # See: https://golangci-lint.run/usage/linters/
   enable:
+    - dogsled
+    - dupl
     - exportloopref
     - gocritic
     - godot
+    - gofmt
     - goimports
+    - misspell
     - nilerr
+    - nilnil
     - nlreturn
     - nonamedreturns
     - perfsprint
@@ -20,3 +25,13 @@ linters:
     - unparam
     - whitespace
     - wsl
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+      - shadow
+
+issues:
+  max-same-issues: 10
