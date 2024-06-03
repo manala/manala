@@ -21,6 +21,7 @@ func (err Error) Error() string {
 
 func (err Error) WithMessage(message string) Error {
 	err.message = message
+
 	return err
 }
 
@@ -30,6 +31,7 @@ func (err Error) ErrorArguments() []any {
 
 func (err Error) WithArguments(arguments ...any) Error {
 	err.arguments = append(err.arguments, arguments...)
+
 	return err
 }
 
@@ -37,18 +39,21 @@ func (err Error) ErrorDetails(ansi bool) string {
 	if err.detailsFunc == nil {
 		return ""
 	}
+
 	return err.detailsFunc(ansi)
 }
 
 func (err Error) WithDetails(details string) Error {
-	err.detailsFunc = func(ansi bool) string {
+	err.detailsFunc = func(_ bool) string {
 		return details
 	}
+
 	return err
 }
 
 func (err Error) WithDetailsFunc(detailsFunc func(ansi bool) string) Error {
 	err.detailsFunc = detailsFunc
+
 	return err
 }
 
@@ -64,5 +69,6 @@ func (err Error) WithErrors(errors ...error) Error {
 			return err == nil
 		},
 	)...)
+
 	return err
 }

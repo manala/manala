@@ -34,7 +34,9 @@ func (field *FormFieldSelect) SetIndex(index int) error {
 	if index < 0 || index >= len(field.Options) {
 		return serrors.New("invalid select index")
 	}
+
 	field.value = field.Options[index].Value()
+
 	return nil
 }
 

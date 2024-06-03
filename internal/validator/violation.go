@@ -9,11 +9,11 @@ import (
 type ViolationType int
 
 const (
-	REQUIRED ViolationType = iota + 1
-	INVALID_TYPE
-	ADDITIONAL_PROPERTY_NOT_ALLOWED
-	STRING_GTE
-	STRING_LTE
+	Required ViolationType = iota + 1
+	InvalidType
+	AdditionalPropertyNotAllowed
+	StringGte
+	StringLte
 )
 
 func NewViolation(message string) Violation {
@@ -44,6 +44,7 @@ func (violation Violation) StructuredError() serrors.Error {
 	if violation.StructuredMessage != "" {
 		message = violation.StructuredMessage
 	}
+
 	err := serrors.New(message)
 
 	// Arguments
@@ -84,6 +85,7 @@ func (violations Violations) Errors() []error {
 	for i := range violations {
 		errs[i] = violations[i].Error()
 	}
+
 	return errs
 }
 
@@ -92,6 +94,7 @@ func (violations Violations) StructuredErrors() []error {
 	for i := range violations {
 		errs[i] = violations[i].StructuredError()
 	}
+
 	return errs
 }
 
@@ -99,15 +102,18 @@ func CompareViolations(a Violation, b Violation) int {
 	if a.Column == b.Column && a.Line == b.Line {
 		return 0
 	}
+
 	if a.Column >= b.Column {
 		if a.Line < b.Line {
 			return -1
 		}
+
 		return 1
-	} else {
-		if a.Line > b.Line {
-			return 1
-		}
-		return -1
 	}
+
+	if a.Line > b.Line {
+		return 1
+	}
+
+	return -1
 }

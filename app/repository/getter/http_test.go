@@ -1,25 +1,27 @@
-package getter
+package getter_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/app/repository/getter"
+	"manala/internal/caching"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-type HttpSuite struct{ suite.Suite }
+type HTTPSuite struct{ suite.Suite }
 
 func TestHttpSuite(t *testing.T) {
-	suite.Run(t, new(HttpSuite))
+	suite.Run(t, new(HTTPSuite))
 }
 
-func (s *HttpSuite) TestLoaderHandler() {
+func (s *HTTPSuite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
-	cache := cache.New(cacheDir)
+	cache := caching.NewCache(cacheDir)
 
 	s.Run("Zip", func() {
 		_ = os.RemoveAll(cacheDir)
@@ -28,11 +30,11 @@ func (s *HttpSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewHttpLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := getter.NewHTTPLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.NotNil(repository)
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 
 		s.DirExists(filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97"))
@@ -48,11 +50,11 @@ func (s *HttpSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewHttpLoaderHandler(log.Discard, cache)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := getter.NewHTTPLoaderHandler(log.Discard, cache)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+		s.Require().NoError(err)
 		s.NotNil(repository)
-		s.NoError(err)
 		chainMock.AssertExpectations(s.T())
 
 		s.DirExists(filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8"))

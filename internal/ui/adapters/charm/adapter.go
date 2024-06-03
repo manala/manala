@@ -1,11 +1,12 @@
 package charm
 
 import (
+	"io"
+	"slices"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
-	"io"
-	"slices"
 )
 
 func New(in io.Reader, out io.Writer, err io.Writer) *Adapter {
@@ -50,10 +51,12 @@ func (i *modelsIndex) Next() int {
 	if i.Circular {
 		return (i.index + 1) % len(*i.models)
 	}
+
 	index := i.index + 1
 	if index == len(*i.models) {
 		index--
 	}
+
 	return index
 }
 
@@ -70,6 +73,7 @@ func (i *modelsIndex) Previous() int {
 			index = 0
 		}
 	}
+
 	return index
 }
 
@@ -95,6 +99,7 @@ func (i *modelsIndex) Last() int {
 
 func newCmds() *cmds {
 	cmds := make(cmds, 0)
+
 	return &cmds
 }
 
@@ -106,11 +111,13 @@ func (c *cmds) Add(cmds ...tea.Cmd) *cmds {
 			return cmd == nil
 		})...,
 	)
+
 	return c
 }
 
 func (c *cmds) AddSequence(cmds ...tea.Cmd) *cmds {
 	c.Add(tea.Sequence(cmds...))
+
 	return c
 }
 
@@ -118,6 +125,7 @@ func (c *cmds) Init(models ...tea.Model) *cmds {
 	for _, model := range models {
 		c.Add(model.Init())
 	}
+
 	return c
 }
 
@@ -127,6 +135,7 @@ func (c *cmds) Update(model tea.Model, msgs ...tea.Msg) tea.Model {
 		model, cmd = model.Update(msg)
 		c.Add(cmd)
 	}
+
 	return model
 }
 

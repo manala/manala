@@ -21,5 +21,6 @@ func (accessor accessor) Get() (any, error) {
 
 func (accessor accessor) Set(value any) error {
 	*accessor.value = value
+
 	return nil
 }

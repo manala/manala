@@ -1,10 +1,12 @@
-package getter
+package getter_test
 
 import (
 	"errors"
-	"github.com/stretchr/testify/suite"
+	"manala/app/repository/getter"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ErrorsSuite struct{ suite.Suite }
@@ -44,15 +46,15 @@ func (s *ErrorsSuite) TestIsNotDetected() {
 	for _, test := range tests {
 		s.Run(test.test, func() {
 			if test.expected {
-				s.True(IsNotDetected(test.err))
+				s.True(getter.IsNotDetected(test.err))
 			} else {
-				s.False(IsNotDetected(test.err))
+				s.False(getter.IsNotDetected(test.err))
 			}
 		})
 	}
 }
 
-// Mimic an aws sdk error to avoid direct dependency on it
+// Mimic an aws sdk error to avoid direct dependency on it.
 type awsErrorTest struct{}
 
 func (awsErrorTest) Error() string   { return "error" }
@@ -120,7 +122,8 @@ func (s *ErrorsSuite) TestError() {
 		},
 		{
 			test: "MultiError",
-			err:  errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
+			//revive:disable:error-strings
+			err: errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
 			expected: &serrors.Assertion{
 				Message: "unable to handle repository",
 				Details: "bar\nbaz",
@@ -130,7 +133,7 @@ func (s *ErrorsSuite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			serrors.Equal(s.T(), test.expected, NewError(test.err))
+			serrors.Equal(s.T(), test.expected, getter.NewError(test.err))
 		})
 	}
 }

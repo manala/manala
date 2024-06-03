@@ -2,12 +2,12 @@ package api
 
 import (
 	"log/slog"
-	"manala/internal/cache"
+	"manala/internal/caching"
 )
 
-// New creates an api
-func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *Api {
-	api := &Api{
+// New creates an api.
+func New(log *slog.Logger, cache *caching.Cache, opts ...Option) *API {
+	api := &API{
 		log:   log,
 		cache: cache,
 	}
@@ -20,16 +20,16 @@ func New(log *slog.Logger, cache *cache.Cache, opts ...Option) *Api {
 	return api
 }
 
-type Api struct {
+type API struct {
 	log                  *slog.Logger
-	cache                *cache.Cache
-	defaultRepositoryUrl string
+	cache                *caching.Cache
+	defaultRepositoryURL string
 }
 
-type Option func(api *Api)
+type Option func(api *API)
 
-func WithDefaultRepositoryUrl(url string) Option {
-	return func(api *Api) {
-		api.defaultRepositoryUrl = url
+func WithDefaultRepositoryURL(url string) Option {
+	return func(api *API) {
+		api.defaultRepositoryURL = url
 	}
 }

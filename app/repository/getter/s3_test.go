@@ -1,12 +1,10 @@
-package getter
+package getter_test
 
 import (
 	"fmt"
-	"github.com/johannesboyne/gofakes3"
-	"github.com/johannesboyne/gofakes3/backend/s3mem"
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/app/repository/getter"
+	"manala/internal/caching"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
 	"net"
@@ -15,6 +13,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/johannesboyne/gofakes3"
+	"github.com/johannesboyne/gofakes3/backend/s3mem"
+	"github.com/stretchr/testify/suite"
 )
 
 type S3Suite struct{ suite.Suite }
@@ -25,7 +27,7 @@ func TestS3Suite(t *testing.T) {
 
 func (s *S3Suite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
-	cache := cache.New(cacheDir)
+	cache := caching.NewCache(cacheDir)
 
 	_ = os.RemoveAll(cacheDir)
 
@@ -45,11 +47,11 @@ func (s *S3Suite) TestLoaderHandler() {
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
-	handler := NewS3LoaderHandler(log.Discard, cache)
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+	handler := getter.NewS3LoaderHandler(log.Discard, cache)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
+	s.Require().NoError(err)
 	s.NotNil(repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 
 	s.DirExists(filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b"))

@@ -2,11 +2,12 @@ package charm
 
 import (
 	"fmt"
+	"manala/internal/ui/components"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"manala/internal/ui/components"
 )
 
 func newFormFieldSelectModel(field *components.FormFieldSelect, renderer *lipgloss.Renderer, zone *zone.Manager) formFieldSelectModel {
@@ -54,10 +55,10 @@ type formFieldSelectModel struct {
 	hoverIndex  *modelsIndex
 	zone        *zone.Manager
 	zonePrefix  string
-	style       *style
-	labelStyle  *style
-	helpStyle   *style
-	selectStyle *style
+	style       *Style
+	labelStyle  *Style
+	helpStyle   *Style
+	selectStyle *Style
 	*formFieldModel
 }
 
@@ -101,6 +102,7 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
+
 		if model.open {
 			switch {
 			case key.Matches(msg, NextKeys):
@@ -139,19 +141,17 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for i := range model.options {
 				if model.zone.Get(fmt.Sprintf("%soption_%d", model.zonePrefix, i)).InBounds(msg) {
 					model.hoverIndex.Set(i)
+
 					if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 						cmds.Add(model.updateIndex(i))
 						model.Close()
 					}
 				}
 			}
-		} else {
-			switch {
-			case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
-				// Open on left click
-				if model.zone.Get(model.zonePrefix + "select").InBounds(msg) {
-					model.Open(true)
-				}
+		} else if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
+			// Open on left click
+			if model.zone.Get(model.zonePrefix + "select").InBounds(msg) {
+				model.Open(true)
 			}
 		}
 	}
@@ -189,6 +189,7 @@ func (model *formFieldSelectModel) Open(resetHover bool) {
 	if resetHover {
 		model.hoverIndex.Reset()
 	}
+
 	model.open = true
 }
 
@@ -257,7 +258,7 @@ func newFormFieldSelectOptionModel(option *components.FormFieldSelectOption, wid
 type formFieldSelectOptionModel struct {
 	option *components.FormFieldSelectOption
 	width  *int
-	style  *style
+	style  *Style
 }
 
 func (model formFieldSelectOptionModel) Init() tea.Cmd {

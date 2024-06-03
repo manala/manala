@@ -1,9 +1,11 @@
-package name
+package name_test
 
 import (
-	"github.com/stretchr/testify/suite"
+	"manala/app/recipe/name"
 	"manala/internal/log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ProcessorSuite struct{ suite.Suite }
@@ -54,7 +56,7 @@ func (s *ProcessorSuite) TestProcess() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			processor := NewProcessor(log.Discard)
+			processor := name.NewProcessor(log.Discard)
 
 			for weight, name := range test.names {
 				processor.Add(name, weight)

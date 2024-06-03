@@ -1,11 +1,12 @@
 package template
 
 import (
-	"github.com/Masterminds/sprig/v3"
 	"io"
 	"manala/internal/serrors"
 	"path/filepath"
 	textTemplate "text/template"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 type ProviderInterface interface {

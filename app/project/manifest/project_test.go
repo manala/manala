@@ -1,14 +1,17 @@
-package manifest
+package manifest_test
 
 import (
 	"bytes"
 	_ "embed"
-	"github.com/stretchr/testify/suite"
 	"manala/app"
+	"manala/app/project/manifest"
 	"manala/internal/template"
 	"manala/internal/testing/heredoc"
+	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type ProjectSuite struct {
@@ -22,7 +25,7 @@ func TestProjectSuite(t *testing.T) {
 func (s *ProjectSuite) Test() {
 	repositoryMock := &app.RepositoryMock{}
 	repositoryMock.
-		On("Url").Return("repository")
+		On("URL").Return("repository")
 
 	recipeMock := &app.RecipeMock{}
 	recipeMock.
@@ -36,22 +39,22 @@ func (s *ProjectSuite) Test() {
 		On("Repository").Return(repositoryMock).
 		On("Template").Return(template.NewTemplate())
 
-	dir := filepath.Join("dir")
+	dir := filepath.FromSlash("testdata/ProjectSuite/Test")
 
-	manifest := &Manifest{
-		vars: map[string]any{
-			"bar": "project",
-			"baz": "project",
-		},
-	}
+	m := manifest.New()
 
-	project := NewProject(
+	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	_, err := m.ReadFrom(mFile)
+
+	s.Require().NoError(err)
+
+	project := manifest.NewProject(
 		dir,
-		manifest,
+		m,
 		recipeMock,
 	)
 
-	s.Equal("dir", project.Dir())
+	s.Equal(dir, project.Dir())
 	s.Equal(recipeMock, project.Recipe())
 
 	s.Run("Vars", func() {
@@ -70,8 +73,7 @@ func (s *ProjectSuite) Test() {
 			WithDefaultContent(`{{ .Vars | toYaml }}`).
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		heredoc.Equal(s.T(), `
 			bar: project
 			baz: project
@@ -81,9 +83,9 @@ func (s *ProjectSuite) Test() {
 	s.Run("Watches", func() {
 		watches, err := project.Watches()
 
+		s.Require().NoError(err)
 		s.Equal([]string{
-			filepath.Join(dir, filename),
+			filepath.Join(dir, ".manala.yaml"),
 		}, watches)
-		s.NoError(err)
 	})
 }

@@ -1,8 +1,10 @@
-package heredoc
+package heredoc_test
 
 import (
-	"github.com/stretchr/testify/suite"
+	"manala/internal/testing/heredoc"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -76,7 +78,7 @@ func (s *Suite) TestDoc() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			s.Equal(test.expected, Doc(test.doc, test.args...))
+			s.Equal(test.expected, heredoc.Doc(test.doc, test.args...))
 		})
 	}
 }

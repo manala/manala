@@ -1,21 +1,31 @@
-package components
+package components_test
 
 import (
 	"errors"
 	"manala/internal/serrors"
+	"manala/internal/ui/components"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestMessageFromError() {
+type MessageSuite struct{ suite.Suite }
+
+func TestMessageSuite(t *testing.T) {
+	suite.Run(t, new(MessageSuite))
+}
+
+func (s *MessageSuite) TestFromError() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *Message
+		expected *components.Message
 	}{
 		{
 			test: "Error",
 			err:  errors.New("error"),
-			expected: &Message{
-				Type:    ErrorMessageType,
+			expected: &components.Message{
+				Type:    components.ErrorMessageType,
 				Message: "error",
 			},
 		},
@@ -30,22 +40,22 @@ func (s *Suite) TestMessageFromError() {
 						WithArguments("bar", "baz").
 						WithDetails(`wrapped details`),
 				),
-			expected: &Message{
-				Type:    ErrorMessageType,
+			expected: &components.Message{
+				Type:    components.ErrorMessageType,
 				Message: "structured error",
-				Attributes: []*MessageAttribute{
+				Attributes: []*components.MessageAttribute{
 					{Key: "foo", Value: "bar"},
 				},
 				Details: `details`,
-				Messages: []*Message{
+				Messages: []*components.Message{
 					{
-						Type:    ErrorMessageType,
+						Type:    components.ErrorMessageType,
 						Message: "wrapped error",
 					},
 					{
-						Type:    ErrorMessageType,
+						Type:    components.ErrorMessageType,
 						Message: "wrapped structured error",
-						Attributes: []*MessageAttribute{
+						Attributes: []*components.MessageAttribute{
 							{Key: "bar", Value: "baz"},
 						},
 						Details: `wrapped details`,
@@ -57,7 +67,7 @@ func (s *Suite) TestMessageFromError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			message := MessageFromError(test.err, false)
+			message := components.MessageFromError(test.err, false)
 
 			s.Equal(test.expected, message)
 		})

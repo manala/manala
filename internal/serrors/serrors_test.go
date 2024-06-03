@@ -1,9 +1,11 @@
-package serrors
+package serrors_test
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/suite"
+	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -14,10 +16,10 @@ func TestSuite(t *testing.T) {
 
 func (s *Suite) TestError() {
 	s.Run("New", func() {
-		err := New("error")
+		err := serrors.New("error")
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
 		}, err)
 	})
@@ -25,11 +27,11 @@ func (s *Suite) TestError() {
 	s.Run("Message", func() {
 		message := "message"
 
-		err := New("error").
+		err := serrors.New("error").
 			WithMessage(message)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: message,
 		}, err)
 	})
@@ -38,11 +40,11 @@ func (s *Suite) TestError() {
 		foo := "foo"
 		bar := "bar"
 
-		err := New("error").
+		err := serrors.New("error").
 			WithArguments(foo, bar)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
 			Arguments: []any{
 				foo, bar,
@@ -53,11 +55,11 @@ func (s *Suite) TestError() {
 	s.Run("Details", func() {
 		details := "details"
 
-		err := New("error").
+		err := serrors.New("error").
 			WithDetails(details)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
 			Details: details,
 		}, err)
@@ -68,33 +70,33 @@ func (s *Suite) TestError() {
 			return fmt.Sprintf("details func %v", ansi)
 		}
 
-		err := New("error").
+		err := serrors.New("error").
 			WithDetailsFunc(detailsFunc)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
 			Details: "details func false",
 		}, err)
 	})
 
 	s.Run("Errors", func() {
-		foo := New("foo")
-		bar := New("bar")
+		foo := serrors.New("foo")
+		bar := serrors.New("bar")
 
-		err := New("error").
+		err := serrors.New("error").
 			WithErrors(foo, bar)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
-			Errors: []*Assertion{
+			Errors: []*serrors.Assertion{
 				{
-					Type:    Error{},
+					Type:    serrors.Error{},
 					Message: "foo",
 				},
 				{
-					Type:    Error{},
+					Type:    serrors.Error{},
 					Message: "bar",
 				},
 			},
@@ -102,17 +104,17 @@ func (s *Suite) TestError() {
 	})
 
 	s.Run("NilErrors", func() {
-		foo := New("foo")
+		foo := serrors.New("foo")
 
-		err := New("error").
+		err := serrors.New("error").
 			WithErrors(nil, foo, nil)
 
-		Equal(s.T(), &Assertion{
-			Type:    Error{},
+		serrors.Equal(s.T(), &serrors.Assertion{
+			Type:    serrors.Error{},
 			Message: "error",
-			Errors: []*Assertion{
+			Errors: []*serrors.Assertion{
 				{
-					Type:    Error{},
+					Type:    serrors.Error{},
 					Message: "foo",
 				},
 			},

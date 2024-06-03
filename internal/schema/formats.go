@@ -1,8 +1,9 @@
 package schema
 
 import (
-	"github.com/xeipuuv/gojsonschema"
 	"regexp"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 func init() {

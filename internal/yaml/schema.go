@@ -1,10 +1,11 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/json"
 	"manala/internal/schema"
 	"manala/internal/schema/inferrer"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewNodeSchemaInferrer(node goYamlAst.Node) *NodeSchemaInferrer {
@@ -38,6 +39,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	comment := node.GetComment()
 	if comment != nil {
 		var tags Tags
+
 		ParseCommentTags(comment.String(), &tags)
 		schemaTags = tags.Filter("schema")
 	}
@@ -72,6 +74,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		// Ensure schema is set
 		inf.schema["type"] = "object"
 		inf.schema["additionalProperties"] = false
+
 		if _, ok := inf.schema["properties"]; !ok {
 			inf.schema["properties"] = map[string]any{}
 		}
@@ -83,12 +86,11 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		if _, ok := n.Value.(goYamlAst.MapNode); ok {
 			return nil
 		}
-	} else {
+	} else if len(*schemaTags) > 0 {
 		// Misplaced tag
-		if len(*schemaTags) > 0 {
-			inf.err = NewNodeError("misplaced schema tag", node.GetComment())
-			return nil
-		}
+		inf.err = NewNodeError("misplaced schema tag", node.GetComment())
+
+		return nil
 	}
 
 	return inf

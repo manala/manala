@@ -1,11 +1,13 @@
-package getter
+package getter_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/repository"
+	"manala/app/repository/getter"
 	"manala/internal/log"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type FileSuite struct{ suite.Suite }
@@ -20,11 +22,11 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewFileLoaderHandler(log.Discard)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := getter.NewFileLoaderHandler(log.Discard)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
-		s.Equal(url, repository.Url())
-		s.NoError(err)
+		s.Require().NoError(err)
+		s.Equal(url, repository.URL())
 		chainMock.AssertExpectations(s.T())
 	})
 
@@ -34,11 +36,11 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewFileLoaderHandler(log.Discard)
-		repository, err := handler.Handle(&repository.LoaderQuery{Url: url}, chainMock)
+		handler := getter.NewFileLoaderHandler(log.Discard)
+		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
-		s.Equal(url, repository.Url())
-		s.NoError(err)
+		s.Require().NoError(err)
+		s.Equal(url, repository.URL())
 		chainMock.AssertExpectations(s.T())
 	})
 }

@@ -1,11 +1,12 @@
 package charm
 
 import (
+	"math"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"math"
-	"strings"
 )
 
 func newWindowModel(header string, model tea.Model, renderer *lipgloss.Renderer) windowModel {
@@ -41,6 +42,7 @@ func (window windowModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Error
 	case error:
 		window.err = msg
+
 		return window, tea.Quit
 	// Size
 	case tea.WindowSizeMsg:
@@ -107,7 +109,7 @@ type scrollModel struct {
 	height int
 	lines  []string
 	line   int
-	style  *style
+	style  *Style
 }
 
 func (scroll scrollModel) Init() tea.Cmd {
@@ -137,6 +139,7 @@ func (scroll scrollModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonWheelDown:
 			scroll.upTo(scroll.line + 1)
 		}
+
 		msg.X -= leftFrameSize
 		msg.Y -= topFrameSize - scroll.line
 		scroll.model = cmds.Update(
@@ -173,12 +176,13 @@ func (scroll *scrollModel) to(lineTop int, lineBottom int) {
 }
 
 func (scroll *scrollModel) upTo(line int) {
-	if line < 0 {
+	switch {
+	case line < 0:
 		scroll.line = 0
-	} else if len(scroll.lines) <= scroll.height {
+	case len(scroll.lines) <= scroll.height:
 		// Content height inferior to height
 		scroll.line = 0
-	} else {
+	default:
 		// Content height superior to height
 		scroll.line = min(line, len(scroll.lines)-scroll.height)
 	}
@@ -231,6 +235,7 @@ func toZoneCmd(zone *zone.ZoneInfo) tea.Cmd {
 		if zone == nil {
 			return nil
 		}
+
 		return toZoneMsg(zone)
 	}
 }

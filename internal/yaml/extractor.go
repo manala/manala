@@ -1,8 +1,9 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/serrors"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewExtractor(node *goYamlAst.Node) *Extractor {
@@ -30,10 +31,12 @@ func (extractor *Extractor) ExtractRootMap(key string) (goYamlAst.Node, error) {
 		for i, n := range node.Values {
 			if n.Key.GetToken().Value == key {
 				subject = n.Value
+
 				node.Values = append(node.Values[:i], node.Values[i+1:]...)
 				if len(node.Values) == 1 {
 					*extractor.node = node.Values[0]
 				}
+
 				break
 			}
 		}

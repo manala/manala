@@ -2,16 +2,17 @@ package getter
 
 import (
 	"context"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"time"
+
+	"github.com/hashicorp/go-getter/v2"
 )
 
-func NewHttpLoaderHandler(log *slog.Logger, cache *cache.Cache) *HttpLoaderHandler {
-	return &HttpLoaderHandler{
+func NewHTTPLoaderHandler(log *slog.Logger, cache *caching.Cache) *HTTPLoaderHandler {
+	return &HTTPLoaderHandler{
 		log:   log.With("handler", "getter.http"),
 		cache: cache.WithDir("repositories"),
 		client: &getter.Client{
@@ -34,18 +35,18 @@ func NewHttpLoaderHandler(log *slog.Logger, cache *cache.Cache) *HttpLoaderHandl
 	}
 }
 
-type HttpLoaderHandler struct {
+type HTTPLoaderHandler struct {
 	log    *slog.Logger
-	cache  *cache.Cache
+	cache  *caching.Cache
 	client *getter.Client
 }
 
-func (handler *HttpLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.Url)
+func (handler *HTTPLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
+	handler.log.Debug("handle repository", "url", query.URL)
 
 	// Cache dir
 	cacheDir, err := handler.cache.
-		WithHashDir(query.Url).
+		WithHashDir(query.URL).
 		Dir()
 	if err != nil {
 		return nil, err
@@ -53,7 +54,7 @@ func (handler *HttpLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 
 	// Request
 	request := &getter.Request{
-		Src:     query.Url,
+		Src:     query.URL,
 		Dst:     cacheDir,
 		GetMode: getter.ModeDir,
 	}
@@ -64,8 +65,9 @@ func (handler *HttpLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 
-	return NewRepository(query.Url, response.Dst), nil
+	return NewRepository(query.URL, response.Dst), nil
 }

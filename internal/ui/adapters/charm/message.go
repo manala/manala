@@ -2,9 +2,10 @@ package charm
 
 import (
 	"fmt"
-	"github.com/charmbracelet/lipgloss"
 	"manala/internal/ui/components"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (adapter *Adapter) Message(message *components.Message) {
@@ -25,7 +26,7 @@ func (adapter *Adapter) message(message *components.Message, renderer *lipgloss.
 		return ""
 	}
 
-	var symbolStyle, attributeKeyStyle *style
+	var symbolStyle, attributeKeyStyle *Style
 
 	switch message.Type {
 	case components.DebugMessageType:

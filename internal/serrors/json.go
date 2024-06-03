@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-func NewJson(err error) Error {
+func NewJSON(err error) Error {
 	message := err.Error()
 	arguments := []any{}
 
@@ -13,17 +13,19 @@ func NewJson(err error) Error {
 		arguments = append(arguments, "offset", err.Offset)
 	case *json.UnmarshalTypeError:
 		arguments = append(arguments, "offset", err.Offset)
+
 		if err.Struct != "" || err.Field != "" {
 			message = "cannot unmarshal into struct field"
+
 			arguments = append(arguments,
 				"value", err.Value,
 				"struct", err.Struct,
 				"field", err.Field,
 				"type", err.Type.String(),
 			)
-
 		} else {
 			message = "cannot unmarshal into value"
+
 			arguments = append(arguments,
 				"value", err.Value,
 				"type", err.Type.String(),
@@ -31,6 +33,7 @@ func NewJson(err error) Error {
 		}
 	case *json.InvalidUnmarshalError:
 		message = "invalid unmarshal argument"
+
 		arguments = append(arguments, "type", err.Type.String())
 	}
 

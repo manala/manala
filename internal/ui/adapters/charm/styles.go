@@ -22,9 +22,9 @@ var (
 		Light: lipgloss.CompleteColor{ANSI: "12", ANSI256: "57", TrueColor: "#5F00FF"},
 		Dark:  lipgloss.CompleteColor{ANSI: "6", ANSI256: "79", TrueColor: "#5FD7AF"},
 	}
-	// Message
+	// Message.
 	messageColor = primaryDarkColor
-	// Levels
+	// Levels.
 	debugColor = primaryColor
 	infoColor  = secondaryColor
 	warnColor  = lipgloss.CompleteAdaptiveColor{
@@ -38,82 +38,82 @@ var (
 )
 
 var (
-	// Levels
-	debugStyle = newStyleDefinition(
+	// Levels.
+	debugStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(debugColor),
 	)
-	debugSymbolStyle = newStyleDefinition(
+	debugSymbolStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1).
 			Border(bulletBorder, false, false, false, true).
 			BorderForeground(debugColor),
 	)
-	infoStyle = newStyleDefinition(
+	infoStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(infoColor),
 	)
-	infoSymbolStyle = newStyleDefinition(
+	infoSymbolStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1).
 			Border(bulletBorder, false, false, false, true).
 			BorderForeground(infoColor),
 	)
-	warnStyle = newStyleDefinition(
+	warnStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(warnColor),
 	)
-	warnSymbolStyle = newStyleDefinition(
+	warnSymbolStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1).
 			Border(warnBorder, false, false, false, true).
 			BorderForeground(warnColor),
 	)
-	errorStyle = newStyleDefinition(
+	errorStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(errorColor),
 	)
-	errorSymbolStyle = newStyleDefinition(
+	errorSymbolStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1).
 			Border(crossBorder, false, false, false, true).
 			BorderForeground(errorColor),
 	)
-	// Message
-	messageStyle = newStyleDefinition(
+	// Message.
+	messageStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
 	)
-	messageMessageStyle = newStyleDefinition(
+	messageMessageStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Width(32).
 			Foreground(messageColor),
 	)
-	messageAttributesStyle = newStyleDefinition(
+	messageAttributesStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
 	)
-	messageAttributeValueStyle = newStyleDefinition(
+	messageAttributeValueStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(messageColor),
 	)
-	messageDetailsStyle = newStyleDefinition(
+	messageDetailsStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingTop(1),
 	)
-	// Header
-	headerStyle = newStyleDefinition(
+	// Header.
+	headerStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryColor).
 			Border(lipgloss.NormalBorder(), false, false, true, false).
 			BorderForeground(primaryColor),
 	)
-	// List
-	listItemStyle = newStyleDefinition(
+	// List.
+	listItemStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
 	)
-	listItemPrimaryStyle = newStyleDefinition(
+	listItemPrimaryStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			MaxHeight(1).
 			Foreground(primaryColor).
@@ -121,17 +121,17 @@ var (
 			Border(bulletBorder, false, false, false, true).
 			BorderForeground(primaryColor),
 	)
-	listItemSecondaryStyle = newStyleDefinition(
+	listItemSecondaryStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
 	)
-	// List Form
-	listFormItemStyle = newStyleDefinition(
+	// List Form.
+	listFormItemStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1),
 	)
-	listFormItemPrimaryStyle = newStyleDefinition(
+	listFormItemPrimaryStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			MaxHeight(1).
 			Foreground(primaryColor).
@@ -155,44 +155,44 @@ var (
 				BorderForeground(secondaryColor),
 		),
 	)
-	listFormItemSecondaryStyle = newStyleDefinition(
+	listFormItemSecondaryStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
 	)
-	// Scroll
-	scrollStyle = newStyleDefinition(
+	// Scroll.
+	scrollStyle = NewStyleDefinition(
 		lipgloss.NewStyle(),
 	)
-	// Form
-	formFieldStyle = newStyleDefinition(
+	// Form.
+	formFieldStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(2),
 	)
-	formLabelStyle = newStyleDefinition(
+	formLabelStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			MaxHeight(1).
 			Foreground(primaryColor),
 	)
-	formHelpStyle = newStyleDefinition(
+	formHelpStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			MaxHeight(1).
 			Foreground(primaryDarkColor),
 	)
-	formViolationStyle = newStyleDefinition(
+	formViolationStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(errorColor),
 	)
-	formViolationSymbolStyle = newStyleDefinition(
+	formViolationSymbolStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			PaddingLeft(1).
 			Border(crossBorder, false, false, false, true).
 			BorderForeground(errorColor),
 	)
-	formTextStyle = newStyleDefinition(
+	formTextStyle = NewStyleDefinition(
 		lipgloss.NewStyle(),
 	)
-	formTextInputStyle = newStyleDefinition(
+	formTextInputStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryDarkColor).
 			Background(primaryNegativeColor),
@@ -207,14 +207,14 @@ var (
 				Background(secondaryColor),
 		),
 	)
-	formTextInputCursorStyle = newStyleDefinition(
+	formTextInputCursorStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Bold(true).
 			Foreground(secondaryColor).
 			Background(primaryNegativeColor),
 	)
 	formTextInputCursorTextStyle = formTextInputStyle
-	formSelectStyle              = newStyleDefinition(
+	formSelectStyle              = NewStyleDefinition(
 		lipgloss.NewStyle().
 			MaxHeight(1).
 			Foreground(primaryDarkColor).
@@ -238,7 +238,7 @@ var (
 				BorderForeground(secondaryColor),
 		),
 	)
-	formSelectOptionStyle = newStyleDefinition(
+	formSelectOptionStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryDarkColor).
 			PaddingLeft(2),
@@ -265,7 +265,7 @@ var (
 				PaddingLeft(2),
 		),
 	)
-	formSubmitStyle = newStyleDefinition(
+	formSubmitStyle = NewStyleDefinition(
 		lipgloss.NewStyle().
 			Foreground(primaryNegativeColor).
 			Background(primaryColor).
@@ -312,8 +312,8 @@ var (
 	}
 )
 
-func newStyleDefinition(style lipgloss.Style, opts ...styleOption) *styleDefinition {
-	definition := &styleDefinition{
+func NewStyleDefinition(style lipgloss.Style, opts ...styleOption) *StyleDefinition {
+	definition := &StyleDefinition{
 		style: style,
 	}
 
@@ -325,51 +325,52 @@ func newStyleDefinition(style lipgloss.Style, opts ...styleOption) *styleDefinit
 	return definition
 }
 
-type styleOption func(definition *styleDefinition)
+type styleOption func(definition *StyleDefinition)
 
 func withFocusStyle(style lipgloss.Style) styleOption {
-	return func(definition *styleDefinition) {
+	return func(definition *StyleDefinition) {
 		definition.focusStyle = &style
 	}
 }
 
 func withFocusHoverStyle(style lipgloss.Style) styleOption {
-	return func(definition *styleDefinition) {
+	return func(definition *StyleDefinition) {
 		definition.focusHoverStyle = &style
 	}
 }
 
 func withHoverStyle(style lipgloss.Style) styleOption {
-	return func(definition *styleDefinition) {
+	return func(definition *StyleDefinition) {
 		definition.hoverStyle = &style
 	}
 }
 
-type styleDefinition struct {
+type StyleDefinition struct {
 	style           lipgloss.Style
 	focusStyle      *lipgloss.Style
 	focusHoverStyle *lipgloss.Style
 	hoverStyle      *lipgloss.Style
 }
 
-func (definition *styleDefinition) New(renderer *lipgloss.Renderer) *style {
-	style := &style{
+func (definition *StyleDefinition) New(renderer *lipgloss.Renderer) *Style {
+	style := &Style{
 		definition: definition,
 		renderer:   renderer,
 	}
 	style.update()
+
 	return style
 }
 
-type style struct {
-	definition *styleDefinition
+type Style struct {
+	definition *StyleDefinition
 	renderer   *lipgloss.Renderer
 	style      lipgloss.Style
 	focus      bool
 	hover      bool
 }
 
-func (s *style) Update(msg tea.Msg) {
+func (s *Style) Update(msg tea.Msg) {
 	var changed bool
 
 	switch _msg := msg.(type) {
@@ -386,7 +387,7 @@ func (s *style) Update(msg tea.Msg) {
 	}
 }
 
-func (s *style) update() {
+func (s *Style) update() {
 	style := s.definition.style
 
 	switch {
@@ -401,47 +402,47 @@ func (s *style) update() {
 	s.style = style.Renderer(s.renderer)
 }
 
-func (s *style) Style() lipgloss.Style {
+func (s *Style) Style() lipgloss.Style {
 	return s.style
 }
 
-func (s *style) Render(strs ...string) string {
+func (s *Style) Render(strs ...string) string {
 	return s.style.Render(strs...)
 }
 
-func (s *style) GetTopFrameSize() int {
+func (s *Style) GetTopFrameSize() int {
 	return s.style.GetMarginTop() +
 		s.style.GetPaddingTop() +
 		s.style.GetBorderTopSize()
 }
 
-func (s *style) GetRightFrameSize() int {
+func (s *Style) GetRightFrameSize() int {
 	return s.style.GetMarginRight() +
 		s.style.GetPaddingRight() +
 		s.style.GetBorderRightSize()
 }
 
-func (s *style) GetBottomFrameSize() int {
+func (s *Style) GetBottomFrameSize() int {
 	return s.style.GetMarginBottom() +
 		s.style.GetPaddingBottom() +
 		s.style.GetBorderBottomSize()
 }
 
-func (s *style) GetLeftFrameSize() int {
+func (s *Style) GetLeftFrameSize() int {
 	return s.style.GetMarginLeft() +
 		s.style.GetPaddingLeft() +
 		s.style.GetBorderLeftSize()
 }
 
-func (s *style) GetHorizontalFrameSize() int {
+func (s *Style) GetHorizontalFrameSize() int {
 	return s.style.GetHorizontalFrameSize()
 }
 
-func (s *style) GetVerticalFrameSize() int {
+func (s *Style) GetVerticalFrameSize() int {
 	return s.style.GetVerticalFrameSize()
 }
 
-func (s *style) Fit(str string, width int, height int) string {
+func (s *Style) Fit(str string, width int, height int) string {
 	style := s.style
 
 	if width > 0 {

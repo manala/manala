@@ -1,11 +1,11 @@
 package recipe
 
 import (
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"strings"
 )
 
-type Sync []syncer.UnitInterface
+type Sync []sync.UnitInterface
 
 func (sync *Sync) UnmarshalYAML(unmarshal func(any) error) error {
 	var values []string

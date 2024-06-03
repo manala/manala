@@ -10,13 +10,12 @@ func newHeaderModel(header string, renderer *lipgloss.Renderer) headerModel {
 		header: header,
 		style:  headerStyle.New(renderer),
 	}
-
 }
 
 type headerModel struct {
 	header string
 	width  int
-	style  *style
+	style  *Style
 }
 
 func (header headerModel) Init() tea.Cmd {
@@ -24,9 +23,8 @@ func (header headerModel) Init() tea.Cmd {
 }
 
 func (header headerModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
 	// Size
-	case sizeMsg:
+	if msg, ok := msg.(sizeMsg); ok {
 		header.width = max(1, msg.Width-header.style.GetHorizontalFrameSize())
 	}
 

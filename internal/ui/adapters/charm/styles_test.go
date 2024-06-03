@@ -1,12 +1,22 @@
-package charm
+package charm_test
 
 import (
-	"github.com/charmbracelet/lipgloss"
 	"io"
+	"manala/internal/ui/adapters/charm"
+	"testing"
+
+	"github.com/charmbracelet/lipgloss"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestStyleFit() {
-	definition := newStyleDefinition(
+type StylesSuite struct{ suite.Suite }
+
+func TestStylesSuite(t *testing.T) {
+	suite.Run(t, new(StylesSuite))
+}
+
+func (s *StylesSuite) TestFit() {
+	definition := charm.NewStyleDefinition(
 		lipgloss.NewStyle(),
 	)
 	renderer := lipgloss.NewRenderer(io.Discard)

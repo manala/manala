@@ -3,7 +3,7 @@ package app
 import (
 	"manala/internal/path"
 	"manala/internal/schema"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"manala/internal/template"
 	"manala/internal/validator"
 )
@@ -12,7 +12,7 @@ import (
 /* Project */
 /***********/
 
-// Project describe a project interface
+// Project describe a project interface.
 type Project interface {
 	Dir() string
 	Recipe() Recipe
@@ -25,14 +25,14 @@ type Project interface {
 /* Recipe */
 /**********/
 
-// Recipe describe a recipe interface
+// Recipe describe a recipe interface.
 type Recipe interface {
 	Dir() string
 	Name() string
 	Description() string
 	Icon() string
 	Vars() map[string]any
-	Sync() []syncer.UnitInterface
+	Sync() []sync.UnitInterface
 	Schema() schema.Schema
 	Options() []RecipeOption
 	Repository() Repository
@@ -42,7 +42,7 @@ type Recipe interface {
 	Watches() ([]string, error)
 }
 
-// RecipeOption describe a recipe option interface
+// RecipeOption describe a recipe option interface.
 type RecipeOption interface {
 	Name() string
 	Label() string
@@ -56,8 +56,8 @@ type RecipeOption interface {
 /* Repository */
 /**************/
 
-// Repository describe a repository interface
+// Repository describe a repository interface.
 type Repository interface {
-	Url() string
+	URL() string
 	Dir() string
 }

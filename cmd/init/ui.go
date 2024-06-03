@@ -8,7 +8,7 @@ import (
 	"manala/internal/ui/components"
 )
 
-func NewUiRecipeListForm(items []app.Recipe, value *app.Recipe) (*components.ListForm, error) {
+func NewUIRecipeListForm(items []app.Recipe, value *app.Recipe) (*components.ListForm, error) {
 	// List
 	list := make([]components.ListItem, len(items))
 	for i, item := range items {
@@ -24,13 +24,13 @@ func NewUiRecipeListForm(items []app.Recipe, value *app.Recipe) (*components.Lis
 	)
 }
 
-func NewUiRecipeOptionsForm(recipe app.Recipe, vars *map[string]any) (*components.Form, error) {
+func NewUIRecipeOptionsForm(recipe app.Recipe, vars *map[string]any) (*components.Form, error) {
 	options := recipe.Options()
 	fields := make([]components.FormField, len(options))
 
 	for i := range options {
 		var err error
-		if fields[i], err = option.NewUiFormField(options[i], vars); err != nil {
+		if fields[i], err = option.NewUIFormField(options[i], vars); err != nil {
 			return nil, serrors.New("unable to get recipe option form field").
 				WithArguments("label", options[i].Label()).
 				WithErrors(err)

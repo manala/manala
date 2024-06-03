@@ -1,8 +1,9 @@
 package repository
 
 import (
-	"github.com/stretchr/testify/mock"
 	"manala/app"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func NewLoader(opts ...LoaderOption) *Loader {
@@ -23,7 +24,7 @@ type Loader struct {
 //goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(url string) (app.Repository, error) {
 	// Prepare query
-	query := &LoaderQuery{Url: url}
+	query := &LoaderQuery{URL: url}
 
 	// Start chain
 	return loader.Next(query)
@@ -43,7 +44,7 @@ func (loader Loader) Next(query *LoaderQuery) (app.Repository, error) {
 
 //goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Repository, error) {
-	return nil, &app.NotFoundRepositoryError{Url: query.Url}
+	return nil, &app.NotFoundRepositoryError{URL: query.URL}
 }
 
 type LoaderOption func(loader *Loader)
@@ -55,7 +56,7 @@ func WithLoaderHandlers(handlers ...LoaderHandler) LoaderOption {
 }
 
 type LoaderQuery struct {
-	Url string
+	URL string
 }
 
 type LoaderHandler interface {
@@ -68,6 +69,7 @@ type LoaderHandlerMock struct {
 
 func (mock *LoaderHandlerMock) Handle(query *LoaderQuery, chain LoaderHandlerChain) (app.Repository, error) {
 	args := mock.Called(query, chain)
+
 	return args.Get(0).(app.Repository), args.Error(1)
 }
 
@@ -82,10 +84,12 @@ type LoaderHandlerChainMock struct {
 
 func (mock *LoaderHandlerChainMock) Next(query *LoaderQuery) (app.Repository, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Repository), args.Error(1)
 }
 
 func (mock *LoaderHandlerChainMock) Last(query *LoaderQuery) (app.Repository, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Repository), args.Error(1)
 }

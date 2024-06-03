@@ -37,11 +37,13 @@ var htmlLineErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+): (.*)`)
 var htmlErrorRegex = regexp.MustCompile(`html/template:((.*):)? (.*)`)
 
 func NewTemplate(err error) Error {
-	message := err.Error()
-	var arguments []any
+	var (
+		arguments      []any
+		_textExecError textTemplate.ExecError
+		_htmlError     = &htmlTemplate.Error{}
+	)
 
-	var _textExecError textTemplate.ExecError
-	var _htmlError = &htmlTemplate.Error{}
+	message := err.Error()
 
 	switch {
 	// Text exec error

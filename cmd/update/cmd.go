@@ -2,17 +2,20 @@ package update
 
 import (
 	"context"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"path/filepath"
+
+	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.API) *cobra.Command {
 	// Flags
-	var repositoryUrl, repositoryRef, recipeName string
-	var recursive bool
+	var (
+		repositoryURL, repositoryRef, recipeName string
+		recursive                                bool
+	)
 
 	// Command
 	cmd := &cobra.Command{
@@ -32,7 +35,7 @@ current directory)`,
 
 			// Context
 			ctx := cmd.Context()
-			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
@@ -41,7 +44,7 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryUrl, "repository", "o", "", "use repository")
+	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
 	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
 	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
 	cmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "set recursive mode")
@@ -49,7 +52,7 @@ current directory)`,
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, dir string, recursive bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recursive bool) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(ctx)
 
@@ -62,27 +65,30 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, dir string, recurs
 
 		// Recursively load projects
 		log.Info("loading projects recursive…")
+
 		return projectLoader.LoadRecursive(dir,
 			func(project app.Project) error {
 				// Sync project
 				log.Info("syncing project…")
+
 				return api.NewProjectSyncer().Sync(project)
 			},
 		)
-	} else {
-		// Get project loader
-		projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,
-			api.WithProjectLoaderFrom(true),
-		)
-
-		// Load project
-		log.Info("loading project…")
-		project, err := projectLoader.Load(dir)
-		if err != nil {
-			return err
-		}
-
-		// Sync project
-		return api.NewProjectSyncer().Sync(project)
 	}
+
+	// Get project loader
+	projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,
+		api.WithProjectLoaderFrom(true),
+	)
+
+	// Load project
+	log.Info("loading project…")
+
+	project, err := projectLoader.Load(dir)
+	if err != nil {
+		return err
+	}
+
+	// Sync project
+	return api.NewProjectSyncer().Sync(project)
 }

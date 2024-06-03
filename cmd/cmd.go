@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmd(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {

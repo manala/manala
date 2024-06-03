@@ -1,12 +1,13 @@
 package option
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/app"
 	"manala/internal/schema"
 	"manala/internal/schema/inferrer"
 	"manala/internal/yaml"
 	"strings"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewInferrer() *Inferrer {
@@ -38,6 +39,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	comment := node.GetComment()
 	if comment != nil {
 		var tags yaml.Tags
+
 		yaml.ParseCommentTags(comment.String(), &tags)
 		optionTags = tags.Filter("option")
 		schemaTags = tags.Filter("schema")
@@ -63,6 +65,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 				if err != nil {
 					inf.err = yaml.NewNodeError("unable to read recipe option", _node.GetComment()).
 						WithErrors(err)
+
 					return nil
 				}
 
@@ -71,6 +74,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		} else {
 			// Misplaced tag
 			inf.err = yaml.NewNodeError("misplaced recipe option tag", node.GetComment())
+
 			return nil
 		}
 	}

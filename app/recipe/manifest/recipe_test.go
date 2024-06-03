@@ -1,14 +1,17 @@
-package manifest
+package manifest_test
 
 import (
 	"bytes"
 	_ "embed"
-	"github.com/stretchr/testify/suite"
 	"manala/app"
+	"manala/app/recipe/manifest"
 	"manala/internal/schema"
-	"manala/internal/syncer"
+	"manala/internal/sync"
+	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type RecipeSuite struct{ suite.Suite }
@@ -18,25 +21,21 @@ func TestRecipeSuite(t *testing.T) {
 }
 
 func (s *RecipeSuite) Test() {
-	dir := filepath.FromSlash("testdata/RecipeSuite/Test/recipe")
+	m := manifest.New()
+
+	dir := filepath.FromSlash("testdata/RecipeSuite/Test")
+
+	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	_, err := m.ReadFrom(mFile)
+
+	s.Require().NoError(err)
 
 	repositoryMock := &app.RepositoryMock{}
 
-	manifest := &Manifest{
-		config: &config{
-			Description: "description",
-			Icon:        "icon",
-			Template:    filepath.Join("templates", "foo.tmpl"),
-			Sync:        []syncer.UnitInterface(nil),
-		},
-		vars:   map[string]any{"foo": "bar"},
-		schema: schema.Schema{},
-	}
-
-	recipe := NewRecipe(
+	recipe := manifest.NewRecipe(
 		dir,
 		"recipe",
-		manifest,
+		m,
 		repositoryMock,
 	)
 
@@ -45,8 +44,16 @@ func (s *RecipeSuite) Test() {
 	s.Equal("description", recipe.Description())
 	s.Equal("icon", recipe.Icon())
 	s.Equal(map[string]any{"foo": "bar"}, recipe.Vars())
-	s.Equal([]syncer.UnitInterface(nil), recipe.Sync())
-	s.Equal(schema.Schema{}, recipe.Schema())
+	s.Equal([]sync.UnitInterface{}, recipe.Sync())
+	s.Equal(schema.Schema{
+		"additionalProperties": false,
+		"properties": map[string]interface{}{
+			"foo": map[string]interface{}{
+				"type": "string",
+			},
+		},
+		"type": "object",
+	}, recipe.Schema())
 	s.Equal(repositoryMock, recipe.Repository())
 
 	s.Run("Template", func() {
@@ -57,8 +64,7 @@ func (s *RecipeSuite) Test() {
 			WithDefaultContent(`{{ template "_helpers" }}`).
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		s.Equal("_helpers", out.String())
 	})
 
@@ -69,18 +75,17 @@ func (s *RecipeSuite) Test() {
 		err := template.
 			WriteTo(out)
 
-		s.NoError(err)
-
+		s.Require().NoError(err)
 		s.Equal("bar", out.String())
 	})
 
 	s.Run("Watches", func() {
 		watches, err := recipe.Watches()
 
+		s.Require().NoError(err)
 		s.Equal([]string{
 			dir,
 			filepath.Join(dir, "templates"),
 		}, watches)
-		s.NoError(err)
 	})
 }

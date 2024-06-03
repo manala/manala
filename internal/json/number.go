@@ -7,6 +7,7 @@ import (
 
 func NumberType(value any) (Number, bool) {
 	number, ok := value.(json.Number)
+
 	return Number{Number: number}, ok
 }
 
@@ -16,6 +17,7 @@ type Number struct {
 
 func (number Number) Int() int {
 	value, _ := number.Int64()
+
 	return int(value)
 }
 

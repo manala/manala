@@ -19,12 +19,12 @@ type ProcessorLoaderHandler struct {
 }
 
 func (handler *ProcessorLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository url", "url", query.Url)
+	handler.log.Debug("handle repository url", "url", query.URL)
 
 	var err error
 
 	// Process query url
-	query.Url, err = handler.processor.Process(query.Url)
+	query.URL, err = handler.processor.Process(query.URL)
 	if err != nil {
 		return nil, err
 	}

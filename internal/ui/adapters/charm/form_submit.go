@@ -1,11 +1,12 @@
 package charm
 
 import (
+	"manala/internal/ui/components"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"manala/internal/ui/components"
 )
 
 func newFormSubmitModel(form *components.Form, renderer *lipgloss.Renderer, zone *zone.Manager) formSubmitModel {
@@ -22,7 +23,7 @@ type formSubmitModel struct {
 	focus      bool
 	zone       *zone.Manager
 	zonePrefix string
-	style      *style
+	style      *Style
 }
 
 func (model formSubmitModel) Init() tea.Cmd {
@@ -45,14 +46,13 @@ func (model formSubmitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
-		switch {
-		case key.Matches(msg, SelectKeys):
+
+		if key.Matches(msg, SelectKeys) {
 			cmds.Add(model.submit())
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch {
-		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 			// Submit on left click
 			if model.zone.Get(model.zonePrefix + "submit").InBounds(msg) {
 				cmds.Add(model.submit())
@@ -68,15 +68,19 @@ func (model *formSubmitModel) submit() tea.Cmd {
 	if err != nil {
 		return errCmd(err)
 	}
+
 	if !ok {
 		// Find thirst field with violations
 		var index int
+
 		for i, field := range model.form.Fields {
 			if len(field.Violations()) != 0 {
 				index = i
+
 				break
 			}
 		}
+
 		return formFieldFocusCmd(index)
 	}
 

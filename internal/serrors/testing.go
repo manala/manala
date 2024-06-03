@@ -1,9 +1,11 @@
 package serrors
 
 import (
-	"github.com/stretchr/testify/assert"
 	"manala/internal/testing/heredoc"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type Assertion struct {
@@ -15,36 +17,34 @@ type Assertion struct {
 }
 
 func Equal(t *testing.T, assertion *Assertion, err error) {
+	t.Helper()
+
 	if assertion.Type != nil {
 		assert.IsType(t, assertion.Type, err)
 	}
 
-	assert.EqualError(t, err, assertion.Message)
+	require.EqualError(t, err, assertion.Message)
 
 	// Arguments
 	if _err, ok := err.(ErrorArguments); ok {
 		assert.Equal(t, assertion.Arguments, _err.ErrorArguments())
-	} else {
-		if assertion.Arguments != nil {
-			assert.Fail(t, "Error does not contains arguments")
-		}
+	} else if assertion.Arguments != nil {
+		assert.Fail(t, "Error does not contains arguments")
 	}
 
 	// Details
 	if _err, ok := err.(ErrorDetails); ok {
 		heredoc.Equal(t, assertion.Details, _err.ErrorDetails(false))
-	} else {
-		if assertion.Details != "" {
-			assert.Fail(t, "Error does not contains details")
-		}
+	} else if assertion.Details != "" {
+		assert.Fail(t, "Error does not contains details")
 	}
 
 	// Errors
 	if _err, ok := err.(interface {
 		Unwrap() []error
 	}); ok {
-		__errs := _err.Unwrap()
-		if __errs == nil {
+		_errs := _err.Unwrap()
+		if _errs == nil {
 			if assertion.Errors != nil {
 				assert.Fail(t, "Error contains nil errors")
 			}
@@ -52,15 +52,14 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 			if assertion.Errors == nil {
 				assert.Fail(t, "Error contains errors")
 			} else {
-				assert.Len(t, __errs, len(assertion.Errors), "Incorrect error's errors length")
+				assert.Len(t, _errs, len(assertion.Errors), "Incorrect error's errors length")
+
 				for i, _assert := range assertion.Errors {
-					Equal(t, _assert, __errs[i])
+					Equal(t, _assert, _errs[i])
 				}
 			}
 		}
-	} else {
-		if assertion.Errors != nil {
-			assert.Fail(t, "Error does not contains errors")
-		}
+	} else if assertion.Errors != nil {
+		assert.Fail(t, "Error does not contains errors")
 	}
 }

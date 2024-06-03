@@ -1,11 +1,12 @@
 package yaml
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlParser "github.com/goccy/go-yaml/parser"
 	"manala/internal/serrors"
 	"os"
 	"strings"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	goYamlParser "github.com/goccy/go-yaml/parser"
 )
 
 func NewParser(opts ...ParserOption) *Parser {
@@ -43,7 +44,7 @@ func (parser *Parser) ParseFile(filename string) (goYamlAst.Node, error) {
 
 func (parser *Parser) ParseBytes(bytes []byte) (goYamlAst.Node, error) {
 	// Parse with comments ?
-	var mode goYamlParser.Mode = 0
+	var mode goYamlParser.Mode
 	if parser.comments {
 		mode = goYamlParser.ParseComments
 	}
@@ -97,18 +98,20 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		if _, ok := n.Key.(*goYamlAst.MergeKeyNode); ok {
 			return parser
 		}
+
 		if _, ok := n.Key.(*goYamlAst.StringNode); ok {
 			return parser
 		}
+
 		parser.err = NewNodeError("irregular map key", node)
+
 		return nil
 	}
 
 	// Remove literal string's trailing new lines pollution
 	// See: https://github.com/goccy/go-yaml/issues/406
 	if n, ok := node.(*goYamlAst.LiteralNode); ok {
-		switch n.Start.Value {
-		case "|":
+		if n.Start.Value == "|" {
 			n.Value.Value = strings.TrimRight(n.Value.Value, "\n") + "\n"
 		}
 	}
@@ -140,6 +143,7 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	default:
 		// Irregular types
 		parser.err = NewNodeError("irregular type", node)
+
 		return nil
 	}
 
@@ -161,14 +165,17 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 		for _, v := range values {
 			// Merge values
 			mergedValues := make([]*goYamlAst.MappingValueNode, 0)
+
 			if _, ok := v.Key.(*goYamlAst.MergeKeyNode); ok {
 				if vv, ok := v.Value.(*goYamlAst.AliasNode); ok {
 					alias := vv.Value.GetToken().Value
+
 					anchor := parser.anchors[alias]
 					if anchor == nil {
 						return nil, NewNodeError("cannot find anchor", vv.Value).
 							WithArguments("anchor", alias)
 					}
+
 					switch a := anchor.(type) {
 					case *goYamlAst.MappingNode:
 						mergedValues = a.Values
@@ -190,9 +197,11 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				for i, dv := range deduplicatedValues {
 					if mv.Key.GetToken().Value == dv.Key.GetToken().Value {
 						deduplicatedValues = append(deduplicatedValues[:i], deduplicatedValues[i+1:]...)
+
 						break
 					}
 				}
+
 				deduplicatedValues = append(deduplicatedValues, mv)
 
 				// Resolve
@@ -200,6 +209,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				if err != nil {
 					return nil, err
 				}
+
 				mv.Value = value
 			}
 		}
@@ -211,6 +221,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 		} else {
 			if m, ok := n.(*goYamlAst.MappingNode); ok {
 				m.Values = deduplicatedValues
+
 				return m, nil
 			}
 
@@ -218,6 +229,7 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 				BaseNode: &goYamlAst.BaseNode{},
 			}
 			m.Values = deduplicatedValues
+
 			return m, nil
 		}
 	case *goYamlAst.TagNode:
@@ -230,15 +242,18 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			n.Values[idx] = value
 		}
 	case *goYamlAst.AliasNode:
 		alias := n.Value.GetToken().Value
 		anchor := parser.anchors[alias]
+
 		if anchor == nil {
 			return nil, NewNodeError("cannot find anchor", n.Value).
 				WithArguments("anchor", alias)
 		}
+
 		return parser.resolve(anchor)
 	case *goYamlAst.AnchorNode:
 		return parser.resolve(n.Value)

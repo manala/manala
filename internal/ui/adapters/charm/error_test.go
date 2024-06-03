@@ -1,12 +1,22 @@
-package charm
+package charm_test
 
 import (
 	"bytes"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
+	"manala/internal/ui/adapters/charm"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestError() {
+type ErrorSuite struct{ suite.Suite }
+
+func TestErrorSuite(t *testing.T) {
+	suite.Run(t, new(ErrorSuite))
+}
+
+func (s *ErrorSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
@@ -40,7 +50,7 @@ func (s *Suite) TestError() {
 			out := &bytes.Buffer{}
 			err := &bytes.Buffer{}
 
-			adapter := New(nil, out, err)
+			adapter := charm.New(nil, out, err)
 
 			adapter.Error(test.err)
 

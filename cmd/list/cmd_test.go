@@ -1,18 +1,20 @@
-package list
+package list_test
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/suite"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
-	"manala/internal/cache"
+	cmd "manala/cmd/list"
+	"manala/internal/caching"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -21,19 +23,19 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
 
-func (s *Suite) execute(defaultRepositoryUrl string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
 	ui := charm.New(nil, stdOut, stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := NewCmd(
+	cmd := cmd.NewCmd(
 		log,
 		api.New(
 			log,
-			cache.New(""),
-			api.WithDefaultRepositoryUrl(defaultRepositoryUrl),
+			caching.NewCache(""),
+			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 		ui,
 	)
@@ -66,10 +68,10 @@ func (s *Suite) TestRepositoryErrors() {
 	})
 
 	s.Run("RepositoryNotFound", func() {
-		repositoryUrl := filepath.FromSlash("testdata/TestRepositoryErrors/RepositoryNotFound/repository")
+		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/RepositoryNotFound/repository")
 
 		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryUrl,
+			"--repository", repositoryURL,
 		)
 
 		s.Empty(stdOut)
@@ -81,16 +83,16 @@ func (s *Suite) TestRepositoryErrors() {
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
-				"url", repositoryUrl,
+				"url", repositoryURL,
 			},
 		}, err)
 	})
 
 	s.Run("WrongRepository", func() {
-		repositoryUrl := filepath.FromSlash("testdata/TestRepositoryErrors/WrongRepository/repository")
+		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/WrongRepository/repository")
 
 		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryUrl,
+			"--repository", repositoryURL,
 		)
 
 		s.Empty(stdOut)
@@ -102,16 +104,16 @@ func (s *Suite) TestRepositoryErrors() {
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
-				"url", repositoryUrl,
+				"url", repositoryURL,
 			},
 		}, err)
 	})
 
 	s.Run("EmptyRepository", func() {
-		repositoryUrl := filepath.FromSlash("testdata/TestRepositoryErrors/EmptyRepository/repository")
+		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/EmptyRepository/repository")
 
 		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryUrl,
+			"--repository", repositoryURL,
 		)
 
 		s.Empty(stdOut)
@@ -124,21 +126,20 @@ func (s *Suite) TestRepositoryErrors() {
 			Type:    &app.EmptyRepositoryError{},
 			Message: "empty repository",
 			Arguments: []any{
-				"url", repositoryUrl,
+				"url", repositoryURL,
 			},
 		}, err)
 	})
 }
 
 func (s *Suite) TestRepositoryCustom() {
-	repositoryUrl := filepath.FromSlash("testdata/TestRepositoryCustom/repository")
+	repositoryURL := filepath.FromSlash("testdata/TestRepositoryCustom/repository")
 
 	stdOut, stdErr, err := s.execute("",
-		"--repository", repositoryUrl,
+		"--repository", repositoryURL,
 	)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
 		Recipes available in %[1]s
 		─────────────────────────────────────────────────────────────
@@ -146,7 +147,7 @@ func (s *Suite) TestRepositoryCustom() {
 		   Bar
 		 • foo
 		   Foo
-	`, stdOut, repositoryUrl)
+	`, stdOut, repositoryURL)
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
@@ -154,12 +155,11 @@ func (s *Suite) TestRepositoryCustom() {
 }
 
 func (s *Suite) TestRepositoryConfig() {
-	repositoryUrl := filepath.FromSlash("testdata/TestRepositoryConfig/repository")
+	repositoryURL := filepath.FromSlash("testdata/TestRepositoryConfig/repository")
 
-	stdOut, stdErr, err := s.execute(repositoryUrl)
+	stdOut, stdErr, err := s.execute(repositoryURL)
 
-	s.NoError(err)
-
+	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
 		Recipes available in %[1]s
 		─────────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ func (s *Suite) TestRepositoryConfig() {
 		   Bar
 		 • foo
 		   Foo
-	`, stdOut, repositoryUrl)
+	`, stdOut, repositoryURL)
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
@@ -176,10 +176,10 @@ func (s *Suite) TestRepositoryConfig() {
 
 func (s *Suite) TestRecipeErrors() {
 	s.Run("WrongRecipeManifest", func() {
-		repositoryUrl := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
+		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
 
 		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryUrl,
+			"--repository", repositoryURL,
 		)
 
 		s.Empty(stdOut)
@@ -191,16 +191,16 @@ func (s *Suite) TestRecipeErrors() {
 		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "recipe manifest is a directory",
 			Arguments: []any{
-				"dir", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
+				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},
 		}, err)
 	})
 
 	s.Run("InvalidRecipeManifest", func() {
-		repositoryUrl := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
+		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
 
 		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryUrl,
+			"--repository", repositoryURL,
 		)
 
 		s.Empty(stdOut)
@@ -212,7 +212,7 @@ func (s *Suite) TestRecipeErrors() {
 		serrors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to read recipe manifest",
 			Arguments: []any{
-				"file", filepath.Join(repositoryUrl, "recipe", ".manala.yaml"),
+				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},
 			Errors: []*serrors.Assertion{
 				{

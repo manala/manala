@@ -1,12 +1,22 @@
-package yaml
+package yaml_test
 
 import (
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/serrors"
+	"manala/internal/yaml"
 	"path/filepath"
+	"testing"
+
+	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestExtractorRootMapErrors() {
+type ExtractorSuite struct{ suite.Suite }
+
+func TestExtractorSuite(t *testing.T) {
+	suite.Run(t, new(ExtractorSuite))
+}
+
+func (s *ExtractorSuite) TestRootMapErrors() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -84,12 +94,12 @@ func (s *Suite) TestExtractorRootMapErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/TestExtractorRootMapErrors/" + test.test)
+			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMapErrors/" + test.test)
 
-			parser := NewParser()
+			parser := yaml.NewParser()
 			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
-			extractor := NewExtractor(&node)
+			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
 			s.Nil(subjectNode)
@@ -99,7 +109,7 @@ func (s *Suite) TestExtractorRootMapErrors() {
 	}
 }
 
-func (s *Suite) TestExtractorRootMap() {
+func (s *ExtractorSuite) TestRootMap() {
 	tests := []struct {
 		test            string
 		expectedSubject any
@@ -154,15 +164,15 @@ func (s *Suite) TestExtractorRootMap() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/TestExtractorRootMap/" + test.test)
+			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMap/" + test.test)
 
-			parser := NewParser()
+			parser := yaml.NewParser()
 			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
 
-			extractor := NewExtractor(&node)
+			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
-			s.NoError(err)
+			s.Require().NoError(err)
 
 			s.IsType(test.expectedSubject, subjectNode)
 			s.IsType(test.expectedNode, node)

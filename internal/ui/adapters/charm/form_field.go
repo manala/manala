@@ -1,12 +1,13 @@
 package charm
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	zone "github.com/lrstanley/bubblezone"
 	"manala/internal/serrors"
 	"manala/internal/ui/components"
 	"manala/internal/validator"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	zone "github.com/lrstanley/bubblezone"
 )
 
 func newFormFieldModel(field components.FormField, renderer *lipgloss.Renderer, zone *zone.Manager) (tea.Model, error) {
@@ -21,8 +22,8 @@ func newFormFieldModel(field components.FormField, renderer *lipgloss.Renderer, 
 }
 
 type formFieldModel struct {
-	violationStyle       *style
-	violationSymbolStyle *style
+	violationStyle       *Style
+	violationSymbolStyle *Style
 }
 
 func (model formFieldModel) viewViolations(violations validator.Violations) string {
@@ -41,7 +42,7 @@ func formFieldInput() tea.Msg {
 	return formFieldInputMsg{}
 }
 
-// Field has just got user input
+// Field has just got user input.
 type formFieldInputMsg struct{}
 
 func formFieldFocusCmd(index int) tea.Cmd {
@@ -50,5 +51,5 @@ func formFieldFocusCmd(index int) tea.Cmd {
 	}
 }
 
-// Focus on field index
+// Focus on field index.
 type formFieldFocusMsg int

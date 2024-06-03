@@ -1,16 +1,18 @@
-package manifest
+package manifest_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app/project"
+	"manala/app/project/manifest"
 	"manala/app/recipe"
-	"manala/app/recipe/manifest"
+	recipeManifest "manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }
@@ -19,16 +21,16 @@ func TestLoaderSuite(t *testing.T) {
 	suite.Run(t, new(LoaderSuite))
 }
 
-func (s *LoaderSuite) TestLoaderHandlerErrors() {
+func (s *LoaderSuite) TestHandlerErrors() {
 	s.Run("Directory", func() {
-		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Directory/project")
+		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Directory/project")
 
 		repositoryLoader := repository.NewLoader()
 		recipeLoader := recipe.NewLoader(log.Discard)
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
-		handler := NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+		handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
@@ -42,18 +44,18 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 		chainMock.AssertExpectations(s.T())
 	})
 	s.Run("Vars", func() {
-		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Vars/project")
+		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Vars/project")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 			getter.NewFileLoaderHandler(log.Discard),
 		))
 		recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-			manifest.NewLoaderHandler(log.Discard),
+			recipeManifest.NewLoaderHandler(log.Discard),
 		))
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
-		handler := NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+		handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
@@ -76,7 +78,7 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 					},
 					Details: `
 						   2 |   recipe: recipe
-						   3 |   repository: testdata/LoaderSuite/TestLoaderHandlerErrors/Vars/repository
+						   3 |   repository: testdata/LoaderSuite/TestHandlerErrors/Vars/repository
 						   4 |
 						>  5 | foo: bar
 						            ^
@@ -88,23 +90,23 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 	})
 }
 
-func (s *LoaderSuite) TestLoaderHandler() {
-	projectDir := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandler/project")
+func (s *LoaderSuite) TestHandler() {
+	projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandler/project")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		manifest.NewLoaderHandler(log.Discard),
+		recipeManifest.NewLoaderHandler(log.Discard),
 	))
 
 	chainMock := &project.LoaderHandlerChainMock{}
 
-	handler := NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+	handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
 	project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(projectDir, project.Dir())
 	s.Equal(map[string]any{"foo": "bar"}, project.Vars())
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

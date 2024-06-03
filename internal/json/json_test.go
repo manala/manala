@@ -1,10 +1,12 @@
-package json
+package json_test
 
 import (
-	"encoding/json"
-	"github.com/stretchr/testify/suite"
+	gojson "encoding/json"
+	"manala/internal/json"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -33,7 +35,7 @@ func (s *Suite) TestUnmarshalErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := Unmarshal([]byte(test.data), nil)
+			err := json.Unmarshal([]byte(test.data), nil)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
@@ -69,17 +71,17 @@ func (s *Suite) TestUnmarshal() {
 		{
 			test:     "Integer",
 			data:     `{"integer": 12}`,
-			expected: map[string]any{"integer": json.Number("12")},
+			expected: map[string]any{"integer": gojson.Number("12")},
 		},
 		{
 			test:     "Float",
 			data:     `{"float": 2.3}`,
-			expected: map[string]any{"float": json.Number("2.3")},
+			expected: map[string]any{"float": gojson.Number("2.3")},
 		},
 		{
 			test:     "FloatAsInteger",
 			data:     `{"float": 3.0}`,
-			expected: map[string]any{"float": json.Number("3.0")},
+			expected: map[string]any{"float": gojson.Number("3.0")},
 		},
 		{
 			test:     "FloatAsString",
@@ -92,9 +94,9 @@ func (s *Suite) TestUnmarshal() {
 		s.Run(test.test, func() {
 			var value map[string]any
 
-			err := Unmarshal([]byte(test.data), &value)
+			err := json.Unmarshal([]byte(test.data), &value)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, value)
 		})
 	}

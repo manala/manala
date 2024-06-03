@@ -1,0 +1,6 @@
+manala:
+  description: description
+  icon: icon
+  template: templates/foo.tmpl
+
+foo: bar

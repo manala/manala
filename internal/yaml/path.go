@@ -1,11 +1,12 @@
 package yaml
 
 import (
-	goYaml "github.com/goccy/go-yaml"
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"manala/internal/path"
 	"manala/internal/serrors"
 	"strings"
+
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 func NewNodePath(node goYamlAst.Node) path.Path {

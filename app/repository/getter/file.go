@@ -3,13 +3,14 @@ package getter
 import (
 	"context"
 	"errors"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/serrors"
 	"os"
 	"path/filepath"
+
+	"github.com/hashicorp/go-getter/v2"
 )
 
 func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {
@@ -32,11 +33,11 @@ type FileLoaderHandler struct {
 }
 
 func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.Url)
+	handler.log.Debug("handle repository", "url", query.URL)
 
 	// Request
 	request := &getter.Request{
-		Src:     query.Url,
+		Src:     query.URL,
 		GetMode: getter.ModeDir,
 		// In local file mode, the returned operation will simply contain the source file path
 		Inplace: true,
@@ -49,6 +50,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, serrors.New("file system error").
 			WithArguments("path", request.Src).
 			WithErrors(serrors.NewOs(err))
@@ -61,6 +63,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 	if !filepath.IsAbs(request.Src) {
 		var err error
 		request.Pwd, err = os.Getwd()
+
 		if err != nil {
 			return nil, serrors.New("unable to get current directory")
 		}
@@ -72,17 +75,19 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 
 	// Switch back to relative dst
 	if request.Pwd != "" {
 		var err error
+
 		response.Dst, err = filepath.Rel(request.Pwd, response.Dst)
 		if err != nil {
 			return nil, serrors.New("unable to get relative path")
 		}
 	}
 
-	return NewRepository(query.Url, response.Dst), nil
+	return NewRepository(query.URL, response.Dst), nil
 }

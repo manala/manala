@@ -2,7 +2,6 @@ package watch
 
 import (
 	"context"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
@@ -11,12 +10,16 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+
+	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, output ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
-	var repositoryUrl, repositoryRef, recipeName string
-	var all, notify bool
+	var (
+		repositoryURL, repositoryRef, recipeName string
+		all, notify                              bool
+	)
 
 	// Command
 	cmd := &cobra.Command{
@@ -34,7 +37,7 @@ current directory)`,
 
 			// Context
 			ctx := cmd.Context()
-			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
@@ -43,7 +46,7 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryUrl, "repository", "o", "", "use repository")
+	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
 	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
 	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
 	cmd.Flags().BoolVarP(&all, "all", "a", false, "watch recipe too")
@@ -52,7 +55,7 @@ current directory)`,
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(ctx)
 
@@ -66,6 +69,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, 
 
 	// Load project
 	log.Info("loading project…")
+
 	project, err := projectLoader.Load(dir)
 	if err != nil {
 		return err
@@ -76,22 +80,28 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output, 
 
 	// Watch project
 	log.Info("watching project…")
+
 	return NewWatcher(log, all).
 		Watch(ctx, project, func(project app.Project) app.Project {
 			// Load project
 			log.Info("loading project…")
+
 			if project, err = projectLoader.Load(project.Dir()); err != nil {
 				output.Error(err)
+
 				if notify {
 					notifier.Error(err)
 				}
+
 				return nil
 			}
 
 			// Sync project
 			log.Info("syncing project…")
+
 			if err = api.NewProjectSyncer().Sync(project); err != nil {
 				output.Error(err)
+
 				if notify {
 					notifier.Error(err)
 				}

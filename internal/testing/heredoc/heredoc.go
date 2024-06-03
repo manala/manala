@@ -3,10 +3,12 @@ package heredoc
 import (
 	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Doc(doc string, args ...any) string {
@@ -31,6 +33,7 @@ func Doc(doc string, args ...any) string {
 
 	// Find shorter line indentation
 	shorterIndent := ""
+
 	for _, line := range lines {
 		lineIndent := indent(line)
 		if lineIndent != "" && (len(lineIndent) < len(shorterIndent) || shorterIndent == "") {
@@ -51,6 +54,7 @@ func Doc(doc string, args ...any) string {
 
 func indent(s string) string {
 	var indent strings.Builder
+
 	for _, r := range s {
 		if r == '\t' {
 			indent.WriteRune(r)
@@ -58,14 +62,19 @@ func indent(s string) string {
 			break
 		}
 	}
+
 	return indent.String()
 }
 
 func Equal(t *testing.T, expected string, actual any, args ...any) {
-	// Trim actual
-	var actuals []string
-	for _, _actual := range strings.Split(fmt.Sprintf("%s", actual), "\n") {
-		actuals = append(actuals, strings.TrimRight(_actual, " "))
+	t.Helper()
+
+	strs := strings.Split(fmt.Sprintf("%s", actual), "\n")
+
+	// Trim actual strings
+	actuals := make([]string, len(strs))
+	for i, str := range strs {
+		actuals[i] = strings.TrimRight(str, " ")
 	}
 
 	assert.Equal(t,
@@ -75,8 +84,10 @@ func Equal(t *testing.T, expected string, actual any, args ...any) {
 }
 
 func EqualFile(t *testing.T, expected string, path string, args ...any) {
+	t.Helper()
+
 	content, err := os.ReadFile(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Fix line endings
 	content = bytes.ReplaceAll(content, []byte("\r\n"), []byte{'\n'})

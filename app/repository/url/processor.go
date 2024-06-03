@@ -2,13 +2,14 @@ package url
 
 import (
 	"cmp"
-	"dario.cat/mergo"
 	"fmt"
 	"log/slog"
 	"manala/internal/serrors"
-	netUrl "net/url"
+	netURL "net/url"
 	"slices"
 	"strings"
+
+	"dario.cat/mergo"
 )
 
 func NewProcessor(log *slog.Logger) *Processor {
@@ -27,7 +28,7 @@ func (processor *Processor) Add(url string, weight int) {
 }
 
 func (processor *Processor) AddQuery(key string, value string, weight int) {
-	query := make(netUrl.Values)
+	query := make(netURL.Values)
 	query.Set(key, value)
 	processor.entries = append(processor.entries, processorEntry{query: query, weight: weight})
 }
@@ -44,7 +45,7 @@ func (processor *Processor) Process(url string) (string, error) {
 		return cmp.Compare(b.weight, a.weight)
 	})
 
-	var query netUrl.Values
+	var query netURL.Values
 
 	for _, entry := range entries {
 		// Split url query parts
@@ -52,12 +53,13 @@ func (processor *Processor) Process(url string) (string, error) {
 		entry.url, entryQuery, _ = strings.Cut(entry.url, "?")
 
 		if entryQuery != "" {
-			values, err := netUrl.ParseQuery(entryQuery)
+			values, err := netURL.ParseQuery(entryQuery)
 			if err != nil {
 				return "", serrors.New("unable to process repository query").
 					WithArguments("query", entryQuery).
 					WithErrors(err)
 			}
+
 			_ = mergo.Merge(&entry.query, values)
 		}
 
@@ -84,6 +86,6 @@ func (processor *Processor) Process(url string) (string, error) {
 
 type processorEntry struct {
 	url    string
-	query  netUrl.Values
+	query  netURL.Values
 	weight int
 }

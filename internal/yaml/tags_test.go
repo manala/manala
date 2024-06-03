@@ -1,14 +1,27 @@
-package yaml
+package yaml_test
 
-func (s *Suite) TestParseCommentTags() {
-	tags := &Tags{}
-	ParseCommentTags(`
+import (
+	"manala/internal/yaml"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+)
+
+type TagsSuite struct{ suite.Suite }
+
+func TestTagsSuite(t *testing.T) {
+	suite.Run(t, new(TagsSuite))
+}
+
+func (s *TagsSuite) TestParseComment() {
+	tags := &yaml.Tags{}
+	yaml.ParseCommentTags(`
 	  # @foo bar
 	  # @bar baz
       # qux
 	`, tags)
 	s.Equal(
-		&Tags{
+		&yaml.Tags{
 			{Name: "foo", Value: "bar"},
 			{Name: "bar", Value: "baz\nqux"},
 		},
@@ -16,28 +29,28 @@ func (s *Suite) TestParseCommentTags() {
 	)
 }
 
-func (s *Suite) TestTagsFilter() {
-	tags := &Tags{
-		&Tag{Name: "foo", Value: "bar"},
-		&Tag{Name: "bar", Value: "baz"},
-		&Tag{Name: "foo", Value: "baz"},
+func (s *TagsSuite) TestFilter() {
+	tags := &yaml.Tags{
+		{Name: "foo", Value: "bar"},
+		{Name: "bar", Value: "baz"},
+		{Name: "foo", Value: "baz"},
 	}
 
 	s.Equal(
-		&Tags{
+		&yaml.Tags{
 			{Name: "foo", Value: "bar"},
 			{Name: "foo", Value: "baz"},
 		},
 		tags.Filter("foo"),
 	)
 	s.Equal(
-		&Tags{
+		&yaml.Tags{
 			{Name: "bar", Value: "baz"},
 		},
 		tags.Filter("bar"),
 	)
 	s.Equal(
-		&Tags{},
+		&yaml.Tags{},
 		tags.Filter("baz"),
 	)
 }

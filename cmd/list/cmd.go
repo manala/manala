@@ -2,17 +2,17 @@ package list
 
 import (
 	"context"
-	"fmt"
-	"github.com/spf13/cobra"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
+
+	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.Api, output ui.Output) *cobra.Command {
+func NewCmd(log *slog.Logger, api *api.API, output ui.Output) *cobra.Command {
 	// Flags
-	var repositoryUrl, repositoryRef string
+	var repositoryURL, repositoryRef string
 
 	// Command
 	cmd := &cobra.Command{
@@ -27,7 +27,7 @@ Example: manala list -> resulting in a recipes list display`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Context
 			ctx := cmd.Context()
-			ctx = app.WithRepositoryUrl(ctx, repositoryUrl)
+			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 
 			return run(ctx, log, api, output)
@@ -35,18 +35,19 @@ Example: manala list -> resulting in a recipes list display`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryUrl, "repository", "o", "", "use repository")
+	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
 	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
 
 	return cmd
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output) error {
+func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output) error {
 	// Get repository loader
 	repositoryLoader := api.NewRepositoryLoader(ctx)
 
 	// Load repository
 	log.Info("loading repository…")
+
 	repository, err := repositoryLoader.Load("")
 	if err != nil {
 		return err
@@ -57,13 +58,14 @@ func run(ctx context.Context, log *slog.Logger, api *api.Api, output ui.Output) 
 
 	// Load recipes
 	log.Info("loading recipes…")
+
 	recipes, err := recipeLoader.LoadAll(repository)
 	if err != nil {
 		return err
 	}
 
 	return output.List(
-		fmt.Sprintf("Recipes available in %s", repository.Url()),
-		NewUiRecipeList(recipes),
+		"Recipes available in "+repository.URL(),
+		NewUIRecipeList(recipes),
 	)
 }

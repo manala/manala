@@ -55,6 +55,7 @@ func (field *formField) Help() string {
 
 func (field *formField) Set(value any) error {
 	field.value = value
+
 	return field.validate()
 }
 
@@ -62,17 +63,22 @@ func (field *formField) Submit() (bool, error) {
 	if err := field.validate(); err != nil {
 		return false, err
 	}
+
 	if len(field.violations) != 0 {
 		return false, nil
 	}
+
 	if err := field.accessor.Set(field.value); err != nil {
 		return false, err
 	}
+
 	return len(field.violations) == 0, nil
 }
 
-func (field *formField) validate() (err error) {
+func (field *formField) validate() error {
+	var err error
 	field.violations, err = field.validator.Validate(field.value)
+
 	return err
 }
 

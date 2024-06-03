@@ -2,7 +2,6 @@ package option
 
 import (
 	_ "embed"
-	"github.com/gosimple/slug"
 	"io"
 	"manala/app"
 	"manala/internal/json"
@@ -10,6 +9,8 @@ import (
 	"manala/internal/schema"
 	"manala/internal/serrors"
 	"manala/internal/validator"
+
+	"github.com/gosimple/slug"
 )
 
 //go:embed schema.json
@@ -93,6 +94,7 @@ func New(reader io.Reader, optionSchema schema.Schema, optionPath path.Path) (ap
 
 	// Type
 	var optionType string
+
 	if optionType, ok = fields["type"].(string); !ok {
 		// Auto detection
 		if _, ok := optionSchema["enum"]; ok {

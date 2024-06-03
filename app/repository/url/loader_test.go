@@ -1,12 +1,14 @@
-package url
+package url_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/app/repository"
+	"manala/app/repository/url"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }
@@ -16,13 +18,13 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandlerErrors() {
-	processor := NewProcessor(log.Discard)
+	processor := url.NewProcessor(log.Discard)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: "foo?bar;baz"}, chainMock)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
 	serrors.Equal(s.T(), &serrors.Assertion{
@@ -40,20 +42,20 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := NewProcessor(log.Discard)
+	processor := url.NewProcessor(log.Discard)
 	processor.Add("url", 10)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
 
 	repositoryMock := &app.RepositoryMock{}
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 	chainMock.
-		On("Next", &repository.LoaderQuery{Url: "url"}).Return(repositoryMock, nil)
+		On("Next", &repository.LoaderQuery{URL: "url"}).Return(repositoryMock, nil)
 
-	repository, err := handler.Handle(&repository.LoaderQuery{Url: ""}, chainMock)
+	repository, err := handler.Handle(&repository.LoaderQuery{URL: ""}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(repositoryMock, repository)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

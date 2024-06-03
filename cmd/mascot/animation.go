@@ -1,12 +1,12 @@
 package mascot
 
 import (
-	_ "embed"
+	"math/rand/v2"
+	"time"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"math/rand/v2"
-	"time"
 )
 
 type Animation struct {
@@ -50,9 +50,8 @@ func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = tea.Quit
 	// Keys
 	case tea.KeyMsg:
-		switch {
-		// Keys - Quit
-		case key.Matches(msg, model.QuitKey):
+		// Quit
+		if key.Matches(msg, model.QuitKey) {
 			cmd = tea.Quit
 		}
 	// Animation - Stop
@@ -67,6 +66,7 @@ func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if model.Repeat > 0 {
 				model.Repeat--
 			}
+
 			cmd = model.yellStop
 		}
 	}

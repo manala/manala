@@ -1,11 +1,13 @@
-package name
+package name_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"manala/app"
 	"manala/app/recipe"
+	"manala/app/recipe/name"
 	"manala/internal/log"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type LoaderSuite struct{ suite.Suite }
@@ -15,10 +17,10 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := NewProcessor(log.Discard)
+	processor := name.NewProcessor(log.Discard)
 	processor.Add("name", 10)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := name.NewProcessorLoaderHandler(log.Discard, processor)
 
 	repositoryMock := &app.RepositoryMock{}
 	recipeMock := &app.RecipeMock{}
@@ -29,7 +31,7 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repositoryMock, Name: ""}, chainMock)
 
+	s.Require().NoError(err)
 	s.Equal(recipeMock, recipe)
-	s.NoError(err)
 	chainMock.AssertExpectations(s.T())
 }

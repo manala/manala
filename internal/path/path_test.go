@@ -1,8 +1,10 @@
-package path
+package path_test
 
 import (
-	"github.com/stretchr/testify/suite"
+	"manala/internal/path"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -34,7 +36,7 @@ func (s *Suite) TestJoin() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			path := Path(test.path)
+			path := path.Path(test.path)
 
 			path = path.Join(test.seg)
 

@@ -1,20 +1,30 @@
-package serrors
+package serrors_test
 
 import (
+	"manala/internal/serrors"
 	"os"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestOs() {
+type OsSuite struct{ suite.Suite }
+
+func TestOsSuite(t *testing.T) {
+	suite.Run(t, new(OsSuite))
+}
+
+func (s *OsSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *Assertion
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Unknown",
-			err:  New("unknown"),
-			expected: &Assertion{
-				Type:    Error{},
+			err:  serrors.New("unknown"),
+			expected: &serrors.Assertion{
+				Type:    serrors.Error{},
 				Message: "unknown",
 			},
 		},
@@ -23,10 +33,10 @@ func (s *Suite) TestOs() {
 			err: &os.PathError{
 				Op:   "operation",
 				Path: "path",
-				Err:  New("path"),
+				Err:  serrors.New("path"),
 			},
-			expected: &Assertion{
-				Type:    Error{},
+			expected: &serrors.Assertion{
+				Type:    serrors.Error{},
 				Message: "path",
 				Arguments: []any{
 					"operation", "operation",
@@ -38,10 +48,10 @@ func (s *Suite) TestOs() {
 			test: "SyscallError",
 			err: &os.SyscallError{
 				Syscall: "syscall",
-				Err:     New("syscall"),
+				Err:     serrors.New("syscall"),
 			},
-			expected: &Assertion{
-				Type:    Error{},
+			expected: &serrors.Assertion{
+				Type:    serrors.Error{},
 				Message: "syscall",
 				Arguments: []any{
 					"syscall", "syscall",
@@ -52,9 +62,9 @@ func (s *Suite) TestOs() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewOs(test.err)
+			err := serrors.NewOs(test.err)
 
-			Equal(s.T(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

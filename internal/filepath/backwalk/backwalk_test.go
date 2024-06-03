@@ -1,10 +1,12 @@
-package backwalk
+package backwalk_test
 
 import (
-	"github.com/stretchr/testify/suite"
+	"manala/internal/filepath/backwalk"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct{ suite.Suite }
@@ -17,10 +19,10 @@ func (s *Suite) Test() {
 	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0
-	err := BackwalkDir(
+	err := backwalk.WalkDir(
 		filepath.Join(dir, "foo", "bar"),
-		func(path string, entry os.DirEntry, err error) error {
-			s.NoError(err)
+		func(path string, _ os.DirEntry, err error) error {
+			s.Require().NoError(err)
 			s.Equal(
 				[]string{
 					filepath.Join(dir, "foo", "bar"),
@@ -29,12 +31,15 @@ func (s *Suite) Test() {
 				}[i],
 				path,
 			)
-			i = i + 1
+
+			i++
+
 			if path == dir {
 				return filepath.SkipAll
 			}
+
 			return nil
 		},
 	)
-	s.NoError(err)
+	s.Require().NoError(err)
 }

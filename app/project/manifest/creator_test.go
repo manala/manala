@@ -1,9 +1,9 @@
-package manifest
+package manifest_test
 
 import (
-	"github.com/stretchr/testify/suite"
+	"manala/app/project/manifest"
 	"manala/app/recipe"
-	"manala/app/recipe/manifest"
+	recipeManifest "manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/log"
@@ -12,6 +12,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type CreatorSuite struct{ suite.Suite }
@@ -21,23 +23,23 @@ func TestCreatorSuite(t *testing.T) {
 }
 
 func (s *CreatorSuite) TestCreateErrors() {
-	repositoryUrl := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/repository")
+	repositoryURL := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/repository")
 	recipeName := "recipe"
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
-	repository, _ := repositoryLoader.Load(repositoryUrl)
+	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		manifest.NewLoaderHandler(log.Discard),
+		recipeManifest.NewLoaderHandler(log.Discard),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
 	s.Run("File", func() {
 		projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/File/project")
 
-		creator := NewCreator()
+		creator := manifest.NewCreator()
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
@@ -52,7 +54,7 @@ func (s *CreatorSuite) TestCreateErrors() {
 }
 
 func (s *CreatorSuite) TestCreate() {
-	repositoryUrl := filepath.FromSlash("testdata/CreatorSuite/TestCreate/repository")
+	repositoryURL := filepath.FromSlash("testdata/CreatorSuite/TestCreate/repository")
 	recipeName := "recipe"
 
 	projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreate/project")
@@ -62,10 +64,10 @@ func (s *CreatorSuite) TestCreate() {
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
 	))
-	repository, _ := repositoryLoader.Load(repositoryUrl)
+	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		manifest.NewLoaderHandler(log.Discard),
+		recipeManifest.NewLoaderHandler(log.Discard),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
@@ -73,11 +75,11 @@ func (s *CreatorSuite) TestCreate() {
 	vars["string_float_int"] = "3.0"
 	vars["string_asterisk"] = "*"
 
-	creator := NewCreator()
+	creator := manifest.NewCreator()
 	project, err := creator.Create(projectDir, recipe, vars)
 
+	s.Require().NoError(err)
 	s.NotNil(project)
-	s.NoError(err)
 
 	heredoc.EqualFile(s.T(), `
 		manala:

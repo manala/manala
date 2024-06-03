@@ -1,16 +1,18 @@
-package template
+package template_test
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/suite"
 	"manala/internal/serrors"
+	"manala/internal/template"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type Suite struct {
 	suite.Suite
-	provider ProviderInterface
+	provider template.ProviderInterface
 	buffer   *bytes.Buffer
 }
 
@@ -19,7 +21,7 @@ func TestSuite(t *testing.T) {
 }
 
 func (s *Suite) SetupSuite() {
-	s.provider = &Provider{}
+	s.provider = &template.Provider{}
 }
 
 func (s *Suite) SetupTest() {
@@ -30,33 +32,33 @@ func (s *Suite) TestWriteTo() {
 	template := s.provider.Template()
 	err := template.WriteTo(s.buffer)
 
-	s.NoError(err)
+	s.Require().NoError(err)
 	s.Equal("", s.buffer.String())
 
 	s.Run("DefaultFile", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/DefaultFile")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/DefaultFile")
 
 		template := s.provider.Template()
 		template.WithDefaultFile(filepath.Join(dir, "template.tmpl"))
 		template.WithDefaultContent(`{{ template "foo" . }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
 	s.Run("File", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/File")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/File")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
@@ -67,21 +69,21 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ "baz" }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("baz", s.buffer.String())
 	})
 
 	s.Run("FileOverDefaultContent", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/FileOverDefaultContent")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/FileOverDefaultContent")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
 		template.WithDefaultContent(`{{ "baz" }}`)
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("bar", s.buffer.String())
 	})
 
@@ -93,7 +95,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithData("foo")
 		err := template.WriteTo(s.buffer)
 
-		s.NoError(err)
+		s.Require().NoError(err)
 		s.Equal("foo", s.buffer.String())
 	})
 

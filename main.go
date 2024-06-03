@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"log/slog"
 	"manala/app/api"
 	"manala/cmd"
@@ -12,18 +10,21 @@ import (
 	cmdMascot "manala/cmd/mascot"
 	cmdUpdate "manala/cmd/update"
 	cmdWatch "manala/cmd/watch"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
 	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// Set at build time, by goreleaser, via ldflags
+// Set at build time, by goreleaser, via ldflags.
 var version = "dev"
 
-// Default repository url
-const defaultRepositoryUrl = "https://github.com/manala/manala-recipes.git"
+// Default repository url.
+const defaultRepositoryURL = "https://github.com/manala/manala-recipes.git"
 
 func main() {
 	// Streams
@@ -37,17 +38,17 @@ func main() {
 
 	var (
 		appLog = new(slog.Logger)
-		appApi = new(api.Api)
+		appAPI = new(api.API)
 	)
 
 	// App commands
 	appCmd := cmd.NewCmd(version, in, out, err)
 	appCmd.AddCommand(
-		cmdInit.NewCmd(appLog, appApi, ui),
-		cmdList.NewCmd(appLog, appApi, ui),
+		cmdInit.NewCmd(appLog, appAPI, ui),
+		cmdList.NewCmd(appLog, appAPI, ui),
 		cmdMascot.NewCmd(),
-		cmdUpdate.NewCmd(appLog, appApi),
-		cmdWatch.NewCmd(appLog, appApi, ui, notify),
+		cmdUpdate.NewCmd(appLog, appAPI),
+		cmdWatch.NewCmd(appLog, appAPI, ui, notify),
 	)
 
 	// App commands persistent flags
@@ -63,14 +64,14 @@ func main() {
 		// Viper
 		_ = viper.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
 		_ = viper.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
-		viper.SetDefault("default_repository", defaultRepositoryUrl)
+		viper.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
 		viper.AutomaticEnv()
 		viper.SetEnvPrefix("MANALA")
 
 		// App cache
-		appCache := cache.New(viper.GetString("cache_dir")).
+		appCache := caching.NewCache(viper.GetString("cache_dir")).
 			WithUserDir("manala")
 
 		// Deferred app log instantiation
@@ -80,8 +81,8 @@ func main() {
 		*appLog = *slog.New(appLogHandler)
 
 		// Deferred app api instantiation
-		*appApi = *api.New(appLog, appCache,
-			api.WithDefaultRepositoryUrl(viper.GetString("default_repository")),
+		*appAPI = *api.New(appLog, appCache,
+			api.WithDefaultRepositoryURL(viper.GetString("default_repository")),
 		)
 
 		// Log config

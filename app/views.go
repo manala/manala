@@ -4,7 +4,7 @@ package app
 /* Project */
 /***********/
 
-// NewProjectView create a project view
+// NewProjectView create a project view.
 func NewProjectView(project Project) *ProjectView {
 	return &ProjectView{
 		Dir:    project.Dir(),
@@ -13,7 +13,7 @@ func NewProjectView(project Project) *ProjectView {
 	}
 }
 
-// ProjectView is a secure and lightweight facade of a project, dedicated to template usage
+// ProjectView is a secure and lightweight facade of a project, dedicated to template usage.
 type ProjectView struct {
 	Dir    string         `json:"dir"`
 	Vars   map[string]any `json:"vars"`
@@ -24,7 +24,7 @@ type ProjectView struct {
 /* Recipe */
 /**********/
 
-// NewRecipeView create a recipe view
+// NewRecipeView create a recipe view.
 func NewRecipeView(recipe Recipe) *RecipeView {
 	return &RecipeView{
 		Name:        recipe.Name(),
@@ -34,7 +34,7 @@ func NewRecipeView(recipe Recipe) *RecipeView {
 	}
 }
 
-// RecipeView is a secure and lightweight facade of a recipe, dedicated to template usage
+// RecipeView is a secure and lightweight facade of a recipe, dedicated to template usage.
 type RecipeView struct {
 	Name        string          `json:"name"`
 	Description string          `json:"description,omitempty"`
@@ -42,12 +42,13 @@ type RecipeView struct {
 	Repository  *RepositoryView `json:"-"`
 }
 
-// NewRecipesView create a slice of recipes view
+// NewRecipesView create a slice of recipes view.
 func NewRecipesView(recipes []Recipe) RecipesView {
 	views := make(RecipesView, len(recipes))
 	for i := range recipes {
 		views[i] = NewRecipeView(recipes[i])
 	}
+
 	return views
 }
 
@@ -57,20 +58,20 @@ type RecipesView []*RecipeView
 /* Repository */
 /**************/
 
-// NewRepositoryView create a repository view
+// NewRepositoryView create a repository view.
 func NewRepositoryView(repository Repository) *RepositoryView {
-	url := repository.Url()
+	url := repository.URL()
 
 	return &RepositoryView{
-		Url:    url,
+		URL:    url,
 		Path:   url,
 		Source: url,
 	}
 }
 
-// RepositoryView is a secure and lightweight facade of a repository, dedicated to template usage
+// RepositoryView is a secure and lightweight facade of a repository, dedicated to template usage.
 type RepositoryView struct {
-	Url string
+	URL string
 	// Path ensure backward compatibility, when "path" was used instead of "url" to define repository origin
 	Path string
 	// Source ensure backward compatibility, when "source" was used instead of "path" to define repository origin

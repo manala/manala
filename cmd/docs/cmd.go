@@ -1,9 +1,10 @@
 package docs
 
 import (
+	"path/filepath"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
-	"path/filepath"
 )
 
 func NewCmd(root *cobra.Command) *cobra.Command {

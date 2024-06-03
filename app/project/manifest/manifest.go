@@ -2,14 +2,15 @@ package manifest
 
 import (
 	_ "embed"
-	goYaml "github.com/goccy/go-yaml"
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"io"
 	"manala/internal/schema"
 	"manala/internal/serrors"
 	"manala/internal/validator"
 	"manala/internal/yaml"
 	"regexp"
+
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 const filename = ".manala.yaml"
@@ -46,10 +47,11 @@ func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
+func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	// Read content
 	content, err := io.ReadAll(reader)
-	n = int64(len(content))
+	n := int64(len(content))
+
 	if err != nil {
 		return n, serrors.New("unable to read project manifest").
 			WithErrors(err)
@@ -69,6 +71,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 		if err == io.EOF {
 			return n, serrors.New("empty content")
 		}
+
 		return n, yaml.NewError(err)
 	}
 
@@ -78,19 +81,19 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 			schema.NewValidator(_schema),
 		),
 		validator.WithFilters(validator.Filters{
-			{Path: "", Type: validator.INVALID_TYPE, StructuredMessage: "yaml document must be a map"},
-			{Path: "", Type: validator.REQUIRED, Property: "manala", StructuredMessage: "missing manala property"},
-			{Path: "manala", Type: validator.INVALID_TYPE, StructuredMessage: "manala field must be a map"},
-			{Path: "manala", Type: validator.REQUIRED, Property: "recipe", StructuredMessage: "missing manala recipe property"},
-			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.ADDITIONAL_PROPERTY_NOT_ALLOWED, StructuredMessage: "manala field don't support additional properties"},
+			{Path: "", Type: validator.InvalidType, StructuredMessage: "yaml document must be a map"},
+			{Path: "", Type: validator.Required, Property: "manala", StructuredMessage: "missing manala property"},
+			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
+			{Path: "manala", Type: validator.Required, Property: "recipe", StructuredMessage: "missing manala recipe property"},
+			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.AdditionalPropertyNotAllowed, StructuredMessage: "manala field don't support additional properties"},
 			// Recipe
-			{Path: "manala.recipe", Type: validator.INVALID_TYPE, StructuredMessage: "manala recipe field must be a string"},
-			{Path: "manala.recipe", Type: validator.STRING_GTE, StructuredMessage: "empty manala recipe field"},
-			{Path: "manala.recipe", Type: validator.STRING_LTE, StructuredMessage: "too long manala recipe field"},
+			{Path: "manala.recipe", Type: validator.InvalidType, StructuredMessage: "manala recipe field must be a string"},
+			{Path: "manala.recipe", Type: validator.StringGte, StructuredMessage: "empty manala recipe field"},
+			{Path: "manala.recipe", Type: validator.StringLte, StructuredMessage: "too long manala recipe field"},
 			// Repository
-			{Path: "manala.repository", Type: validator.INVALID_TYPE, StructuredMessage: "manala repository field must be a string"},
-			{Path: "manala.repository", Type: validator.STRING_GTE, StructuredMessage: "empty manala repository field"},
-			{Path: "manala.repository", Type: validator.STRING_LTE, StructuredMessage: "too long manala repository field"},
+			{Path: "manala.repository", Type: validator.InvalidType, StructuredMessage: "manala repository field must be a string"},
+			{Path: "manala.repository", Type: validator.StringGte, StructuredMessage: "empty manala repository field"},
+			{Path: "manala.repository", Type: validator.StringLte, StructuredMessage: "too long manala repository field"},
 		}),
 		validator.WithFormatters(
 			manifest.ValidatorFormatter(),

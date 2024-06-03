@@ -1,12 +1,13 @@
 package charm
 
 import (
+	"manala/internal/ui/components"
+
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	zone "github.com/lrstanley/bubblezone"
-	"manala/internal/ui/components"
 )
 
 func newFormFieldTextModel(field *components.FormFieldText, renderer *lipgloss.Renderer, zone *zone.Manager) formFieldTextModel {
@@ -52,13 +53,13 @@ type formFieldTextModel struct {
 	width                    int
 	zone                     *zone.Manager
 	zonePrefix               string
-	style                    *style
-	labelStyle               *style
-	helpStyle                *style
-	textStyle                *style
-	textInputStyle           *style
-	textInputCursorStyle     *style
-	textInputCursorTextStyle *style
+	style                    *Style
+	labelStyle               *Style
+	helpStyle                *Style
+	textStyle                *Style
+	textInputStyle           *Style
+	textInputCursorStyle     *Style
+	textInputCursorTextStyle *Style
 	*formFieldModel
 }
 
@@ -96,14 +97,13 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !model.focus {
 			return model, nil
 		}
-		switch {
-		case key.Matches(msg, SelectKeys):
+
+		if key.Matches(msg, SelectKeys) {
 			cmds.Add(formFieldInput)
 		}
 	// Mouse
 	case tea.MouseMsg:
-		switch {
-		case msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft:
+		if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft {
 			zone := model.zone.Get(model.zonePrefix + "input")
 			// Set cursor position on left click
 			if zone.InBounds(msg) {

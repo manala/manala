@@ -21,12 +21,14 @@ func NewOs(err error) Error {
 			"operation", _pathError.Op,
 			"path", _pathError.Path,
 		)
+
 		if _pathError.Timeout() {
 			arguments = append(arguments, "timeout", true)
 		}
 	case errors.As(err, &_syscallError):
 		message = _syscallError.Err.Error()
 		arguments = append(arguments, "syscall", _syscallError.Syscall)
+
 		if _syscallError.Timeout() {
 			arguments = append(arguments, "timeout", true)
 		}

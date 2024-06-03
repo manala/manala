@@ -2,13 +2,14 @@ package recipe
 
 import (
 	"errors"
-	"github.com/stretchr/testify/mock"
 	"log/slog"
 	"manala/app"
 	"manala/internal/filepath/filter"
 	"manala/internal/serrors"
 	"os"
 	"sort"
+
+	"github.com/stretchr/testify/mock"
 )
 
 func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
@@ -61,7 +62,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	// Sort alphabetically
 	sort.Slice(files, func(a, b int) bool { return files[a].Name() < files[b].Name() })
 
-	var recipes []app.Recipe
+	recipes := make([]app.Recipe, 0)
 
 	for _, file := range files {
 		if !file.IsDir() {
@@ -72,6 +73,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 			// Exclusions
 			if loader.filter.Excluded(file.Name()) {
 				loader.log.Debug("exclude recipe path", "path", file.Name())
+
 				continue
 			}
 		}
@@ -82,6 +84,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 			if errors.As(err, &_notFoundRecipeError) {
 				continue
 			}
+
 			return nil, err
 		}
 
@@ -141,6 +144,7 @@ type LoaderHandlerMock struct {
 
 func (mock *LoaderHandlerMock) Handle(query *LoaderQuery, chain LoaderHandlerChain) (app.Recipe, error) {
 	args := mock.Called(query, chain)
+
 	return args.Get(0).(app.Recipe), args.Error(1)
 }
 
@@ -155,10 +159,12 @@ type LoaderHandlerChainMock struct {
 
 func (mock *LoaderHandlerChainMock) Next(query *LoaderQuery) (app.Recipe, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Recipe), args.Error(1)
 }
 
 func (mock *LoaderHandlerChainMock) Last(query *LoaderQuery) (app.Recipe, error) {
 	args := mock.Called(query)
+
 	return args.Get(0).(app.Recipe), args.Error(1)
 }

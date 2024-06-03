@@ -9,7 +9,7 @@ import (
 	"manala/internal/filepath/filter"
 )
 
-func (api *Api) NewRecipeLoader(ctx context.Context) *recipe.Loader {
+func (api *API) NewRecipeLoader(ctx context.Context) *recipe.Loader {
 	// Name processor
 	nameProcessor := name.NewProcessor(api.log)
 	if name, ok := app.RecipeName(ctx); ok {

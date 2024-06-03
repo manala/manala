@@ -2,18 +2,19 @@ package manifest
 
 import (
 	_ "embed"
-	goYaml "github.com/goccy/go-yaml"
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"io"
 	"manala/app"
 	"manala/app/recipe"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/serrors"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"manala/internal/validator"
 	"manala/internal/yaml"
 	"regexp"
+
+	goYaml "github.com/goccy/go-yaml"
+	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
 const filename = ".manala.yaml"
@@ -56,7 +57,7 @@ func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }
 
-func (manifest *Manifest) Sync() []syncer.UnitInterface {
+func (manifest *Manifest) Sync() []sync.UnitInterface {
 	return manifest.config.Sync
 }
 
@@ -68,10 +69,11 @@ func (manifest *Manifest) Options() []app.RecipeOption {
 	return manifest.options
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
+func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	// Read content
 	content, err := io.ReadAll(reader)
-	n = int64(len(content))
+	n := int64(len(content))
+
 	if err != nil {
 		return n, serrors.New("unable to read recipe manifest").
 			WithErrors(err)
@@ -91,6 +93,7 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 		if err == io.EOF {
 			return n, serrors.New("empty content")
 		}
+
 		return n, yaml.NewError(err)
 	}
 
@@ -100,29 +103,29 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (n int64, err error) {
 			schema.NewValidator(_schema),
 		),
 		validator.WithFilters(validator.Filters{
-			{Path: "", Type: validator.INVALID_TYPE, StructuredMessage: "yaml document must be a map"},
-			{Path: "", Type: validator.REQUIRED, Property: "manala", StructuredMessage: "missing manala property"},
-			{Path: "manala", Type: validator.INVALID_TYPE, StructuredMessage: "manala field must be a map"},
-			{Path: "manala", Type: validator.REQUIRED, Property: "description", StructuredMessage: "missing manala description property"},
-			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.ADDITIONAL_PROPERTY_NOT_ALLOWED, StructuredMessage: "manala field don't support additional properties"},
+			{Path: "", Type: validator.InvalidType, StructuredMessage: "yaml document must be a map"},
+			{Path: "", Type: validator.Required, Property: "manala", StructuredMessage: "missing manala property"},
+			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
+			{Path: "manala", Type: validator.Required, Property: "description", StructuredMessage: "missing manala description property"},
+			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.AdditionalPropertyNotAllowed, StructuredMessage: "manala field don't support additional properties"},
 			// Description
-			{Path: "manala.description", Type: validator.INVALID_TYPE, StructuredMessage: "manala description field must be a string"},
-			{Path: "manala.description", Type: validator.STRING_GTE, StructuredMessage: "empty manala description field"},
-			{Path: "manala.description", Type: validator.STRING_LTE, StructuredMessage: "too long manala description field"},
+			{Path: "manala.description", Type: validator.InvalidType, StructuredMessage: "manala description field must be a string"},
+			{Path: "manala.description", Type: validator.StringGte, StructuredMessage: "empty manala description field"},
+			{Path: "manala.description", Type: validator.StringLte, StructuredMessage: "too long manala description field"},
 			// Icon
-			{Path: "manala.icon", Type: validator.INVALID_TYPE, StructuredMessage: "manala icon field must be a string"},
-			{Path: "manala.icon", Type: validator.STRING_GTE, StructuredMessage: "empty manala icon field"},
-			{Path: "manala.icon", Type: validator.STRING_LTE, StructuredMessage: "too long manala icon field"},
+			{Path: "manala.icon", Type: validator.InvalidType, StructuredMessage: "manala icon field must be a string"},
+			{Path: "manala.icon", Type: validator.StringGte, StructuredMessage: "empty manala icon field"},
+			{Path: "manala.icon", Type: validator.StringLte, StructuredMessage: "too long manala icon field"},
 			// Template
-			{Path: "manala.template", Type: validator.INVALID_TYPE, StructuredMessage: "manala template field must be a string"},
-			{Path: "manala.template", Type: validator.STRING_GTE, StructuredMessage: "empty manala template field"},
-			{Path: "manala.template", Type: validator.STRING_LTE, StructuredMessage: "too long manala template field"},
+			{Path: "manala.template", Type: validator.InvalidType, StructuredMessage: "manala template field must be a string"},
+			{Path: "manala.template", Type: validator.StringGte, StructuredMessage: "empty manala template field"},
+			{Path: "manala.template", Type: validator.StringLte, StructuredMessage: "too long manala template field"},
 			// Sync
-			{Path: "manala.sync", Type: validator.INVALID_TYPE, StructuredMessage: "manala sync field must be a sequence"},
+			{Path: "manala.sync", Type: validator.InvalidType, StructuredMessage: "manala sync field must be a sequence"},
 			// Sync Item
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.INVALID_TYPE, StructuredMessage: "manala sync sequence entries must be strings"},
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.STRING_GTE, StructuredMessage: "empty manala sync sequence entry"},
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.STRING_LTE, StructuredMessage: "too long manala sync sequence entry"},
+			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.InvalidType, StructuredMessage: "manala sync sequence entries must be strings"},
+			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.StringGte, StructuredMessage: "empty manala sync sequence entry"},
+			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.StringLte, StructuredMessage: "too long manala sync sequence entry"},
 		}),
 		validator.WithFormatters(
 			manifest.ValidatorFormatter(),

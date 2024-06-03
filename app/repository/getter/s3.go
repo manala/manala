@@ -2,16 +2,17 @@ package getter
 
 import (
 	"context"
-	"github.com/hashicorp/go-getter/s3/v2"
-	"github.com/hashicorp/go-getter/v2"
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"time"
+
+	"github.com/hashicorp/go-getter/s3/v2"
+	"github.com/hashicorp/go-getter/v2"
 )
 
-func NewS3LoaderHandler(log *slog.Logger, cache *cache.Cache) *S3LoaderHandler {
+func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler {
 	return &S3LoaderHandler{
 		log:   log.With("handler", "getter.s3"),
 		cache: cache.WithDir("repositories"),
@@ -30,16 +31,16 @@ func NewS3LoaderHandler(log *slog.Logger, cache *cache.Cache) *S3LoaderHandler {
 
 type S3LoaderHandler struct {
 	log    *slog.Logger
-	cache  *cache.Cache
+	cache  *caching.Cache
 	client *getter.Client
 }
 
 func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.Url)
+	handler.log.Debug("handle repository", "url", query.URL)
 
 	// Cache dir
 	cacheDir, err := handler.cache.
-		WithHashDir(query.Url).
+		WithHashDir(query.URL).
 		Dir()
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repo
 
 	// Request
 	request := &getter.Request{
-		Src:     query.Url,
+		Src:     query.URL,
 		Dst:     cacheDir,
 		GetMode: getter.ModeDir,
 	}
@@ -58,8 +59,9 @@ func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repo
 			// Chain
 			return chain.Next(query)
 		}
+
 		return nil, NewError(err)
 	}
 
-	return NewRepository(query.Url, response.Dst), nil
+	return NewRepository(query.URL, response.Dst), nil
 }

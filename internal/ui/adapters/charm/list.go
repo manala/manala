@@ -1,9 +1,10 @@
 package charm
 
 import (
+	"manala/internal/ui/components"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"manala/internal/ui/components"
 )
 
 func (adapter *Adapter) List(header string, list []components.ListItem) error {
@@ -38,7 +39,7 @@ func (adapter *Adapter) List(header string, list []components.ListItem) error {
 /* Item */
 /********/
 
-func newListItemModel(item components.ListItem, style *style, primaryStyle *style, secondaryStyle *style) listItemModel {
+func newListItemModel(item components.ListItem, style *Style, primaryStyle *Style, secondaryStyle *Style) listItemModel {
 	return listItemModel{
 		item:           item,
 		style:          style,
@@ -49,9 +50,9 @@ func newListItemModel(item components.ListItem, style *style, primaryStyle *styl
 
 type listItemModel struct {
 	item           components.ListItem
-	style          *style
-	primaryStyle   *style
-	secondaryStyle *style
+	style          *Style
+	primaryStyle   *Style
+	secondaryStyle *Style
 }
 
 func (model listItemModel) Init() tea.Cmd {

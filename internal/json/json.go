@@ -11,7 +11,7 @@ func Unmarshal(data []byte, value any) error {
 	decoder.UseNumber()
 
 	if err := decoder.Decode(value); err != nil {
-		return serrors.NewJson(err)
+		return serrors.NewJSON(err)
 	}
 
 	return nil

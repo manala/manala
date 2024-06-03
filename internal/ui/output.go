@@ -1,8 +1,9 @@
 package ui
 
 import (
-	"github.com/stretchr/testify/mock"
 	"manala/internal/ui/components"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type Output interface {
@@ -25,5 +26,6 @@ func (mock *OutputMock) Error(err error) {
 
 func (mock *OutputMock) List(header string, list []components.ListItem) error {
 	args := mock.Called(header, list)
+
 	return args.Error(0)
 }

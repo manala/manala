@@ -26,7 +26,7 @@ var commandErrorRegex = regexp.MustCompile(`(?s)error running ([^(: )]+): (.*)$`
 // 1: details
 var multiErrorRegex = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(.*)\n\n$`)
 
-// Mimic the aws sdk error interface to avoid direct dependency on it
+// Mimic the aws sdk error interface to avoid direct dependency on it.
 type awsError interface {
 	error
 	Code() string
@@ -46,9 +46,11 @@ func NewError(err error) serrors.Error {
 		if code := err.Code(); code != "" {
 			arguments = append(arguments, "code", code)
 		}
+
 		if message := err.Message(); message != "" {
 			arguments = append(arguments, "message", message)
 		}
+
 		return serrors.New("aws error").
 			WithArguments(arguments...).
 			WithErrors(err.OrigErr()).
@@ -62,6 +64,7 @@ func NewError(err error) serrors.Error {
 		if code, _err := strconv.Atoi(matches[2]); _err == nil {
 			err = err.WithArguments("code", code)
 		}
+
 		return err
 	} else
 	// Command error
