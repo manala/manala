@@ -1,8 +1,9 @@
-package name
+package name_test
 
 import (
 	"manala/app"
 	"manala/app/recipe"
+	"manala/app/recipe/name"
 	"manala/internal/log"
 	"testing"
 
@@ -16,10 +17,10 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := NewProcessor(log.Discard)
+	processor := name.NewProcessor(log.Discard)
 	processor.Add("name", 10)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := name.NewProcessorLoaderHandler(log.Discard, processor)
 
 	repositoryMock := &app.RepositoryMock{}
 	recipeMock := &app.RecipeMock{}

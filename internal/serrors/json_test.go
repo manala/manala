@@ -1,27 +1,37 @@
-package serrors
+package serrors_test
 
 import (
 	"encoding/json"
+	"manala/internal/serrors"
 	"reflect"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestJson() {
+type JSONSuite struct{ suite.Suite }
+
+func TestJSONSuite(t *testing.T) {
+	suite.Run(t, new(JSONSuite))
+}
+
+func (s *JSONSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *Assertion
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Unknown",
-			err:  New("unknown"),
-			expected: &Assertion{
+			err:  serrors.New("unknown"),
+			expected: &serrors.Assertion{
 				Message: "unknown",
 			},
 		},
 		{
 			test: "SyntaxError",
 			err:  &json.SyntaxError{Offset: 123},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: "",
 				Arguments: []any{
 					"offset", int64(123),
@@ -37,7 +47,7 @@ func (s *Suite) TestJson() {
 				Field:  "field",
 				Type:   reflect.TypeOf(0.0),
 			},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into struct field",
 				Arguments: []any{
 					"offset", int64(123),
@@ -55,7 +65,7 @@ func (s *Suite) TestJson() {
 				Value:  "value",
 				Type:   reflect.TypeOf(0.0),
 			},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into value",
 				Arguments: []any{
 					"offset", int64(123),
@@ -69,7 +79,7 @@ func (s *Suite) TestJson() {
 			err: &json.InvalidUnmarshalError{
 				Type: reflect.TypeOf(0.0),
 			},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: "invalid unmarshal argument",
 				Arguments: []any{
 					"type", "float64",
@@ -80,9 +90,9 @@ func (s *Suite) TestJson() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewJSON(test.err)
+			err := serrors.NewJSON(test.err)
 
-			Equal(s.T(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

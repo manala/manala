@@ -55,10 +55,10 @@ type formFieldSelectModel struct {
 	hoverIndex  *modelsIndex
 	zone        *zone.Manager
 	zonePrefix  string
-	style       *style
-	labelStyle  *style
-	helpStyle   *style
-	selectStyle *style
+	style       *Style
+	labelStyle  *Style
+	helpStyle   *Style
+	selectStyle *Style
 	*formFieldModel
 }
 
@@ -258,7 +258,7 @@ func newFormFieldSelectOptionModel(option *components.FormFieldSelectOption, wid
 type formFieldSelectOptionModel struct {
 	option *components.FormFieldSelectOption
 	width  *int
-	style  *style
+	style  *Style
 }
 
 func (model formFieldSelectOptionModel) Init() tea.Cmd {

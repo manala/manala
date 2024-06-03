@@ -15,7 +15,7 @@ func newHeaderModel(header string, renderer *lipgloss.Renderer) headerModel {
 type headerModel struct {
 	header string
 	width  int
-	style  *style
+	style  *Style
 }
 
 func (header headerModel) Init() tea.Cmd {

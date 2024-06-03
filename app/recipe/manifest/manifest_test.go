@@ -1,11 +1,12 @@
-package manifest
+package manifest_test
 
 import (
 	"encoding/json"
+	"manala/app/recipe/manifest"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/serrors"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,24 +14,24 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ManifestSuite struct{ suite.Suite }
+type Suite struct{ suite.Suite }
 
-func TestManifestSuite(t *testing.T) {
-	suite.Run(t, new(ManifestSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *ManifestSuite) Test() {
-	manifest := New()
+func (s *Suite) Test() {
+	m := manifest.New()
 
-	s.Equal("", manifest.Description())
-	s.Equal("", manifest.Icon())
-	s.Equal("", manifest.Template())
-	s.Equal(map[string]any{}, manifest.Vars())
-	s.Equal([]syncer.UnitInterface{}, manifest.Sync())
-	s.Equal(schema.Schema{}, manifest.Schema())
+	s.Equal("", m.Description())
+	s.Equal("", m.Icon())
+	s.Equal("", m.Template())
+	s.Equal(map[string]any{}, m.Vars())
+	s.Equal([]sync.UnitInterface{}, m.Sync())
+	s.Equal(schema.Schema{}, m.Schema())
 }
 
-func (s *ManifestSuite) TestReadFromErrors() {
+func (s *Suite) TestReadFromErrors() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -582,26 +583,26 @@ func (s *ManifestSuite) TestReadFromErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			manifest := New()
+			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestReadFromErrors/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestReadFromErrors/" + test.test)
 
-			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := manifest.ReadFrom(manifestFile)
+			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+			_, err := m.ReadFrom(mFile)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *ManifestSuite) TestReadFrom() {
+func (s *Suite) TestReadFrom() {
 	tests := []struct {
 		test                string
 		expectedDescription string
 		expectedIcon        string
 		expectedTemplate    string
 		expectedVars        map[string]any
-		expectedSync        *syncer.UnitsAssertion
+		expectedSync        *sync.UnitsAssertion
 		expectedSchema      schema.Schema
 	}{
 		{
@@ -638,7 +639,7 @@ func (s *ManifestSuite) TestReadFrom() {
 				"hyphen-key":     "ok",
 				"dot.key":        "ok",
 			},
-			expectedSync: &syncer.UnitsAssertion{
+			expectedSync: &sync.UnitsAssertion{
 				{Source: "file", Destination: "file"},
 				{Source: "dir/file", Destination: "dir/file"},
 				{Source: "file", Destination: "dir/file"},
@@ -751,7 +752,7 @@ func (s *ManifestSuite) TestReadFrom() {
 			expectedVars: map[string]any{
 				"foo": "bar",
 			},
-			expectedSync: &syncer.UnitsAssertion{},
+			expectedSync: &sync.UnitsAssertion{},
 			expectedSchema: schema.Schema{
 				"type":                 "object",
 				"additionalProperties": false,
@@ -768,7 +769,7 @@ func (s *ManifestSuite) TestReadFrom() {
 			expectedIcon:        "icon",
 			expectedTemplate:    "template",
 			expectedVars:        map[string]any{},
-			expectedSync:        &syncer.UnitsAssertion{},
+			expectedSync:        &sync.UnitsAssertion{},
 			expectedSchema:      schema.Schema{},
 		},
 		{
@@ -781,7 +782,7 @@ func (s *ManifestSuite) TestReadFrom() {
 				"hyphen-key":     "ok",
 				"dot.key":        "ok",
 			},
-			expectedSync: &syncer.UnitsAssertion{},
+			expectedSync: &sync.UnitsAssertion{},
 			expectedSchema: schema.Schema{
 				"type":                 "object",
 				"additionalProperties": false,
@@ -802,34 +803,34 @@ func (s *ManifestSuite) TestReadFrom() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			manifest := New()
+			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestReadFrom/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestReadFrom/" + test.test)
 
-			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := manifest.ReadFrom(manifestFile)
+			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+			_, err := m.ReadFrom(mFile)
 
 			s.Require().NoError(err)
 
-			s.Equal(test.expectedDescription, manifest.Description())
-			s.Equal(test.expectedIcon, manifest.Icon())
-			s.Equal(test.expectedTemplate, manifest.Template())
-			s.Equal(test.expectedVars, manifest.Vars())
-			syncer.EqualUnits(s.T(), test.expectedSync, manifest.Sync())
-			s.Equal(test.expectedSchema, manifest.Schema())
+			s.Equal(test.expectedDescription, m.Description())
+			s.Equal(test.expectedIcon, m.Icon())
+			s.Equal(test.expectedTemplate, m.Template())
+			s.Equal(test.expectedVars, m.Vars())
+			sync.EqualUnits(s.T(), test.expectedSync, m.Sync())
+			s.Equal(test.expectedSchema, m.Schema())
 		})
 	}
 }
 
-func (s *ManifestSuite) TestOptions() {
-	manifest := New()
+func (s *Suite) TestOptions() {
+	m := manifest.New()
 
-	dir := filepath.FromSlash("testdata/ManifestSuite/TestOptions")
+	dir := filepath.FromSlash("testdata/Suite/TestOptions")
 
-	manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	_, err := manifest.ReadFrom(manifestFile)
+	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	_, err := m.ReadFrom(mFile)
 
-	options := manifest.Options()
+	options := m.Options()
 
 	s.Require().NoError(err)
 

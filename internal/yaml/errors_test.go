@@ -1,13 +1,22 @@
-package yaml
+package yaml_test
 
 import (
 	"manala/internal/serrors"
+	"manala/internal/yaml"
+	"testing"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestError() {
+type ErrorsSuite struct{ suite.Suite }
+
+func TestErrorsSuite(t *testing.T) {
+	suite.Run(t, new(ErrorsSuite))
+}
+
+func (s *ErrorsSuite) Test() {
 	_, err := goYamlParser.ParseBytes([]byte(`&foo`), 0)
 
 	tests := []struct {
@@ -41,15 +50,15 @@ func (s *Suite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewError(test.err)
+			err := yaml.NewError(test.err)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestNodeError() {
-	node, _ := NewParser().ParseBytes([]byte(`foo: bar`))
+func (s *ErrorsSuite) TestNode() {
+	node, _ := yaml.NewParser().ParseBytes([]byte(`foo: bar`))
 
 	tests := []struct {
 		test     string
@@ -75,7 +84,7 @@ func (s *Suite) TestNodeError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewNodeError("error", test.node)
+			err := yaml.NewNodeError("error", test.node)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})

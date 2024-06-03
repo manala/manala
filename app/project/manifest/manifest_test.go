@@ -1,6 +1,7 @@
-package manifest
+package manifest_test
 
 import (
+	"manala/app/project/manifest"
 	"manala/internal/serrors"
 	"os"
 	"path/filepath"
@@ -9,21 +10,21 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ManifestSuite struct{ suite.Suite }
+type Suite struct{ suite.Suite }
 
-func TestManifestSuite(t *testing.T) {
-	suite.Run(t, new(ManifestSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *ManifestSuite) Test() {
-	manifest := New()
+func (s *Suite) Test() {
+	m := manifest.New()
 
-	s.Equal("", manifest.Recipe())
-	s.Equal("", manifest.Repository())
-	s.Equal(map[string]any{}, manifest.Vars())
+	s.Equal("", m.Recipe())
+	s.Equal("", m.Repository())
+	s.Equal(map[string]any{}, m.Vars())
 }
 
-func (s *ManifestSuite) TestReadFromErrors() {
+func (s *Suite) TestReadFromErrors() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -359,19 +360,19 @@ func (s *ManifestSuite) TestReadFromErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			manifest := New()
+			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestReadFromErrors/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestReadFromErrors/" + test.test)
 
-			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := manifest.ReadFrom(manifestFile)
+			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+			_, err := m.ReadFrom(mFile)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *ManifestSuite) TestReadFrom() {
+func (s *Suite) TestReadFrom() {
 	tests := []struct {
 		test               string
 		expectedRecipe     string
@@ -414,17 +415,17 @@ func (s *ManifestSuite) TestReadFrom() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			manifest := New()
+			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestReadFrom/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestReadFrom/" + test.test)
 
-			manifestFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := manifest.ReadFrom(manifestFile)
+			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+			_, err := m.ReadFrom(mFile)
 
 			s.Require().NoError(err)
-			s.Equal(test.expectedRecipe, manifest.Recipe())
-			s.Equal(test.expectedRepository, manifest.Repository())
-			s.Equal(test.expectedVars, manifest.Vars())
+			s.Equal(test.expectedRecipe, m.Recipe())
+			s.Equal(test.expectedRepository, m.Repository())
+			s.Equal(test.expectedVars, m.Vars())
 		})
 	}
 }

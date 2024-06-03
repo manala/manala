@@ -1,6 +1,7 @@
-package name
+package name_test
 
 import (
+	"manala/app/recipe/name"
 	"manala/internal/log"
 	"testing"
 
@@ -55,7 +56,7 @@ func (s *ProcessorSuite) TestProcess() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			processor := NewProcessor(log.Discard)
+			processor := name.NewProcessor(log.Discard)
 
 			for weight, name := range test.names {
 				processor.Add(name, weight)

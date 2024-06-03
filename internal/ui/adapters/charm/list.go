@@ -39,7 +39,7 @@ func (adapter *Adapter) List(header string, list []components.ListItem) error {
 /* Item */
 /********/
 
-func newListItemModel(item components.ListItem, style *style, primaryStyle *style, secondaryStyle *style) listItemModel {
+func newListItemModel(item components.ListItem, style *Style, primaryStyle *Style, secondaryStyle *Style) listItemModel {
 	return listItemModel{
 		item:           item,
 		style:          style,
@@ -50,9 +50,9 @@ func newListItemModel(item components.ListItem, style *style, primaryStyle *styl
 
 type listItemModel struct {
 	item           components.ListItem
-	style          *style
-	primaryStyle   *style
-	secondaryStyle *style
+	style          *Style
+	primaryStyle   *Style
+	secondaryStyle *Style
 }
 
 func (model listItemModel) Init() tea.Cmd {

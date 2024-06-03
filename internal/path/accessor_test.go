@@ -1,8 +1,20 @@
-package path
+package path_test
 
-import "manala/internal/serrors"
+import (
+	"manala/internal/path"
+	"manala/internal/serrors"
+	"testing"
 
-func (s *Suite) TestAccessorGetErrors() {
+	"github.com/stretchr/testify/suite"
+)
+
+type AccessorSuite struct{ suite.Suite }
+
+func TestAccessorSuite(t *testing.T) {
+	suite.Run(t, new(AccessorSuite))
+}
+
+func (s *AccessorSuite) TestGetErrors() {
 	data := map[string]any{
 		"foo": "bar",
 		"bar": map[string]any{
@@ -39,8 +51,8 @@ func (s *Suite) TestAccessorGetErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			accessor := NewAccessor(
-				Path(test.path),
+			accessor := path.NewAccessor(
+				path.Path(test.path),
 				data,
 			)
 
@@ -52,7 +64,7 @@ func (s *Suite) TestAccessorGetErrors() {
 	}
 }
 
-func (s *Suite) TestAccessorGet() {
+func (s *AccessorSuite) TestGet() {
 	data := map[string]any{
 		"foo": "bar",
 		"bar": map[string]any{
@@ -79,20 +91,20 @@ func (s *Suite) TestAccessorGet() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			accessor := NewAccessor(
-				Path(test.path),
+			accessor := path.NewAccessor(
+				path.Path(test.path),
 				data,
 			)
 
 			value, err := accessor.Get()
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, value)
 		})
 	}
 }
 
-func (s *Suite) TestAccessorSet() {
+func (s *AccessorSuite) TestSet() {
 	data := func() map[string]any {
 		return map[string]any{
 			"foo": "",
@@ -148,14 +160,14 @@ func (s *Suite) TestAccessorSet() {
 		s.Run(test.test, func() {
 			_data := data()
 
-			accessor := NewAccessor(
-				Path(test.path),
+			accessor := path.NewAccessor(
+				path.Path(test.path),
 				_data,
 			)
 
 			err := accessor.Set(test.value)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, _data)
 		})
 	}

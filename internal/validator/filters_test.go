@@ -1,19 +1,29 @@
-package validator
+package validator_test
 
 import (
+	"manala/internal/validator"
 	"regexp"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestFilter() {
+type FiltersSuite struct{ suite.Suite }
+
+func TestFiltersSuite(t *testing.T) {
+	suite.Run(t, new(FiltersSuite))
+}
+
+func (s *FiltersSuite) Test() {
 	tests := []struct {
 		test                      string
-		filter                    Filter
+		filter                    validator.Filter
 		expectedMessage           string
 		expectedStructuredMessage string
 	}{
 		{
 			test: "PathMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				Path:              "path",
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -23,7 +33,7 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "PathNotMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				Path:              "foo",
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -33,7 +43,7 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "PathRegexMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				PathRegex:         regexp.MustCompile(`^path$`),
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -43,7 +53,7 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "PathRegexNotMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				PathRegex:         regexp.MustCompile(`^foo$`),
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -53,8 +63,8 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "TypeMatch",
-			filter: Filter{
-				Type:              Required,
+			filter: validator.Filter{
+				Type:              validator.Required,
 				Message:           "message",
 				StructuredMessage: "structured message",
 			},
@@ -63,8 +73,8 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "TypeNotMatch",
-			filter: Filter{
-				Type:              InvalidType,
+			filter: validator.Filter{
+				Type:              validator.InvalidType,
 				Message:           "message",
 				StructuredMessage: "structured message",
 			},
@@ -73,7 +83,7 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "PropertyMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				Property:          "property",
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -83,7 +93,7 @@ func (s *Suite) TestFilter() {
 		},
 		{
 			test: "PropertyNotMatch",
-			filter: Filter{
+			filter: validator.Filter{
 				Property:          "foo",
 				Message:           "message",
 				StructuredMessage: "structured message",
@@ -95,9 +105,9 @@ func (s *Suite) TestFilter() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			violation := NewViolation("")
+			violation := validator.NewViolation("")
 			violation.Path = "path"
-			violation.Type = Required
+			violation.Type = validator.Required
 			violation.Property = "property"
 
 			test.filter.Format(&violation)

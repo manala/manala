@@ -1,8 +1,9 @@
-package template
+package template_test
 
 import (
 	"bytes"
 	"manala/internal/serrors"
+	"manala/internal/template"
 	"path/filepath"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 
 type Suite struct {
 	suite.Suite
-	provider ProviderInterface
+	provider template.ProviderInterface
 	buffer   *bytes.Buffer
 }
 
@@ -20,7 +21,7 @@ func TestSuite(t *testing.T) {
 }
 
 func (s *Suite) SetupSuite() {
-	s.provider = &Provider{}
+	s.provider = &template.Provider{}
 }
 
 func (s *Suite) SetupTest() {
@@ -37,7 +38,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("DefaultFile", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/DefaultFile")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/DefaultFile")
 
 		template := s.provider.Template()
 		template.WithDefaultFile(filepath.Join(dir, "template.tmpl"))
@@ -51,7 +52,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("File", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/File")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/File")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
@@ -75,7 +76,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("FileOverDefaultContent", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/TestWriteTo/FileOverDefaultContent")
+		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/FileOverDefaultContent")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))

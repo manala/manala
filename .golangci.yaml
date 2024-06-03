@@ -13,7 +13,7 @@ linters:
     - predeclared
     - revive
     - stylecheck
-    # - testpackage
+    - testpackage
     - testifylint
     - thelper
     - unconvert

@@ -1,7 +1,8 @@
-package manifest
+package manifest_test
 
 import (
 	"manala/app/recipe"
+	"manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/log"
@@ -18,9 +19,9 @@ func TestLoaderSuite(t *testing.T) {
 	suite.Run(t, new(LoaderSuite))
 }
 
-func (s *LoaderSuite) TestLoaderHandlerErrors() {
+func (s *LoaderSuite) TestHandlerErrors() {
 	s.Run("Directory", func() {
-		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandlerErrors/Directory/repository")
+		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Directory/repository")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 			getter.NewFileLoaderHandler(log.Discard),
@@ -29,7 +30,7 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 
 		chainMock := &recipe.LoaderHandlerChainMock{}
 
-		handler := NewLoaderHandler(log.Discard)
+		handler := manifest.NewLoaderHandler(log.Discard)
 		recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
 		s.Nil(recipe)
@@ -44,8 +45,8 @@ func (s *LoaderSuite) TestLoaderHandlerErrors() {
 	})
 }
 
-func (s *LoaderSuite) TestLoaderHandler() {
-	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoaderHandler/repository")
+func (s *LoaderSuite) TestHandler() {
+	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandler/repository")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
 		getter.NewFileLoaderHandler(log.Discard),
@@ -54,7 +55,7 @@ func (s *LoaderSuite) TestLoaderHandler() {
 
 	chainMock := &recipe.LoaderHandlerChainMock{}
 
-	handler := NewLoaderHandler(log.Discard)
+	handler := manifest.NewLoaderHandler(log.Discard)
 	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
 	s.Require().NoError(err)

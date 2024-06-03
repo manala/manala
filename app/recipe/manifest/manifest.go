@@ -8,7 +8,7 @@ import (
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/serrors"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"manala/internal/validator"
 	"manala/internal/yaml"
 	"regexp"
@@ -57,7 +57,7 @@ func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }
 
-func (manifest *Manifest) Sync() []syncer.UnitInterface {
+func (manifest *Manifest) Sync() []sync.UnitInterface {
 	return manifest.config.Sync
 }
 

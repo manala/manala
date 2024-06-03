@@ -5,14 +5,14 @@ import (
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"manala/internal/schema"
 	"time"
 
 	"github.com/hashicorp/go-getter/v2"
 )
 
-func NewGitLoaderHandler(log *slog.Logger, cache *cache.Cache) *GitLoaderHandler {
+func NewGitLoaderHandler(log *slog.Logger, cache *caching.Cache) *GitLoaderHandler {
 	return &GitLoaderHandler{
 		log:   log.With("handler", "getter.git"),
 		cache: cache.WithDir("repositories"),
@@ -37,7 +37,7 @@ func NewGitLoaderHandler(log *slog.Logger, cache *cache.Cache) *GitLoaderHandler
 
 type GitLoaderHandler struct {
 	log    *slog.Logger
-	cache  *cache.Cache
+	cache  *caching.Cache
 	client *getter.Client
 }
 

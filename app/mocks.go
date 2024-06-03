@@ -2,7 +2,7 @@ package app
 
 import (
 	"manala/internal/schema"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"manala/internal/template"
 	"manala/internal/validator"
 
@@ -87,10 +87,10 @@ func (mock *RecipeMock) Vars() map[string]any {
 	return args.Get(0).(map[string]any)
 }
 
-func (mock *RecipeMock) Sync() []syncer.UnitInterface {
+func (mock *RecipeMock) Sync() []sync.UnitInterface {
 	args := mock.Called()
 
-	return args.Get(0).([]syncer.UnitInterface)
+	return args.Get(0).([]sync.UnitInterface)
 }
 
 func (mock *RecipeMock) Schema() schema.Schema {

@@ -5,13 +5,13 @@ import (
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"time"
 
 	"github.com/hashicorp/go-getter/v2"
 )
 
-func NewHTTPLoaderHandler(log *slog.Logger, cache *cache.Cache) *HTTPLoaderHandler {
+func NewHTTPLoaderHandler(log *slog.Logger, cache *caching.Cache) *HTTPLoaderHandler {
 	return &HTTPLoaderHandler{
 		log:   log.With("handler", "getter.http"),
 		cache: cache.WithDir("repositories"),
@@ -37,7 +37,7 @@ func NewHTTPLoaderHandler(log *slog.Logger, cache *cache.Cache) *HTTPLoaderHandl
 
 type HTTPLoaderHandler struct {
 	log    *slog.Logger
-	cache  *cache.Cache
+	cache  *caching.Cache
 	client *getter.Client
 }
 

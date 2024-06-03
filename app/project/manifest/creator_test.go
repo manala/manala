@@ -1,8 +1,9 @@
-package manifest
+package manifest_test
 
 import (
+	"manala/app/project/manifest"
 	"manala/app/recipe"
-	"manala/app/recipe/manifest"
+	recipeManifest "manala/app/recipe/manifest"
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/log"
@@ -31,14 +32,14 @@ func (s *CreatorSuite) TestCreateErrors() {
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		manifest.NewLoaderHandler(log.Discard),
+		recipeManifest.NewLoaderHandler(log.Discard),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
 	s.Run("File", func() {
 		projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/File/project")
 
-		creator := NewCreator()
+		creator := manifest.NewCreator()
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
@@ -66,7 +67,7 @@ func (s *CreatorSuite) TestCreate() {
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		manifest.NewLoaderHandler(log.Discard),
+		recipeManifest.NewLoaderHandler(log.Discard),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
@@ -74,7 +75,7 @@ func (s *CreatorSuite) TestCreate() {
 	vars["string_float_int"] = "3.0"
 	vars["string_asterisk"] = "*"
 
-	creator := NewCreator()
+	creator := manifest.NewCreator()
 	project, err := creator.Create(projectDir, recipe, vars)
 
 	s.Require().NoError(err)

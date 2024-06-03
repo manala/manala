@@ -26,7 +26,7 @@ func (adapter *Adapter) message(message *components.Message, renderer *lipgloss.
 		return ""
 	}
 
-	var symbolStyle, attributeKeyStyle *style
+	var symbolStyle, attributeKeyStyle *Style
 
 	switch message.Type {
 	case components.DebugMessageType:

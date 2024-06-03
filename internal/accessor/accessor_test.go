@@ -1,6 +1,7 @@
-package accessor
+package accessor_test
 
 import (
+	"manala/internal/accessor"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -15,7 +16,7 @@ func TestSuite(t *testing.T) {
 func (s *Suite) TestGet() {
 	var value any = "foo"
 
-	accessor := New(&value)
+	accessor := accessor.New(&value)
 	_value, err := accessor.Get()
 
 	s.Require().NoError(err)
@@ -25,7 +26,7 @@ func (s *Suite) TestGet() {
 func (s *Suite) TestSet() {
 	var value any = "foo"
 
-	accessor := New(&value)
+	accessor := accessor.New(&value)
 	err := accessor.Set("bar")
 
 	s.Require().NoError(err)

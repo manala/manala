@@ -1,11 +1,12 @@
-package watch
+package watch_test
 
 import (
 	"bytes"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
-	"manala/internal/cache"
+	cmd "manala/cmd/watch"
+	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
@@ -30,11 +31,11 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	ui := charm.New(nil, stdOut, stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := NewCmd(
+	cmd := cmd.NewCmd(
 		log,
 		api.New(
 			log,
-			cache.New(""),
+			caching.NewCache(""),
 		),
 		ui,
 		notifier.NewNil(),

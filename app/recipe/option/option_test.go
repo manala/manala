@@ -1,6 +1,7 @@
-package option
+package option_test
 
 import (
+	"manala/app/recipe/option"
 	"manala/internal/path"
 	"manala/internal/schema"
 	"manala/internal/serrors"
@@ -14,22 +15,6 @@ type Suite struct{ suite.Suite }
 
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(Suite))
-}
-
-func (s *Suite) Test() {
-	name := "name"
-	label := "Label"
-	schema := schema.Schema{"foo": "bar"}
-
-	option := &option{
-		name:   name,
-		label:  label,
-		schema: schema,
-	}
-
-	s.Equal(name, option.Name())
-	s.Equal(label, option.Label())
-	s.Equal(schema, option.Schema())
 }
 
 func (s *Suite) TestNewFromErrors() {
@@ -168,7 +153,7 @@ func (s *Suite) TestNewFromErrors() {
 		s.Run(test.test, func() {
 			path := path.Path("")
 
-			option, err := New(strings.NewReader(test.data), test.schema, path)
+			option, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Nil(option)
 			serrors.Equal(s.T(), test.expected, err)
@@ -189,7 +174,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "Text",
 			data:          `{"label": "Foo", "name": "bar", "type": "text"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &TextOption{},
+			expectedType:  &option.TextOption{},
 			expectedLabel: "Foo",
 			expectedName:  "bar",
 		},
@@ -197,7 +182,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "TextNoName",
 			data:          `{"label": "Foo Bar", "type": "text"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &TextOption{},
+			expectedType:  &option.TextOption{},
 			expectedLabel: "Foo Bar",
 			expectedName:  "foo-bar",
 		},
@@ -205,7 +190,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "TextTypeImplicit",
 			data:          `{"label": "Foo", "name": "bar"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &TextOption{},
+			expectedType:  &option.TextOption{},
 			expectedLabel: "Foo",
 			expectedName:  "bar",
 		},
@@ -214,7 +199,7 @@ func (s *Suite) TestReadFrom() {
 		s.Run(test.test, func() {
 			path := path.Path("")
 
-			option, err := New(strings.NewReader(test.data), test.schema, path)
+			option, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Require().NoError(err)
 			s.IsType(test.expectedType, option)

@@ -1,8 +1,20 @@
-package validator
+package validator_test
 
-import "strconv"
+import (
+	"manala/internal/validator"
+	"strconv"
+	"testing"
 
-func (s *Suite) TestCompareViolations() {
+	"github.com/stretchr/testify/suite"
+)
+
+type ViolationSuite struct{ suite.Suite }
+
+func TestViolationSuite(t *testing.T) {
+	suite.Run(t, new(ViolationSuite))
+}
+
+func (s *ViolationSuite) TestCompare() {
 	tests := []struct {
 		aColumn  int
 		aLine    int
@@ -33,15 +45,15 @@ func (s *Suite) TestCompareViolations() {
 
 	for i, test := range tests {
 		s.Run(strconv.Itoa(i), func() {
-			a := NewViolation("a")
+			a := validator.NewViolation("a")
 			a.Column = test.aColumn
 			a.Line = test.aLine
 
-			b := NewViolation("b")
+			b := validator.NewViolation("b")
 			b.Column = test.bColumn
 			b.Line = test.bLine
 
-			compare := CompareViolations(a, b)
+			compare := validator.CompareViolations(a, b)
 
 			s.Equal(test.expected, compare)
 		})

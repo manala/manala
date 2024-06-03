@@ -1,6 +1,7 @@
-package url
+package url_test
 
 import (
+	"manala/app/repository/url"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"testing"
@@ -137,7 +138,7 @@ func (s *ProcessorSuite) TestProcess() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			processor := NewProcessor(log.Discard)
+			processor := url.NewProcessor(log.Discard)
 
 			for weight, url := range test.urls {
 				processor.Add(url, weight)
@@ -152,11 +153,11 @@ func (s *ProcessorSuite) TestProcess() {
 			url, err := processor.Process(test.url)
 
 			if test.expectedErr != nil {
-				s.Empty(url)
 				serrors.Equal(s.T(), test.expectedErr, err)
+				s.Empty(url)
 			} else {
+				s.Require().NoError(err)
 				s.Equal(test.expectedURL, url)
-				s.NoError(err)
 			}
 		})
 	}

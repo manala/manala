@@ -1,6 +1,7 @@
-package getter
+package getter_test
 
 import (
+	"manala/app/repository/getter"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -13,7 +14,7 @@ func TestRepositorySuite(t *testing.T) {
 }
 
 func (s *RepositorySuite) Test() {
-	repository := NewRepository("url", "dir")
+	repository := getter.NewRepository("url", "dir")
 
 	s.Equal("url", repository.URL())
 	s.Equal("dir", repository.Dir())

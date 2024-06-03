@@ -23,7 +23,7 @@ type formSubmitModel struct {
 	focus      bool
 	zone       *zone.Manager
 	zonePrefix string
-	style      *style
+	style      *Style
 }
 
 func (model formSubmitModel) Init() tea.Cmd {

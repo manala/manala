@@ -5,14 +5,14 @@ import (
 	"log/slog"
 	"manala/app"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"time"
 
 	"github.com/hashicorp/go-getter/s3/v2"
 	"github.com/hashicorp/go-getter/v2"
 )
 
-func NewS3LoaderHandler(log *slog.Logger, cache *cache.Cache) *S3LoaderHandler {
+func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler {
 	return &S3LoaderHandler{
 		log:   log.With("handler", "getter.s3"),
 		cache: cache.WithDir("repositories"),
@@ -31,7 +31,7 @@ func NewS3LoaderHandler(log *slog.Logger, cache *cache.Cache) *S3LoaderHandler {
 
 type S3LoaderHandler struct {
 	log    *slog.Logger
-	cache  *cache.Cache
+	cache  *caching.Cache
 	client *getter.Client
 }
 

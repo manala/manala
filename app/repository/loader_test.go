@@ -1,7 +1,8 @@
-package repository
+package repository_test
 
 import (
 	"manala/app"
+	"manala/app/repository"
 	"manala/internal/serrors"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := NewLoader()
+	loader := repository.NewLoader()
 
 	s.Run("NotFound", func() {
 		repository, err := loader.Load("url")
@@ -35,11 +36,11 @@ func (s *LoaderSuite) TestLoadErrors() {
 func (s *LoaderSuite) TestLoad() {
 	repositoryMock := &app.RepositoryMock{}
 
-	handlerMock := &LoaderHandlerMock{}
+	handlerMock := &repository.LoaderHandlerMock{}
 	handlerMock.
-		On("Handle", &LoaderQuery{URL: "url"}, mock.Anything).Return(repositoryMock, nil)
+		On("Handle", &repository.LoaderQuery{URL: "url"}, mock.Anything).Return(repositoryMock, nil)
 
-	loader := NewLoader(WithLoaderHandlers(handlerMock))
+	loader := repository.NewLoader(repository.WithLoaderHandlers(handlerMock))
 
 	repository, err := loader.Load("url")
 

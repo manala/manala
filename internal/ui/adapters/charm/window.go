@@ -109,7 +109,7 @@ type scrollModel struct {
 	height int
 	lines  []string
 	line   int
-	style  *style
+	style  *Style
 }
 
 func (scroll scrollModel) Init() tea.Cmd {

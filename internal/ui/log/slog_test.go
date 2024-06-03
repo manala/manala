@@ -1,9 +1,10 @@
-package log
+package log_test
 
 import (
 	"log/slog"
 	"manala/internal/ui"
 	"manala/internal/ui/components"
+	"manala/internal/ui/log"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -23,7 +24,7 @@ func (s *SlogSuite) TestHandler() {
 		outputMock := &ui.OutputMock{}
 		outputMock.On("Message", mock.Anything)
 
-		handler := NewSlogHandler(outputMock)
+		handler := log.NewSlogHandler(outputMock)
 		log := slog.New(handler)
 
 		log.Info("info", "foo", "bar")
@@ -43,8 +44,8 @@ func (s *SlogSuite) TestHandler() {
 		outputMock := &ui.OutputMock{}
 		outputMock.On("Message", mock.Anything)
 
-		handler := NewSlogHandler(outputMock,
-			WithSlogHandlerDebug(true),
+		handler := log.NewSlogHandler(outputMock,
+			log.WithSlogHandlerDebug(true),
 		)
 		log := slog.New(handler)
 

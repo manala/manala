@@ -1,30 +1,39 @@
-package template
+package template_test
 
 import (
 	"bytes"
+	"manala/internal/template"
 	"manala/internal/testing/heredoc"
-	"text/template"
+	"testing"
+	gotemplate "text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) execute(content string, data any) string {
-	template := template.New("test")
+type FunctionsSuite struct{ suite.Suite }
 
-	template.Funcs(sprig.TxtFuncMap())
-	template.Funcs(FuncMap(template))
+func TestFunctionsSuite(t *testing.T) {
+	suite.Run(t, new(FunctionsSuite))
+}
 
-	_, err := template.Parse(content)
-	s.NoError(err)
+func (s *FunctionsSuite) execute(content string, data any) string {
+	tmpl := gotemplate.New("test")
+
+	tmpl.Funcs(sprig.TxtFuncMap())
+	tmpl.Funcs(template.FuncMap(tmpl))
+
+	_, err := tmpl.Parse(content)
+	s.Require().NoError(err)
 
 	buffer := &bytes.Buffer{}
-	err = template.Execute(buffer, data)
-	s.NoError(err)
+	err = tmpl.Execute(buffer, data)
+	s.Require().NoError(err)
 
 	return buffer.String()
 }
 
-func (s *Suite) TestFunctionToYaml() {
+func (s *FunctionsSuite) TestToYaml() {
 	s.Run("Default", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]any{
 			"foo": map[string]any{
@@ -196,7 +205,7 @@ bar\baz
 	})
 }
 
-func (s *Suite) TestFunctionInclude() {
+func (s *FunctionsSuite) TestInclude() {
 	content := s.execute(
 		`{{- define "foo" -}}
 	foo {{ . }}

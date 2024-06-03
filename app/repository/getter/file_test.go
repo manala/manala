@@ -1,7 +1,8 @@
-package getter
+package getter_test
 
 import (
 	"manala/app/repository"
+	"manala/app/repository/getter"
 	"manala/internal/log"
 	"path/filepath"
 	"testing"
@@ -21,7 +22,7 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewFileLoaderHandler(log.Discard)
+		handler := getter.NewFileLoaderHandler(log.Discard)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)
@@ -35,7 +36,7 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewFileLoaderHandler(log.Discard)
+		handler := getter.NewFileLoaderHandler(log.Discard)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)

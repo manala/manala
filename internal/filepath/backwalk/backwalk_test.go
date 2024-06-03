@@ -1,6 +1,7 @@
-package backwalk
+package backwalk_test
 
 import (
+	"manala/internal/filepath/backwalk"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,7 +19,7 @@ func (s *Suite) Test() {
 	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0
-	err := WalkDir(
+	err := backwalk.WalkDir(
 		filepath.Join(dir, "foo", "bar"),
 		func(path string, _ os.DirEntry, err error) error {
 			s.Require().NoError(err)
@@ -40,5 +41,5 @@ func (s *Suite) Test() {
 			return nil
 		},
 	)
-	s.NoError(err)
+	s.Require().NoError(err)
 }

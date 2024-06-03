@@ -1,8 +1,9 @@
-package getter
+package getter_test
 
 import (
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/app/repository/getter"
+	"manala/internal/caching"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
 	"os"
@@ -20,7 +21,7 @@ func TestGitSuite(t *testing.T) {
 
 func (s *GitSuite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
-	cache := cache.New(cacheDir)
+	cache := caching.NewCache(cacheDir)
 
 	s.Run("Http", func() {
 		_ = os.RemoveAll(cacheDir)
@@ -29,7 +30,7 @@ func (s *GitSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewGitLoaderHandler(log.Discard, cache)
+		handler := getter.NewGitLoaderHandler(log.Discard, cache)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)
@@ -49,7 +50,7 @@ func (s *GitSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := NewGitLoaderHandler(log.Discard, cache)
+		handler := getter.NewGitLoaderHandler(log.Discard, cache)
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)

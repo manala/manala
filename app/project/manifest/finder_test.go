@@ -1,6 +1,7 @@
-package manifest
+package manifest_test
 
 import (
+	"manala/app/project/manifest"
 	"path/filepath"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestFinderSuite(t *testing.T) {
 func (s *FinderSuite) Test() {
 	projectsDir := filepath.FromSlash("testdata/FinderSuite/projects")
 
-	finder := NewFinder()
+	finder := manifest.NewFinder()
 
 	s.Run("Found", func() {
 		s.True(finder.Find(

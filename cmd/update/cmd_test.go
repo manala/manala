@@ -1,11 +1,12 @@
-package update
+package update_test
 
 import (
 	"bytes"
 	"log/slog"
 	"manala/app"
 	"manala/app/api"
-	"manala/internal/cache"
+	cmd "manala/cmd/update"
+	"manala/internal/caching"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
 	"manala/internal/ui/adapters/charm"
@@ -30,11 +31,11 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 	ui := charm.New(nil, stdOut, stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := NewCmd(
+	cmd := cmd.NewCmd(
 		log,
 		api.New(
 			log,
-			cache.New(""),
+			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 	)

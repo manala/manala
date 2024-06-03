@@ -1,8 +1,9 @@
-package url
+package url_test
 
 import (
 	"manala/app"
 	"manala/app/repository"
+	"manala/app/repository/url"
 	"manala/internal/log"
 	"manala/internal/serrors"
 	"testing"
@@ -17,9 +18,9 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandlerErrors() {
-	processor := NewProcessor(log.Discard)
+	processor := url.NewProcessor(log.Discard)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -41,10 +42,10 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := NewProcessor(log.Discard)
+	processor := url.NewProcessor(log.Discard)
 	processor.Add("url", 10)
 
-	handler := NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
 
 	repositoryMock := &app.RepositoryMock{}
 

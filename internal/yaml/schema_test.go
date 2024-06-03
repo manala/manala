@@ -1,16 +1,26 @@
-package yaml
+package yaml_test
 
 import (
 	"encoding/json"
 	"manala/internal/schema"
 	"manala/internal/serrors"
+	"manala/internal/yaml"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
+
+type SchemaSuite struct{ suite.Suite }
+
+func TestSchemaSuite(t *testing.T) {
+	suite.Run(t, new(SchemaSuite))
+}
 
 /*************/
 /* Inferrers */
 /*************/
 
-func (s *Suite) TestNodeSchemaInferrerErrors() {
+func (s *SchemaSuite) TestNodeInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
@@ -71,17 +81,17 @@ node: ~
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 			schema := schema.Schema{}
 
-			err := NewNodeSchemaInferrer(node).Infer(schema)
+			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestNodeSchemaInferrer() {
+func (s *SchemaSuite) TestNodeInferrer() {
 	tests := []struct {
 		test     string
 		node     string
@@ -267,19 +277,18 @@ object_multiple_with_comment:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 			schema := schema.Schema{}
 
-			err := NewNodeSchemaInferrer(node).Infer(schema)
+			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
 
-			s.NoError(err)
-
+			s.Require().NoError(err)
 			s.Equal(test.expected, schema)
 		})
 	}
 }
 
-func (s *Suite) TestNodeTypeSchemaInferrerErrors() {
+func (s *SchemaSuite) TestNodeTypeInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
@@ -304,17 +313,17 @@ func (s *Suite) TestNodeTypeSchemaInferrerErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
 			schema := schema.Schema{"foo": "bar"}
-			err := NewNodeTypeSchemaInferrer(node).Infer(schema)
+			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestNodeTypeSchemaInferrer() {
+func (s *SchemaSuite) TestNodeTypeInferrer() {
 	tests := []struct {
 		test     string
 		node     string
@@ -421,27 +430,26 @@ node:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := NewParser(WithComments()).ParseBytes([]byte(test.node))
+			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
-			err := NewNodeTypeSchemaInferrer(node).Infer(test.schema)
+			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(test.schema)
 
-			s.NoError(err)
-
+			s.Require().NoError(err)
 			s.Equal(test.expected, test.schema)
 		})
 	}
 }
 
-func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
+func (s *SchemaSuite) TestNodeTagsInferrerErrors() {
 	tests := []struct {
 		test     string
-		tags     *Tags
+		tags     *yaml.Tags
 		expected *serrors.Assertion
 	}{
 		{
 			test: "Syntax",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `foo`},
+			tags: &yaml.Tags{
+				{Name: "Tag", Value: `foo`},
 			},
 			expected: &serrors.Assertion{
 				Message: "invalid character 'o' in literal false (expecting 'a')",
@@ -452,8 +460,8 @@ func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
 		},
 		{
 			test: "Type",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `[]`},
+			tags: &yaml.Tags{
+				{Name: "Tag", Value: `[]`},
 			},
 			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into value",
@@ -470,30 +478,30 @@ func (s *Suite) TestNodeTagsSchemaInferrerErrors() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
+			err := yaml.NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestNodeTagsSchemaInferrer() {
+func (s *SchemaSuite) TestNodeTagsInferrer() {
 	tests := []struct {
 		test     string
-		tags     *Tags
+		tags     *yaml.Tags
 		expected schema.Schema
 	}{
 		{
 			test: "Extend",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `{"bar": "baz"}`},
+			tags: &yaml.Tags{
+				{Name: "Tag", Value: `{"bar": "baz"}`},
 			},
 			expected: schema.Schema{"foo": "bar", "bar": "baz"},
 		},
 		{
 			test: "Override",
-			tags: &Tags{
-				&Tag{Name: "Tag", Value: `{"foo": "baz"}`},
+			tags: &yaml.Tags{
+				{Name: "Tag", Value: `{"foo": "baz"}`},
 			},
 			expected: schema.Schema{"foo": "baz"},
 		},
@@ -503,10 +511,9 @@ func (s *Suite) TestNodeTagsSchemaInferrer() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
+			err := yaml.NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
 
-			s.NoError(err)
-
+			s.Require().NoError(err)
 			s.Equal(test.expected, schema)
 		})
 	}

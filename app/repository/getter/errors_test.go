@@ -1,7 +1,8 @@
-package getter
+package getter_test
 
 import (
 	"errors"
+	"manala/app/repository/getter"
 	"manala/internal/serrors"
 	"testing"
 
@@ -45,9 +46,9 @@ func (s *ErrorsSuite) TestIsNotDetected() {
 	for _, test := range tests {
 		s.Run(test.test, func() {
 			if test.expected {
-				s.True(IsNotDetected(test.err))
+				s.True(getter.IsNotDetected(test.err))
 			} else {
-				s.False(IsNotDetected(test.err))
+				s.False(getter.IsNotDetected(test.err))
 			}
 		})
 	}
@@ -132,7 +133,7 @@ func (s *ErrorsSuite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			serrors.Equal(s.T(), test.expected, NewError(test.err))
+			serrors.Equal(s.T(), test.expected, getter.NewError(test.err))
 		})
 	}
 }

@@ -1,14 +1,23 @@
-package yaml
+package yaml_test
 
 import (
 	"manala/internal/path"
 	"manala/internal/serrors"
+	"manala/internal/yaml"
+	"testing"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestNodePath() {
+type PathSuite struct{ suite.Suite }
+
+func TestPathSuite(t *testing.T) {
+	suite.Run(t, new(PathSuite))
+}
+
+func (s *PathSuite) TestNode() {
 	node := goYamlAst.Null(nil)
 
 	tests := []struct {
@@ -47,14 +56,14 @@ func (s *Suite) TestNodePath() {
 		s.Run(test.test, func() {
 			node.Path = test.path
 
-			path := NewNodePath(node)
+			path := yaml.NewNodePath(node)
 
 			s.Equal(test.expected, path.String())
 		})
 	}
 }
 
-func (s *Suite) TestNodePathAccessorGetErrors() {
+func (s *PathSuite) TestNodeAccessorGetErrors() {
 	node, _ := goYamlParser.ParseBytes([]byte(`
 sequence_empty: {}
 sequence_single:
@@ -93,7 +102,7 @@ sequence_multiple:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			accessor := NewNodePathAccessor(path.Path(test.path))
+			accessor := yaml.NewNodePathAccessor(path.Path(test.path))
 
 			_node, err := accessor.Get(node.Docs[0].Body)
 
@@ -103,7 +112,7 @@ sequence_multiple:
 	}
 }
 
-func (s *Suite) TestNodePathAccessorGet() {
+func (s *PathSuite) TestNodeAccessorGet() {
 	node, _ := goYamlParser.ParseBytes([]byte(`
 sequence_empty: {}
 sequence_single:
@@ -159,11 +168,11 @@ sequence_multiple:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			accessor := NewNodePathAccessor(path.Path(test.path))
+			accessor := yaml.NewNodePathAccessor(path.Path(test.path))
 
 			_node, err := accessor.Get(node.Docs[0].Body)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.NotNil(node)
 
 			token := _node.GetToken()

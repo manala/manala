@@ -1,20 +1,30 @@
-package inferrer
+package inferrer_test
 
 import (
 	"manala/internal/schema"
+	"manala/internal/schema/inferrer"
 	"manala/internal/serrors"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestChainErrors() {
+type ChainSuite struct{ suite.Suite }
+
+func TestChainSuite(t *testing.T) {
+	suite.Run(t, new(ChainSuite))
+}
+
+func (s *ChainSuite) TestErrors() {
 	tests := []struct {
 		test      string
-		inferrers []Inferrer
+		inferrers []inferrer.Inferrer
 		expected  *serrors.Assertion
 	}{
 		{
 			test: "Error",
-			inferrers: []Inferrer{
-				NewFunc(func(_ schema.Schema) error {
+			inferrers: []inferrer.Inferrer{
+				inferrer.NewFunc(func(_ schema.Schema) error {
 					return serrors.New("foo")
 				}),
 			},
@@ -28,33 +38,33 @@ func (s *Suite) TestChainErrors() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewChain(test.inferrers...).Infer(schema)
+			err := inferrer.NewChain(test.inferrers...).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestChain() {
+func (s *ChainSuite) Test() {
 	tests := []struct {
 		test      string
-		inferrers []Inferrer
+		inferrers []inferrer.Inferrer
 		expected  schema.Schema
 	}{
 		{
 			test:      "Empty",
-			inferrers: []Inferrer{},
+			inferrers: []inferrer.Inferrer{},
 			expected:  schema.Schema{"foo": "bar"},
 		},
 		{
 			test: "Inferrers",
-			inferrers: []Inferrer{
-				NewFunc(func(schema schema.Schema) error {
+			inferrers: []inferrer.Inferrer{
+				inferrer.NewFunc(func(schema schema.Schema) error {
 					schema["foo"] = "baz"
 
 					return nil
 				}),
-				NewFunc(func(schema schema.Schema) error {
+				inferrer.NewFunc(func(schema schema.Schema) error {
 					schema["bar"] = "baz"
 
 					return nil
@@ -68,9 +78,9 @@ func (s *Suite) TestChain() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewChain(test.inferrers...).Infer(schema)
+			err := inferrer.NewChain(test.inferrers...).Infer(schema)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, schema)
 		})
 	}

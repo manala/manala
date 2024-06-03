@@ -1,9 +1,10 @@
-package getter
+package getter_test
 
 import (
 	"fmt"
 	"manala/app/repository"
-	"manala/internal/cache"
+	"manala/app/repository/getter"
+	"manala/internal/caching"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
 	"net"
@@ -26,7 +27,7 @@ func TestS3Suite(t *testing.T) {
 
 func (s *S3Suite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
-	cache := cache.New(cacheDir)
+	cache := caching.NewCache(cacheDir)
 
 	_ = os.RemoveAll(cacheDir)
 
@@ -46,7 +47,7 @@ func (s *S3Suite) TestLoaderHandler() {
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
-	handler := NewS3LoaderHandler(log.Discard, cache)
+	handler := getter.NewS3LoaderHandler(log.Discard, cache)
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 	s.Require().NoError(err)

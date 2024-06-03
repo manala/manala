@@ -53,13 +53,13 @@ type formFieldTextModel struct {
 	width                    int
 	zone                     *zone.Manager
 	zonePrefix               string
-	style                    *style
-	labelStyle               *style
-	helpStyle                *style
-	textStyle                *style
-	textInputStyle           *style
-	textInputCursorStyle     *style
-	textInputCursorTextStyle *style
+	style                    *Style
+	labelStyle               *Style
+	helpStyle                *Style
+	textStyle                *Style
+	textInputStyle           *Style
+	textInputCursorStyle     *Style
+	textInputCursorTextStyle *Style
 	*formFieldModel
 }
 

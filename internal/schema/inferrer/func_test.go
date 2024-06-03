@@ -1,11 +1,21 @@
-package inferrer
+package inferrer_test
 
 import (
 	"manala/internal/schema"
+	"manala/internal/schema/inferrer"
 	"manala/internal/serrors"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestFuncErrors() {
+type FuncSuite struct{ suite.Suite }
+
+func TestFuncSuite(t *testing.T) {
+	suite.Run(t, new(FuncSuite))
+}
+
+func (s *FuncSuite) TestErrors() {
 	tests := []struct {
 		test       string
 		schemaFunc func(schema schema.Schema) error
@@ -26,14 +36,14 @@ func (s *Suite) TestFuncErrors() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewFunc(test.schemaFunc).Infer(schema)
+			err := inferrer.NewFunc(test.schemaFunc).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestFunc() {
+func (s *FuncSuite) Test() {
 	tests := []struct {
 		test       string
 		schemaFunc func(schema schema.Schema) error
@@ -63,9 +73,9 @@ func (s *Suite) TestFunc() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := NewFunc(test.schemaFunc).Infer(schema)
+			err := inferrer.NewFunc(test.schemaFunc).Infer(schema)
 
-			s.NoError(err)
+			s.Require().NoError(err)
 			s.Equal(test.expected, schema)
 		})
 	}

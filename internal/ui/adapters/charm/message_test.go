@@ -1,12 +1,22 @@
-package charm
+package charm_test
 
 import (
 	"bytes"
 	"manala/internal/testing/heredoc"
+	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/components"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestMessage() {
+type MessageSuite struct{ suite.Suite }
+
+func TestMessageSuite(t *testing.T) {
+	suite.Run(t, new(MessageSuite))
+}
+
+func (s *MessageSuite) Test() {
 	tests := []struct {
 		test     string
 		message  *components.Message
@@ -158,7 +168,7 @@ func (s *Suite) TestMessage() {
 			out := &bytes.Buffer{}
 			err := &bytes.Buffer{}
 
-			adapter := New(nil, out, err)
+			adapter := charm.New(nil, out, err)
 
 			adapter.Message(test.message)
 

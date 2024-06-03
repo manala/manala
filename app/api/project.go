@@ -3,7 +3,7 @@ package api
 import (
 	"manala/app/project"
 	"manala/app/project/manifest"
-	"manala/app/project/syncer"
+	"manala/app/project/sync"
 	"manala/app/recipe"
 	"manala/app/repository"
 	"manala/internal/filepath/filter"
@@ -63,8 +63,8 @@ func (api *API) NewProjectFinder() *manifest.Finder {
 	return manifest.NewFinder()
 }
 
-func (api *API) NewProjectSyncer() *syncer.Syncer {
-	return syncer.New(api.log)
+func (api *API) NewProjectSyncer() *sync.Syncer {
+	return sync.NewSyncer(api.log)
 }
 
 func (api *API) NewProjectCreator() *manifest.Creator {

@@ -10,7 +10,7 @@ import (
 	cmdMascot "manala/cmd/mascot"
 	cmdUpdate "manala/cmd/update"
 	cmdWatch "manala/cmd/watch"
-	"manala/internal/cache"
+	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
@@ -71,7 +71,7 @@ func main() {
 		viper.SetEnvPrefix("MANALA")
 
 		// App cache
-		appCache := cache.New(viper.GetString("cache_dir")).
+		appCache := caching.NewCache(viper.GetString("cache_dir")).
 			WithUserDir("manala")
 
 		// Deferred app log instantiation

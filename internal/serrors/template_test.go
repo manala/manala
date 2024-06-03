@@ -1,27 +1,37 @@
-package serrors
+package serrors_test
 
 import (
 	htmlTemplate "html/template"
+	"manala/internal/serrors"
+	"testing"
 	textTemplate "text/template"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func (s *Suite) TestTemplate() {
+type TemplateSuite struct{ suite.Suite }
+
+func TestTemplateSuite(t *testing.T) {
+	suite.Run(t, new(TemplateSuite))
+}
+
+func (s *TemplateSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *Assertion
+		expected *serrors.Assertion
 	}{
 		{
 			test: "Unknown",
-			err:  New(`error`),
-			expected: &Assertion{
+			err:  serrors.New(`error`),
+			expected: &serrors.Assertion{
 				Message: `error`,
 			},
 		},
 		{
 			test: "TextTemplateLine",
-			err:  New(`template: foo.tmpl:12: message`),
-			expected: &Assertion{
+			err:  serrors.New(`template: foo.tmpl:12: message`),
+			expected: &serrors.Assertion{
 				Message: `message`,
 				Arguments: []any{
 					"template", "foo.tmpl",
@@ -31,8 +41,8 @@ func (s *Suite) TestTemplate() {
 		},
 		{
 			test: "TextEmptyTemplateLine",
-			err:  New(`template: :12: message`),
-			expected: &Assertion{
+			err:  serrors.New(`template: :12: message`),
+			expected: &serrors.Assertion{
 				Message: `message`,
 				Arguments: []any{
 					"line", 12,
@@ -41,8 +51,8 @@ func (s *Suite) TestTemplate() {
 		},
 		{
 			test: "TextTemplateLineColumnContext",
-			err:  textTemplate.ExecError{Err: New(`template: foo.gohtml:12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
-			expected: &Assertion{
+			err:  textTemplate.ExecError{Err: serrors.New(`template: foo.gohtml:12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
+			expected: &serrors.Assertion{
 				Message: `can't evaluate field Bar in type []foo.Bar`,
 				Arguments: []any{
 					"context", ".Bar",
@@ -54,8 +64,8 @@ func (s *Suite) TestTemplate() {
 		},
 		{
 			test: "TextEmptyTemplateLineColumnContext",
-			err:  textTemplate.ExecError{Err: New(`template: :12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
-			expected: &Assertion{
+			err:  textTemplate.ExecError{Err: serrors.New(`template: :12:34: executing "title$htmltemplate_stateRCDATA_elementTitle" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
+			expected: &serrors.Assertion{
 				Message: `can't evaluate field Bar in type []foo.Bar`,
 				Arguments: []any{
 					"context", ".Bar",
@@ -67,7 +77,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlTemplateLineColumn",
 			err:  &htmlTemplate.Error{Name: `foo.gohtml:12:34`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"template", "foo.gohtml",
@@ -79,7 +89,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlEmptyTemplateLineColumn",
 			err:  &htmlTemplate.Error{Name: `:12:34`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"line", 12,
@@ -90,7 +100,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlTemplateLine",
 			err:  &htmlTemplate.Error{Name: `foo.gohtml:12`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"template", "foo.gohtml",
@@ -101,7 +111,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlEmptyTemplateLine",
 			err:  &htmlTemplate.Error{Name: `:12`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"line", 12,
@@ -111,7 +121,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlTemplate",
 			err:  &htmlTemplate.Error{Name: `foo.gohtml`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"template", "foo.gohtml",
@@ -121,7 +131,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "HtmlEmptyTemplate",
 			err:  &htmlTemplate.Error{Name: `:12`, Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 				Arguments: []any{
 					"line", 12,
@@ -131,7 +141,7 @@ func (s *Suite) TestTemplate() {
 		{
 			test: "Html",
 			err:  &htmlTemplate.Error{Description: `no such template "bar"`},
-			expected: &Assertion{
+			expected: &serrors.Assertion{
 				Message: `no such template "bar"`,
 			},
 		},
@@ -139,9 +149,9 @@ func (s *Suite) TestTemplate() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := NewTemplate(test.err)
+			err := serrors.NewTemplate(test.err)
 
-			Equal(s.T(), test.expected, err)
+			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

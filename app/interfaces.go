@@ -3,7 +3,7 @@ package app
 import (
 	"manala/internal/path"
 	"manala/internal/schema"
-	"manala/internal/syncer"
+	"manala/internal/sync"
 	"manala/internal/template"
 	"manala/internal/validator"
 )
@@ -32,7 +32,7 @@ type Recipe interface {
 	Description() string
 	Icon() string
 	Vars() map[string]any
-	Sync() []syncer.UnitInterface
+	Sync() []sync.UnitInterface
 	Schema() schema.Schema
 	Options() []RecipeOption
 	Repository() Repository

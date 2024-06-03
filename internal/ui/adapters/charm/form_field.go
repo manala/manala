@@ -22,8 +22,8 @@ func newFormFieldModel(field components.FormField, renderer *lipgloss.Renderer, 
 }
 
 type formFieldModel struct {
-	violationStyle       *style
-	violationSymbolStyle *style
+	violationStyle       *Style
+	violationSymbolStyle *Style
 }
 
 func (model formFieldModel) viewViolations(violations validator.Violations) string {
