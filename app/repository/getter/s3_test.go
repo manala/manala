@@ -1,21 +1,14 @@
 package getter_test
 
 import (
-	"fmt"
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/caching"
 	"manala/internal/log"
-	"manala/internal/testing/heredoc"
-	"net"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
-	"github.com/johannesboyne/gofakes3"
-	"github.com/johannesboyne/gofakes3/backend/s3mem"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,19 +24,8 @@ func (s *S3Suite) TestLoaderHandler() {
 
 	_ = os.RemoveAll(cacheDir)
 
-	// Fake S3
-	s3Server, s3Backend := s.fakeS3("127.0.0.1:1234")
-	defer s3Server.Close()
-
-	s3File := "foo\n"
-	_ = s3Backend.CreateBucket("bucket")
-	_, _ = s3Backend.PutObject("bucket", "repository/file", map[string]string{}, strings.NewReader(s3File), int64(len(s3File)))
-
-	url := fmt.Sprintf("s3::%s/bucket/repository?aws_access_key_id=%s&aws_access_key_secret=%s",
-		s3Server.URL,
-		"access_key_id",
-		"access_key_secret",
-	)
+	// See: https://github.com/hairyhenderson/gomplate/blob/29bd9ed54a89918e6225d382b4306e1f68c74f3f/internal/tests/integration/datasources_blob_test.go#L84
+	url := "noaa-bathymetry-pds.s3.amazonaws.com/test"
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -54,26 +36,6 @@ func (s *S3Suite) TestLoaderHandler() {
 	s.NotNil(repository)
 	chainMock.AssertExpectations(s.T())
 
-	s.DirExists(filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b"))
-	heredoc.EqualFile(s.T(), `
-		foo
-	`, filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b", "file"))
-}
-
-func (s *S3Suite) fakeS3(address string) (*httptest.Server, gofakes3.Backend) {
-	// Create a listener with the desired address
-	listener, _ := net.Listen("tcp", address)
-
-	backend := s3mem.New()
-	fake := gofakes3.New(backend)
-
-	server := httptest.NewUnstartedServer(fake.Server())
-
-	// Close the automatically created listener and replace with the one we created
-	_ = server.Listener.Close()
-	server.Listener = listener
-
-	server.Start()
-
-	return server, backend
+	s.DirExists(filepath.Join(cacheDir, "repositories", "aefad621d26200de9fb8b906a3167feb12d3be18c76eeed63280c97c"))
+	s.DirExists(filepath.Join(cacheDir, "repositories", "aefad621d26200de9fb8b906a3167feb12d3be18c76eeed63280c97c", "2020"))
 }
