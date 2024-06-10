@@ -27,7 +27,7 @@ jobs:
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser release
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
