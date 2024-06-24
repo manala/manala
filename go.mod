@@ -18,7 +18,7 @@ require (
 	github.com/johannesboyne/gofakes3 v0.0.0-20240513200200-99de01ee122d
 	github.com/lrstanley/bubblezone v0.0.0-20240602193536-d14e6b69d7f9
 	github.com/muesli/termenv v0.15.2
-	github.com/ohler55/ojg v1.22.0
+	github.com/ohler55/ojg v1.22.1
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
