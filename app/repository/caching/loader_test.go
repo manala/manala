@@ -1,11 +1,12 @@
 package caching_test
 
 import (
+	"testing"
+
 	"manala/app"
 	"manala/app/repository"
 	"manala/app/repository/caching"
 	"manala/internal/log"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

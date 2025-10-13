@@ -1,6 +1,9 @@
 package manifest_test
 
 import (
+	"path/filepath"
+	"testing"
+
 	"manala/app/project"
 	"manala/app/project/manifest"
 	"manala/app/recipe"
@@ -9,8 +12,6 @@ import (
 	"manala/app/repository/getter"
 	"manala/internal/log"
 	"manala/internal/serrors"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

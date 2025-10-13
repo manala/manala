@@ -2,6 +2,7 @@ package caching
 
 import (
 	"log/slog"
+
 	"manala/app"
 	"manala/app/repository"
 )

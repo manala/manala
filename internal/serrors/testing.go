@@ -1,13 +1,15 @@
 package serrors
 
 import (
-	"manala/internal/testing/heredoc"
 	"testing"
+
+	"manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+// Assertion represents a structure for defining and validating error assertions.
 type Assertion struct {
 	Type      any
 	Message   string

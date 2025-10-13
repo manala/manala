@@ -36,6 +36,7 @@ var htmlLineErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+): (.*)`)
 // 3: message
 var htmlErrorRegex = regexp.MustCompile(`html/template:((.*):)? (.*)`)
 
+// NewTemplate converts a given error into a custom Error type, parsing additional context like template, line, and column.
 func NewTemplate(err error) Error {
 	var (
 		arguments      []any

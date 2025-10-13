@@ -3,11 +3,12 @@ package project
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+
 	"manala/app"
 	"manala/internal/filepath/filter"
 	"manala/internal/serrors"
-	"os"
-	"path/filepath"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -31,7 +32,7 @@ type Loader struct {
 	handlers []LoaderHandler
 }
 
-//goland:noinspection GoMixedReceiverTypes
+//noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(dir string) (app.Project, error) {
 	// Prepare query
 	query := &LoaderQuery{Dir: dir}
@@ -40,7 +41,7 @@ func (loader *Loader) Load(dir string) (app.Project, error) {
 	return loader.Next(query)
 }
 
-//goland:noinspection GoMixedReceiverTypes
+//noinspection GoMixedReceiverTypes
 func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) error) error {
 	err := filepath.WalkDir(dir,
 		func(path string, entry os.DirEntry, err error) error {
@@ -88,7 +89,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 	return err
 }
 
-//goland:noinspection GoMixedReceiverTypes
+//noinspection GoMixedReceiverTypes
 func (loader Loader) Next(query *LoaderQuery) (app.Project, error) {
 	if len(loader.handlers) == 0 {
 		return loader.Last(query)
@@ -100,7 +101,7 @@ func (loader Loader) Next(query *LoaderQuery) (app.Project, error) {
 	return handler.Handle(query, loader)
 }
 
-//goland:noinspection GoMixedReceiverTypes
+//noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Project, error) {
 	return nil, &app.NotFoundProjectError{Dir: query.Dir}
 }

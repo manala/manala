@@ -131,6 +131,7 @@ func (c *cmds) Init(models ...tea.Model) *cmds {
 
 func (c *cmds) Update(model tea.Model, msgs ...tea.Msg) tea.Model {
 	var cmd tea.Cmd
+
 	for _, msg := range msgs {
 		model, cmd = model.Update(msg)
 		c.Add(cmd)

@@ -1,8 +1,9 @@
 package accessor
 
 import (
-	"manala/internal/serrors"
 	"slices"
+
+	"manala/internal/serrors"
 )
 
 type IndexAccessor interface {

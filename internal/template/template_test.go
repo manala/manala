@@ -2,10 +2,11 @@ package template_test
 
 import (
 	"bytes"
-	"manala/internal/serrors"
-	"manala/internal/template"
 	"path/filepath"
 	"testing"
+
+	"manala/internal/serrors"
+	"manala/internal/template"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -33,7 +34,7 @@ func (s *Suite) TestWriteTo() {
 	err := template.WriteTo(s.buffer)
 
 	s.Require().NoError(err)
-	s.Equal("", s.buffer.String())
+	s.Empty(s.buffer.String())
 
 	s.Run("DefaultFile", func() {
 		s.buffer.Reset()

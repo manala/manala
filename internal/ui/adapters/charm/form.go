@@ -2,6 +2,7 @@ package charm
 
 import (
 	"fmt"
+
 	"manala/internal/ui"
 	"manala/internal/ui/components"
 
@@ -26,8 +27,8 @@ func (adapter *Adapter) Form(header string, form *components.Form) error {
 	// Build fields
 	for i, field := range form.Fields {
 		var err error
-		model.fields[i], err = newFormFieldModel(field, renderer, zone)
 
+		model.fields[i], err = newFormFieldModel(field, renderer, zone)
 		if err != nil {
 			return err
 		}
@@ -47,7 +48,6 @@ func (adapter *Adapter) Form(header string, form *components.Form) error {
 		tea.WithMouseAllMotion(),
 		tea.WithoutSignalHandler(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

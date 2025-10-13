@@ -1,10 +1,11 @@
 package yaml_test
 
 import (
+	"testing"
+
 	"manala/internal/path"
 	"manala/internal/serrors"
 	"manala/internal/yaml"
-	"testing"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"

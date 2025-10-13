@@ -6,19 +6,22 @@ import (
 	"errors"
 	"io"
 	"log/slog"
-	"manala/internal/serrors"
-	"manala/internal/template"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"manala/internal/serrors"
+	"manala/internal/template"
 )
 
+// NewSyncer returns a new Syncer.
 func NewSyncer(log *slog.Logger) *Syncer {
 	return &Syncer{
 		log: log,
 	}
 }
 
+// Syncer syncs a source with a destination.
 type Syncer struct {
 	log *slog.Logger
 }
@@ -194,7 +197,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 				WithErrors(serrors.NewOs(err))
 		}
 
-		//goland:noinspection GoUnhandledErrorResult
+		//nolint:errcheck
+		//noinspection GoUnhandledErrorResult
 		defer srcFile.Close()
 
 		if node.Dst.IsExist {
@@ -230,7 +234,8 @@ func (syncer *Syncer) syncNode(node *node) error {
 				WithErrors(serrors.NewOs(err))
 		}
 
-		//goland:noinspection GoUnhandledErrorResult
+		//nolint:errcheck
+		//noinspection GoUnhandledErrorResult
 		defer dstFile.Close()
 
 		// Copy from source to destination
@@ -377,7 +382,8 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 					WithErrors(serrors.NewOs(err))
 			}
 
-			//goland:noinspection GoUnhandledErrorResult
+			//nolint:errcheck
+			//noinspection GoUnhandledErrorResult
 			defer file.Close()
 
 			hash := sha1.New()

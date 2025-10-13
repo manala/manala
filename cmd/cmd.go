@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCmd returns a new cobra command.
 func NewCmd(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {
 	// Command
 	cmd := &cobra.Command{

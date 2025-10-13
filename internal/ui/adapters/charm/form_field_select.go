@@ -2,6 +2,7 @@ package charm
 
 import (
 	"fmt"
+
 	"manala/internal/ui/components"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -236,7 +237,7 @@ func (model formFieldSelectModel) View() string {
 	}
 
 	// Violations
-	if violationsView := model.formFieldModel.viewViolations(model.field.Violations()); violationsView != "" {
+	if violationsView := model.viewViolations(model.field.Violations()); violationsView != "" {
 		view = lipgloss.JoinVertical(lipgloss.Left, view, violationsView)
 	}
 

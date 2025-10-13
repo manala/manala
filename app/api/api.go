@@ -2,6 +2,7 @@ package api
 
 import (
 	"log/slog"
+
 	"manala/internal/caching"
 )
 

@@ -2,10 +2,11 @@ package components
 
 import (
 	"fmt"
+	"slices"
+
 	"manala/internal/accessor"
 	"manala/internal/serrors"
 	"manala/internal/validator"
-	"slices"
 )
 
 func NewFormFieldSelect(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldSelect, error) {

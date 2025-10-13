@@ -3,13 +3,14 @@ package watch
 import (
 	"context"
 	"log/slog"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/notifier"
 	"manala/internal/ui"
-	"os/signal"
-	"path/filepath"
-	"syscall"
 
 	"github.com/spf13/cobra"
 )

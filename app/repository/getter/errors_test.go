@@ -2,9 +2,10 @@ package getter_test
 
 import (
 	"errors"
+	"testing"
+
 	"manala/app/repository/getter"
 	"manala/internal/serrors"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

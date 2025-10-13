@@ -77,6 +77,7 @@ func (field *formField) Submit() (bool, error) {
 
 func (field *formField) validate() error {
 	var err error
+
 	field.violations, err = field.validator.Validate(field.value)
 
 	return err

@@ -1,11 +1,12 @@
 package getter_test
 
 import (
+	"path/filepath"
+	"testing"
+
 	"manala/app/repository"
 	"manala/app/repository/getter"
 	"manala/internal/log"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

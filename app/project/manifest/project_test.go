@@ -3,13 +3,14 @@ package manifest_test
 import (
 	"bytes"
 	_ "embed"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"manala/app"
 	"manala/app/project/manifest"
 	"manala/internal/template"
 	"manala/internal/testing/heredoc"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

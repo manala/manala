@@ -2,9 +2,10 @@ package components_test
 
 import (
 	"errors"
+	"testing"
+
 	"manala/internal/serrors"
 	"manala/internal/ui/components"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

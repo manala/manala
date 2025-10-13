@@ -8,23 +8,23 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       # See: https://github.com/golangci/golangci-lint-action#how-to-use
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/pull/704
           cache: false
       - name: Lint - GolangCI
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
           version: v${{ env.MANALA_GOLANGCI_LINT_VERSION }}
           # See: https://github.com/golangci/golangci-lint-action/issues/297
@@ -35,15 +35,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-12, windows-2022]
+        os: [ubuntu-24.04, macos-15, windows-2025]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Test
@@ -58,17 +58,17 @@ jobs:
     needs:
       - lint
       - test
-    runs-on: macos-12
+    runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # See: https://github.com/goreleaser/goreleaser-action#workflow
           fetch-depth: 0
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
       - name: Set up go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser build

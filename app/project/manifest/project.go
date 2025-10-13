@@ -1,9 +1,10 @@
 package manifest
 
 import (
+	"path/filepath"
+
 	"manala/app"
 	"manala/internal/template"
-	"path/filepath"
 
 	"dario.cat/mergo"
 )

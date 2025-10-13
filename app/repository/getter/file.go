@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+
 	"manala/app"
 	"manala/app/repository"
 	"manala/internal/serrors"
-	"os"
-	"path/filepath"
 
 	"github.com/hashicorp/go-getter/v2"
 )
@@ -62,8 +63,8 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 	// Set pwd if relative
 	if !filepath.IsAbs(request.Src) {
 		var err error
-		request.Pwd, err = os.Getwd()
 
+		request.Pwd, err = os.Getwd()
 		if err != nil {
 			return nil, serrors.New("unable to get current directory")
 		}

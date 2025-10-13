@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Animation represents an interactive animated model with configurable properties such as title, duration, and style.
 type Animation struct {
 	Title     string
 	Duration  int
@@ -24,6 +25,7 @@ type Animation struct {
 	yell      bool
 }
 
+// Init initializes the animation.
 func (model Animation) Init() tea.Cmd {
 	return tea.Sequence(
 		tea.SetWindowTitle(model.Title),
@@ -37,6 +39,7 @@ func (model Animation) Init() tea.Cmd {
 	)
 }
 
+// Update updates the animation.
 func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -74,6 +77,7 @@ func (model Animation) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmd
 }
 
+// View renders the animation.
 func (model Animation) View() string {
 	frame := model.Frame
 	if model.yell {

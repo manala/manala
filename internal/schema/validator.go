@@ -26,7 +26,7 @@ func (v *Validator) Validate(value any) (validator.Violations, error) {
 		return nil, err
 	}
 
-	// Is valid ?
+	// Is valid?
 	if result.Valid() {
 		return nil, nil
 	}

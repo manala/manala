@@ -11,6 +11,7 @@ type UnitsAssertion []struct {
 	Destination string
 }
 
+// EqualUnits asserts that the units are equal.
 func EqualUnits(t *testing.T, assertion *UnitsAssertion, units []UnitInterface) {
 	t.Helper()
 

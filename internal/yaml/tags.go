@@ -61,6 +61,7 @@ type Tag struct {
 	Value string
 }
 
+// Tags represent a list of Tag.
 type Tags []*Tag
 
 func (tags *Tags) Filter(name string) *Tags {

@@ -1,9 +1,10 @@
 package validator_test
 
 import (
-	"manala/internal/validator"
 	"regexp"
 	"testing"
+
+	"manala/internal/validator"
 
 	"github.com/stretchr/testify/suite"
 )

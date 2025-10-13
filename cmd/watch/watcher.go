@@ -3,8 +3,9 @@ package watch
 import (
 	"context"
 	"log/slog"
-	"manala/app"
 	"slices"
+
+	"manala/app"
 
 	"github.com/fsnotify/fsnotify"
 	"golang.org/x/sync/errgroup"
@@ -29,7 +30,8 @@ func (watcher *Watcher) Watch(ctx context.Context, project app.Project, fn func(
 		return err
 	}
 
-	//goland:noinspection GoUnhandledErrorResult
+	//nolint:errcheck
+	//noinspection GoUnhandledErrorResult
 	defer fsWatcher.Close()
 
 	group, ctx := errgroup.WithContext(ctx)

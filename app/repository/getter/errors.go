@@ -1,9 +1,10 @@
 package getter
 
 import (
-	"manala/internal/serrors"
 	"regexp"
 	"strconv"
+
+	"manala/internal/serrors"
 )
 
 // 1: error

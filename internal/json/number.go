@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// NumberType returns the number type of the given value.
 func NumberType(value any) (Number, bool) {
 	number, ok := value.(json.Number)
 

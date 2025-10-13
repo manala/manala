@@ -130,6 +130,7 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Input
 	var cmd tea.Cmd
+
 	model.input, cmd = model.input.Update(msg)
 	cmds.Add(cmd)
 
@@ -187,7 +188,7 @@ func (model formFieldTextModel) View() string {
 	)
 
 	// Violations
-	if violationsView := model.formFieldModel.viewViolations(model.field.Violations()); violationsView != "" {
+	if violationsView := model.viewViolations(model.field.Violations()); violationsView != "" {
 		view = lipgloss.JoinVertical(lipgloss.Left, view, violationsView)
 	}
 

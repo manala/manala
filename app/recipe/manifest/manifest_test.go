@@ -2,14 +2,15 @@ package manifest_test
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"manala/app/recipe/manifest"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/serrors"
 	"manala/internal/sync"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -23,9 +24,9 @@ func TestSuite(t *testing.T) {
 func (s *Suite) Test() {
 	m := manifest.New()
 
-	s.Equal("", m.Description())
-	s.Equal("", m.Icon())
-	s.Equal("", m.Template())
+	s.Empty(m.Description())
+	s.Empty(m.Icon())
+	s.Empty(m.Template())
 	s.Equal(map[string]any{}, m.Vars())
 	s.Equal([]sync.UnitInterface{}, m.Sync())
 	s.Equal(schema.Schema{}, m.Schema())

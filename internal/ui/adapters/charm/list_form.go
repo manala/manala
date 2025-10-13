@@ -2,6 +2,7 @@ package charm
 
 import (
 	"fmt"
+
 	"manala/internal/ui"
 	"manala/internal/ui/components"
 
@@ -44,7 +45,6 @@ func (adapter *Adapter) ListForm(header string, form *components.ListForm) error
 		tea.WithMouseAllMotion(),
 		tea.WithoutSignalHandler(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

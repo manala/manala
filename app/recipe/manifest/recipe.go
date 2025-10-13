@@ -2,13 +2,14 @@ package manifest
 
 import (
 	"io/fs"
+	"os"
+	"path/filepath"
+
 	"manala/app"
 	"manala/app/recipe/option"
 	"manala/internal/schema"
 	"manala/internal/template"
 	"manala/internal/validator"
-	"os"
-	"path/filepath"
 )
 
 func NewRecipe(dir string, name string, manifest *Manifest, repository app.Repository) *Recipe {

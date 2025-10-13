@@ -1,9 +1,10 @@
 package yaml
 
 import (
-	"manala/internal/serrors"
 	"regexp"
 	"strconv"
+
+	"manala/internal/serrors"
 
 	goYaml "github.com/goccy/go-yaml"
 	goYamlAst "github.com/goccy/go-yaml/ast"

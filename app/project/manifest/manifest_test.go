@@ -1,11 +1,12 @@
 package manifest_test
 
 import (
-	"manala/app/project/manifest"
-	"manala/internal/serrors"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"manala/app/project/manifest"
+	"manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -19,8 +20,8 @@ func TestSuite(t *testing.T) {
 func (s *Suite) Test() {
 	m := manifest.New()
 
-	s.Equal("", m.Recipe())
-	s.Equal("", m.Repository())
+	s.Empty(m.Recipe())
+	s.Empty(m.Repository())
 	s.Equal(map[string]any{}, m.Vars())
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewCmd returns a new masco cobra command.
 func NewCmd() *cobra.Command {
 	// Flags
 	var repeat int
@@ -58,7 +59,6 @@ func run(in io.Reader, out io.Writer, repeat int) error {
 		tea.WithOutput(out),
 		tea.WithAltScreen(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

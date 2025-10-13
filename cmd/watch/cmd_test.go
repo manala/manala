@@ -3,17 +3,18 @@ package watch_test
 import (
 	"bytes"
 	"log/slog"
+	cmd "manala/cmd/watch"
+	"path/filepath"
+	"testing"
+
 	"manala/app"
 	"manala/app/api"
-	cmd "manala/cmd/watch"
 	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

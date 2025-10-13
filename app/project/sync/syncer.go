@@ -2,6 +2,7 @@ package sync
 
 import (
 	"log/slog"
+
 	"manala/app"
 	"manala/internal/sync"
 )

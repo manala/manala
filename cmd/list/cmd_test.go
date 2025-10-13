@@ -3,16 +3,17 @@ package list_test
 import (
 	"bytes"
 	"log/slog"
+	cmd "manala/cmd/list"
+	"path/filepath"
+	"testing"
+
 	"manala/app"
 	"manala/app/api"
-	cmd "manala/cmd/list"
 	"manala/internal/caching"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

@@ -4,10 +4,11 @@ import (
 	"cmp"
 	"fmt"
 	"log/slog"
-	"manala/internal/serrors"
 	netURL "net/url"
 	"slices"
 	"strings"
+
+	"manala/internal/serrors"
 
 	"dario.cat/mergo"
 )
@@ -50,8 +51,8 @@ func (processor *Processor) Process(url string) (string, error) {
 	for _, entry := range entries {
 		// Split url query parts
 		var entryQuery string
-		entry.url, entryQuery, _ = strings.Cut(entry.url, "?")
 
+		entry.url, entryQuery, _ = strings.Cut(entry.url, "?")
 		if entryQuery != "" {
 			values, err := netURL.ParseQuery(entryQuery)
 			if err != nil {

@@ -26,6 +26,7 @@ func NewNodeTrace(node goYamlAst.Node) NodeTrace {
 	}
 }
 
+// NodeTrace represents the location and details of a node, including line, column, and a customizable details function.
 type NodeTrace struct {
 	Line        int
 	Column      int

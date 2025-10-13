@@ -2,9 +2,10 @@ package serrors_test
 
 import (
 	"encoding/json"
-	"manala/internal/serrors"
 	"reflect"
 	"testing"
+
+	"manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
 )

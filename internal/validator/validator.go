@@ -2,6 +2,7 @@ package validator
 
 import "slices"
 
+// Validator validates a value.
 type Validator interface {
 	Validate(value any) (Violations, error)
 }
@@ -56,6 +57,7 @@ func WithValidators(validators ...Validator) Option {
 	}
 }
 
+// Validators return a validator that validates the given validators.
 func Validators(vs ...Validator) Validator {
 	return validators(vs)
 }

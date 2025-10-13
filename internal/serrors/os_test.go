@@ -1,9 +1,10 @@
 package serrors_test
 
 import (
-	"manala/internal/serrors"
 	"os"
 	"testing"
+
+	"manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
 )

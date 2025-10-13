@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
+
 	"manala/app"
 	"manala/app/api"
 	"manala/internal/ui"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 )

@@ -1,10 +1,11 @@
 package schema_test
 
 import (
+	"testing"
+
 	"manala/internal/path"
 	"manala/internal/schema"
 	"manala/internal/validator"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/xeipuuv/gojsonschema"

@@ -2,10 +2,11 @@ package log_test
 
 import (
 	"log/slog"
+	"testing"
+
 	"manala/internal/ui"
 	"manala/internal/ui/components"
 	"manala/internal/ui/log"
-	"testing"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

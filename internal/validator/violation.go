@@ -2,10 +2,12 @@ package validator
 
 import (
 	"errors"
+
 	"manala/internal/path"
 	"manala/internal/serrors"
 )
 
+// ViolationType represents a violation type.
 type ViolationType int
 
 const (
@@ -16,12 +18,14 @@ const (
 	StringLte
 )
 
+// NewViolation creates a new violation.
 func NewViolation(message string) Violation {
 	return Violation{
 		Message: message,
 	}
 }
 
+// Violation represents a validation violation.
 type Violation struct {
 	Type              ViolationType
 	Message           string
@@ -38,6 +42,7 @@ func (violation Violation) Error() error {
 	return errors.New(violation.Message)
 }
 
+// StructuredError returns a structured error.
 func (violation Violation) StructuredError() serrors.Error {
 	// Message
 	message := violation.Message
@@ -78,6 +83,7 @@ func (violation Violation) StructuredError() serrors.Error {
 	return err
 }
 
+// Violations represent a list of violations.
 type Violations []Violation
 
 func (violations Violations) Errors() []error {

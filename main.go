@@ -2,7 +2,6 @@ package main
 
 import (
 	"log/slog"
-	"manala/app/api"
 	"manala/cmd"
 	cmdDocs "manala/cmd/docs"
 	cmdInit "manala/cmd/init"
@@ -10,11 +9,13 @@ import (
 	cmdMascot "manala/cmd/mascot"
 	cmdUpdate "manala/cmd/update"
 	cmdWatch "manala/cmd/watch"
+	"os"
+
+	"manala/app/api"
 	"manala/internal/caching"
 	"manala/internal/notifier"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

@@ -3,17 +3,18 @@ package update_test
 import (
 	"bytes"
 	"log/slog"
+	cmd "manala/cmd/update"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"manala/app"
 	"manala/app/api"
-	cmd "manala/cmd/update"
 	"manala/internal/caching"
 	"manala/internal/serrors"
 	"manala/internal/testing/heredoc"
 	"manala/internal/ui/adapters/charm"
 	"manala/internal/ui/log"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

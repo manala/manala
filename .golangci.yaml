@@ -1,13 +1,15 @@
+# yaml-language-server: $schema=https://golangci-lint.run/jsonschema/golangci.jsonschema.json
+
+version: "2"
+
+# See: https://golangci-lint.run/docs/linters/
 linters:
-  # See: https://golangci-lint.run/usage/linters/
+  default: standard
   enable:
     - dogsled
     - dupl
-    - exportloopref
     - gocritic
     - godot
-    - gofmt
-    - goimports
     - misspell
     - nilerr
     - nilnil
@@ -17,21 +19,31 @@ linters:
     - prealloc
     - predeclared
     - revive
-    - stylecheck
-    - testpackage
     - testifylint
+    - testpackage
     - thelper
     - unconvert
     - unparam
     - whitespace
-    - wsl
+    - wsl_v5
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
 
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-      - shadow
+# See: https://golangci-lint.run/docs/formatters/
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - manala/app
+        - manala/internal
 
+# See: https://golangci-lint.run/docs/configuration/file/#issues-configuration
 issues:
   max-same-issues: 10

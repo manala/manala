@@ -1,14 +1,15 @@
 package sync_test
 
 import (
-	"manala/internal/log"
-	"manala/internal/serrors"
-	"manala/internal/sync"
-	"manala/internal/template"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"manala/internal/log"
+	"manala/internal/serrors"
+	"manala/internal/sync"
+	"manala/internal/template"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -131,7 +132,7 @@ func (s *SyncerSuite) TestSync() {
 
 func (s *SyncerSuite) TestSyncExecutable() {
 	// Irrelevant on Windows
-	//goland:noinspection GoBoolExpressions
+	//noinspection GoBoolExpressions
 	if runtime.GOOS == "windows" {
 		s.T().Skip()
 	}

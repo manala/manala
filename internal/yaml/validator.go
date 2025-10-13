@@ -6,6 +6,7 @@ import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
+// NodeValidatorFormatter creates a node validator formatter.
 func NodeValidatorFormatter(node goYamlAst.Node) validator.Formatter {
 	return nodeValidatorFormatter{
 		node: node,

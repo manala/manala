@@ -1,8 +1,9 @@
 package filter_test
 
 import (
-	"manala/internal/filepath/filter"
 	"testing"
+
+	"manala/internal/filepath/filter"
 
 	"github.com/stretchr/testify/suite"
 )

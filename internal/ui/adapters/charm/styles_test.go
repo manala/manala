@@ -2,8 +2,9 @@ package charm_test
 
 import (
 	"io"
-	"manala/internal/ui/adapters/charm"
 	"testing"
+
+	"manala/internal/ui/adapters/charm"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/stretchr/testify/suite"

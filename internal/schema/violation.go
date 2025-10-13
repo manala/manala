@@ -2,8 +2,9 @@ package schema
 
 import (
 	"fmt"
-	"manala/internal/validator"
 	"unicode"
+
+	"manala/internal/validator"
 
 	"github.com/xeipuuv/gojsonschema"
 )

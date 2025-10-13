@@ -1,6 +1,10 @@
 package sync_test
 
 import (
+	"os"
+	"path/filepath"
+	"testing"
+
 	"manala/app/project"
 	projectManifest "manala/app/project/manifest"
 	"manala/app/project/sync"
@@ -10,9 +14,6 @@ import (
 	repositoryGetter "manala/app/repository/getter"
 	"manala/internal/log"
 	"manala/internal/testing/heredoc"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

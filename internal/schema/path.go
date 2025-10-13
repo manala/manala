@@ -1,8 +1,9 @@
 package schema
 
 import (
-	"manala/internal/path"
 	"regexp"
+
+	"manala/internal/path"
 
 	"github.com/xeipuuv/gojsonschema"
 )

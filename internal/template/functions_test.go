@@ -2,10 +2,11 @@ package template_test
 
 import (
 	"bytes"
-	"manala/internal/template"
-	"manala/internal/testing/heredoc"
 	"testing"
 	gotemplate "text/template"
+
+	"manala/internal/template"
+	"manala/internal/testing/heredoc"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/stretchr/testify/suite"

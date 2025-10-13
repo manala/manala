@@ -106,6 +106,7 @@ type NodeTypeSchemaInferrer struct {
 	node goYamlAst.Node
 }
 
+// Infer infers the provided schema.
 func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 	// Type already set, don't overwrite it
 	if _, ok := schema["type"]; ok {
@@ -144,6 +145,7 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 	return nil
 }
 
+// NewNodeTagsSchemaInferrer creates a new instance of NodeTagsSchemaInferrer.
 func NewNodeTagsSchemaInferrer(node goYamlAst.Node, tags *Tags) *NodeTagsSchemaInferrer {
 	return &NodeTagsSchemaInferrer{
 		node: node,

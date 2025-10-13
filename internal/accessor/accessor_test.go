@@ -1,8 +1,9 @@
 package accessor_test
 
 import (
-	"manala/internal/accessor"
 	"testing"
+
+	"manala/internal/accessor"
 
 	"github.com/stretchr/testify/suite"
 )

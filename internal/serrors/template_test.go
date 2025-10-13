@@ -2,9 +2,10 @@ package serrors_test
 
 import (
 	htmlTemplate "html/template"
-	"manala/internal/serrors"
 	"testing"
 	textTemplate "text/template"
+
+	"manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
 )

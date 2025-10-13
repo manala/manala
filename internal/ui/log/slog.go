@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"log/slog"
+
 	"manala/internal/ui"
 	"manala/internal/ui/components"
 )
