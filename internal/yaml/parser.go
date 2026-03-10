@@ -219,20 +219,20 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 		// depending on deduplicated values number
 		if len(deduplicatedValues) == 1 {
 			return deduplicatedValues[0], nil
-		} else {
-			if m, ok := n.(*goYamlAst.MappingNode); ok {
-				m.Values = deduplicatedValues
+		}
 
-				return m, nil
-			}
-
-			m := &goYamlAst.MappingNode{
-				BaseNode: &goYamlAst.BaseNode{},
-			}
+		if m, ok := n.(*goYamlAst.MappingNode); ok {
 			m.Values = deduplicatedValues
 
 			return m, nil
 		}
+
+		m := &goYamlAst.MappingNode{
+			BaseNode: &goYamlAst.BaseNode{},
+		}
+		m.Values = deduplicatedValues
+
+		return m, nil
 	case *goYamlAst.TagNode:
 		return parser.resolve(n.Value)
 	case *goYamlAst.MappingKeyNode:
