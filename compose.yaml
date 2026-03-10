@@ -5,7 +5,7 @@ services:
   ######
 
   go:
-    image: golang:${MANALA_GO_VERSION}-bookworm
+    image: golang:${MANALA_GO_VERSION}-trixie
     volumes:
       - go:/go
       - .:/usr/src/manala
