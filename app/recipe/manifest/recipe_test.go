@@ -48,8 +48,8 @@ func (s *RecipeSuite) Test() {
 	s.Equal([]sync.UnitInterface{}, recipe.Sync())
 	s.Equal(schema.Schema{
 		"additionalProperties": false,
-		"properties": map[string]interface{}{
-			"foo": map[string]interface{}{
+		"properties": map[string]any{
+			"foo": map[string]any{
 				"type": "string",
 			},
 		},
