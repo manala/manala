@@ -3,7 +3,7 @@ module github.com/manala/manala
 go 1.26.1
 
 require (
-	dario.cat/mergo v1.0.0
+	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.4
