@@ -1,37 +1,59 @@
-linters:
-  # See: https://golangci-lint.run/usage/linters/
-  enable:
-    - dogsled
-    - dupl
-    - exportloopref
-    - gocritic
-    - godot
-    - gofmt
-    - goimports
-    - misspell
-    - nilerr
-    - nilnil
-    - nlreturn
-    - nonamedreturns
-    - perfsprint
-    - prealloc
-    - predeclared
-    - revive
-    - stylecheck
-    - testpackage
-    - testifylint
-    - thelper
-    - unconvert
-    - unparam
-    - whitespace
-    - wsl
-
-linters-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-      - shadow
+version: "2"
 
 issues:
   max-same-issues: 10
+
+linters:
+  default: all
+  disable:
+    - cyclop
+    - depguard
+    - dupword
+    - embeddedstructfieldcheck
+    - err113
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustruct
+    - forcetypeassert
+    - funcorder
+    - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocyclo
+    - gosec
+    - govet
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - modernize
+    - nestif
+    - nlreturn
+    - noctx
+    - noinlineerr
+    - paralleltest
+    - recvcheck
+    - revive
+    - staticcheck
+    - testifylint
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - wsl_v5
+
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  settings:
+    gci:
+      custom-order: true
+      sections:
+        - standard
+        - localmodule
+        - default
