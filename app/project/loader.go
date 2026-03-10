@@ -73,8 +73,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 			// Load project
 			project, err := loader.Load(path)
 			if err != nil {
-				var _notFoundProjectError *app.NotFoundProjectError
-				if errors.As(err, &_notFoundProjectError) {
+				if _, ok := errors.AsType[*app.NotFoundProjectError](err); ok {
 					err = nil
 				}
 

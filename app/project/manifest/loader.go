@@ -135,8 +135,7 @@ func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain proje
 			// Load project
 			project, err = chain.Next(query)
 			if err != nil {
-				var _notFoundProjectError *app.NotFoundProjectError
-				if errors.As(err, &_notFoundProjectError) {
+				if _, ok := errors.AsType[*app.NotFoundProjectError](err); ok {
 					return nil
 				}
 

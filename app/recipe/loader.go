@@ -81,8 +81,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 
 		recipe, err := loader.Load(repository, file.Name())
 		if err != nil {
-			var _notFoundRecipeError *app.NotFoundRecipeError
-			if errors.As(err, &_notFoundRecipeError) {
+			if _, ok := errors.AsType[*app.NotFoundRecipeError](err); ok {
 				continue
 			}
 

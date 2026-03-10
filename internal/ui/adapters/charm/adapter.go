@@ -98,9 +98,7 @@ func (i *modelsIndex) Last() int {
 /********/
 
 func newCmds() *cmds {
-	cmds := make(cmds, 0)
-
-	return &cmds
+	return new(make(cmds, 0))
 }
 
 type cmds []tea.Cmd
