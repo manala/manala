@@ -28,7 +28,6 @@ func (adapter *Adapter) Form(header string, form *components.Form) error {
 	for i, field := range form.Fields {
 		var err error
 		model.fields[i], err = newFormFieldModel(field, renderer, zone)
-
 		if err != nil {
 			return err
 		}
@@ -48,7 +47,6 @@ func (adapter *Adapter) Form(header string, form *components.Form) error {
 		tea.WithMouseAllMotion(),
 		tea.WithoutSignalHandler(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

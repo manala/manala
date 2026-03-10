@@ -99,7 +99,7 @@ func (violations Violations) StructuredErrors() []error {
 	return errs
 }
 
-func CompareViolations(a Violation, b Violation) int {
+func CompareViolations(a, b Violation) int {
 	if a.Column == b.Column && a.Line == b.Line {
 		return 0
 	}

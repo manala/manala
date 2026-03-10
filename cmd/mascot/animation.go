@@ -121,5 +121,7 @@ func (model Animation) pause() {
 	time.Sleep(time.Duration(duration) * time.Millisecond)
 }
 
-type animationStopMsg struct{}
-type animationYellMsg bool
+type (
+	animationStopMsg struct{}
+	animationYellMsg bool
+)

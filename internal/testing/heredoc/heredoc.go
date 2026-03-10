@@ -83,7 +83,7 @@ func Equal(t *testing.T, expected string, actual any, args ...any) {
 	)
 }
 
-func EqualFile(t *testing.T, expected string, path string, args ...any) {
+func EqualFile(t *testing.T, expected, path string, args ...any) {
 	t.Helper()
 
 	content, err := os.ReadFile(path)

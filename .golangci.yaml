@@ -47,6 +47,7 @@ formatters:
   enable:
     - gci
     - gofmt
+    - gofumpt
     - goimports
   settings:
     gci:
@@ -55,3 +56,5 @@ formatters:
         - standard
         - localmodule
         - default
+    gofumpt:
+      extra-rules: true

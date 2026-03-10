@@ -35,7 +35,7 @@ type SyncUnit struct {
 	destination string
 }
 
-func NewSyncUnit(source string, destination string) *SyncUnit {
+func NewSyncUnit(source, destination string) *SyncUnit {
 	return &SyncUnit{
 		source:      source,
 		destination: destination,

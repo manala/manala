@@ -73,7 +73,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 		// Destination does not exist; create
 		if !node.Dst.IsExist {
-			if err := os.MkdirAll(node.Dst.Path, 0755); err != nil {
+			if err := os.MkdirAll(node.Dst.Path, 0o755); err != nil {
 				return serrors.New("file system error").
 					WithArguments("dir", node.Dst.Path).
 					WithErrors(serrors.NewOs(err))
@@ -155,7 +155,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 	} else {
 		// Ensure destination parents directories exists
 		if dir := filepath.Dir(node.Dst.Path); dir != "." {
-			if err := os.MkdirAll(dir, 0755); err != nil {
+			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return serrors.New("file system error").
 					WithArguments("dir", dir).
 					WithErrors(serrors.NewOs(err))
@@ -218,9 +218,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 	// Files are not equals or destination does not exists
 	if !equal {
 		// Destination file mode
-		var dstMode os.FileMode = 0666
+		var dstMode os.FileMode = 0o666
 		if node.Src.IsExecutable {
-			dstMode = 0777
+			dstMode = 0o777
 		}
 
 		// Create or truncate destination file
@@ -245,9 +245,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 			"path", relDstPath,
 		)
 	} else {
-		dstMode := node.Dst.Mode &^ 0111
+		dstMode := node.Dst.Mode &^ 0o111
 		if node.Src.IsExecutable {
-			dstMode = node.Dst.Mode | 0111
+			dstMode = node.Dst.Mode | 0o111
 		}
 
 		if dstMode != node.Dst.Mode {
@@ -284,10 +284,12 @@ type node struct {
 	TemplateProvider template.ProviderInterface
 }
 
-var distRegex = regexp.MustCompile(`(\.dist)(?:$|\.tmpl$)`)
-var tmplRegex = regexp.MustCompile(`(\.tmpl)(?:$|\.dist$)`)
+var (
+	distRegex = regexp.MustCompile(`(\.dist)(?:$|\.tmpl$)`)
+	tmplRegex = regexp.MustCompile(`(\.tmpl)(?:$|\.dist$)`)
+)
 
-func newNode(srcDir string, src string, dstDir string, dst string, templateProvider template.ProviderInterface) (*node, error) {
+func newNode(srcDir, src, dstDir, dst string, templateProvider template.ProviderInterface) (*node, error) {
 	node := &node{}
 	node.Src.Dir = srcDir
 	node.Dst.Dir = dstDir
@@ -323,7 +325,7 @@ func newNode(srcDir string, src string, dstDir string, dst string, templateProvi
 			node.Src.Files = append(node.Src.Files, file.Name())
 		}
 	} else {
-		node.Src.IsExecutable = (srcStat.Mode() & 0100) != 0
+		node.Src.IsExecutable = (srcStat.Mode() & 0o100) != 0
 
 		if distRegex.MatchString(src) {
 			node.IsDist = true

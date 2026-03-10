@@ -14,7 +14,7 @@ type FormField interface {
 	Violations() validator.Violations
 }
 
-func newFormField(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*formField, error) {
+func newFormField(name, label, help string, accessor accessor.Accessor, validator validator.Validator) (*formField, error) {
 	// Initial value
 	value, err := accessor.Get()
 	if err != nil {

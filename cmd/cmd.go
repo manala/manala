@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {
+func NewCommand(version string, in io.Reader, out, err io.Writer) *cobra.Command {
 	// Command
 	command := &cobra.Command{
 		Use:               "manala",

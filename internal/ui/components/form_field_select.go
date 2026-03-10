@@ -15,7 +15,7 @@ type FormFieldSelect struct {
 	Options []*FormFieldSelectOption
 }
 
-func NewFormFieldSelect(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldSelect, error) {
+func NewFormFieldSelect(name, label, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldSelect, error) {
 	field, err := newFormField(name, label, help, accessor, validator)
 	if err != nil {
 		return nil, err

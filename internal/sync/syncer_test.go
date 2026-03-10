@@ -35,15 +35,15 @@ func (s *SyncerSuite) TestSync() {
 	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSync/destination")
 
 	_ = os.RemoveAll(destinationPath)
-	_ = os.Mkdir(destinationPath, 0755)
-	_ = os.WriteFile(filepath.Join(destinationPath, "file_foo"), []byte("foo"), 0666)
-	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0666)
-	_ = os.Mkdir(filepath.Join(destinationPath, "dir_empty"), 0755)
-	_ = os.Mkdir(filepath.Join(destinationPath, "dir"), 0755)
+	_ = os.Mkdir(destinationPath, 0o755)
+	_ = os.WriteFile(filepath.Join(destinationPath, "file_foo"), []byte("foo"), 0o666)
+	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0o666)
+	_ = os.Mkdir(filepath.Join(destinationPath, "dir_empty"), 0o755)
+	_ = os.Mkdir(filepath.Join(destinationPath, "dir"), 0o755)
 	f, _ := os.Create(filepath.Join(destinationPath, "dir", "foo"))
 	_ = f.Close()
-	_ = os.WriteFile(filepath.Join(destinationPath, "dir", "foo"), []byte("bar"), 0666)
-	_ = os.Mkdir(filepath.Join(destinationPath, "dir", "bar"), 0755)
+	_ = os.WriteFile(filepath.Join(destinationPath, "dir", "foo"), []byte("bar"), 0o666)
+	_ = os.Mkdir(filepath.Join(destinationPath, "dir", "bar"), 0o755)
 	f, _ = os.Create(filepath.Join(destinationPath+"dir", "bar", "foo"))
 	_ = f.Close()
 
@@ -142,16 +142,16 @@ func (s *SyncerSuite) TestSyncExecutable() {
 	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncExecutable/destination")
 
 	_ = os.RemoveAll(destinationPath)
-	_ = os.Mkdir(destinationPath, 0755)
-	_ = os.WriteFile(filepath.Join(destinationPath, "executable_true"), []byte(""), 0777)
-	_ = os.WriteFile(filepath.Join(destinationPath, "executable_false"), []byte(""), 0666)
+	_ = os.Mkdir(destinationPath, 0o755)
+	_ = os.WriteFile(filepath.Join(destinationPath, "executable_true"), []byte(""), 0o777)
+	_ = os.WriteFile(filepath.Join(destinationPath, "executable_false"), []byte(""), 0o666)
 
 	s.Run("SourceTrue", func() {
 		err := s.syncer.Sync(sourcePath, "executable_true", destinationPath, "executable", nil)
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable"))
-		s.NotEqual(0, int(stat.Mode()&0100))
+		s.NotEqual(0, int(stat.Mode()&0o100))
 	})
 
 	s.Run("SourceFalse", func() {
@@ -159,7 +159,7 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable"))
-		s.Equal(0, int(stat.Mode()&0100))
+		s.Equal(0, int(stat.Mode()&0o100))
 	})
 
 	s.Run("SourceFalseDestinationFalse", func() {
@@ -167,7 +167,7 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_false"))
-		s.Equal(0, int(stat.Mode()&0100))
+		s.Equal(0, int(stat.Mode()&0o100))
 	})
 
 	s.Run("SourceTrueDestinationFalse", func() {
@@ -175,7 +175,7 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_false"))
-		s.NotEqual(0, int(stat.Mode()&0100))
+		s.NotEqual(0, int(stat.Mode()&0o100))
 	})
 
 	s.Run("SourceFalseDestinationTrue", func() {
@@ -183,7 +183,7 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_true"))
-		s.Equal(0, int(stat.Mode()&0100))
+		s.Equal(0, int(stat.Mode()&0o100))
 	})
 
 	s.Run("SourceTrueDestinationTrue", func() {
@@ -191,7 +191,7 @@ func (s *SyncerSuite) TestSyncExecutable() {
 		s.Require().NoError(err)
 
 		stat, _ := os.Stat(filepath.Join(destinationPath, "executable_true"))
-		s.NotEqual(0, int(stat.Mode()&0100))
+		s.NotEqual(0, int(stat.Mode()&0o100))
 	})
 }
 
@@ -200,9 +200,9 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	destinationPath := filepath.FromSlash("testdata/SyncerSuite/TestSyncTemplate/destination")
 
 	_ = os.RemoveAll(destinationPath)
-	_ = os.Mkdir(destinationPath, 0755)
-	_ = os.WriteFile(filepath.Join(destinationPath, "file_foo"), []byte("foo"), 0666)
-	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0666)
+	_ = os.Mkdir(destinationPath, 0o755)
+	_ = os.WriteFile(filepath.Join(destinationPath, "file_foo"), []byte("foo"), 0o666)
+	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0o666)
 
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)

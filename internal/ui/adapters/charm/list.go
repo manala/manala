@@ -39,7 +39,7 @@ func (adapter *Adapter) List(header string, list []components.ListItem) error {
 /* Item */
 /********/
 
-func newListItemModel(item components.ListItem, style *Style, primaryStyle *Style, secondaryStyle *Style) listItemModel {
+func newListItemModel(item components.ListItem, style, primaryStyle, secondaryStyle *Style) listItemModel {
 	return listItemModel{
 		item:           item,
 		style:          style,

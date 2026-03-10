@@ -9,7 +9,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
-func New(in io.Reader, out io.Writer, err io.Writer) *Adapter {
+func New(in io.Reader, out, err io.Writer) *Adapter {
 	return &Adapter{
 		in:          in,
 		outRenderer: lipgloss.NewRenderer(out, termenv.WithColorCache(true)),
@@ -163,5 +163,7 @@ func (c *cmds) Sequence() tea.Cmd {
 /* Messages */
 /************/
 
-type focusMsg bool
-type hoverMsg bool
+type (
+	focusMsg bool
+	hoverMsg bool
+)

@@ -427,7 +427,7 @@ func (s *Style) GetVerticalFrameSize() int {
 	return s.style.GetVerticalFrameSize()
 }
 
-func (s *Style) Fit(str string, width int, height int) string {
+func (s *Style) Fit(str string, width, height int) string {
 	style := s.style
 
 	if width > 0 {

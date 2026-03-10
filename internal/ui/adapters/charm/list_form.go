@@ -45,7 +45,6 @@ func (adapter *Adapter) ListForm(header string, form *components.ListForm) error
 		tea.WithMouseAllMotion(),
 		tea.WithoutSignalHandler(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

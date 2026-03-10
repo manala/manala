@@ -204,7 +204,7 @@ func (scroll scrollModel) View() string {
 	)
 }
 
-func (scroll *scrollModel) to(lineTop int, lineBottom int) {
+func (scroll *scrollModel) to(lineTop, lineBottom int) {
 	switch {
 	case lineTop < scroll.line:
 		scroll.upTo(lineTop)

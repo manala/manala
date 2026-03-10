@@ -11,7 +11,7 @@ type FormFieldText struct {
 	MaxLength int
 }
 
-func NewFormFieldText(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldText, error) {
+func NewFormFieldText(name, label, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldText, error) {
 	field, err := newFormField(name, label, help, accessor, validator)
 	if err != nil {
 		return nil, err

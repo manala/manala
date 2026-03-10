@@ -58,7 +58,6 @@ func run(in io.Reader, out io.Writer, repeat int) error {
 		tea.WithOutput(out),
 		tea.WithAltScreen(),
 	).Run()
-
 	if err != nil {
 		return err
 	}

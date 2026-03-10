@@ -5,7 +5,7 @@ type Repository struct {
 	dir string
 }
 
-func NewRepository(url string, dir string) *Repository {
+func NewRepository(url, dir string) *Repository {
 	return &Repository{
 		url: url,
 		dir: dir,

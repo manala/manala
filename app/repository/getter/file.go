@@ -64,7 +64,6 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 	if !filepath.IsAbs(request.Src) {
 		var err error
 		request.Pwd, err = os.Getwd()
-
 		if err != nil {
 			return nil, serrors.New("unable to get current directory")
 		}

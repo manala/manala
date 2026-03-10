@@ -29,7 +29,6 @@ func walkDir(path string, dir os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 	// Get parent dir
 	parent := filepath.Join(path, "..")
 	parentAbs, err := filepath.Abs(parent)
-
 	if err != nil {
 		// Second call, to report parent Abs error
 		err = walkDirFunc(parent, dir, err)

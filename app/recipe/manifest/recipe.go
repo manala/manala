@@ -20,7 +20,7 @@ type Recipe struct {
 	repository app.Repository
 }
 
-func NewRecipe(dir string, name string, manifest *Manifest, repository app.Repository) *Recipe {
+func NewRecipe(dir, name string, manifest *Manifest, repository app.Repository) *Recipe {
 	return &Recipe{
 		dir:        dir,
 		name:       name,

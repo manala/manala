@@ -28,7 +28,7 @@ func (processor *Processor) Add(url string, weight int) {
 	processor.entries = append(processor.entries, processorEntry{url: url, weight: weight})
 }
 
-func (processor *Processor) AddQuery(key string, value string, weight int) {
+func (processor *Processor) AddQuery(key, value string, weight int) {
 	query := make(netURL.Values)
 	query.Set(key, value)
 	processor.entries = append(processor.entries, processorEntry{query: query, weight: weight})

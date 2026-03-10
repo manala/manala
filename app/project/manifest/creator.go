@@ -42,7 +42,7 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 	_dir := filepath.Dir(manifestFile)
 	if dirStat, err := os.Stat(_dir); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			if err := os.MkdirAll(_dir, 0755); err != nil {
+			if err := os.MkdirAll(_dir, 0o755); err != nil {
 				return nil, serrors.New("unable to create project directory").
 					WithArguments("dir", _dir).
 					WithErrors(serrors.NewOs(err))
