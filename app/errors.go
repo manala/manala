@@ -44,5 +44,6 @@ func (err *UnsupportedRepositoryError) ErrorArguments() []any { return []any{"ur
 
 type EmptyRepositoryError struct{ Repository Repository }
 
-func (err *EmptyRepositoryError) Error() string         { return "empty repository" }
+func (err *EmptyRepositoryError) Error() string { return "empty repository" }
+
 func (err *EmptyRepositoryError) ErrorArguments() []any { return []any{"url", err.Repository.URL()} }
