@@ -12,7 +12,7 @@ require (
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/goccy/go-yaml v1.11.3
 	github.com/gopxl/beep v1.4.1
-	github.com/gosimple/slug v1.14.0
+	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.2
 	github.com/hashicorp/go-getter/v2 v2.2.2
 	github.com/johannesboyne/gofakes3 v0.0.0-20240513200200-99de01ee122d
