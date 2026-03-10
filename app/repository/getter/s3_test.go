@@ -38,7 +38,7 @@ func (s *S3Suite) TestLoaderHandler() {
 
 	s3File := "foo\n"
 	_ = s3Backend.CreateBucket("bucket")
-	_, _ = s3Backend.PutObject("bucket", "repository/file", map[string]string{}, strings.NewReader(s3File), int64(len(s3File)))
+	_, _ = s3Backend.PutObject("bucket", "repository/file", map[string]string{}, strings.NewReader(s3File), int64(len(s3File)), nil)
 
 	url := fmt.Sprintf("s3::%s/bucket/repository?aws_access_key_id=%s&aws_access_key_secret=%s",
 		s3Server.URL,
