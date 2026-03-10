@@ -1,6 +1,6 @@
 module manala
 
-go 1.22.4
+go 1.26.1
 
 require (
 	dario.cat/mergo v1.0.0
