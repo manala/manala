@@ -46,7 +46,7 @@ func (s *JSONSuite) Test() {
 				Value:  "value",
 				Struct: "struct",
 				Field:  "field",
-				Type:   reflect.TypeOf(0.0),
+				Type:   reflect.TypeFor[float64](),
 			},
 			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into struct field",
@@ -64,7 +64,7 @@ func (s *JSONSuite) Test() {
 			err: &json.UnmarshalTypeError{
 				Offset: 123,
 				Value:  "value",
-				Type:   reflect.TypeOf(0.0),
+				Type:   reflect.TypeFor[float64](),
 			},
 			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into value",
@@ -78,7 +78,7 @@ func (s *JSONSuite) Test() {
 		{
 			test: "InvalidUnmarshalError",
 			err: &json.InvalidUnmarshalError{
-				Type: reflect.TypeOf(0.0),
+				Type: reflect.TypeFor[float64](),
 			},
 			expected: &serrors.Assertion{
 				Message: "invalid unmarshal argument",
