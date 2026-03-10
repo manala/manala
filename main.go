@@ -62,34 +62,36 @@ func main() {
 
 	cobra.OnInitialize(func() {
 		// Viper
-		_ = viper.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
-		_ = viper.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
-		viper.SetDefault("default_repository", defaultRepositoryURL)
+		v := viper.New()
+
+		_ = v.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
+		_ = v.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
+		v.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
-		viper.AutomaticEnv()
-		viper.SetEnvPrefix("MANALA")
+		v.AutomaticEnv()
+		v.SetEnvPrefix("MANALA")
 
 		// App cache
-		appCache := caching.NewCache(viper.GetString("cache_dir")).
+		appCache := caching.NewCache(v.GetString("cache_dir")).
 			WithUserDir("manala")
 
 		// Deferred app log instantiation
 		appLogHandler := log.NewSlogHandler(ui,
-			log.WithSlogHandlerDebug(viper.GetBool("debug")),
+			log.WithSlogHandlerDebug(v.GetBool("debug")),
 		)
 		*appLog = *slog.New(appLogHandler)
 
 		// Deferred app api instantiation
 		*appAPI = *api.New(appLog, appCache,
-			api.WithDefaultRepositoryURL(viper.GetString("default_repository")),
+			api.WithDefaultRepositoryURL(v.GetString("default_repository")),
 		)
 
 		// Log config
 		appLog.Debug("config",
-			"default_repository", viper.GetString("default_repository"),
-			"cache_dir", viper.GetString("cache_dir"),
-			"debug", viper.GetBool("debug"),
+			"default_repository", v.GetString("default_repository"),
+			"cache_dir", v.GetString("cache_dir"),
+			"debug", v.GetBool("debug"),
 		)
 	})
 
