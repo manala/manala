@@ -4,10 +4,11 @@ import (
 	"cmp"
 	"fmt"
 	"log/slog"
-	"github.com/manala/manala/internal/serrors"
 	netURL "net/url"
 	"slices"
 	"strings"
+
+	"github.com/manala/manala/internal/serrors"
 
 	"dario.cat/mergo"
 )

@@ -2,6 +2,8 @@ package main
 
 import (
 	"log/slog"
+	"os"
+
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/cmd"
 	cmdDocs "github.com/manala/manala/cmd/docs"
@@ -14,7 +16,6 @@ import (
 	"github.com/manala/manala/internal/notifier"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

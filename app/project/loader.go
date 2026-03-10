@@ -3,11 +3,12 @@ package project
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/filepath/filter"
 	"github.com/manala/manala/internal/serrors"
-	"os"
-	"path/filepath"
 
 	"github.com/stretchr/testify/mock"
 )

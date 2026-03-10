@@ -2,10 +2,11 @@ package template_test
 
 import (
 	"bytes"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/template"
 	"path/filepath"
 	"testing"
+
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/template"
 
 	"github.com/stretchr/testify/suite"
 )

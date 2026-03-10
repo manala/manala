@@ -1,14 +1,15 @@
 package recipe_test
 
 import (
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

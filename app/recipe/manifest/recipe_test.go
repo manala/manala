@@ -3,13 +3,14 @@ package manifest_test
 import (
 	"bytes"
 	_ "embed"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

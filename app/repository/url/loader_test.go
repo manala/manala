@@ -1,12 +1,13 @@
 package url_test
 
 import (
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

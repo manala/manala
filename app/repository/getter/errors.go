@@ -1,9 +1,10 @@
 package getter
 
 import (
-	"github.com/manala/manala/internal/serrors"
 	"regexp"
 	"strconv"
+
+	"github.com/manala/manala/internal/serrors"
 )
 
 // 1: error

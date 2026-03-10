@@ -1,10 +1,11 @@
 package template
 
 import (
-	"github.com/manala/manala/internal/serrors"
 	"reflect"
 	"strings"
 	textTemplate "text/template"
+
+	"github.com/manala/manala/internal/serrors"
 
 	goYaml "github.com/goccy/go-yaml"
 )

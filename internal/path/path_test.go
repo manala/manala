@@ -1,8 +1,9 @@
 package path_test
 
 import (
-	"github.com/manala/manala/internal/path"
 	"testing"
+
+	"github.com/manala/manala/internal/path"
 
 	"github.com/stretchr/testify/suite"
 )

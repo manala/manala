@@ -2,10 +2,11 @@ package charm_test
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

@@ -3,6 +3,10 @@ package update_test
 import (
 	"bytes"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
 	cmd "github.com/manala/manala/cmd/update"
@@ -11,9 +15,6 @@ import (
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

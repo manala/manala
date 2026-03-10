@@ -3,6 +3,7 @@ package list
 import (
 	"context"
 	"log/slog"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/internal/ui"

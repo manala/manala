@@ -2,8 +2,9 @@ package charm
 
 import (
 	"fmt"
-	"github.com/manala/manala/internal/ui/components"
 	"strings"
+
+	"github.com/manala/manala/internal/ui/components"
 
 	"github.com/charmbracelet/lipgloss"
 )

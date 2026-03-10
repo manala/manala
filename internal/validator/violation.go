@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/serrors"
 )

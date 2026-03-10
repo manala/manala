@@ -3,9 +3,10 @@ package caching
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
+
+	"github.com/manala/manala/internal/serrors"
 )
 
 func NewCache(dir string) *Cache {

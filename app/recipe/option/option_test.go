@@ -1,12 +1,13 @@
 package option_test
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"strings"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

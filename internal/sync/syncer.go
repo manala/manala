@@ -6,11 +6,12 @@ import (
 	"errors"
 	"io"
 	"log/slog"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/template"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/template"
 )
 
 func NewSyncer(log *slog.Logger) *Syncer {

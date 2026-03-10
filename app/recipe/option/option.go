@@ -3,6 +3,7 @@ package option
 import (
 	_ "embed"
 	"io"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/json"
 	"github.com/manala/manala/internal/path"

@@ -3,11 +3,12 @@ package manifest
 import (
 	_ "embed"
 	"io"
+	"regexp"
+
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/validator"
 	"github.com/manala/manala/internal/yaml"
-	"regexp"
 
 	goYaml "github.com/goccy/go-yaml"
 	goYamlAst "github.com/goccy/go-yaml/ast"

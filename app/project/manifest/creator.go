@@ -3,10 +3,11 @@ package manifest
 import (
 	"bytes"
 	"errors"
-	"github.com/manala/manala/app"
-	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
+
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/serrors"
 )
 
 func NewCreator() *Creator {

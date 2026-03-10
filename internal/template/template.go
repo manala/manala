@@ -2,9 +2,10 @@ package template
 
 import (
 	"io"
-	"github.com/manala/manala/internal/serrors"
 	"path/filepath"
 	textTemplate "text/template"
+
+	"github.com/manala/manala/internal/serrors"
 
 	"github.com/Masterminds/sprig/v3"
 )

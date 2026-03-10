@@ -2,6 +2,7 @@ package url
 
 import (
 	"log/slog"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 )

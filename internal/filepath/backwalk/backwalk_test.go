@@ -1,10 +1,11 @@
 package backwalk_test
 
 import (
-	"github.com/manala/manala/internal/filepath/backwalk"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/manala/manala/internal/filepath/backwalk"
 
 	"github.com/stretchr/testify/suite"
 )

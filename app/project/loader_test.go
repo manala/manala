@@ -1,12 +1,13 @@
 package project_test
 
 import (
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

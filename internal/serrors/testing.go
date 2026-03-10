@@ -1,8 +1,9 @@
 package serrors
 
 import (
-	"github.com/manala/manala/internal/testing/heredoc"
 	"testing"
+
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -3,6 +3,9 @@ package manifest
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/app/recipe"
@@ -10,8 +13,6 @@ import (
 	"github.com/manala/manala/internal/filepath/backwalk"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/validator"
-	"os"
-	"path/filepath"
 )
 
 func NewLoaderHandler(log *slog.Logger, repositoryLoader *repository.Loader, recipeLoader *recipe.Loader) *LoaderHandler {

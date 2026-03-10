@@ -1,9 +1,10 @@
 package yaml
 
 import (
-	"github.com/manala/manala/internal/serrors"
 	"os"
 	"strings"
+
+	"github.com/manala/manala/internal/serrors"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"

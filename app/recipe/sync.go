@@ -1,8 +1,9 @@
 package recipe
 
 import (
-	"github.com/manala/manala/internal/sync"
 	"strings"
+
+	"github.com/manala/manala/internal/sync"
 )
 
 type Sync []sync.UnitInterface

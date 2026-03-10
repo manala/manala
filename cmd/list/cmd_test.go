@@ -3,6 +3,9 @@ package list_test
 import (
 	"bytes"
 	"log/slog"
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
 	cmd "github.com/manala/manala/cmd/list"
@@ -11,8 +14,6 @@ import (
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

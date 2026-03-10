@@ -3,10 +3,11 @@ package getter
 import (
 	"context"
 	"log/slog"
+	"time"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/caching"
-	"time"
 
 	"github.com/hashicorp/go-getter/v2"
 )

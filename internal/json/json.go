@@ -3,6 +3,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
+
 	"github.com/manala/manala/internal/serrors"
 )
 

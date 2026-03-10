@@ -3,8 +3,9 @@ package watch
 import (
 	"context"
 	"log/slog"
-	"github.com/manala/manala/app"
 	"slices"
+
+	"github.com/manala/manala/app"
 
 	"github.com/fsnotify/fsnotify"
 	"golang.org/x/sync/errgroup"

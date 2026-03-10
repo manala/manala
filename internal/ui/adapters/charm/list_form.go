@@ -2,6 +2,7 @@ package charm
 
 import (
 	"fmt"
+
 	"github.com/manala/manala/internal/ui"
 	"github.com/manala/manala/internal/ui/components"
 

@@ -2,17 +2,18 @@ package getter_test
 
 import (
 	"fmt"
-	"github.com/manala/manala/app/repository"
-	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/caching"
-	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/testing/heredoc"
 	"net"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/johannesboyne/gofakes3"
 	"github.com/johannesboyne/gofakes3/backend/s3mem"

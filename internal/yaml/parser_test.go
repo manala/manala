@@ -1,10 +1,11 @@
 package yaml_test
 
 import (
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/yaml"
 	"path/filepath"
 	"testing"
+
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/yaml"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"

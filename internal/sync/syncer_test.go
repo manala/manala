@@ -1,14 +1,15 @@
 package sync_test
 
 import (
-	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/template"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/sync"
+	"github.com/manala/manala/internal/template"
 
 	"github.com/stretchr/testify/suite"
 )

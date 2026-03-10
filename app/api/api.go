@@ -2,6 +2,7 @@ package api
 
 import (
 	"log/slog"
+
 	"github.com/manala/manala/internal/caching"
 )
 

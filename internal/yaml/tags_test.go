@@ -1,8 +1,9 @@
 package yaml_test
 
 import (
-	"github.com/manala/manala/internal/yaml"
 	"testing"
+
+	"github.com/manala/manala/internal/yaml"
 
 	"github.com/stretchr/testify/suite"
 )

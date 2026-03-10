@@ -3,6 +3,8 @@ package manifest
 import (
 	_ "embed"
 	"io"
+	"regexp"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/recipe/option"
@@ -11,7 +13,6 @@ import (
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/validator"
 	"github.com/manala/manala/internal/yaml"
-	"regexp"
 
 	goYaml "github.com/goccy/go-yaml"
 	goYamlAst "github.com/goccy/go-yaml/ast"

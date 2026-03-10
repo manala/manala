@@ -2,6 +2,7 @@ package name
 
 import (
 	"log/slog"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 )

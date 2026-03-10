@@ -3,11 +3,12 @@ package manifest
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/internal/serrors"
-	"os"
-	"path/filepath"
 )
 
 func NewLoaderHandler(log *slog.Logger) *LoaderHandler {

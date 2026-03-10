@@ -1,6 +1,10 @@
 package manifest_test
 
 import (
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/app/recipe"
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
@@ -9,9 +13,6 @@ import (
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"os"
-	"path/filepath"
-	"testing"
 
 	"github.com/stretchr/testify/suite"
 )

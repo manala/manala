@@ -1,9 +1,10 @@
 package validator_test
 
 import (
-	"github.com/manala/manala/internal/validator"
 	"strconv"
 	"testing"
+
+	"github.com/manala/manala/internal/validator"
 
 	"github.com/stretchr/testify/suite"
 )

@@ -3,11 +3,12 @@ package recipe
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"sort"
+
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/filepath/filter"
 	"github.com/manala/manala/internal/serrors"
-	"os"
-	"sort"
 
 	"github.com/stretchr/testify/mock"
 )
