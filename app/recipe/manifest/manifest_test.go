@@ -24,9 +24,9 @@ func TestSuite(t *testing.T) {
 func (s *Suite) Test() {
 	m := manifest.New()
 
-	s.Equal("", m.Description())
-	s.Equal("", m.Icon())
-	s.Equal("", m.Template())
+	s.Empty(m.Description())
+	s.Empty(m.Icon())
+	s.Empty(m.Template())
 	s.Equal(map[string]any{}, m.Vars())
 	s.Equal([]sync.UnitInterface{}, m.Sync())
 	s.Equal(schema.Schema{}, m.Schema())

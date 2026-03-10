@@ -20,8 +20,8 @@ func TestSuite(t *testing.T) {
 func (s *Suite) Test() {
 	m := manifest.New()
 
-	s.Equal("", m.Recipe())
-	s.Equal("", m.Repository())
+	s.Empty(m.Recipe())
+	s.Empty(m.Repository())
 	s.Equal(map[string]any{}, m.Vars())
 }
 
