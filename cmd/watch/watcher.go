@@ -46,8 +46,8 @@ func (watcher *Watcher) Watch(ctx context.Context, project app.Project, fn func(
 					return nil
 				}
 
-				// Ignore chmod events & empty events
-				if event.Has(fsnotify.Chmod) || event.Name == "" {
+				// Ignore chmod events
+				if event.Has(fsnotify.Chmod) {
 					watcher.log.Debug("ignore file event",
 						"path", event.Name,
 						"operation", event.Op,
