@@ -6,9 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {
+func NewCommand(version string, in io.Reader, out io.Writer, err io.Writer) *cobra.Command {
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:               "manala",
 		Version:           version,
 		DisableAutoGenTag: true,
@@ -22,9 +22,9 @@ Recipes are pulled from a git repository, or a local directory.`,
 	}
 
 	// Set streams
-	cmd.SetIn(in)
-	cmd.SetOut(out)
-	cmd.SetErr(err)
+	command.SetIn(in)
+	command.SetOut(out)
+	command.SetErr(err)
 
-	return cmd
+	return command
 }

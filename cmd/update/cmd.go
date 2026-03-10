@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.API) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -19,7 +19,7 @@ func NewCmd(log *slog.Logger, api *api.API) *cobra.Command {
 	)
 
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:               "update [dir]",
 		Aliases:           []string{"up"},
 		Args:              cobra.MaximumNArgs(1),
@@ -30,12 +30,12 @@ and related variables defined in manifest (.manala.yaml).
 
 Example: manala update -> resulting in an update in a project dir (default to the
 current directory)`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(command *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
 			// Context
-			ctx := cmd.Context()
+			ctx := command.Context()
 			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
@@ -45,12 +45,12 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
-	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
-	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
-	cmd.Flags().BoolVarP(&recursive, "recursive", "r", false, "set recursive mode")
+	command.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
+	command.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
+	command.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
+	command.Flags().BoolVarP(&recursive, "recursive", "r", false, "set recursive mode")
 
-	return cmd
+	return command
 }
 
 func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recursive bool) error {

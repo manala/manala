@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-func NewCmd(root *cobra.Command) *cobra.Command {
+func NewCommand(root *cobra.Command) *cobra.Command {
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:    "docs",
 		Args:   cobra.MaximumNArgs(1),
 		Hidden: true,
@@ -21,7 +21,7 @@ func NewCmd(root *cobra.Command) *cobra.Command {
 		},
 	}
 
-	return cmd
+	return command
 }
 
 func run(root *cobra.Command, dir string) error {

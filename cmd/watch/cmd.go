@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -23,7 +23,7 @@ func NewCmd(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.
 	)
 
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:               "watch [dir]",
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
@@ -32,12 +32,12 @@ func NewCmd(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.
 
 Example: manala watch -> resulting in a watch in a project dir (default to the
 current directory)`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(command *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
 			// Context
-			ctx := cmd.Context()
+			ctx := command.Context()
 			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
@@ -47,13 +47,13 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
-	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
-	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
-	cmd.Flags().BoolVarP(&all, "all", "a", false, "watch recipe too")
-	cmd.Flags().BoolVarP(&notify, "notify", "n", false, "use system notifications")
+	command.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
+	command.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
+	command.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
+	command.Flags().BoolVarP(&all, "all", "a", false, "watch recipe too")
+	command.Flags().BoolVarP(&notify, "notify", "n", false, "use system notifications")
 
-	return cmd
+	return command
 }
 
 func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {

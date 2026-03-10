@@ -10,23 +10,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd() *cobra.Command {
+func NewCommand() *cobra.Command {
 	// Flags
 	var repeat int
 
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:    "duck",
 		Hidden: true,
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			return run(cmd.InOrStdin(), cmd.OutOrStdout(), repeat)
+		RunE: func(command *cobra.Command, _ []string) error {
+			return run(command.InOrStdin(), command.OutOrStdout(), repeat)
 		},
 	}
 
 	// Set flags
-	cmd.Flags().IntVarP(&repeat, "repeat", "n", 1, "")
+	command.Flags().IntVarP(&repeat, "repeat", "n", 1, "")
 
-	return cmd
+	return command
 }
 
 var (

@@ -11,12 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.API, output ui.Output) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, output ui.Output) *cobra.Command {
 	// Flags
 	var repositoryURL, repositoryRef string
 
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:               "list",
 		Aliases:           []string{"ls"},
 		Args:              cobra.NoArgs,
@@ -25,9 +25,9 @@ func NewCmd(log *slog.Logger, api *api.API, output ui.Output) *cobra.Command {
 		Long: `List (manala list) will list recipes available on repository.
 
 Example: manala list -> resulting in a recipes list display`,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(command *cobra.Command, _ []string) error {
 			// Context
-			ctx := cmd.Context()
+			ctx := command.Context()
 			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 
@@ -36,10 +36,10 @@ Example: manala list -> resulting in a recipes list display`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
-	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
+	command.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
+	command.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
 
-	return cmd
+	return command
 }
 
 func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output) error {

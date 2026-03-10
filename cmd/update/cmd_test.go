@@ -9,7 +9,7 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	cmd "github.com/manala/manala/cmd/update"
+	cmdUpdate "github.com/manala/manala/cmd/update"
 	"github.com/manala/manala/internal/caching"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -493,7 +493,7 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 	ui := charm.New(nil, stdOut, stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := cmd.NewCmd(
+	command := cmdUpdate.NewCommand(
 		log,
 		api.New(
 			log,
@@ -502,11 +502,11 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 		),
 	)
 
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-	cmd.SetOut(stdOut)
-	cmd.SetErr(stdErr)
-	cmd.SetArgs(append([]string{}, args...))
+	command.SilenceErrors = true
+	command.SilenceUsage = true
+	command.SetOut(stdOut)
+	command.SetErr(stdErr)
+	command.SetArgs(append([]string{}, args...))
 
-	return stdOut, stdErr, cmd.Execute()
+	return stdOut, stdErr, command.Execute()
 }

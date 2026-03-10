@@ -43,30 +43,30 @@ func main() {
 	)
 
 	// App commands
-	appCmd := cmd.NewCmd(version, in, out, err)
-	appCmd.AddCommand(
-		cmdInit.NewCmd(appLog, appAPI, ui),
-		cmdList.NewCmd(appLog, appAPI, ui),
-		cmdMascot.NewCmd(),
-		cmdUpdate.NewCmd(appLog, appAPI),
-		cmdWatch.NewCmd(appLog, appAPI, ui, notify),
+	appCommand := cmd.NewCommand(version, in, out, err)
+	appCommand.AddCommand(
+		cmdInit.NewCommand(appLog, appAPI, ui),
+		cmdList.NewCommand(appLog, appAPI, ui),
+		cmdMascot.NewCommand(),
+		cmdUpdate.NewCommand(appLog, appAPI),
+		cmdWatch.NewCommand(appLog, appAPI, ui, notify),
 	)
 
 	// App commands persistent flags
-	appCmd.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
-	appCmd.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
+	appCommand.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
+	appCommand.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
 
 	// Docs app command only available in dev
 	if version == "dev" {
-		appCmd.AddCommand(cmdDocs.NewCmd(appCmd))
+		appCommand.AddCommand(cmdDocs.NewCommand(appCommand))
 	}
 
 	cobra.OnInitialize(func() {
 		// Viper
 		v := viper.New()
 
-		_ = v.BindPFlag("cache_dir", appCmd.PersistentFlags().Lookup("cache-dir"))
-		_ = v.BindPFlag("debug", appCmd.PersistentFlags().Lookup("debug"))
+		_ = v.BindPFlag("cache_dir", appCommand.PersistentFlags().Lookup("cache-dir"))
+		_ = v.BindPFlag("debug", appCommand.PersistentFlags().Lookup("debug"))
 		v.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
@@ -97,7 +97,7 @@ func main() {
 	})
 
 	// Execute app command
-	if err := appCmd.Execute(); err != nil {
+	if err := appCommand.Execute(); err != nil {
 		ui.Error(err)
 		os.Exit(1)
 	}

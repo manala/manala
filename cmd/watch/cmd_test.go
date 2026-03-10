@@ -8,7 +8,7 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	cmd "github.com/manala/manala/cmd/watch"
+	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
 	"github.com/manala/manala/internal/notifier"
 	"github.com/manala/manala/internal/serrors"
@@ -307,7 +307,7 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	ui := charm.New(nil, stdOut, stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
-	cmd := cmd.NewCmd(
+	command := cmdWatch.NewCommand(
 		log,
 		api.New(
 			log,
@@ -317,11 +317,11 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 		notifier.NewNil(),
 	)
 
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-	cmd.SetOut(stdOut)
-	cmd.SetErr(stdErr)
-	cmd.SetArgs(append([]string{}, args...))
+	command.SilenceErrors = true
+	command.SilenceUsage = true
+	command.SetOut(stdOut)
+	command.SetErr(stdErr)
+	command.SetArgs(append([]string{}, args...))
 
-	return stdOut, stdErr, cmd.Execute()
+	return stdOut, stdErr, command.Execute()
 }

@@ -13,12 +13,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCmd(log *slog.Logger, api *api.API, input ui.Input) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, input ui.Input) *cobra.Command {
 	// Flags
 	var repositoryURL, repositoryRef, recipeName string
 
 	// Command
-	cmd := &cobra.Command{
+	command := &cobra.Command{
 		Use:               "init [dir]",
 		Args:              cobra.MaximumNArgs(1),
 		DisableAutoGenTag: true,
@@ -27,12 +27,12 @@ func NewCmd(log *slog.Logger, api *api.API, input ui.Input) *cobra.Command {
 
 Example: manala init -> resulting in a project init in a dir (default to the
 current directory)`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(command *cobra.Command, args []string) error {
 			// Args
 			dir := filepath.Clean(append(args, "")[0])
 
 			// Context
-			ctx := cmd.Context()
+			ctx := command.Context()
 			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
@@ -42,11 +42,11 @@ current directory)`,
 	}
 
 	// Set flags
-	cmd.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
-	cmd.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
-	cmd.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
+	command.Flags().StringVarP(&repositoryURL, "repository", "o", "", "use repository")
+	command.Flags().StringVar(&repositoryRef, "ref", "", "use repository ref")
+	command.Flags().StringVarP(&recipeName, "recipe", "i", "", "use recipe")
 
-	return cmd
+	return command
 }
 
 func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, dir string) error {
