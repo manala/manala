@@ -6,14 +6,14 @@ import (
 	"github.com/manala/manala/internal/validator"
 )
 
+type PathedValidator struct {
+	option app.RecipeOption
+}
+
 func NewPathedValidator(option app.RecipeOption) *PathedValidator {
 	return &PathedValidator{
 		option: option,
 	}
-}
-
-type PathedValidator struct {
-	option app.RecipeOption
 }
 
 func (validator PathedValidator) Validate(value any) (validator.Violations, error) {

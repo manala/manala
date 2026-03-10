@@ -2,14 +2,14 @@ package notifier
 
 import "github.com/gen2brain/beeep"
 
+type Beeep struct {
+	title string
+}
+
 func NewBeeep(title string) *Beeep {
 	return &Beeep{
 		title: title,
 	}
-}
-
-type Beeep struct {
-	title string
 }
 
 func (notifier *Beeep) Message(message string) {

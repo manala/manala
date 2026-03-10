@@ -6,14 +6,14 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+type Validator struct {
+	schema Schema
+}
+
 func NewValidator(schema Schema) *Validator {
 	return &Validator{
 		schema: schema,
 	}
-}
-
-type Validator struct {
-	schema Schema
 }
 
 func (v *Validator) Validate(value any) (validator.Violations, error) {

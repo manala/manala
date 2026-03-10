@@ -2,14 +2,14 @@ package caching
 
 import "github.com/manala/manala/app"
 
+type Cache struct {
+	store map[string]app.Repository
+}
+
 func NewCache() *Cache {
 	return &Cache{
 		store: make(map[string]app.Repository),
 	}
-}
-
-type Cache struct {
-	store map[string]app.Repository
 }
 
 func (cache *Cache) Get(url string) (app.Repository, bool) {

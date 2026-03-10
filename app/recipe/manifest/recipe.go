@@ -12,6 +12,13 @@ import (
 	"github.com/manala/manala/internal/validator"
 )
 
+type Recipe struct {
+	dir  string
+	name string
+	*Manifest
+	repository app.Repository
+}
+
 func NewRecipe(dir string, name string, manifest *Manifest, repository app.Repository) *Recipe {
 	return &Recipe{
 		dir:        dir,
@@ -19,13 +26,6 @@ func NewRecipe(dir string, name string, manifest *Manifest, repository app.Repos
 		Manifest:   manifest,
 		repository: repository,
 	}
-}
-
-type Recipe struct {
-	dir  string
-	name string
-	*Manifest
-	repository app.Repository
 }
 
 func (recipe *Recipe) Dir() string {

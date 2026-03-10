@@ -1,10 +1,10 @@
 package notifier
 
+type Nil struct{}
+
 func NewNil() *Nil {
 	return &Nil{}
 }
-
-type Nil struct{}
 
 func (notifier *Nil) Message(_ string) {}
 

@@ -8,16 +8,16 @@ import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
-func NewNodeSchemaInferrer(node goYamlAst.Node) *NodeSchemaInferrer {
-	return &NodeSchemaInferrer{
-		node: node,
-	}
-}
-
 type NodeSchemaInferrer struct {
 	node   goYamlAst.Node
 	schema schema.Schema
 	err    error
+}
+
+func NewNodeSchemaInferrer(node goYamlAst.Node) *NodeSchemaInferrer {
+	return &NodeSchemaInferrer{
+		node: node,
+	}
 }
 
 func (inf *NodeSchemaInferrer) Infer(schema schema.Schema) error {
@@ -96,14 +96,14 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	return inf
 }
 
+type NodeTypeSchemaInferrer struct {
+	node goYamlAst.Node
+}
+
 func NewNodeTypeSchemaInferrer(node goYamlAst.Node) *NodeTypeSchemaInferrer {
 	return &NodeTypeSchemaInferrer{
 		node: node,
 	}
-}
-
-type NodeTypeSchemaInferrer struct {
-	node goYamlAst.Node
 }
 
 func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
@@ -144,16 +144,16 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 	return nil
 }
 
+type NodeTagsSchemaInferrer struct {
+	node goYamlAst.Node
+	tags *Tags
+}
+
 func NewNodeTagsSchemaInferrer(node goYamlAst.Node, tags *Tags) *NodeTagsSchemaInferrer {
 	return &NodeTagsSchemaInferrer{
 		node: node,
 		tags: tags,
 	}
-}
-
-type NodeTagsSchemaInferrer struct {
-	node goYamlAst.Node
-	tags *Tags
 }
 
 func (inf *NodeTagsSchemaInferrer) Infer(schema schema.Schema) error {

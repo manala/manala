@@ -75,13 +75,13 @@ func (field *formField) Submit() (bool, error) {
 	return len(field.violations) == 0, nil
 }
 
+func (field *formField) Violations() validator.Violations {
+	return field.violations
+}
+
 func (field *formField) validate() error {
 	var err error
 	field.violations, err = field.validator.Validate(field.value)
 
 	return err
-}
-
-func (field *formField) Violations() validator.Violations {
-	return field.violations
 }

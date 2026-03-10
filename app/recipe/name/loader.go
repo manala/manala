@@ -7,16 +7,16 @@ import (
 	"github.com/manala/manala/app/recipe"
 )
 
+type ProcessorLoaderHandler struct {
+	log       *slog.Logger
+	processor *Processor
+}
+
 func NewProcessorLoaderHandler(log *slog.Logger, processor *Processor) *ProcessorLoaderHandler {
 	return &ProcessorLoaderHandler{
 		log:       log.With("handler", "name.processor"),
 		processor: processor,
 	}
-}
-
-type ProcessorLoaderHandler struct {
-	log       *slog.Logger
-	processor *Processor
 }
 
 func (handler *ProcessorLoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.LoaderHandlerChain) (app.Recipe, error) {

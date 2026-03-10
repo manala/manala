@@ -10,11 +10,11 @@ import (
 	"github.com/manala/manala/internal/serrors"
 )
 
+type Creator struct{}
+
 func NewCreator() *Creator {
 	return &Creator{}
 }
-
-type Creator struct{}
 
 func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]any) (app.Project, error) {
 	template := recipe.ProjectManifestTemplate().

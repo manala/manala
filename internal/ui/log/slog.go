@@ -8,6 +8,13 @@ import (
 	"github.com/manala/manala/internal/ui/components"
 )
 
+type SlogHandler struct {
+	debug  bool
+	out    ui.Output
+	attrs  []slog.Attr
+	groups []string
+}
+
 func NewSlogHandler(out ui.Output, opts ...SlogHandlerOption) *SlogHandler {
 	handler := &SlogHandler{
 		out: out,
@@ -18,13 +25,6 @@ func NewSlogHandler(out ui.Output, opts ...SlogHandlerOption) *SlogHandler {
 	}
 
 	return handler
-}
-
-type SlogHandler struct {
-	debug  bool
-	out    ui.Output
-	attrs  []slog.Attr
-	groups []string
 }
 
 func (handler *SlogHandler) Enabled(_ context.Context, level slog.Level) bool {

@@ -6,11 +6,11 @@ import (
 	"path/filepath"
 )
 
+type Finder struct{}
+
 func NewFinder() *Finder {
 	return &Finder{}
 }
-
-type Finder struct{}
 
 func (finder *Finder) Find(dir string) bool {
 	manifestFile := filepath.Join(dir, filename)

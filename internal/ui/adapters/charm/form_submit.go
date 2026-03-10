@@ -63,6 +63,12 @@ func (model formSubmitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmds.Batch()
 }
 
+func (model formSubmitModel) View() string {
+	return model.zone.Mark(model.zonePrefix+"submit",
+		model.style.Render("Submit"),
+	)
+}
+
 func (model *formSubmitModel) submit() tea.Cmd {
 	ok, err := model.form.Submit()
 	if err != nil {
@@ -85,10 +91,4 @@ func (model *formSubmitModel) submit() tea.Cmd {
 	}
 
 	return tea.Quit
-}
-
-func (model formSubmitModel) View() string {
-	return model.zone.Mark(model.zonePrefix+"submit",
-		model.style.Render("Submit"),
-	)
 }

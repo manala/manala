@@ -141,26 +141,6 @@ func (model formFieldTextModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmds.Batch()
 }
 
-func (model *formFieldTextModel) updateValue(value string) tea.Cmd {
-	if *model.value == value {
-		return nil
-	}
-
-	// Set value
-	model.setValue(value)
-
-	// Update field
-	if err := model.field.Set(value); err != nil {
-		return errCmd(err)
-	}
-
-	return nil
-}
-
-func (model *formFieldTextModel) setValue(value string) {
-	*model.value = value
-}
-
 func (model formFieldTextModel) View() string {
 	// Label
 	view := model.labelStyle.Render(
@@ -192,4 +172,24 @@ func (model formFieldTextModel) View() string {
 	}
 
 	return model.style.Render(view)
+}
+
+func (model *formFieldTextModel) updateValue(value string) tea.Cmd {
+	if *model.value == value {
+		return nil
+	}
+
+	// Set value
+	model.setValue(value)
+
+	// Update field
+	if err := model.field.Set(value); err != nil {
+		return errCmd(err)
+	}
+
+	return nil
+}
+
+func (model *formFieldTextModel) setValue(value string) {
+	*model.value = value
 }

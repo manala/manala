@@ -9,18 +9,18 @@ import (
 	"github.com/manala/manala/internal/serrors"
 )
 
+type Cache struct {
+	dir     string
+	dirs    []string
+	userDir string
+}
+
 func NewCache(dir string) *Cache {
 	cache := &Cache{
 		dir: dir,
 	}
 
 	return cache
-}
-
-type Cache struct {
-	dir     string
-	dirs    []string
-	userDir string
 }
 
 func (cache *Cache) Dir() (string, error) {

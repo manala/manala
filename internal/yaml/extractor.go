@@ -6,14 +6,14 @@ import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
+type Extractor struct {
+	node *goYamlAst.Node
+}
+
 func NewExtractor(node *goYamlAst.Node) *Extractor {
 	return &Extractor{
 		node: node,
 	}
-}
-
-type Extractor struct {
-	node *goYamlAst.Node
 }
 
 func (extractor *Extractor) ExtractRootMap(key string) (goYamlAst.Node, error) {

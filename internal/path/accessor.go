@@ -6,20 +6,16 @@ import (
 	"github.com/ohler55/ojg/jp"
 )
 
-func NewAccessor(path Path, data any) Accessor {
-	return Accessor{
-		path: path,
-		data: data,
-	}
-}
-
 type Accessor struct {
 	path Path
 	data any
 }
 
-func (accessor Accessor) expr() (jp.Expr, error) {
-	return jp.ParseString(accessor.path.String())
+func NewAccessor(path Path, data any) Accessor {
+	return Accessor{
+		path: path,
+		data: data,
+	}
 }
 
 func (accessor Accessor) Get() (any, error) {
@@ -44,4 +40,8 @@ func (accessor Accessor) Set(value any) error {
 	}
 
 	return expr.Set(accessor.data, value)
+}
+
+func (accessor Accessor) expr() (jp.Expr, error) {
+	return jp.ParseString(accessor.path.String())
 }

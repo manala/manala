@@ -2,6 +2,12 @@ package components
 
 import "github.com/manala/manala/internal/accessor"
 
+type ListForm struct {
+	List     []ListItem
+	index    int
+	accessor accessor.IndexAccessor
+}
+
 func NewListForm(list []ListItem, accessor accessor.IndexAccessor) (*ListForm, error) {
 	// Initial index
 	index, err := accessor.GetIndex()
@@ -14,12 +20,6 @@ func NewListForm(list []ListItem, accessor accessor.IndexAccessor) (*ListForm, e
 		index:    index,
 		accessor: accessor,
 	}, nil
-}
-
-type ListForm struct {
-	List     []ListItem
-	index    int
-	accessor accessor.IndexAccessor
 }
 
 func (form *ListForm) GetIndex() int {

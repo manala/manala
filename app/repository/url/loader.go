@@ -7,16 +7,16 @@ import (
 	"github.com/manala/manala/app/repository"
 )
 
+type ProcessorLoaderHandler struct {
+	log       *slog.Logger
+	processor *Processor
+}
+
 func NewProcessorLoaderHandler(log *slog.Logger, processor *Processor) *ProcessorLoaderHandler {
 	return &ProcessorLoaderHandler{
 		log:       log.With("handler", "url.processor"),
 		processor: processor,
 	}
-}
-
-type ProcessorLoaderHandler struct {
-	log       *slog.Logger
-	processor *Processor
 }
 
 func (handler *ProcessorLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {

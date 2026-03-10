@@ -13,6 +13,12 @@ import (
 	"github.com/hashicorp/go-getter/v2"
 )
 
+type S3LoaderHandler struct {
+	log    *slog.Logger
+	cache  *caching.Cache
+	client *getter.Client
+}
+
 func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler {
 	return &S3LoaderHandler{
 		log:   log.With("handler", "getter.s3"),
@@ -28,12 +34,6 @@ func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler
 			Decompressors: getter.Decompressors,
 		},
 	}
-}
-
-type S3LoaderHandler struct {
-	log    *slog.Logger
-	cache  *caching.Cache
-	client *getter.Client
 }
 
 func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {

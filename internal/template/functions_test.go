@@ -18,22 +18,6 @@ func TestFunctionsSuite(t *testing.T) {
 	suite.Run(t, new(FunctionsSuite))
 }
 
-func (s *FunctionsSuite) execute(content string, data any) string {
-	tmpl := gotemplate.New("test")
-
-	tmpl.Funcs(sprig.TxtFuncMap())
-	tmpl.Funcs(template.FuncMap(tmpl))
-
-	_, err := tmpl.Parse(content)
-	s.Require().NoError(err)
-
-	buffer := &bytes.Buffer{}
-	err = tmpl.Execute(buffer, data)
-	s.Require().NoError(err)
-
-	return buffer.String()
-}
-
 func (s *FunctionsSuite) TestToYaml() {
 	s.Run("Default", func() {
 		content := s.execute(`{{ . | toYaml }}`, map[string]any{
@@ -220,4 +204,20 @@ func (s *FunctionsSuite) TestInclude() {
 		`foo bar`,
 		content,
 	)
+}
+
+func (s *FunctionsSuite) execute(content string, data any) string {
+	tmpl := gotemplate.New("test")
+
+	tmpl.Funcs(sprig.TxtFuncMap())
+	tmpl.Funcs(template.FuncMap(tmpl))
+
+	_, err := tmpl.Parse(content)
+	s.Require().NoError(err)
+
+	buffer := &bytes.Buffer{}
+	err = tmpl.Execute(buffer, data)
+	s.Require().NoError(err)
+
+	return buffer.String()
 }

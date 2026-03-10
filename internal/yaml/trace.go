@@ -7,6 +7,12 @@ import (
 	goYamlPrinter "github.com/goccy/go-yaml/printer"
 )
 
+type NodeTrace struct {
+	Line        int
+	Column      int
+	DetailsFunc func(ansi bool) string
+}
+
 func NewNodeTrace(node goYamlAst.Node) NodeTrace {
 	// Token
 	token := node.GetToken()
@@ -24,10 +30,4 @@ func NewNodeTrace(node goYamlAst.Node) NodeTrace {
 			) + "\n"
 		},
 	}
-}
-
-type NodeTrace struct {
-	Line        int
-	Column      int
-	DetailsFunc func(ansi bool) string
 }

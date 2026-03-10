@@ -11,13 +11,13 @@ import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
-func NewInferrer() *Inferrer {
-	return &Inferrer{}
-}
-
 type Inferrer struct {
 	options *[]app.RecipeOption
 	err     error
+}
+
+func NewInferrer() *Inferrer {
+	return &Inferrer{}
 }
 
 func (inf *Inferrer) Infer(node goYamlAst.Node, options *[]app.RecipeOption) error {

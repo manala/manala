@@ -24,32 +24,6 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
 
-func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
-	stdOut := &bytes.Buffer{}
-	stdErr := &bytes.Buffer{}
-
-	ui := charm.New(nil, stdOut, stdErr)
-	log := slog.New(log.NewSlogHandler(ui))
-
-	cmd := cmd.NewCmd(
-		log,
-		api.New(
-			log,
-			caching.NewCache(""),
-			api.WithDefaultRepositoryURL(defaultRepositoryURL),
-		),
-		ui,
-	)
-
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-	cmd.SetOut(stdOut)
-	cmd.SetErr(stdErr)
-	cmd.SetArgs(append([]string{}, args...))
-
-	return stdOut, stdErr, cmd.Execute()
-}
-
 func (s *Suite) TestRepositoryErrors() {
 	s.Run("NoRepository", func() {
 		stdOut, stdErr, err := s.execute("")
@@ -237,4 +211,30 @@ func (s *Suite) TestRecipeErrors() {
 			},
 		}, err)
 	})
+}
+
+func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+	stdOut := &bytes.Buffer{}
+	stdErr := &bytes.Buffer{}
+
+	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
+
+	cmd := cmd.NewCmd(
+		log,
+		api.New(
+			log,
+			caching.NewCache(""),
+			api.WithDefaultRepositoryURL(defaultRepositoryURL),
+		),
+		ui,
+	)
+
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+	cmd.SetOut(stdOut)
+	cmd.SetErr(stdErr)
+	cmd.SetArgs(append([]string{}, args...))
+
+	return stdOut, stdErr, cmd.Execute()
 }

@@ -14,6 +14,11 @@ import (
 	"github.com/hashicorp/go-getter/v2"
 )
 
+type FileLoaderHandler struct {
+	log    *slog.Logger
+	client *getter.Client
+}
+
 func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {
 	return &FileLoaderHandler{
 		log: log.With("handler", "getter.file"),
@@ -26,11 +31,6 @@ func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {
 			Decompressors: getter.Decompressors,
 		},
 	}
-}
-
-type FileLoaderHandler struct {
-	log    *slog.Logger
-	client *getter.Client
 }
 
 func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {

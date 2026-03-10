@@ -10,6 +10,12 @@ import (
 	goYamlParser "github.com/goccy/go-yaml/parser"
 )
 
+type Parser struct {
+	comments bool
+	anchors  map[string]goYamlAst.Node
+	err      error
+}
+
 func NewParser(opts ...ParserOption) *Parser {
 	p := &Parser{
 		anchors: map[string]goYamlAst.Node{},
@@ -21,12 +27,6 @@ func NewParser(opts ...ParserOption) *Parser {
 	}
 
 	return p
-}
-
-type Parser struct {
-	comments bool
-	anchors  map[string]goYamlAst.Node
-	err      error
 }
 
 func (parser *Parser) ParseFile(filename string) (goYamlAst.Node, error) {

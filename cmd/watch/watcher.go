@@ -11,16 +11,16 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+type Watcher struct {
+	log    *slog.Logger
+	recipe bool
+}
+
 func NewWatcher(log *slog.Logger, recipe bool) *Watcher {
 	return &Watcher{
 		log:    log,
 		recipe: recipe,
 	}
-}
-
-type Watcher struct {
-	log    *slog.Logger
-	recipe bool
 }
 
 func (watcher *Watcher) Watch(ctx context.Context, project app.Project, fn func(project app.Project) app.Project) error {

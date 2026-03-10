@@ -25,32 +25,6 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(Suite))
 }
 
-func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
-	stdOut := &bytes.Buffer{}
-	stdErr := &bytes.Buffer{}
-
-	ui := charm.New(nil, stdOut, stdErr)
-	log := slog.New(log.NewSlogHandler(ui))
-
-	cmd := cmd.NewCmd(
-		log,
-		api.New(
-			log,
-			caching.NewCache(""),
-		),
-		ui,
-		notifier.NewNil(),
-	)
-
-	cmd.SilenceErrors = true
-	cmd.SilenceUsage = true
-	cmd.SetOut(stdOut)
-	cmd.SetErr(stdErr)
-	cmd.SetArgs(append([]string{}, args...))
-
-	return stdOut, stdErr, cmd.Execute()
-}
-
 func (s *Suite) TestProjectErrors() {
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/ProjectNotFound/project")
@@ -324,4 +298,30 @@ func (s *Suite) TestRecipeErrors() {
 			},
 		}, err)
 	})
+}
+
+func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+	stdOut := &bytes.Buffer{}
+	stdErr := &bytes.Buffer{}
+
+	ui := charm.New(nil, stdOut, stdErr)
+	log := slog.New(log.NewSlogHandler(ui))
+
+	cmd := cmd.NewCmd(
+		log,
+		api.New(
+			log,
+			caching.NewCache(""),
+		),
+		ui,
+		notifier.NewNil(),
+	)
+
+	cmd.SilenceErrors = true
+	cmd.SilenceUsage = true
+	cmd.SetOut(stdOut)
+	cmd.SetErr(stdErr)
+	cmd.SetArgs(append([]string{}, args...))
+
+	return stdOut, stdErr, cmd.Execute()
 }

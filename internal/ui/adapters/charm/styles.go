@@ -312,19 +312,6 @@ var (
 	}
 )
 
-func NewStyleDefinition(style lipgloss.Style, opts ...styleOption) *StyleDefinition {
-	definition := &StyleDefinition{
-		style: style,
-	}
-
-	// Apply options
-	for _, opt := range opts {
-		opt(definition)
-	}
-
-	return definition
-}
-
 type styleOption func(definition *StyleDefinition)
 
 func withFocusStyle(style lipgloss.Style) styleOption {
@@ -350,6 +337,19 @@ type StyleDefinition struct {
 	focusStyle      *lipgloss.Style
 	focusHoverStyle *lipgloss.Style
 	hoverStyle      *lipgloss.Style
+}
+
+func NewStyleDefinition(style lipgloss.Style, opts ...styleOption) *StyleDefinition {
+	definition := &StyleDefinition{
+		style: style,
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(definition)
+	}
+
+	return definition
 }
 
 func (definition *StyleDefinition) New(renderer *lipgloss.Renderer) *Style {
@@ -385,21 +385,6 @@ func (s *Style) Update(msg tea.Msg) {
 	if changed {
 		s.update()
 	}
-}
-
-func (s *Style) update() {
-	style := s.definition.style
-
-	switch {
-	case s.focus && s.hover && s.definition.focusHoverStyle != nil:
-		style = *s.definition.focusHoverStyle
-	case s.focus && s.definition.focusStyle != nil:
-		style = *s.definition.focusStyle
-	case s.hover && s.definition.hoverStyle != nil:
-		style = *s.definition.hoverStyle
-	}
-
-	s.style = style.Renderer(s.renderer)
 }
 
 func (s *Style) Style() lipgloss.Style {
@@ -466,4 +451,19 @@ func (s *Style) Fit(str string, width int, height int) string {
 		UnsetPadding().
 		UnsetBorderStyle().
 		Render(str)
+}
+
+func (s *Style) update() {
+	style := s.definition.style
+
+	switch {
+	case s.focus && s.hover && s.definition.focusHoverStyle != nil:
+		style = *s.definition.focusHoverStyle
+	case s.focus && s.definition.focusStyle != nil:
+		style = *s.definition.focusStyle
+	case s.hover && s.definition.hoverStyle != nil:
+		style = *s.definition.hoverStyle
+	}
+
+	s.style = style.Renderer(s.renderer)
 }

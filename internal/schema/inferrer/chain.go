@@ -2,14 +2,14 @@ package inferrer
 
 import "github.com/manala/manala/internal/schema"
 
+type Chain struct {
+	inferrers []Inferrer
+}
+
 func NewChain(inferrers ...Inferrer) *Chain {
 	return &Chain{
 		inferrers: inferrers,
 	}
-}
-
-type Chain struct {
-	inferrers []Inferrer
 }
 
 func (inf *Chain) Infer(schema schema.Schema) error {

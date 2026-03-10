@@ -14,14 +14,14 @@ import (
 	"github.com/manala/manala/internal/template"
 )
 
+type Syncer struct {
+	log *slog.Logger
+}
+
 func NewSyncer(log *slog.Logger) *Syncer {
 	return &Syncer{
 		log: log,
 	}
-}
-
-type Syncer struct {
-	log *slog.Logger
 }
 
 type UnitInterface interface {

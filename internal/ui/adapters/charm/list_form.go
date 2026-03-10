@@ -146,6 +146,22 @@ func (model listFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmds.Batch()
 }
 
+func (model listFormModel) View() string {
+	views := make([]string, len(model.items))
+	for i, item := range model.items {
+		views[i] = model.zone.Mark(
+			fmt.Sprintf("item_%d", i),
+			item.View(),
+		)
+	}
+
+	return model.zone.Scan(
+		lipgloss.JoinVertical(lipgloss.Left,
+			views...,
+		),
+	)
+}
+
 func (model *listFormModel) updateIndex(index int) tea.Cmd {
 	// Set index
 	model.setIndex(index)
@@ -169,20 +185,4 @@ func (model *listFormModel) submit() tea.Cmd {
 	}
 
 	return tea.Quit
-}
-
-func (model listFormModel) View() string {
-	views := make([]string, len(model.items))
-	for i, item := range model.items {
-		views[i] = model.zone.Mark(
-			fmt.Sprintf("item_%d", i),
-			item.View(),
-		)
-	}
-
-	return model.zone.Scan(
-		lipgloss.JoinVertical(lipgloss.Left,
-			views...,
-		),
-	)
 }

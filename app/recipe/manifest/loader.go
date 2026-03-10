@@ -11,14 +11,14 @@ import (
 	"github.com/manala/manala/internal/serrors"
 )
 
+type LoaderHandler struct {
+	log *slog.Logger
+}
+
 func NewLoaderHandler(log *slog.Logger) *LoaderHandler {
 	return &LoaderHandler{
 		log: log.With("handler", "manifest"),
 	}
-}
-
-type LoaderHandler struct {
-	log *slog.Logger
 }
 
 func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.LoaderHandlerChain) (app.Recipe, error) {

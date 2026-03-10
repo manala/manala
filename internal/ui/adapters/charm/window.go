@@ -166,32 +166,6 @@ func (scroll scrollModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return scroll, cmds.Batch()
 }
 
-func (scroll *scrollModel) to(lineTop int, lineBottom int) {
-	switch {
-	case lineTop < scroll.line:
-		scroll.upTo(lineTop)
-	case lineBottom >= scroll.line+scroll.height:
-		scroll.downTo(lineBottom)
-	}
-}
-
-func (scroll *scrollModel) upTo(line int) {
-	switch {
-	case line < 0:
-		scroll.line = 0
-	case len(scroll.lines) <= scroll.height:
-		// Content height inferior to height
-		scroll.line = 0
-	default:
-		// Content height superior to height
-		scroll.line = min(line, len(scroll.lines)-scroll.height)
-	}
-}
-
-func (scroll *scrollModel) downTo(line int) {
-	scroll.line = (line + 1) - scroll.height
-}
-
 func (scroll scrollModel) View() string {
 	lowBound := scroll.line
 	highBound := min(
@@ -228,6 +202,32 @@ func (scroll scrollModel) View() string {
 			barView,
 		),
 	)
+}
+
+func (scroll *scrollModel) to(lineTop int, lineBottom int) {
+	switch {
+	case lineTop < scroll.line:
+		scroll.upTo(lineTop)
+	case lineBottom >= scroll.line+scroll.height:
+		scroll.downTo(lineBottom)
+	}
+}
+
+func (scroll *scrollModel) upTo(line int) {
+	switch {
+	case line < 0:
+		scroll.line = 0
+	case len(scroll.lines) <= scroll.height:
+		// Content height inferior to height
+		scroll.line = 0
+	default:
+		// Content height superior to height
+		scroll.line = min(line, len(scroll.lines)-scroll.height)
+	}
+}
+
+func (scroll *scrollModel) downTo(line int) {
+	scroll.line = (line + 1) - scroll.height
 }
 
 func toZoneCmd(zone *zone.ZoneInfo) tea.Cmd {

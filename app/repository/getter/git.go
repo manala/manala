@@ -13,6 +13,12 @@ import (
 	"github.com/hashicorp/go-getter/v2"
 )
 
+type GitLoaderHandler struct {
+	log    *slog.Logger
+	cache  *caching.Cache
+	client *getter.Client
+}
+
 func NewGitLoaderHandler(log *slog.Logger, cache *caching.Cache) *GitLoaderHandler {
 	return &GitLoaderHandler{
 		log:   log.With("handler", "getter.git"),
@@ -34,12 +40,6 @@ func NewGitLoaderHandler(log *slog.Logger, cache *caching.Cache) *GitLoaderHandl
 			Decompressors: getter.Decompressors,
 		},
 	}
-}
-
-type GitLoaderHandler struct {
-	log    *slog.Logger
-	cache  *caching.Cache
-	client *getter.Client
 }
 
 func (handler *GitLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {

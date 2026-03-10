@@ -9,6 +9,11 @@ import (
 	"github.com/manala/manala/internal/validator"
 )
 
+type FormFieldSelect struct {
+	Options []*FormFieldSelectOption
+	*formField
+}
+
 func NewFormFieldSelect(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldSelect, error) {
 	field, err := newFormField(name, label, help, accessor, validator)
 	if err != nil {
@@ -18,11 +23,6 @@ func NewFormFieldSelect(name string, label string, help string, accessor accesso
 	return &FormFieldSelect{
 		formField: field,
 	}, nil
-}
-
-type FormFieldSelect struct {
-	Options []*FormFieldSelectOption
-	*formField
 }
 
 func (field *FormFieldSelect) GetIndex() int {
@@ -45,14 +45,14 @@ func (field *FormFieldSelect) SetIndex(index int) error {
 /* Option */
 /**********/
 
+type FormFieldSelectOption struct {
+	value any
+}
+
 func NewFormFieldSelectOption(value any) *FormFieldSelectOption {
 	return &FormFieldSelectOption{
 		value: value,
 	}
-}
-
-type FormFieldSelectOption struct {
-	value any
 }
 
 func (option *FormFieldSelectOption) Value() any {

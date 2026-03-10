@@ -16,7 +16,6 @@ linters:
     - errorlint
     - exhaustruct
     - forcetypeassert
-    - funcorder
     - funlen
     - gochecknoglobals
     - gochecknoinits

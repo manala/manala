@@ -13,15 +13,15 @@ import (
 	"dario.cat/mergo"
 )
 
+type Processor struct {
+	log     *slog.Logger
+	entries []processorEntry
+}
+
 func NewProcessor(log *slog.Logger) *Processor {
 	return &Processor{
 		log: log,
 	}
-}
-
-type Processor struct {
-	log     *slog.Logger
-	entries []processorEntry
 }
 
 func (processor *Processor) Add(url string, weight int) {

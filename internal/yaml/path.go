@@ -22,14 +22,14 @@ func NewNodePath(node goYamlAst.Node) path.Path {
 	return path.Path(nodePath)
 }
 
+type NodePathAccessor struct {
+	path path.Path
+}
+
 func NewNodePathAccessor(path path.Path) NodePathAccessor {
 	return NodePathAccessor{
 		path: path,
 	}
-}
-
-type NodePathAccessor struct {
-	path path.Path
 }
 
 func (accessor NodePathAccessor) Get(node goYamlAst.Node) (goYamlAst.Node, error) {

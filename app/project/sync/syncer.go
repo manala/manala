@@ -7,14 +7,14 @@ import (
 	"github.com/manala/manala/internal/sync"
 )
 
+type Syncer struct {
+	syncer *sync.Syncer
+}
+
 func NewSyncer(log *slog.Logger) *Syncer {
 	return &Syncer{
 		syncer: sync.NewSyncer(log),
 	}
-}
-
-type Syncer struct {
-	syncer *sync.Syncer
 }
 
 func (syncer *Syncer) Sync(project app.Project) error {

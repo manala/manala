@@ -13,6 +13,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type Loader struct {
+	log      *slog.Logger
+	filter   *filter.Filter
+	handlers []LoaderHandler
+}
+
 func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
 	loader := &Loader{
 		log: log,
@@ -24,12 +30,6 @@ func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
 	}
 
 	return loader
-}
-
-type Loader struct {
-	log      *slog.Logger
-	filter   *filter.Filter
-	handlers []LoaderHandler
 }
 
 //goland:noinspection GoMixedReceiverTypes

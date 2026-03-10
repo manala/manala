@@ -9,18 +9,18 @@ import (
 	"dario.cat/mergo"
 )
 
+type Project struct {
+	dir string
+	*Manifest
+	recipe app.Recipe
+}
+
 func NewProject(dir string, manifest *Manifest, recipe app.Recipe) *Project {
 	return &Project{
 		dir:      dir,
 		Manifest: manifest,
 		recipe:   recipe,
 	}
-}
-
-type Project struct {
-	dir string
-	*Manifest
-	recipe app.Recipe
 }
 
 func (project *Project) Dir() string {

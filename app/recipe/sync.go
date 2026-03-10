@@ -30,16 +30,16 @@ func (sync *Sync) UnmarshalYAML(unmarshal func(any) error) error {
 	return nil
 }
 
+type SyncUnit struct {
+	source      string
+	destination string
+}
+
 func NewSyncUnit(source string, destination string) *SyncUnit {
 	return &SyncUnit{
 		source:      source,
 		destination: destination,
 	}
-}
-
-type SyncUnit struct {
-	source      string
-	destination string
 }
 
 func (unit *SyncUnit) Source() string {

@@ -20,15 +20,15 @@ func (provider *Provider) Template() *Template {
 	return NewTemplate()
 }
 
-func NewTemplate() *Template {
-	return &Template{}
-}
-
 type Template struct {
 	defaultContent string
 	defaultFiles   []string
 	file           string
 	data           any
+}
+
+func NewTemplate() *Template {
+	return &Template{}
 }
 
 func (template *Template) WriteTo(writer io.Writer) error {

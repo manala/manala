@@ -1,15 +1,15 @@
 package getter
 
+type Repository struct {
+	url string
+	dir string
+}
+
 func NewRepository(url string, dir string) *Repository {
 	return &Repository{
 		url: url,
 		dir: dir,
 	}
-}
-
-type Repository struct {
-	url string
-	dir string
 }
 
 func (repository *Repository) URL() string {

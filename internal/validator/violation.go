@@ -17,12 +17,6 @@ const (
 	StringLte
 )
 
-func NewViolation(message string) Violation {
-	return Violation{
-		Message: message,
-	}
-}
-
 type Violation struct {
 	Type              ViolationType
 	Message           string
@@ -33,6 +27,12 @@ type Violation struct {
 	Line              int
 	Column            int
 	DetailsFunc       func(ansi bool) string
+}
+
+func NewViolation(message string) Violation {
+	return Violation{
+		Message: message,
+	}
 }
 
 func (violation Violation) Error() error {

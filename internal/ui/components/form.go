@@ -1,13 +1,13 @@
 package components
 
+type Form struct {
+	Fields []FormField
+}
+
 func NewForm(fields []FormField) *Form {
 	return &Form{
 		Fields: fields,
 	}
-}
-
-type Form struct {
-	Fields []FormField
 }
 
 func (form *Form) Submit() (bool, error) {

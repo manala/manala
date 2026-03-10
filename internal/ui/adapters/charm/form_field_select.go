@@ -169,23 +169,6 @@ func (model formFieldSelectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, cmds.Batch()
 }
 
-func (model *formFieldSelectModel) updateIndex(index int) tea.Cmd {
-	// Set index
-	model.setIndex(index)
-
-	// Update field index
-	if err := model.field.SetIndex(index); err != nil {
-		return errCmd(err)
-	}
-
-	return nil
-}
-
-func (model *formFieldSelectModel) setIndex(index int) {
-	model.index.Set(index)
-	model.hoverIndex.Set(index)
-}
-
 func (model *formFieldSelectModel) Open(resetHover bool) {
 	if resetHover {
 		model.hoverIndex.Reset()
@@ -242,6 +225,23 @@ func (model formFieldSelectModel) View() string {
 	}
 
 	return model.style.Render(view)
+}
+
+func (model *formFieldSelectModel) updateIndex(index int) tea.Cmd {
+	// Set index
+	model.setIndex(index)
+
+	// Update field index
+	if err := model.field.SetIndex(index); err != nil {
+		return errCmd(err)
+	}
+
+	return nil
+}
+
+func (model *formFieldSelectModel) setIndex(index int) {
+	model.index.Set(index)
+	model.hoverIndex.Set(index)
 }
 
 /**********/

@@ -15,18 +15,18 @@ import (
 	"github.com/manala/manala/internal/validator"
 )
 
+type LoaderHandler struct {
+	log              *slog.Logger
+	repositoryLoader *repository.Loader
+	recipeLoader     *recipe.Loader
+}
+
 func NewLoaderHandler(log *slog.Logger, repositoryLoader *repository.Loader, recipeLoader *recipe.Loader) *LoaderHandler {
 	return &LoaderHandler{
 		log:              log.With("handler", "manifest"),
 		repositoryLoader: repositoryLoader,
 		recipeLoader:     recipeLoader,
 	}
-}
-
-type LoaderHandler struct {
-	log              *slog.Logger
-	repositoryLoader *repository.Loader
-	recipeLoader     *recipe.Loader
 }
 
 func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.LoaderHandlerChain) (app.Project, error) {
@@ -103,14 +103,14 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	return project, nil
 }
 
+type FromLoaderHandler struct {
+	log *slog.Logger
+}
+
 func NewFromLoaderHandler(log *slog.Logger) *FromLoaderHandler {
 	return &FromLoaderHandler{
 		log: log.With("handler", "manifest.from"),
 	}
-}
-
-type FromLoaderHandler struct {
-	log *slog.Logger
 }
 
 func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain project.LoaderHandlerChain) (app.Project, error) {
