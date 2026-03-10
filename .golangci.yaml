@@ -29,7 +29,6 @@ linters:
     - maintidx
     - mnd
     - nestif
-    - nlreturn
     - noctx
     - noinlineerr
     - paralleltest
