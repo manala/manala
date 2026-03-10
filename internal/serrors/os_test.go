@@ -1,7 +1,7 @@
 package serrors_test
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"os"
 	"testing"
 

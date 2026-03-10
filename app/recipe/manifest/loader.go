@@ -3,9 +3,9 @@ package manifest
 import (
 	"errors"
 	"log/slog"
-	"manala/app"
-	"manala/app/recipe"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
 )

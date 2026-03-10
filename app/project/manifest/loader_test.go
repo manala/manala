@@ -1,14 +1,14 @@
 package manifest_test
 
 import (
-	"manala/app/project"
-	"manala/app/project/manifest"
-	"manala/app/recipe"
-	recipeManifest "manala/app/recipe/manifest"
-	"manala/app/repository"
-	"manala/app/repository/getter"
-	"manala/internal/log"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app/project"
+	"github.com/manala/manala/app/project/manifest"
+	"github.com/manala/manala/app/recipe"
+	recipeManifest "github.com/manala/manala/app/recipe/manifest"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/serrors"
 	"path/filepath"
 	"testing"
 

@@ -1,9 +1,9 @@
 package option
 
 import (
-	"manala/app"
-	"manala/internal/serrors"
-	"manala/internal/ui/components"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/ui/components"
 )
 
 func NewUIFormField(option app.RecipeOption, vars *map[string]any) (components.FormField, error) {

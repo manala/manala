@@ -1,7 +1,7 @@
 package heredoc_test
 
 import (
-	"manala/internal/testing/heredoc"
+	"github.com/manala/manala/internal/testing/heredoc"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

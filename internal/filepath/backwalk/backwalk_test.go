@@ -1,7 +1,7 @@
 package backwalk_test
 
 import (
-	"manala/internal/filepath/backwalk"
+	"github.com/manala/manala/internal/filepath/backwalk"
 	"os"
 	"path/filepath"
 	"testing"

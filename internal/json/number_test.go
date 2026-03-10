@@ -2,7 +2,7 @@ package json_test
 
 import (
 	gojson "encoding/json"
-	"manala/internal/json"
+	"github.com/manala/manala/internal/json"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

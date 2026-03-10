@@ -1,10 +1,10 @@
 package project_test
 
 import (
-	"manala/app"
-	"manala/app/project"
-	"manala/internal/log"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/project"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/serrors"
 	"path/filepath"
 	"testing"
 

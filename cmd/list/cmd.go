@@ -3,9 +3,9 @@ package list
 import (
 	"context"
 	"log/slog"
-	"manala/app"
-	"manala/app/api"
-	"manala/internal/ui"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/internal/ui"
 
 	"github.com/spf13/cobra"
 )

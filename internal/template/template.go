@@ -2,7 +2,7 @@ package template
 
 import (
 	"io"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"path/filepath"
 	textTemplate "text/template"
 

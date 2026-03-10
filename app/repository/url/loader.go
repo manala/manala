@@ -2,8 +2,8 @@ package url
 
 import (
 	"log/slog"
-	"manala/app"
-	"manala/app/repository"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/repository"
 )
 
 func NewProcessorLoaderHandler(log *slog.Logger, processor *Processor) *ProcessorLoaderHandler {

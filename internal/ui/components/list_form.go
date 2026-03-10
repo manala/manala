@@ -1,6 +1,6 @@
 package components
 
-import "manala/internal/accessor"
+import "github.com/manala/manala/internal/accessor"
 
 func NewListForm(list []ListItem, accessor accessor.IndexAccessor) (*ListForm, error) {
 	// Initial index

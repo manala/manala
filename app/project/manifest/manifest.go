@@ -3,10 +3,10 @@ package manifest
 import (
 	_ "embed"
 	"io"
-	"manala/internal/schema"
-	"manala/internal/serrors"
-	"manala/internal/validator"
-	"manala/internal/yaml"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/validator"
+	"github.com/manala/manala/internal/yaml"
 	"regexp"
 
 	goYaml "github.com/goccy/go-yaml"

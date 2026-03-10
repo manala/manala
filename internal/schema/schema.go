@@ -1,6 +1,6 @@
 package schema
 
-import "manala/internal/json"
+import "github.com/manala/manala/internal/json"
 
 type Schema map[string]any
 

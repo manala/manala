@@ -1,7 +1,7 @@
 package path
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 
 	"github.com/ohler55/ojg/jp"
 )

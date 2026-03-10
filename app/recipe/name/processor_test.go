@@ -1,8 +1,8 @@
 package name_test
 
 import (
-	"manala/app/recipe/name"
-	"manala/internal/log"
+	"github.com/manala/manala/app/recipe/name"
+	"github.com/manala/manala/internal/log"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

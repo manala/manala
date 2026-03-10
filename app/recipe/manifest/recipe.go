@@ -2,11 +2,11 @@ package manifest
 
 import (
 	"io/fs"
-	"manala/app"
-	"manala/app/recipe/option"
-	"manala/internal/schema"
-	"manala/internal/template"
-	"manala/internal/validator"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/validator"
 	"os"
 	"path/filepath"
 )

@@ -3,7 +3,7 @@ package caching
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
 )

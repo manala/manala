@@ -1,8 +1,8 @@
 package yaml
 
 import (
-	"manala/internal/path"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/serrors"
 	"strings"
 
 	goYaml "github.com/goccy/go-yaml"

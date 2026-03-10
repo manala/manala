@@ -2,11 +2,11 @@ package getter_test
 
 import (
 	"fmt"
-	"manala/app/repository"
-	"manala/app/repository/getter"
-	"manala/internal/caching"
-	"manala/internal/log"
-	"manala/internal/testing/heredoc"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/testing/heredoc"
 	"net"
 	"net/http/httptest"
 	"os"

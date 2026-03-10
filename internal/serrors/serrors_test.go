@@ -2,7 +2,7 @@ package serrors_test
 
 import (
 	"fmt"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

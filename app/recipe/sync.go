@@ -1,7 +1,7 @@
 package recipe
 
 import (
-	"manala/internal/sync"
+	"github.com/manala/manala/internal/sync"
 	"strings"
 )
 

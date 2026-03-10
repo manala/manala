@@ -1,7 +1,7 @@
 package validator_test
 
 import (
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/validator"
 	"regexp"
 	"testing"
 

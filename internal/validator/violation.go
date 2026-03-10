@@ -2,8 +2,8 @@ package validator
 
 import (
 	"errors"
-	"manala/internal/path"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/serrors"
 )
 
 type ViolationType int

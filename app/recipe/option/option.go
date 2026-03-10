@@ -3,12 +3,12 @@ package option
 import (
 	_ "embed"
 	"io"
-	"manala/app"
-	"manala/internal/json"
-	"manala/internal/path"
-	"manala/internal/schema"
-	"manala/internal/serrors"
-	"manala/internal/validator"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/validator"
 
 	"github.com/gosimple/slug"
 )

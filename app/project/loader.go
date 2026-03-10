@@ -3,9 +3,9 @@ package project
 import (
 	"errors"
 	"log/slog"
-	"manala/app"
-	"manala/internal/filepath/filter"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/filepath/filter"
+	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
 

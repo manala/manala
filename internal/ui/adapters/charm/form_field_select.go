@@ -2,7 +2,7 @@ package charm
 
 import (
 	"fmt"
-	"manala/internal/ui/components"
+	"github.com/manala/manala/internal/ui/components"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"

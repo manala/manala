@@ -3,7 +3,7 @@ package json
 import (
 	"bytes"
 	"encoding/json"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 )
 
 func Unmarshal(data []byte, value any) error {

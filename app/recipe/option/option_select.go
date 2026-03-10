@@ -1,12 +1,12 @@
 package option
 
 import (
-	"manala/internal/json"
-	"manala/internal/path"
-	"manala/internal/schema"
-	"manala/internal/serrors"
-	"manala/internal/ui/components"
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/ui/components"
+	"github.com/manala/manala/internal/validator"
 )
 
 func NewSelectOption(option *option, _ map[string]any) (*SelectOption, error) {

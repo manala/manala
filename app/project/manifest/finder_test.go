@@ -1,7 +1,7 @@
 package manifest_test
 
 import (
-	"manala/app/project/manifest"
+	"github.com/manala/manala/app/project/manifest"
 	"path/filepath"
 	"testing"
 

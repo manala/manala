@@ -1,7 +1,7 @@
 package components
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 )
 
 type MessageType int

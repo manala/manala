@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"manala/app"
+	"github.com/manala/manala/app"
 
 	"github.com/stretchr/testify/mock"
 )

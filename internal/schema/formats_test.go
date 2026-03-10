@@ -1,7 +1,7 @@
 package schema_test
 
 import (
-	"manala/internal/schema"
+	"github.com/manala/manala/internal/schema"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

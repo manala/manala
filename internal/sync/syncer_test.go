@@ -1,10 +1,10 @@
 package sync_test
 
 import (
-	"manala/internal/log"
-	"manala/internal/serrors"
-	"manala/internal/sync"
-	"manala/internal/template"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/sync"
+	"github.com/manala/manala/internal/template"
 	"os"
 	"path/filepath"
 	"runtime"

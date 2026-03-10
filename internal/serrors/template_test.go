@@ -2,7 +2,7 @@ package serrors_test
 
 import (
 	htmlTemplate "html/template"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"testing"
 	textTemplate "text/template"
 

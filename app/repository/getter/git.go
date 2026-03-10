@@ -3,10 +3,10 @@ package getter
 import (
 	"context"
 	"log/slog"
-	"manala/app"
-	"manala/app/repository"
-	"manala/internal/caching"
-	"manala/internal/schema"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/schema"
 	"time"
 
 	"github.com/hashicorp/go-getter/v2"

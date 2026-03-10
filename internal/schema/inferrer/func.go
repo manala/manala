@@ -1,6 +1,6 @@
 package inferrer
 
-import "manala/internal/schema"
+import "github.com/manala/manala/internal/schema"
 
 func NewFunc(schemaFunc func(schema schema.Schema) error) *Func {
 	return &Func{

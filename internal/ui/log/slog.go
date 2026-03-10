@@ -3,8 +3,8 @@ package log
 import (
 	"context"
 	"log/slog"
-	"manala/internal/ui"
-	"manala/internal/ui/components"
+	"github.com/manala/manala/internal/ui"
+	"github.com/manala/manala/internal/ui/components"
 )
 
 func NewSlogHandler(out ui.Output, opts ...SlogHandlerOption) *SlogHandler {

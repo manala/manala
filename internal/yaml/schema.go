@@ -1,9 +1,9 @@
 package yaml
 
 import (
-	"manala/internal/json"
-	"manala/internal/schema"
-	"manala/internal/schema/inferrer"
+	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/schema/inferrer"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )

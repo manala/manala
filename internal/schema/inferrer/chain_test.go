@@ -1,9 +1,9 @@
 package inferrer_test
 
 import (
-	"manala/internal/schema"
-	"manala/internal/schema/inferrer"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/schema/inferrer"
+	"github.com/manala/manala/internal/serrors"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

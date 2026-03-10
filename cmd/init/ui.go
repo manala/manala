@@ -1,11 +1,11 @@
 package init
 
 import (
-	"manala/app"
-	"manala/app/recipe/option"
-	"manala/internal/accessor"
-	"manala/internal/serrors"
-	"manala/internal/ui/components"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/ui/components"
 )
 
 func NewUIRecipeListForm(items []app.Recipe, value *app.Recipe) (*components.ListForm, error) {

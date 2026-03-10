@@ -2,7 +2,7 @@ package api
 
 import (
 	"log/slog"
-	"manala/internal/caching"
+	"github.com/manala/manala/internal/caching"
 )
 
 // New creates an api.

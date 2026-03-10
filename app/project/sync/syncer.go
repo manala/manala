@@ -2,8 +2,8 @@ package sync
 
 import (
 	"log/slog"
-	"manala/app"
-	"manala/internal/sync"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/sync"
 )
 
 func NewSyncer(log *slog.Logger) *Syncer {

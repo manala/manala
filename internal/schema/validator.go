@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/validator"
 
 	"github.com/xeipuuv/gojsonschema"
 )

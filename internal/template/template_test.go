@@ -2,8 +2,8 @@ package template_test
 
 import (
 	"bytes"
-	"manala/internal/serrors"
-	"manala/internal/template"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/template"
 	"path/filepath"
 	"testing"
 

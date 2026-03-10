@@ -1,7 +1,7 @@
 package template
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"reflect"
 	"strings"
 	textTemplate "text/template"

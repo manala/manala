@@ -1,7 +1,7 @@
 package yaml
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )

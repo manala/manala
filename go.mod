@@ -1,4 +1,4 @@
-module manala
+module github.com/manala/manala
 
 go 1.26.1
 

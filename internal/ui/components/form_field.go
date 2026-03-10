@@ -1,8 +1,8 @@
 package components
 
 import (
-	"manala/internal/accessor"
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/validator"
 )
 
 type FormField interface {

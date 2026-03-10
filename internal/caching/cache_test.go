@@ -1,7 +1,7 @@
 package caching_test
 
 import (
-	"manala/internal/caching"
+	"github.com/manala/manala/internal/caching"
 	"os"
 	"path/filepath"
 	"testing"

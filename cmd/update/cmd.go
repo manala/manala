@@ -3,8 +3,8 @@ package update
 import (
 	"context"
 	"log/slog"
-	"manala/app"
-	"manala/app/api"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/api"
 	"path/filepath"
 
 	"github.com/spf13/cobra"

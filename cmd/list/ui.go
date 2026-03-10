@@ -1,8 +1,8 @@
 package list
 
 import (
-	"manala/app"
-	"manala/internal/ui/components"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/ui/components"
 )
 
 func NewUIRecipeList(items []app.Recipe) []components.ListItem {

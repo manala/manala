@@ -2,7 +2,7 @@ package serrors_test
 
 import (
 	"encoding/json"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"reflect"
 	"testing"
 

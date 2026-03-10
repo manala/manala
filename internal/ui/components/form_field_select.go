@@ -2,9 +2,9 @@ package components
 
 import (
 	"fmt"
-	"manala/internal/accessor"
-	"manala/internal/serrors"
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/validator"
 	"slices"
 )
 

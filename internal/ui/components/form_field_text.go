@@ -1,8 +1,8 @@
 package components
 
 import (
-	"manala/internal/accessor"
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/validator"
 )
 
 func NewFormFieldText(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldText, error) {

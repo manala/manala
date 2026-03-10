@@ -1,9 +1,9 @@
 package charm
 
 import (
-	"manala/internal/serrors"
-	"manala/internal/ui/components"
-	"manala/internal/validator"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/ui/components"
+	"github.com/manala/manala/internal/validator"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"

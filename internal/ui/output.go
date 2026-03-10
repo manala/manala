@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"manala/internal/ui/components"
+	"github.com/manala/manala/internal/ui/components"
 
 	"github.com/stretchr/testify/mock"
 )

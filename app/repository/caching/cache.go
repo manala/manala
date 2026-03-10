@@ -1,6 +1,6 @@
 package caching
 
-import "manala/app"
+import "github.com/manala/manala/app"
 
 func NewCache() *Cache {
 	return &Cache{

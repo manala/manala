@@ -1,10 +1,10 @@
 package option_test
 
 import (
-	"manala/app/recipe/option"
-	"manala/internal/path"
-	"manala/internal/schema"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
 	"strings"
 	"testing"
 

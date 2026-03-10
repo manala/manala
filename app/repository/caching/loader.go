@@ -2,8 +2,8 @@ package caching
 
 import (
 	"log/slog"
-	"manala/app"
-	"manala/app/repository"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/repository"
 )
 
 func NewLoaderHandler(log *slog.Logger, cache *Cache) *LoaderHandler {

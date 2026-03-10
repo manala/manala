@@ -1,7 +1,7 @@
 package app_test
 
 import (
-	"manala/app"
+	"github.com/manala/manala/app"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

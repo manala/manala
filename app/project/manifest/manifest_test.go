@@ -1,8 +1,8 @@
 package manifest_test
 
 import (
-	"manala/app/project/manifest"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app/project/manifest"
+	"github.com/manala/manala/internal/serrors"
 	"os"
 	"path/filepath"
 	"testing"

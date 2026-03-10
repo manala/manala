@@ -3,7 +3,7 @@ package watch
 import (
 	"context"
 	"log/slog"
-	"manala/app"
+	"github.com/manala/manala/app"
 	"slices"
 
 	"github.com/fsnotify/fsnotify"

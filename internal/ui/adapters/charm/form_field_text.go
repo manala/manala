@@ -1,7 +1,7 @@
 package charm
 
 import (
-	"manala/internal/ui/components"
+	"github.com/manala/manala/internal/ui/components"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"

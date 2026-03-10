@@ -2,8 +2,8 @@ package getter_test
 
 import (
 	"errors"
-	"manala/app/repository/getter"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/serrors"
 	"testing"
 
 	"github.com/stretchr/testify/suite"

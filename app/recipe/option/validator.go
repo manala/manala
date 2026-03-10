@@ -1,9 +1,9 @@
 package option
 
 import (
-	"manala/app"
-	"manala/internal/path"
-	"manala/internal/validator"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/path"
+	"github.com/manala/manala/internal/validator"
 )
 
 func NewPathedValidator(option app.RecipeOption) *PathedValidator {

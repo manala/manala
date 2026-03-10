@@ -2,11 +2,11 @@ package manifest_test
 
 import (
 	"encoding/json"
-	"manala/app/recipe/manifest"
-	"manala/app/recipe/option"
-	"manala/internal/schema"
-	"manala/internal/serrors"
-	"manala/internal/sync"
+	"github.com/manala/manala/app/recipe/manifest"
+	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/sync"
 	"os"
 	"path/filepath"
 	"testing"

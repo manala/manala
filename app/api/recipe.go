@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
-	"manala/app"
-	"manala/app/recipe"
-	"manala/app/recipe/manifest"
-	"manala/app/recipe/name"
-	"manala/internal/filepath/filter"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/app/recipe/manifest"
+	"github.com/manala/manala/app/recipe/name"
+	"github.com/manala/manala/internal/filepath/filter"
 )
 
 func (api *API) NewRecipeLoader(ctx context.Context) *recipe.Loader {

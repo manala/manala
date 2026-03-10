@@ -2,8 +2,8 @@ package template_test
 
 import (
 	"bytes"
-	"manala/internal/template"
-	"manala/internal/testing/heredoc"
+	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/testing/heredoc"
 	"testing"
 	gotemplate "text/template"
 

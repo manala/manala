@@ -1,7 +1,7 @@
 package getter
 
 import (
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	"regexp"
 	"strconv"
 )

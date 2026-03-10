@@ -1,9 +1,9 @@
 package getter_test
 
 import (
-	"manala/app/repository"
-	"manala/app/repository/getter"
-	"manala/internal/log"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/log"
 	"path/filepath"
 	"testing"
 

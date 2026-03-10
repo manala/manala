@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
-	"manala/app"
-	"manala/app/repository"
-	"manala/app/repository/caching"
-	"manala/app/repository/getter"
-	"manala/app/repository/url"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/caching"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/app/repository/url"
 )
 
 func (api *API) NewRepositoryLoader(ctx context.Context) *repository.Loader {

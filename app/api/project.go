@@ -1,12 +1,12 @@
 package api
 
 import (
-	"manala/app/project"
-	"manala/app/project/manifest"
-	"manala/app/project/sync"
-	"manala/app/recipe"
-	"manala/app/repository"
-	"manala/internal/filepath/filter"
+	"github.com/manala/manala/app/project"
+	"github.com/manala/manala/app/project/manifest"
+	"github.com/manala/manala/app/project/sync"
+	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/filepath/filter"
 )
 
 /***********/

@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"fmt"
 	"log/slog"
-	"manala/internal/serrors"
+	"github.com/manala/manala/internal/serrors"
 	netURL "net/url"
 	"slices"
 	"strings"

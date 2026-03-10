@@ -1,9 +1,9 @@
 package repository_test
 
 import (
-	"manala/app"
-	"manala/app/repository"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/serrors"
 	"testing"
 
 	"github.com/stretchr/testify/mock"

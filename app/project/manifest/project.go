@@ -1,8 +1,8 @@
 package manifest
 
 import (
-	"manala/app"
-	"manala/internal/template"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/template"
 	"path/filepath"
 
 	"dario.cat/mergo"

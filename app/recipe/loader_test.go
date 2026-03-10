@@ -1,12 +1,12 @@
 package recipe_test
 
 import (
-	"manala/app"
-	"manala/app/recipe"
-	"manala/app/repository"
-	"manala/app/repository/getter"
-	"manala/internal/log"
-	"manala/internal/serrors"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/serrors"
 	"path/filepath"
 	"testing"
 

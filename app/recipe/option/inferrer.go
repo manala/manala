@@ -1,10 +1,10 @@
 package option
 
 import (
-	"manala/app"
-	"manala/internal/schema"
-	"manala/internal/schema/inferrer"
-	"manala/internal/yaml"
+	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/schema/inferrer"
+	"github.com/manala/manala/internal/yaml"
 	"strings"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"

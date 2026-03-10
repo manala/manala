@@ -2,9 +2,9 @@ package yaml_test
 
 import (
 	"encoding/json"
-	"manala/internal/schema"
-	"manala/internal/serrors"
-	"manala/internal/yaml"
+	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/yaml"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
