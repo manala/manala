@@ -6,8 +6,9 @@ import (
 )
 
 type FormFieldText struct {
-	MaxLength int
 	*formField
+
+	MaxLength int
 }
 
 func NewFormFieldText(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldText, error) {

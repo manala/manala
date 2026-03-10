@@ -13,6 +13,7 @@ import (
 
 type Suite struct {
 	suite.Suite
+
 	provider template.ProviderInterface
 	buffer   *bytes.Buffer
 }

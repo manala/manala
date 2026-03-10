@@ -16,6 +16,7 @@ import (
 
 type SyncerSuite struct {
 	suite.Suite
+
 	syncer           *sync.Syncer
 	templateProvider template.ProviderInterface
 }

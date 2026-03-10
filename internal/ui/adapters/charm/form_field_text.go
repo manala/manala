@@ -46,6 +46,8 @@ func newFormFieldTextModel(field *components.FormFieldText, renderer *lipgloss.R
 }
 
 type formFieldTextModel struct {
+	*formFieldModel
+
 	field                    *components.FormFieldText
 	value                    *string
 	input                    textinput.Model
@@ -60,7 +62,6 @@ type formFieldTextModel struct {
 	textInputStyle           *Style
 	textInputCursorStyle     *Style
 	textInputCursorTextStyle *Style
-	*formFieldModel
 }
 
 func (model formFieldTextModel) Init() tea.Cmd {

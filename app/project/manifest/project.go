@@ -10,8 +10,9 @@ import (
 )
 
 type Project struct {
-	dir string
 	*Manifest
+
+	dir    string
 	recipe app.Recipe
 }
 

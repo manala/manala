@@ -38,6 +38,7 @@ func NewTextOptionUIFormField(option *TextOption, vars *map[string]any) (compone
 
 type TextOption struct {
 	*option
+
 	MaxLength int
 }
 

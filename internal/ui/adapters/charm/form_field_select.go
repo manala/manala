@@ -48,6 +48,8 @@ func newFormFieldSelectModel(field *components.FormFieldSelect, renderer *lipglo
 }
 
 type formFieldSelectModel struct {
+	*formFieldModel
+
 	field       *components.FormFieldSelect
 	focus       bool
 	open        bool
@@ -60,7 +62,6 @@ type formFieldSelectModel struct {
 	labelStyle  *Style
 	helpStyle   *Style
 	selectStyle *Style
-	*formFieldModel
 }
 
 func (model formFieldSelectModel) Init() tea.Cmd {

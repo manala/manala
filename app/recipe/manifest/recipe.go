@@ -13,9 +13,10 @@ import (
 )
 
 type Recipe struct {
-	dir  string
-	name string
 	*Manifest
+
+	dir        string
+	name       string
 	repository app.Repository
 }
 

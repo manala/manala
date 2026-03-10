@@ -41,6 +41,7 @@ func NewSelectOptionUIFormField(option *SelectOption, vars *map[string]any) (com
 
 type SelectOption struct {
 	*option
+
 	Values []any
 }
 

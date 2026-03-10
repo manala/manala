@@ -10,8 +10,9 @@ import (
 )
 
 type FormFieldSelect struct {
-	Options []*FormFieldSelectOption
 	*formField
+
+	Options []*FormFieldSelectOption
 }
 
 func NewFormFieldSelect(name string, label string, help string, accessor accessor.Accessor, validator validator.Validator) (*FormFieldSelect, error) {
