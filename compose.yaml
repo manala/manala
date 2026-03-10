@@ -18,7 +18,7 @@ services:
   mkdocs:
     image: squidfunk/mkdocs-material:${MANALA_MKDOCS_VERSION}
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
       - .:/docs
     command: serve --dev-addr 0.0.0.0:8000
