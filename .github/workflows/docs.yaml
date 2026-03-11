@@ -1,0 +1,43 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+
+  docs:
+    name: Docs
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Dotenv
+        uses: xom9ikk/dotenv@v2
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Zensical
+        run: >
+          docker run --rm
+          --volume ${{ github.workspace }}:/docs
+          zensical/zensical:${{ env.MANALA_ZENSICAL_VERSION }}
+          build --clean
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
+        id: deployment

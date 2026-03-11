@@ -1,0 +1,90 @@
+[project]
+
+site_name = "Manala"
+site_description = "Let your project's plumbing up to date."
+site_url = "https://manala.github.io/manala/"
+
+repo_url = "https://github.com/manala/manala"
+repo_name = "manala/manala"
+edit_uri = "edit/main/docs/"
+
+nav = [
+    { "Introduction" = "index.md" },
+    { "Installation" = "installation.md" },
+    { "Overview" = "overview.md" },
+    { "Usage" = "usage.md" },
+    { "Commands" = [
+        { "manala" = "commands/manala.md" },
+        { "manala init" = "commands/manala_init.md" },
+        { "manala list" = "commands/manala_list.md" },
+        { "manala update" = "commands/manala_update.md" },
+        { "manala watch" = "commands/manala_watch.md" },
+    ]},
+    { "Completion" = [
+        { "help" = "commands/manala_completion.md" },
+        { "bash" = "commands/manala_completion_bash.md" },
+        { "zsh" = "commands/manala_completion_zsh.md" },
+        { "fish" = "commands/manala_completion_fish.md" },
+        { "powershell" = "commands/manala_completion_powershell.md" },
+    ]},
+    { "Contributing" = "contributing.md" },
+]
+
+[project.theme]
+
+favicon = "images/favicon-96x96.png"
+
+language = "en"
+
+features = [
+    "announce.dismiss",
+    "content.action.edit",
+    "content.code.annotate",
+    "content.code.copy",
+    "content.code.select",
+    "content.footnote.tooltips",
+    "content.tabs.link",
+    "content.tooltips",
+    "navigation.expand",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.instant.prefetch",
+    "navigation.path",
+    "navigation.sections",
+    "navigation.tabs",
+    "navigation.tabs.sticky",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+]
+
+logo = "images/manala.svg"
+
+[project.theme.icon]
+
+repo = "fontawesome/brands/github"
+
+# Palette toggle for automatic mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+# Palette toggle for light mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+primary = "deep orange"
+accent = "orange"
+
+# Palette toggle for dark mode
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+primary = "deep orange"
+accent = "orange"

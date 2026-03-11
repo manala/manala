@@ -11,12 +11,12 @@ services:
       - .:/usr/src/manala
     working_dir: /usr/src/manala
 
-  ##########
-  # MkDocs #
-  ##########
+  ############
+  # Zensical #
+  ############
 
-  mkdocs:
-    image: squidfunk/mkdocs-material:${MANALA_MKDOCS_VERSION}
+  zensical:
+    image: zensical/zensical:${MANALA_ZENSICAL_VERSION}
     ports:
       - "8000:8000"
     volumes:
