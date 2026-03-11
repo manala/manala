@@ -1,1 +1,6 @@
 dist/
+
+# Zensical
+# See: https://github.com/zensical/zensical/issues/68
+site/
+.cache/

@@ -2,7 +2,7 @@
 
 Requirements
 
-* Go 1.14+
+* Go 1.26+
 
 Update modules
 
@@ -16,5 +16,5 @@ go mod tidy
 With Docker:
 
 ```shell
-make run
+make docs
 ```

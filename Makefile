@@ -30,20 +30,14 @@ docs/demo:
 		docs/demo/demo.tape
 .PHONY: docs/demo
 
-##########
-# MkDocs #
-##########
+############
+# Zensical #
+############
 
-## MkDocs - Generate
-mkdocs:
+## Zensical - Generate
+zensical:
 	docker compose run --rm --service-ports \
-		mkdocs
-
-## MkDocs - Open mkdocs shell
-mkdocs.sh:
-	docker compose run --rm --service-ports \
-		--entrypoint /bin/ash \
-		mkdocs
+		zensical
 
 ######
 # Go #
