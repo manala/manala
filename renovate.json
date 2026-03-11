@@ -1,0 +1,78 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "groupName": "dependencies",
+      "labels": ["renovate"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "labels": ["renovate"]
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchDatasources": ["github-runners"],
+      "groupName": "github runners",
+      "labels": ["renovate"]
+    },
+    {
+      "matchManagers": ["custom.regex"],
+      "groupName": "components",
+      "labels": ["renovate"]
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_GO_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_GORELEASER_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "goreleaser/goreleaser",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_GOLANGCI_LINT_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "golangci/golangci-lint",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_GOTESTSUM_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "gotestyourself/gotestsum",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_ZENSICAL_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "zensical/zensical",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.env$/"],
+      "matchStrings": ["MANALA_VHS_VERSION=(?<currentValue>\\S+)"],
+      "depNameTemplate": "charmbracelet/vhs",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ]
+}
