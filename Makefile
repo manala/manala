@@ -21,7 +21,7 @@ go.sh:
 lint:
 	docker compose run --rm \
 		golangci-lint \
-		golangci-lint run --verbose
+		golangci-lint run
 
 #################
 # Golangci-lint #
