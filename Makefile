@@ -4,6 +4,26 @@ include .make/help.mk
 include .make/text.mk
 
 ########
+# Lint #
+########
+
+## Lint - Lint
+lint:
+	docker compose run --rm \
+		golangci-lint \
+		golangci-lint run --verbose
+
+#################
+# Golangci-lint #
+#################
+
+## Golangci-lint - Open shell
+golangci-lint.sh:
+	docker compose run --rm \
+		golangci-lint \
+		/bin/bash
+
+########
 # Docs #
 ########
 

@@ -11,6 +11,21 @@ services:
       - .:/usr/src/manala
     working_dir: /usr/src/manala
 
+  #################
+  # Golangci-lint #
+  #################
+
+  golangci-lint:
+    image: golangci/golangci-lint:v${MANALA_GOLANGCI_LINT_VERSION}
+    environment:
+      GOCACHE: /.cache/go
+      GOMODCACHE: /.cache/mod
+      GOLANGCI_LINT_CACHE: /.cache/golangci-lint
+    volumes:
+      - .:/app
+      - golangci-lint:/.cache
+    working_dir: /app
+
   ############
   # Zensical #
   ############
@@ -40,3 +55,4 @@ services:
 
 volumes:
   go:
+  golangci-lint:
