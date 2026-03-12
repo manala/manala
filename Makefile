@@ -3,6 +3,16 @@
 include .make/help.mk
 include .make/text.mk
 
+######
+# Go #
+######
+
+## Go - Open shell
+go.sh:
+	docker compose run --rm \
+		go \
+		/bin/bash
+
 ########
 # Lint #
 ########
@@ -70,26 +80,17 @@ docs/demo:
 # Zensical #
 ############
 
-## Zensical - Generate
+## Zensical - Serve
 zensical:
-	docker compose run --rm --service-ports \
-		zensical
-
-######
-# Go #
-######
-
-## Go - Open go shell
-go.sh:
 	docker compose run --rm \
-		go \
-		/bin/bash
+		--service-ports \
+		zensical
 
 #######
 # Vhs #
 #######
 
-## Vhs - Open vhs shell
+## Vhs - Open shell
 vhs.sh:
 	docker compose run --rm \
 		--entrypoint /bin/bash \
