@@ -23,6 +23,16 @@ lint:
 		golangci-lint \
 		golangci-lint run
 
+#######
+# Fmt #
+#######
+
+## Fmt - fmt
+fmt:
+	docker compose run --rm \
+		golangci-lint \
+		golangci-lint fmt
+
 #################
 # Golangci-lint #
 #################
