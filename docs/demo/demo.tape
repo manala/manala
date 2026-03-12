@@ -10,17 +10,16 @@ Set FontSize 16
 Set Framerate 20
 Set TypingSpeed 100ms
 
+Require git
+
 # Setup
 Hide
 Type@1ms "export PATH=/go/bin:$PATH"
 Enter
 Type@1ms "rm -Rf my-project"
 Enter
-Type@1ms "apt update && apt install -y git"
-Enter
-Sleep 10s
-Type@1ms "clear"
-Enter
+Sleep 1s
+Ctrl+L
 Show
 
 Type "manala"

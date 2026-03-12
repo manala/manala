@@ -28,7 +28,11 @@ services:
   #######
 
   vhs:
-    image: ghcr.io/charmbracelet/vhs:v${MANALA_VHS_VERSION}
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM ghcr.io/charmbracelet/vhs:v${MANALA_VHS_VERSION}
+        RUN apt update && apt install -y git
     volumes:
       - go:/go
       - .:/usr/src/manala
