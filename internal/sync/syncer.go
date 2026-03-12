@@ -214,7 +214,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		srcReader = srcFile
 	}
 
-	// Files are not equals or destination does not exists
+	// Files are not equals or destination does not exist
 	if !equal {
 		// Destination file mode
 		var dstMode os.FileMode = 0o666
