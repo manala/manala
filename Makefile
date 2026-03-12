@@ -23,6 +23,22 @@ golangci-lint.sh:
 		golangci-lint \
 		/bin/bash
 
+#########
+# Build #
+#########
+
+## Build - build
+build:
+	goreleaser build --single-target --auto-snapshot --clean
+
+###########
+# Release #
+###########
+
+## Release - release
+release:
+	goreleaser release --snapshot --clean
+
 ########
 # Docs #
 ########
