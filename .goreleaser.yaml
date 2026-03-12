@@ -38,23 +38,29 @@ builds:
       - amd64
 
 archives:
-  - format: tar.gz
+  - formats:
+      - tar.gz
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
-brews:
+homebrew_casks:
   - repository:
       owner: manala
       name: homebrew-tap
     commit_author:
       name: manala-bot
       email: contact@manala.io
-    directory: Formula
     homepage: https://github.com/manala/manala
     description: Let your project's plumbing up to date
-    test: |
-      system "#{bin}/manala --version"
+    hooks:
+      post:
+        # Prevent quarantine
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/manala"]
+          end
 
 nfpms:
   - file_name_template: "{{ .ConventionalFileName }}"
