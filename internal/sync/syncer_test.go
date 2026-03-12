@@ -133,7 +133,6 @@ func (s *SyncerSuite) TestSync() {
 
 func (s *SyncerSuite) TestSyncExecutable() {
 	// Irrelevant on Windows
-	//goland:noinspection GoBoolExpressions
 	if runtime.GOOS == "windows" {
 		s.T().Skip()
 	}

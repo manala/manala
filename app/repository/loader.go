@@ -21,7 +21,6 @@ func NewLoader(opts ...LoaderOption) *Loader {
 	return loader
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(url string) (app.Repository, error) {
 	// Prepare query
 	query := &LoaderQuery{URL: url}
@@ -30,7 +29,6 @@ func (loader *Loader) Load(url string) (app.Repository, error) {
 	return loader.Next(query)
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Next(query *LoaderQuery) (app.Repository, error) {
 	if len(loader.handlers) == 0 {
 		return loader.Last(query)
@@ -42,7 +40,6 @@ func (loader Loader) Next(query *LoaderQuery) (app.Repository, error) {
 	return handler.Handle(query, loader)
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Repository, error) {
 	return nil, &app.NotFoundRepositoryError{URL: query.URL}
 }

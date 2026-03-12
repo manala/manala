@@ -32,7 +32,6 @@ func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
 	return loader
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) Load(repository app.Repository, name string) (app.Recipe, error) {
 	// Prepare query
 	query := &LoaderQuery{Repository: repository, Name: name}
@@ -41,7 +40,6 @@ func (loader *Loader) Load(repository app.Repository, name string) (app.Recipe, 
 	return loader.Next(query)
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	dir, err := os.Open(repository.Dir())
 	if err != nil {
@@ -50,7 +48,6 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 			WithErrors(serrors.NewOs(err))
 	}
 
-	//goland:noinspection GoUnhandledErrorResult
 	defer dir.Close()
 
 	files, err := dir.ReadDir(0) // 0 to read all files and folders
@@ -98,7 +95,6 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	return recipes, nil
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Next(query *LoaderQuery) (app.Recipe, error) {
 	if len(loader.handlers) == 0 {
 		return loader.Last(query)
@@ -110,7 +106,6 @@ func (loader Loader) Next(query *LoaderQuery) (app.Recipe, error) {
 	return handler.Handle(query, loader)
 }
 
-//goland:noinspection GoMixedReceiverTypes
 func (loader Loader) Last(query *LoaderQuery) (app.Recipe, error) {
 	return nil, &app.NotFoundRecipeError{Repository: query.Repository, Name: query.Name}
 }

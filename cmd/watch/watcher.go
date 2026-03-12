@@ -30,7 +30,6 @@ func (watcher *Watcher) Watch(ctx context.Context, project app.Project, fn func(
 		return err
 	}
 
-	//goland:noinspection GoUnhandledErrorResult
 	defer fsWatcher.Close()
 
 	group, ctx := errgroup.WithContext(ctx)

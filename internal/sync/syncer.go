@@ -195,7 +195,6 @@ func (syncer *Syncer) syncNode(node *node) error {
 				WithErrors(serrors.NewOs(err))
 		}
 
-		//goland:noinspection GoUnhandledErrorResult
 		defer srcFile.Close()
 
 		if node.Dst.IsExist {
@@ -231,7 +230,6 @@ func (syncer *Syncer) syncNode(node *node) error {
 				WithErrors(serrors.NewOs(err))
 		}
 
-		//goland:noinspection GoUnhandledErrorResult
 		defer dstFile.Close()
 
 		// Copy from source to destination
@@ -380,7 +378,6 @@ func newNode(srcDir, src, dstDir, dst string, templateProvider template.Provider
 					WithErrors(serrors.NewOs(err))
 			}
 
-			//goland:noinspection GoUnhandledErrorResult
 			defer file.Close()
 
 			hash := sha1.New()
