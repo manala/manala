@@ -5,7 +5,9 @@ on:
     tags:
       - '*.*.*'
 
-concurrency: release
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
 
@@ -22,12 +24,12 @@ jobs:
           fetch-depth: 0
       - name: Dotenv
         uses: xom9ikk/dotenv@v2
-      - name: Set up Go
+      - name: Set up go
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser release
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         env:
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
@@ -65,14 +67,14 @@ jobs:
         uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
-      - name: Apt packages
+      - name: Prepare apt packages
         run: |
           sudo apt-get -qq --yes install reprepro
           reprepro \
             --verbose \
             --basedir packages/apt \
             includedeb stable dist/*.deb
-      - name: Aur packages
+      - name: Prepare aur packages
         run: |
           sudo add-apt-repository --yes ppa:michel-slm/kernel-utils
           sudo apt-get -qq --yes install pacman-package-manager libarchive-tools
