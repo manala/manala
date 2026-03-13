@@ -5,9 +5,9 @@ go 1.26.1
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/charmbracelet/bubbles v0.18.0
-	github.com/charmbracelet/bubbletea v0.26.4
-	github.com/charmbracelet/lipgloss v0.11.0
+	github.com/charmbracelet/bubbles/v2 v2.0.0
+	github.com/charmbracelet/bubbletea/v2 v2.0.2
+	github.com/charmbracelet/lipgloss/v2 v2.0.2
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gen2brain/beeep v0.11.2
 	github.com/goccy/go-yaml v1.11.3
@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-getter/s3/v2 v2.2.3
 	github.com/hashicorp/go-getter/v2 v2.2.3
 	github.com/johannesboyne/gofakes3 v0.0.0-20250916175020-ebf3e50324d3
-	github.com/lrstanley/bubblezone v0.0.0-20240602193536-d14e6b69d7f9
+	github.com/lrstanley/bubblezone/v2 v2.0.0
 	github.com/muesli/termenv v0.15.2
 	github.com/ohler55/ojg v1.28.0
 	github.com/spf13/cobra v1.10.2
