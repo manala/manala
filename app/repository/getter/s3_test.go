@@ -2,11 +2,10 @@ package getter_test
 
 import (
 	"fmt"
-	"net"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/manala/manala/app/repository"
@@ -15,15 +14,37 @@ import (
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/heredoc"
 
-	"github.com/johannesboyne/gofakes3"
-	"github.com/johannesboyne/gofakes3/backend/s3mem"
 	"github.com/stretchr/testify/suite"
 )
 
-type S3Suite struct{ suite.Suite }
+type S3Suite struct {
+	suite.Suite
+
+	server *httptest.Server
+}
 
 func TestS3Suite(t *testing.T) {
 	suite.Run(t, new(S3Suite))
+}
+
+func (s *S3Suite) SetupSuite() {
+	// Server
+	mux := http.NewServeMux()
+	s.server = httptest.NewServer(mux)
+
+	// ListObjects — GET /bucket?prefix=repository
+	mux.HandleFunc("GET /bucket", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/xml")
+		http.ServeFile(w, r, filepath.FromSlash("testdata/S3Suite/bucket/prefix.xml"))
+	})
+	// GetObject — GET /bucket/repository/…
+	mux.HandleFunc("GET /bucket/repository/{object...}", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join("testdata", "S3Suite", "bucket", "repository", r.PathValue("object")))
+	})
+}
+
+func (s *S3Suite) TearDownSuite() {
+	s.server.Close()
 }
 
 func (s *S3Suite) TestLoaderHandler() {
@@ -32,16 +53,8 @@ func (s *S3Suite) TestLoaderHandler() {
 
 	_ = os.RemoveAll(cacheDir)
 
-	// Fake S3
-	s3Server, s3Backend := s.fakeS3("127.0.0.1:1234")
-	defer s3Server.Close()
-
-	s3File := "foo\n"
-	_ = s3Backend.CreateBucket("bucket")
-	_, _ = s3Backend.PutObject("bucket", "repository/file", map[string]string{}, strings.NewReader(s3File), int64(len(s3File)), nil)
-
 	url := fmt.Sprintf("s3::%s/bucket/repository?aws_access_key_id=%s&aws_access_key_secret=%s",
-		s3Server.URL,
+		s.server.URL,
 		"access_key_id",
 		"access_key_secret",
 	)
@@ -55,26 +68,8 @@ func (s *S3Suite) TestLoaderHandler() {
 	s.NotNil(repository)
 	chainMock.AssertExpectations(s.T())
 
-	s.DirExists(filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b"))
+	s.DirExists(repository.Dir())
 	heredoc.EqualFile(s.T(), `
 		foo
-	`, filepath.Join(cacheDir, "repositories", "0b05624a43aa6dfd14fa0dd68105f49f20466339e403bdb1ad7ae55b", "file"))
-}
-
-func (s *S3Suite) fakeS3(address string) (*httptest.Server, gofakes3.Backend) {
-	// Create a listener with the desired address
-	listener, _ := net.Listen("tcp", address)
-
-	backend := s3mem.New()
-	fake := gofakes3.New(backend)
-
-	server := httptest.NewUnstartedServer(fake.Server())
-
-	// Close the automatically created listener and replace with the one we created
-	_ = server.Listener.Close()
-	server.Listener = listener
-
-	server.Start()
-
-	return server, backend
+	`, filepath.Join(repository.Dir(), "file"))
 }
