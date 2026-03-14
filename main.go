@@ -49,7 +49,7 @@ func main() {
 	appCommand.AddCommand(
 		cmdInit.NewCommand(appLog, appAPI, out),
 		cmdList.NewCommand(appLog, appAPI, out),
-		cmdMascot.NewCommand(),
+		cmdMascot.NewCommand(in, out),
 		cmdUpdate.NewCommand(appLog, appAPI, out),
 		cmdWatch.NewCommand(appLog, appAPI, out, ui, notify),
 	)
