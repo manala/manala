@@ -4,7 +4,10 @@ manala:
       - README.md.tmpl
 
 knight:
-    # @option {"label": "What is your name?"}
+    # @option {
+    #     "label": "What is your name?",
+    #     "help": "Who would cross the Bridge of Death must answer me"
+    # }
     # @schema {"type": "string", "minLength": 3, "maxLength": 12}
     name: ~
     # @option {"label": "What is your quest?"}

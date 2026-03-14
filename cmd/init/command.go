@@ -2,20 +2,25 @@ package init
 
 import (
 	"context"
-	"fmt"
+	"io"
 	"log/slog"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	"github.com/manala/manala/internal/ui"
+	"github.com/manala/manala/cmd"
 
+	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, input ui.Input) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
 	// Flags
-	var repositoryURL, repositoryRef, recipeName string
+	var (
+		repositoryURL string
+		repositoryRef string
+		recipeName    string
+	)
 
 	// Command
 	command := &cobra.Command{
@@ -37,7 +42,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, input, dir)
+			return run(ctx, log, api, out, dir)
 		},
 	}
 
@@ -49,90 +54,73 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, input ui.Input, dir string) error {
-	// Get project finder
+func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, dir string) error {
+	var (
+		repository    app.Repository
+		dialogVariant DialogVariant
+		project       app.Project
+		err           error
+	)
+
+	// Api
 	projectFinder := api.NewProjectFinder()
+	repositoryLoader := api.NewRepositoryLoader(ctx)
+	recipeLoader := api.NewRecipeLoader(ctx)
+	projectCreator := api.NewProjectCreator()
+	projectSyncer := api.NewProjectSyncer()
 
 	// Check already existing project
 	log.Info("finding project…")
-
 	if projectFinder.Find(dir) {
 		return &app.AlreadyExistingProjectError{Dir: dir}
 	}
 
-	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(ctx)
-
 	// Load repository
 	log.Info("loading repository…")
-
-	repository, err := repositoryLoader.Load("")
+	repository, err = repositoryLoader.Load("")
 	if err != nil {
 		return err
 	}
 
-	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader(ctx)
-
-	var recipe app.Recipe
-
 	if _, ok := app.RecipeName(ctx); ok {
 		// Load recipe by context
 		log.Info("loading recipe…")
-
-		if recipe, err = recipeLoader.Load(repository, ""); err != nil {
+		recipe, err := recipeLoader.Load(repository, "")
+		if err != nil {
 			return err
 		}
+		dialogVariant = DialogSingleVariant{Recipe: recipe}
 	} else {
 		// Select recipe
 		log.Info("loading recipes…")
-
 		recipes, err := recipeLoader.LoadAll(repository)
 		if err != nil {
 			return err
 		}
-
-		form, err := NewUIRecipeListForm(recipes, &recipe)
-		if err != nil {
-			return err
-		}
-
-		if err := input.ListForm(
-			"Please, select a recipe…",
-			form,
-		); err != nil {
-			return err
-		}
+		dialogVariant = DialogMultiVariant{Recipes: recipes}
 	}
 
-	// Recipe vars
-	vars := recipe.Vars()
-
-	// Recipe options
-	if len(recipe.Options()) > 0 {
-		form, err := NewUIRecipeOptionsForm(recipe, &vars)
-		if err != nil {
-			return err
-		}
-
-		if err := input.Form(
-			fmt.Sprintf("Please, enter \"%s\" recipe options…", recipe.Name()),
-			form,
-		); err != nil {
-			return err
-		}
+	// Run dialog
+	outcome, err := RunDialog("Manala", dialogVariant)
+	if err != nil {
+		return err
 	}
 
 	// Create project
 	log.Info("creating project…")
-
-	project, err := api.NewProjectCreator().Create(dir, recipe, vars)
+	project, err = projectCreator.Create(dir, outcome.Recipe, outcome.Vars)
 	if err != nil {
 		return err
 	}
 
 	// Sync project
 	log.Info("syncing project…")
+	err = projectSyncer.Sync(project)
+	if err != nil {
+		return err
+	}
 
-	return api.NewProjectSyncer().Sync(project)
+	lipgloss.Fprintln(out, cmd.Styles.Primary.Render("project successfully initialized"))
+
+	return nil
 }

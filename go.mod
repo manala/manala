@@ -4,12 +4,14 @@ go 1.26.1
 
 require (
 	charm.land/lipgloss/v2 v2.0.2
+	codeberg.org/tslocum/cview v1.6.3
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.4
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gdamore/tcell/v3 v3.1.2
 	github.com/gen2brain/beeep v0.11.2
 	github.com/goccy/go-yaml v1.11.3
 	github.com/gopxl/beep/v2 v2.1.1
@@ -29,6 +31,7 @@ require (
 )
 
 require (
+	codeberg.org/tslocum/cbind v0.1.8 // indirect
 	git.sr.ht/~jackmordaunt/go-toast v1.1.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.0 // indirect
@@ -51,6 +54,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/esiqveland/notify v0.13.3 // indirect
 	github.com/fatih/color v1.14.1 // indirect
+	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
@@ -103,6 +107,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.39.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

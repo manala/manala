@@ -148,7 +148,9 @@ func (s *Suite) TestRepositoryCustom() {
 	)
 
 	s.Require().NoError(err)
-	s.Empty(stdOut)
+	heredoc.Equal(s.T(), `
+		project successfully initialized
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • finding project…
 		 • loading repository…
@@ -183,7 +185,9 @@ func (s *Suite) TestRepositoryConfig() {
 	)
 
 	s.Require().NoError(err)
-	s.Empty(stdOut)
+	heredoc.Equal(s.T(), `
+		project successfully initialized
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • finding project…
 		 • loading repository…
@@ -322,7 +326,7 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
-		ui,
+		stdOut,
 	)
 
 	command.SilenceErrors = true

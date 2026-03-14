@@ -45,7 +45,7 @@ func main() {
 	// App commands
 	appCommand := cmd.NewCommand(version, in, out, err)
 	appCommand.AddCommand(
-		cmdInit.NewCommand(appLog, appAPI, ui),
+		cmdInit.NewCommand(appLog, appAPI, out),
 		cmdList.NewCommand(appLog, appAPI, out),
 		cmdMascot.NewCommand(),
 		cmdUpdate.NewCommand(appLog, appAPI, out),
