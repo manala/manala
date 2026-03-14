@@ -98,6 +98,10 @@ func main() {
 
 	// Execute app command
 	if err := appCommand.Execute(); err != nil {
+		if _, ok := errors.AsType[*cmd.CancelError](err); ok {
+			lipgloss.Fprintln(out, err.Error())
+			os.Exit(0)
+		}
 		ui.Error(err)
 		os.Exit(1)
 	}
