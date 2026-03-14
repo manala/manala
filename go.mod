@@ -13,12 +13,12 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gdamore/tcell/v3 v3.1.2
 	github.com/gen2brain/beeep v0.11.2
-	github.com/goccy/go-yaml v1.11.3
+	github.com/goccy/go-yaml v1.19.2
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.3
 	github.com/hashicorp/go-getter/v2 v2.2.3
-	github.com/johannesboyne/gofakes3 v0.0.0-20250916175020-ebf3e50324d3
+	github.com/johannesboyne/gofakes3 v0.0.0-20260208201424-4c385a1f6a73
 	github.com/ohler55/ojg v1.28.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
