@@ -41,9 +41,6 @@ linters:
     - wrapcheck
     - wsl
     - wsl_v5
-  settings:
-    nlreturn:
-      block-size: 2
 
 formatters:
   enable:
