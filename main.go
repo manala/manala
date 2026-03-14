@@ -46,10 +46,10 @@ func main() {
 	appCommand := cmd.NewCommand(version, in, out, err)
 	appCommand.AddCommand(
 		cmdInit.NewCommand(appLog, appAPI, ui),
-		cmdList.NewCommand(appLog, appAPI, ui),
+		cmdList.NewCommand(appLog, appAPI, out),
 		cmdMascot.NewCommand(),
-		cmdUpdate.NewCommand(appLog, appAPI),
-		cmdWatch.NewCommand(appLog, appAPI, ui, notify),
+		cmdUpdate.NewCommand(appLog, appAPI, out),
+		cmdWatch.NewCommand(appLog, appAPI, out, ui, notify),
 	)
 
 	// App commands persistent flags

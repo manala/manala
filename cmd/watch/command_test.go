@@ -313,6 +313,7 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 			log,
 			caching.NewCache(""),
 		),
+		stdOut,
 		ui,
 		notifier.NewNil(),
 	)

@@ -116,13 +116,11 @@ func (s *Suite) TestRepositoryCustom() {
 
 	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
-		Recipes available in %[1]s
-		─────────────────────────────────────────────────────────────
-		 • bar
-		   Bar
-		 • foo
-		   Foo
-	`, stdOut, repositoryURL)
+		bar
+		  Bar
+		foo
+		  Foo
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
@@ -136,13 +134,11 @@ func (s *Suite) TestRepositoryConfig() {
 
 	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
-		Recipes available in %[1]s
-		─────────────────────────────────────────────────────────────
-		 • bar
-		   Bar
-		 • foo
-		   Foo
-	`, stdOut, repositoryURL)
+		bar
+		  Bar
+		foo
+		  Foo
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading repository…
 		 • loading recipes…
@@ -227,7 +223,7 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
-		ui,
+		stdOut,
 	)
 
 	command.SilenceErrors = true

@@ -2,16 +2,19 @@ package update
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/cmd"
 
+	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -40,7 +43,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, dir, recursive)
+			return run(ctx, log, api, out, dir, recursive)
 		},
 	}
 
@@ -53,12 +56,16 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recursive bool) error {
-	// Get repository loader
-	repositoryLoader := api.NewRepositoryLoader(ctx)
+func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, dir string, recursive bool) error {
+	var (
+		project app.Project
+		err     error
+	)
 
-	// Get recipe loader
+	// Api
+	repositoryLoader := api.NewRepositoryLoader(ctx)
 	recipeLoader := api.NewRecipeLoader(ctx)
+	projectSyncer := api.NewProjectSyncer()
 
 	if recursive {
 		// Get project loader
@@ -66,15 +73,23 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recurs
 
 		// Recursively load projects
 		log.Info("loading projects recursive…")
-
-		return projectLoader.LoadRecursive(dir,
+		err = projectLoader.LoadRecursive(dir,
 			func(project app.Project) error {
 				// Sync project
 				log.Info("syncing project…")
+				err = projectSyncer.Sync(project)
+				if err != nil {
+					return err
+				}
 
-				return api.NewProjectSyncer().Sync(project)
+				return nil
 			},
 		)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	// Get project loader
@@ -84,12 +99,19 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, dir string, recurs
 
 	// Load project
 	log.Info("loading project…")
-
-	project, err := projectLoader.Load(dir)
+	project, err = projectLoader.Load(dir)
 	if err != nil {
 		return err
 	}
 
 	// Sync project
-	return api.NewProjectSyncer().Sync(project)
+	log.Info("syncing project…")
+	err = projectSyncer.Sync(project)
+	if err != nil {
+		return err
+	}
+
+	lipgloss.Fprintln(out, cmd.Styles.Primary.Render("project successfully updated"))
+
+	return nil
 }

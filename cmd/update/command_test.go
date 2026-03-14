@@ -329,9 +329,12 @@ func (s *Suite) TestRepositoryCustom() {
 	)
 
 	s.Require().NoError(err)
-	s.Empty(stdOut)
+	heredoc.Equal(s.T(), `
+		project successfully updated
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
+		 • syncing project…
 		 • file synced                      path=file.txt
 	`, stdErr)
 
@@ -352,9 +355,12 @@ func (s *Suite) TestRepositoryConfig() {
 	)
 
 	s.Require().NoError(err)
-	s.Empty(stdOut)
+	heredoc.Equal(s.T(), `
+		project successfully updated
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
+		 • syncing project…
 		 • file synced                      path=file.txt
 		 • file synced                      path=template
 	`, stdErr)
@@ -475,9 +481,12 @@ func (s *Suite) TestRecipeCustom() {
 	)
 
 	s.Require().NoError(err)
-	s.Empty(stdOut)
+	heredoc.Equal(s.T(), `
+		project successfully updated
+	`, stdOut)
 	heredoc.Equal(s.T(), `
 		 • loading project…
+		 • syncing project…
 		 • file synced                      path=file.txt
 	`, stdErr)
 
@@ -500,6 +509,7 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
+		stdOut,
 	)
 
 	command.SilenceErrors = true

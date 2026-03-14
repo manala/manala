@@ -2,6 +2,7 @@ package watch
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"os/signal"
 	"path/filepath"
@@ -9,13 +10,15 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/cmd"
 	"github.com/manala/manala/internal/notifier"
 	"github.com/manala/manala/internal/ui"
 
+	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier notifier.Notifier) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -42,7 +45,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, output, notifier, dir, all, notify)
+			return run(ctx, log, api, out, output, notifier, dir, all, notify)
 		},
 	}
 
@@ -56,22 +59,22 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
-	// Get repository loader
+func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
+	var (
+		project app.Project
+		err     error
+	)
+	// Api
 	repositoryLoader := api.NewRepositoryLoader(ctx)
-
-	// Get recipe loader
 	recipeLoader := api.NewRecipeLoader(ctx)
-
-	// Get project loader
 	projectLoader := api.NewProjectLoader(repositoryLoader, recipeLoader,
 		api.WithProjectLoaderFrom(true),
 	)
+	projectSyncer := api.NewProjectSyncer()
 
 	// Load project
 	log.Info("loading project…")
-
-	project, err := projectLoader.Load(dir)
+	project, err = projectLoader.Load(dir)
 	if err != nil {
 		return err
 	}
@@ -81,12 +84,10 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 
 	// Watch project
 	log.Info("watching project…")
-
-	return NewWatcher(log, all).
+	err = NewWatcher(log, all).
 		Watch(ctx, project, func(project app.Project) app.Project {
 			// Load project
 			log.Info("loading project…")
-
 			if project, err = projectLoader.Load(project.Dir()); err != nil {
 				output.Error(err)
 
@@ -99,8 +100,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 
 			// Sync project
 			log.Info("syncing project…")
-
-			if err = api.NewProjectSyncer().Sync(project); err != nil {
+			if err = projectSyncer.Sync(project); err != nil {
 				output.Error(err)
 
 				if notify {
@@ -110,6 +110,13 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output, 
 				notifier.Message("Project synced")
 			}
 
+			lipgloss.Fprintln(out, cmd.Styles.Primary.Render("project successfully updated"))
+
 			return project
 		})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

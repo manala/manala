@@ -2,18 +2,23 @@ package list
 
 import (
 	"context"
+	"io"
 	"log/slog"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	"github.com/manala/manala/internal/ui"
+	"github.com/manala/manala/cmd"
 
+	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, output ui.Output) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
 	// Flags
-	var repositoryURL, repositoryRef string
+	var (
+		repositoryURL string
+		repositoryRef string
+	)
 
 	// Command
 	command := &cobra.Command{
@@ -31,7 +36,7 @@ Example: manala list -> resulting in a recipes list display`,
 			ctx = app.WithRepositoryURL(ctx, repositoryURL)
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 
-			return run(ctx, log, api, output)
+			return run(ctx, log, api, out)
 		},
 	}
 
@@ -42,31 +47,35 @@ Example: manala list -> resulting in a recipes list display`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, output ui.Output) error {
-	// Get repository loader
+func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer) error {
+	var (
+		repository app.Repository
+		recipes    []app.Recipe
+		err        error
+	)
+
+	// Api
 	repositoryLoader := api.NewRepositoryLoader(ctx)
+	recipeLoader := api.NewRecipeLoader(ctx)
 
 	// Load repository
 	log.Info("loading repository…")
-
-	repository, err := repositoryLoader.Load("")
+	repository, err = repositoryLoader.Load("")
 	if err != nil {
 		return err
 	}
-
-	// Get recipe loader
-	recipeLoader := api.NewRecipeLoader(ctx)
 
 	// Load recipes
 	log.Info("loading recipes…")
-
-	recipes, err := recipeLoader.LoadAll(repository)
+	recipes, err = recipeLoader.LoadAll(repository)
 	if err != nil {
 		return err
 	}
 
-	return output.List(
-		"Recipes available in "+repository.URL(),
-		NewUIRecipeList(recipes),
-	)
+	for _, recipe := range recipes {
+		lipgloss.Fprintln(out, cmd.Styles.Primary.Render(recipe.Name()))
+		lipgloss.Fprintln(out, "  "+cmd.Styles.Secondary.Render(recipe.Description()))
+	}
+
+	return nil
 }
