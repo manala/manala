@@ -19,7 +19,7 @@ func TestFileSuite(t *testing.T) {
 
 func (s *FileSuite) TestLoaderHandler() {
 	s.Run("Relative", func() {
-		url := filepath.FromSlash("testdata/FileSuite/TestLoaderHandler/Relative/repository")
+		url := filepath.FromSlash("testdata/FileSuite/repository")
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -32,7 +32,7 @@ func (s *FileSuite) TestLoaderHandler() {
 	})
 
 	s.Run("Absolute", func() {
-		url := filepath.FromSlash("testdata/FileSuite/TestLoaderHandler/Absolute/repository")
+		url := filepath.FromSlash("testdata/FileSuite/repository")
 		url, _ = filepath.Abs(url)
 
 		chainMock := &repository.LoaderHandlerChainMock{}

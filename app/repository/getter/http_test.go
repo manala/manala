@@ -1,6 +1,8 @@
 package getter_test
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,10 +16,28 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type HTTPSuite struct{ suite.Suite }
+type HTTPSuite struct {
+	suite.Suite
+
+	server *httptest.Server
+}
 
 func TestHttpSuite(t *testing.T) {
 	suite.Run(t, new(HTTPSuite))
+}
+
+func (s *HTTPSuite) SetupSuite() {
+	// Server
+	mux := http.NewServeMux()
+	s.server = httptest.NewServer(mux)
+
+	mux.HandleFunc("GET /{file...}", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join("testdata", "HTTPSuite", r.PathValue("file")))
+	})
+}
+
+func (s *HTTPSuite) TearDownSuite() {
+	s.server.Close()
 }
 
 func (s *HTTPSuite) TestLoaderHandler() {
@@ -27,7 +47,7 @@ func (s *HTTPSuite) TestLoaderHandler() {
 	s.Run("Zip", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		url := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip"
+		url := s.server.URL + "/archive.zip"
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -38,16 +58,16 @@ func (s *HTTPSuite) TestLoaderHandler() {
 		s.NotNil(repository)
 		chainMock.AssertExpectations(s.T())
 
-		s.DirExists(filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97"))
+		s.DirExists(repository.Dir())
 		heredoc.EqualFile(s.T(), `
 			Hello World!
-		`, filepath.Join(cacheDir, "repositories", "5b3a694d5b3f61795c95c7540461f94ffb950b81deeb3cea08e20e97", "Hello-World-master", "README"))
+		`, filepath.Join(repository.Dir(), "Hello-World-master", "README"))
 	})
 
 	s.Run("ZipSubdirectory", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		url := "https://github.com/octocat/Hello-World/archive/refs/heads/master.zip//Hello-World-master"
+		url := s.server.URL + "/archive.zip//Hello-World-master"
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -58,9 +78,9 @@ func (s *HTTPSuite) TestLoaderHandler() {
 		s.NotNil(repository)
 		chainMock.AssertExpectations(s.T())
 
-		s.DirExists(filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8"))
+		s.DirExists(repository.Dir())
 		heredoc.EqualFile(s.T(), `
 			Hello World!
-		`, filepath.Join(cacheDir, "repositories", "e8b20dc6a839cb37051c82b0acee5e6b63fd96894a9ce12dbf548ba8", "README"))
+		`, filepath.Join(repository.Dir(), "README"))
 	})
 }

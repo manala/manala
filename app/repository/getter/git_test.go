@@ -1,6 +1,8 @@
 package getter_test
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,10 +16,28 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type GitSuite struct{ suite.Suite }
+type GitSuite struct {
+	suite.Suite
+
+	server *httptest.Server
+}
 
 func TestGitSuite(t *testing.T) {
 	suite.Run(t, new(GitSuite))
+}
+
+func (s *GitSuite) SetupSuite() {
+	// Server
+	mux := http.NewServeMux()
+	s.server = httptest.NewServer(mux)
+
+	mux.Handle("/repository.git/", http.StripPrefix("/repository.git/",
+		http.FileServer(http.Dir(filepath.FromSlash("testdata/GitSuite/repository.git"))),
+	))
+}
+
+func (s *GitSuite) TearDownSuite() {
+	s.server.Close()
 }
 
 func (s *GitSuite) TestLoaderHandler() {
@@ -27,7 +47,7 @@ func (s *GitSuite) TestLoaderHandler() {
 	s.Run("Http", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		url := "https://github.com/octocat/Hello-World.git"
+		url := s.server.URL + "/repository.git"
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -38,16 +58,16 @@ func (s *GitSuite) TestLoaderHandler() {
 		s.NotNil(repository)
 		chainMock.AssertExpectations(s.T())
 
-		s.DirExists(filepath.Join(cacheDir, "repositories", "0abe222eb5c9f101220b454d055bd5cbbb419722eddec6ad296f343f"))
+		s.DirExists(repository.Dir())
 		heredoc.EqualFile(s.T(), `
 			Hello World!
-		`, filepath.Join(cacheDir, "repositories", "0abe222eb5c9f101220b454d055bd5cbbb419722eddec6ad296f343f", "README"))
+		`, filepath.Join(repository.Dir(), "README"))
 	})
 
 	s.Run("HttpForced", func() {
 		_ = os.RemoveAll(cacheDir)
 
-		url := "git::https://github.com/octocat/Hello-World.git"
+		url := "git::" + s.server.URL + "/repository.git"
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -58,9 +78,9 @@ func (s *GitSuite) TestLoaderHandler() {
 		s.NotNil(repository)
 		chainMock.AssertExpectations(s.T())
 
-		s.DirExists(filepath.Join(cacheDir, "repositories", "fb19e43b4b91cd3024866d556a7d04f40cc66e18c5f7098b9a4af8d0"))
+		s.DirExists(repository.Dir())
 		heredoc.EqualFile(s.T(), `
 			Hello World!
-		`, filepath.Join(cacheDir, "repositories", "fb19e43b4b91cd3024866d556a7d04f40cc66e18c5f7098b9a4af8d0", "README"))
+		`, filepath.Join(repository.Dir(), "README"))
 	})
 }
