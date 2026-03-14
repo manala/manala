@@ -6,48 +6,46 @@ import (
 
 	"github.com/manala/manala/internal/ui/components"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 func (adapter *Adapter) Message(message *components.Message) {
-	renderer := adapter.errRenderer
+	style := messageStyle
 
-	style := messageStyle.New(renderer)
-
-	_, _ = renderer.Output().WriteString(
+	_, _ = lipgloss.Fprintln(adapter.err,
 		style.Render(
-			adapter.message(message, renderer),
-		) + "\n",
+			adapter.message(message),
+		),
 	)
 }
 
-func (adapter *Adapter) message(message *components.Message, renderer *lipgloss.Renderer) string {
+func (adapter *Adapter) message(message *components.Message) string {
 	// Empty message
 	if message.Message == "" {
 		return ""
 	}
 
-	var symbolStyle, attributeKeyStyle *Style
+	var symbolStyle, attributeKeyStyle lipgloss.Style
 
 	switch message.Type {
 	case components.DebugMessageType:
-		symbolStyle = debugSymbolStyle.New(renderer)
-		attributeKeyStyle = debugStyle.New(renderer)
+		symbolStyle = debugSymbolStyle
+		attributeKeyStyle = debugStyle
 	case components.InfoMessageType:
-		symbolStyle = infoSymbolStyle.New(renderer)
-		attributeKeyStyle = infoStyle.New(renderer)
+		symbolStyle = infoSymbolStyle
+		attributeKeyStyle = infoStyle
 	case components.WarnMessageType:
-		symbolStyle = warnSymbolStyle.New(renderer)
-		attributeKeyStyle = warnStyle.New(renderer)
+		symbolStyle = warnSymbolStyle
+		attributeKeyStyle = warnStyle
 	case components.ErrorMessageType:
-		symbolStyle = errorSymbolStyle.New(renderer)
-		attributeKeyStyle = errorStyle.New(renderer)
+		symbolStyle = errorSymbolStyle
+		attributeKeyStyle = errorStyle
 	}
 
-	messageStyle := messageMessageStyle.New(renderer)
-	attributesStyle := messageAttributesStyle.New(renderer)
-	attributeValueStyle := messageAttributeValueStyle.New(renderer)
-	detailsStyle := messageDetailsStyle.New(renderer)
+	messageStyle := messageMessageStyle
+	attributesStyle := messageAttributesStyle
+	attributeValueStyle := messageAttributeValueStyle
+	detailsStyle := messageDetailsStyle
 
 	// Message
 	str := messageStyle.Render(
@@ -83,7 +81,7 @@ func (adapter *Adapter) message(message *components.Message, renderer *lipgloss.
 	for _, _message := range message.Messages {
 		str = lipgloss.JoinVertical(lipgloss.Left,
 			str,
-			adapter.message(_message, renderer),
+			adapter.message(_message),
 		)
 	}
 

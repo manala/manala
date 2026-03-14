@@ -166,14 +166,12 @@ func (s *MessageSuite) Test() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			out := &bytes.Buffer{}
 			err := &bytes.Buffer{}
 
-			adapter := charm.New(nil, out, err)
+			adapter := charm.New(err)
 
 			adapter.Message(test.message)
 
-			s.Empty(out)
 			heredoc.Equal(s.T(), test.expected, err)
 		})
 	}

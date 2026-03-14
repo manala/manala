@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log/slog"
 	"os"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
 
+	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -32,7 +34,7 @@ func main() {
 	in, out, err := os.Stdin, os.Stdout, os.Stderr
 
 	// User interface
-	ui := charm.New(in, out, err)
+	ui := charm.New(err)
 
 	// Notify
 	notify := notifier.NewBeeep("Manala")

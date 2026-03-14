@@ -304,7 +304,7 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
-	ui := charm.New(nil, stdOut, stdErr)
+	ui := charm.New(stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
 	command := cmdWatch.NewCommand(

@@ -2,42 +2,8 @@ package option
 
 import (
 	"github.com/manala/manala/internal/json"
-	"github.com/manala/manala/internal/path"
-	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/ui/components"
-	"github.com/manala/manala/internal/validator"
 )
-
-func NewSelectOptionUIFormField(option *SelectOption, vars *map[string]any) (components.FormField, error) {
-	// Field
-	field, err := components.NewFormFieldSelect(
-		option.Name(),
-		option.Label(),
-		option.Help(),
-		path.NewAccessor(
-			option.Path(),
-			vars,
-		),
-		validator.New(
-			validator.WithValidators(
-				schema.NewValidator(option.Schema()),
-				option,
-			),
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	// Options
-	field.Options = make([]*components.FormFieldSelectOption, len(option.Values))
-	for i := range option.Values {
-		field.Options[i] = components.NewFormFieldSelectOption(option.Values[i])
-	}
-
-	return field, nil
-}
 
 type SelectOption struct {
 	*option

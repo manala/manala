@@ -499,7 +499,7 @@ func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buf
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
-	ui := charm.New(nil, stdOut, stdErr)
+	ui := charm.New(stdErr)
 	log := slog.New(log.NewSlogHandler(ui))
 
 	command := cmdUpdate.NewCommand(

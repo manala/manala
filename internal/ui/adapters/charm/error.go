@@ -1,25 +1,27 @@
 package charm
 
 import (
+	"os"
+
 	"github.com/manala/manala/internal/ui/components"
 
-	"github.com/muesli/termenv"
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/colorprofile"
 )
 
 func (adapter *Adapter) Error(err error) {
-	renderer := adapter.errRenderer
+	style := messageStyle
 
-	style := messageStyle.New(renderer)
+	profile := colorprofile.Detect(adapter.err, os.Environ())
 
-	_, _ = renderer.Output().WriteString(
+	_, _ = lipgloss.Fprintln(adapter.err,
 		style.Render(
 			adapter.message(
 				components.MessageFromError(
 					err,
-					renderer.ColorProfile() != termenv.Ascii,
+					profile >= colorprofile.ANSI,
 				),
-				renderer,
 			),
-		) + "\n",
+		),
 	)
 }
