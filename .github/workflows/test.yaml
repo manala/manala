@@ -21,14 +21,10 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.MANALA_GO_VERSION }}
-          # See: https://github.com/golangci/golangci-lint-action/pull/704
-          cache: false
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
           version: v${{ env.MANALA_GOLANGCI_LINT_VERSION }}
-          # See: https://github.com/golangci/golangci-lint-action/issues/297
-          args: --verbose --timeout 3m
 
   test:
     name: Test
