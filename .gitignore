@@ -1,3 +1,11 @@
+# System
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+
+# Project
 dist/
 
 # Zensical
