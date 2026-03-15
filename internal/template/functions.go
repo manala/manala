@@ -26,7 +26,7 @@ func functionToYaml(value any) string {
 	}
 
 	// Root sequences should not be indented
-	// see: https://github.com/goccy/go-yaml/issues/287
+	// see: https://github.com/goccy/go-yaml/pull/855
 	if reflect.ValueOf(value).Kind() != reflect.Slice {
 		marshalOptions = append(marshalOptions, goYaml.IndentSequence(true))
 	}

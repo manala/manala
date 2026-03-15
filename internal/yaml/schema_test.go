@@ -8,6 +8,7 @@ import (
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
 
+	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -433,7 +434,10 @@ node:
 		s.Run(test.test, func() {
 			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
 
-			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(test.schema)
+			s.Require().IsType((*goYamlAst.MappingNode)(nil), node)
+			s.Require().Len(node.(*goYamlAst.MappingNode).Values, 1)
+
+			err := yaml.NewNodeTypeSchemaInferrer(node.(*goYamlAst.MappingNode).Values[0]).Infer(test.schema)
 
 			s.Require().NoError(err)
 			s.Equal(test.expected, test.schema)
