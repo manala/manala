@@ -3,8 +3,6 @@
   "extends": [
     "config:recommended"
   ],
-  "onboarding": false,
-  "requireConfig": "optional",
   "packageRules": [
     {
       "matchManagers": ["gomod"],
