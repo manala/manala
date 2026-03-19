@@ -1,0 +1,41 @@
+name: Renovate
+
+on:
+  schedule:
+    # At 06:00 on Monday
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      log_level:
+        description: 'Log Level'
+        required: false
+        type: choice
+        options:
+          - info
+          - debug
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+
+  renovate:
+    name: Renovate
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.MANALA_RENOVATE_APP_ID }}
+          private-key: ${{ secrets.MANALA_RENOVATE_APP_PRIVATE_KEY }}
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Renovate
+        uses: renovatebot/github-action@v46
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          configurationFile: renovate.json
+        env:
+          LOG_LEVEL: ${{ inputs.log_level || 'info' }}
