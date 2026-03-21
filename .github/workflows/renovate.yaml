@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       log_level:
-        description: 'Log Level'
+        description: Log Level
         required: false
         type: choice
         options:
