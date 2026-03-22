@@ -175,7 +175,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "Text",
 			data:          `{"label": "Foo", "name": "bar", "type": "text"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &option.TextOption{},
+			expectedType:  (*option.TextOption)(nil),
 			expectedLabel: "Foo",
 			expectedName:  "bar",
 		},
@@ -183,7 +183,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "TextNoName",
 			data:          `{"label": "Foo Bar", "type": "text"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &option.TextOption{},
+			expectedType:  (*option.TextOption)(nil),
 			expectedLabel: "Foo Bar",
 			expectedName:  "foo-bar",
 		},
@@ -191,7 +191,7 @@ func (s *Suite) TestReadFrom() {
 			test:          "TextTypeImplicit",
 			data:          `{"label": "Foo", "name": "bar"}`,
 			schema:        schema.Schema{"type": "string"},
-			expectedType:  &option.TextOption{},
+			expectedType:  (*option.TextOption)(nil),
 			expectedLabel: "Foo",
 			expectedName:  "bar",
 		},
@@ -203,7 +203,7 @@ func (s *Suite) TestReadFrom() {
 			option, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Require().NoError(err)
-			s.IsType(test.expectedType, option)
+			s.Require().IsType(test.expectedType, option)
 			s.Equal(test.expectedLabel, option.Label())
 			s.Equal(test.expectedName, option.Name())
 		})

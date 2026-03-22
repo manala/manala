@@ -37,7 +37,7 @@ func (s *NumberSuite) TestType() {
 		s.Run(test.test, func() {
 			number, ok := json.NumberType(test.value)
 
-			s.IsType(json.Number{}, number)
+			s.Require().IsType(json.Number{}, number)
 			s.Equal(test.expected, ok)
 		})
 	}
