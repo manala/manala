@@ -175,8 +175,8 @@ func (s *ExtractorSuite) TestRootMap() {
 
 			s.Require().NoError(err)
 
-			s.IsType(test.expectedSubject, subjectNode)
-			s.IsType(test.expectedNode, node)
+			s.Require().IsType(test.expectedSubject, subjectNode)
+			s.Require().IsType(test.expectedNode, node)
 		})
 	}
 }
