@@ -835,7 +835,7 @@ func (s *Suite) TestOptions() {
 
 	s.Require().NoError(err)
 
-	s.Len(options, 13)
+	s.Require().Len(options, 13)
 
 	s.Require().IsType((*option.TextOption)(nil), options[0])
 	s.Equal("string", options[0].Name())

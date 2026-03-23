@@ -53,7 +53,7 @@ func Equal(t *testing.T, assertion *Assertion, err error) {
 			if assertion.Errors == nil {
 				assert.Fail(t, "Error contains errors")
 			} else {
-				assert.Len(t, _errs, len(assertion.Errors), "Incorrect error's errors length")
+				require.Len(t, _errs, len(assertion.Errors), "Incorrect error's errors length")
 
 				for i, _assert := range assertion.Errors {
 					Equal(t, _assert, _errs[i])

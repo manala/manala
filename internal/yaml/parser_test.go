@@ -322,7 +322,7 @@ func (s *ParserSuite) TestAnchors() {
 
 		mappingAnchorNode := node.(*goYamlAst.MappingNode).Values[2]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAnchorNode.Value)
-		s.Len(mappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
+		s.Require().Len(mappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
 		mappingValueAliasEmptyAnchorNode := node.(*goYamlAst.MappingNode).Values[3]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasEmptyAnchorNode.Value)
@@ -333,18 +333,18 @@ func (s *ParserSuite) TestAnchors() {
 
 		mappingValueAliasMappingAnchorNode := node.(*goYamlAst.MappingNode).Values[5]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingAnchorNode.Value)
-		s.Len(mappingValueAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
+		s.Require().Len(mappingValueAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
 		mappingAliasEmptyAnchorNode := node.(*goYamlAst.MappingNode).Values[6]
 		s.Require().IsType((*goYamlAst.MappingValueNode)(nil), mappingAliasEmptyAnchorNode.Value)
 
 		mappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[7]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAliasMappingValueAnchorNode.Value)
-		s.Len(mappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
+		s.Require().Len(mappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
 		mappingValueAliasMappingNode := node.(*goYamlAst.MappingNode).Values[8]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingNode.Value)
-		s.Len(mappingValueAliasMappingNode.Value.(*goYamlAst.MappingNode).Values, 3)
+		s.Require().Len(mappingValueAliasMappingNode.Value.(*goYamlAst.MappingNode).Values, 3)
 	})
 	s.Run("MergeKeysDuplicated", func() {
 		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/MergeKeysDuplicated")
@@ -360,12 +360,12 @@ func (s *ParserSuite) TestAnchors() {
 
 		multipleMappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[3]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), multipleMappingAliasMappingValueAnchorNode.Value)
-		s.Len(multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
+		s.Require().Len(multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values[0].Value.(*goYamlAst.StringNode).Value)
 
 		mappingAliasMappingAnchorNode := node.(*goYamlAst.MappingNode).Values[4]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAliasMappingAnchorNode.Value)
-		s.Len(mappingAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 3)
+		s.Require().Len(mappingAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 3)
 		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values[1].Value.(*goYamlAst.StringNode).Value)
 	})
 }
