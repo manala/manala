@@ -18,12 +18,12 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/hashicorp/go-getter/s3/v2 v2.2.3
 	github.com/hashicorp/go-getter/v2 v2.2.3
-	github.com/ohler55/ojg v1.28.0
+	github.com/ohler55/ojg v1.28.1
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/image v0.37.0
+	golang.org/x/image v0.38.0
 	golang.org/x/sync v0.20.0
 )
 
