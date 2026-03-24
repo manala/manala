@@ -88,22 +88,22 @@ func (s *MessageSuite) Test() {
 				Message: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
 				Attributes: []*components.MessageAttribute{
 					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
-					{Key: "foo", Value: "bar"},
+					{Key: "foo", Value: "baz"},
+					{Key: "foo", Value: "qux"},
+					{Key: "foo", Value: "quux"},
+					{Key: "foo", Value: "corge"},
+					{Key: "foo", Value: "grault"},
+					{Key: "foo", Value: "garply"},
+					{Key: "foo", Value: "waldo"},
+					{Key: "foo", Value: "fred"},
+					{Key: "foo", Value: "plugh"},
+					{Key: "foo", Value: "xyzzy"},
+					{Key: "foo", Value: "thud"},
 				},
 				Details: "Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.",
 			},
 			expected: `
-				 • Lorem ipsum dolor sit amet,      foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar foo=bar
+				 • Lorem ipsum dolor sit amet,      foo=bar foo=baz foo=qux foo=quux foo=corge foo=grault foo=garply foo=waldo foo=fred foo=plugh foo=xyzzy foo=thud
 				   consectetur adipiscing elit.
 
 				   Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.

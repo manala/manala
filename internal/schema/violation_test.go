@@ -24,20 +24,20 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 	invalidTypeError := &gojsonschema.InvalidTypeError{}
 	invalidTypeError.SetContext(gojsonschema.NewJsonContext(gojsonschema.STRING_CONTEXT_ROOT, nil))
 	invalidTypeError.SetDetails(gojsonschema.ErrorDetails{
-		"expected": "expected",
-		"given":    "given",
+		"expected": "foo",
+		"given":    "bar",
 	})
 
 	requiredError := &gojsonschema.RequiredError{}
 	requiredError.SetContext(gojsonschema.NewJsonContext(gojsonschema.STRING_CONTEXT_ROOT, nil))
 	requiredError.SetDetails(gojsonschema.ErrorDetails{
-		"property": "property",
+		"property": "foo",
 	})
 
 	additionalPropertyNotAllowedError := &gojsonschema.AdditionalPropertyNotAllowedError{}
 	additionalPropertyNotAllowedError.SetContext(gojsonschema.NewJsonContext(gojsonschema.STRING_CONTEXT_ROOT, nil))
 	additionalPropertyNotAllowedError.SetDetails(gojsonschema.ErrorDetails{
-		"property": "property",
+		"property": "foo",
 	})
 
 	tests := []struct {
@@ -62,11 +62,11 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 			resultError: invalidTypeError,
 			expected: validator.Violation{
 				Type:              validator.InvalidType,
-				Message:           "invalid type, expected expected, actual given",
+				Message:           "invalid type, expected foo, actual bar",
 				StructuredMessage: "invalid type",
 				Arguments: []any{
-					"expected", "expected",
-					"actual", "given",
+					"expected", "foo",
+					"actual", "bar",
 				},
 				Path:     path.Path(""),
 				Property: "",
@@ -77,11 +77,11 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 			resultError: requiredError,
 			expected: validator.Violation{
 				Type:              validator.Required,
-				Message:           "missing property property",
+				Message:           "missing foo property",
 				StructuredMessage: "missing property",
 				Arguments:         []any(nil),
 				Path:              path.Path(""),
-				Property:          "property",
+				Property:          "foo",
 			},
 		},
 		{
@@ -89,10 +89,10 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 			resultError: additionalPropertyNotAllowedError,
 			expected: validator.Violation{
 				Type:              validator.AdditionalPropertyNotAllowed,
-				Message:           "additional property property is not allowed",
+				Message:           "additional property foo is not allowed",
 				StructuredMessage: "additional property is not allowed",
 				Arguments:         []any(nil),
-				Path:              path.Path("property"),
+				Path:              path.Path("foo"),
 				Property:          "",
 			},
 		},
