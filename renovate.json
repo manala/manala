@@ -1,29 +1,25 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "schedule:weekly"
   ],
+  "labels": ["renovate"],
   "packageRules": [
-    {
-      "matchManagers": ["gomod"],
-      "groupName": "dependencies",
-      "labels": ["renovate"]
-    },
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions",
-      "labels": ["renovate"]
+      "commitMessageTopic": "{{groupName}}"
     },
     {
-      "matchManagers": ["github-actions"],
-      "matchDatasources": ["github-runners"],
-      "groupName": "github runners",
-      "labels": ["renovate"]
-    },
-    {
-      "matchManagers": ["custom.regex"],
+      "matchDepTypes": ["components"],
       "groupName": "components",
-      "labels": ["renovate"]
+      "commitMessageTopic": "{{groupName}}"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "groupName": "dependencies",
+      "commitMessageTopic": "{{groupName}}"
     }
   ],
   "customManagers": [
@@ -32,6 +28,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_GO_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "go",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "golang-version"
     },
     {
@@ -39,6 +36,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_GORELEASER_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "goreleaser/goreleaser",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
     },
@@ -47,6 +45,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_GOLANGCI_LINT_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "golangci/golangci-lint",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
     },
@@ -55,6 +54,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_GOTESTSUM_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "gotestyourself/gotestsum",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
     },
@@ -63,6 +63,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_ZENSICAL_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "zensical/zensical",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
     },
@@ -71,6 +72,7 @@
       "managerFilePatterns": ["/^\\.env$/"],
       "matchStrings": ["MANALA_VHS_VERSION=(?<currentValue>\\S+)"],
       "depNameTemplate": "charmbracelet/vhs",
+      "depTypeTemplate": "components",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
     }
