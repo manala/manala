@@ -56,12 +56,12 @@ func (s *ErrorsSuite) TestIsNotDetected() {
 }
 
 // Mimic an aws sdk error to avoid direct dependency on it.
-type awsErrorTest struct{}
+type awsError struct{}
 
-func (awsErrorTest) Error() string   { return "error" }
-func (awsErrorTest) Code() string    { return "code" }
-func (awsErrorTest) Message() string { return "message" }
-func (awsErrorTest) OrigErr() error  { return nil }
+func (awsError) Error() string   { return "error" }
+func (awsError) Code() string    { return "code" }
+func (awsError) Message() string { return "message" }
+func (awsError) OrigErr() error  { return nil }
 
 func (s *ErrorsSuite) TestError() {
 	tests := []struct {
@@ -88,7 +88,7 @@ func (s *ErrorsSuite) TestError() {
 		},
 		{
 			test: "Aws",
-			err:  awsErrorTest{},
+			err:  awsError{},
 			expected: &serrors.Assertion{
 				Message: "aws error",
 				Details: "error",
