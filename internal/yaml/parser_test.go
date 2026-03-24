@@ -29,6 +29,41 @@ func (s *ParserSuite) TestEmpty() {
 	}, err)
 }
 
+func (s *ParserSuite) TestInvalids() {
+	tests := []struct {
+		test     string
+		expected *serrors.Assertion
+	}{
+		{
+			test: "At",
+			expected: &serrors.Assertion{
+				Message: "'@' is a reserved character",
+				Arguments: []any{
+					"line", 1,
+					"column", 1,
+				},
+				Details: `
+					>  1 | @
+					       ^
+				`,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			dir := filepath.FromSlash("testdata/ParserSuite/TestInvalids/" + test.test)
+
+			parser := yaml.NewParser()
+			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+
+			s.Nil(node)
+
+			serrors.Equal(s.T(), test.expected, err)
+		})
+	}
+}
+
 func (s *ParserSuite) TestMultipleDocuments() {
 	dir := filepath.FromSlash("testdata/ParserSuite/TestMultipleDocuments")
 
@@ -51,27 +86,6 @@ func (s *ParserSuite) TestMultipleDocuments() {
 			       ^
 		`,
 	}, err)
-}
-
-func (s *ParserSuite) TestMappingComments() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingComments")
-
-	parser := yaml.NewParser(yaml.WithComments())
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
-
-	s.Require().NoError(err)
-
-	emptyNode := node.(*goYamlAst.MappingNode).Values[0]
-	s.Equal("# Empty", emptyNode.GetComment().String())
-
-	mappingValueNode := node.(*goYamlAst.MappingNode).Values[1]
-	s.Equal("# Mapping Value", mappingValueNode.GetComment().String())
-	s.Equal("# Mapping Value Foo", mappingValueNode.Value.GetComment().String())
-
-	mappingNode := node.(*goYamlAst.MappingNode).Values[2]
-	s.Equal("# Mapping", mappingNode.GetComment().String())
-	s.Equal("# Mapping Foo", mappingNode.Value.(*goYamlAst.MappingNode).Values[0].GetComment().String())
-	s.Equal("# Mapping Bar", mappingNode.Value.(*goYamlAst.MappingNode).Values[1].GetComment().String())
 }
 
 func (s *ParserSuite) TestIrregularMapKeys() {
@@ -181,13 +195,16 @@ func (s *ParserSuite) TestMappingKey() {
 
 	s.Require().NoError(err)
 
-	s.Require().IsType((*goYamlAst.MappingValueNode)(nil), node)
+	s.Require().IsType((*goYamlAst.MappingNode)(nil), node)
+	s.Require().Len(node.(*goYamlAst.MappingNode).Values, 1)
 
-	keyNode := node.(*goYamlAst.MappingValueNode).Key
-	s.Require().IsType((*goYamlAst.StringNode)(nil), keyNode)
-	s.Equal("foo", keyNode.(*goYamlAst.StringNode).Value)
+	keyNode := node.(*goYamlAst.MappingNode).Values[0].Key
+	s.Require().IsType((*goYamlAst.MappingKeyNode)(nil), keyNode)
+	keyNodeValue := keyNode.(*goYamlAst.MappingKeyNode).Value
+	s.Require().IsType((*goYamlAst.StringNode)(nil), keyNodeValue)
+	s.Equal("foo", keyNodeValue.(*goYamlAst.StringNode).Value)
 
-	valueNode := node.(*goYamlAst.MappingValueNode).Value
+	valueNode := node.(*goYamlAst.MappingNode).Values[0].Value
 	s.Require().IsType((*goYamlAst.StringNode)(nil), valueNode)
 	s.Equal("bar", valueNode.(*goYamlAst.StringNode).Value)
 }
@@ -204,54 +221,13 @@ func (s *ParserSuite) TestIrregularMappingKey() {
 		Message: "irregular map key",
 		Arguments: []any{
 			"line", 1,
-			"column", 6,
+			"column", 1,
 		},
 		Details: `
 			>  1 | ? 123: bar
-			            ^
+			       ^
 		`,
 	}, err)
-}
-
-func (s *ParserSuite) TestLiteralString() {
-	tests := []struct {
-		test     string
-		expected string
-	}{
-		{
-			test:     "SingleTrailingNoStrip",
-			expected: "bar\n",
-		},
-		{
-			test:     "SingleTrailingStrip",
-			expected: "bar",
-		},
-		{
-			test:     "MultipleTrailingsNoStrip",
-			expected: "bar\n",
-		},
-		{
-			test:     "MultipleTrailingsStrip",
-			expected: "bar",
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ParserSuite/TestLiteralString/" + test.test)
-
-			parser := yaml.NewParser()
-			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
-
-			s.Require().IsType((*goYamlAst.MappingValueNode)(nil), node)
-			value := node.(*goYamlAst.MappingValueNode).
-				Value.(*goYamlAst.LiteralNode).
-				Value.Value
-
-			s.Require().NoError(err)
-			s.Equal(test.expected, value)
-		})
-	}
 }
 
 func (s *ParserSuite) TestTags() {
@@ -318,7 +294,8 @@ func (s *ParserSuite) TestAnchors() {
 		s.Empty(emptyAnchorNode.Value.(*goYamlAst.MappingNode).Values)
 
 		mappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[1]
-		s.Require().IsType((*goYamlAst.MappingValueNode)(nil), mappingValueAnchorNode.Value)
+		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAnchorNode.Value)
+		s.Require().Len(mappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 1)
 
 		mappingAnchorNode := node.(*goYamlAst.MappingNode).Values[2]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAnchorNode.Value)
@@ -329,14 +306,16 @@ func (s *ParserSuite) TestAnchors() {
 		s.Empty(mappingValueAliasEmptyAnchorNode.Value.(*goYamlAst.MappingNode).Values)
 
 		mappingValueAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[4]
-		s.Require().IsType((*goYamlAst.MappingValueNode)(nil), mappingValueAliasMappingValueAnchorNode.Value)
+		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingValueAnchorNode.Value)
+		s.Require().Len(mappingValueAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 1)
 
 		mappingValueAliasMappingAnchorNode := node.(*goYamlAst.MappingNode).Values[5]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingValueAliasMappingAnchorNode.Value)
 		s.Require().Len(mappingValueAliasMappingAnchorNode.Value.(*goYamlAst.MappingNode).Values, 2)
 
 		mappingAliasEmptyAnchorNode := node.(*goYamlAst.MappingNode).Values[6]
-		s.Require().IsType((*goYamlAst.MappingValueNode)(nil), mappingAliasEmptyAnchorNode.Value)
+		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAliasEmptyAnchorNode.Value)
+		s.Require().Len(mappingAliasEmptyAnchorNode.Value.(*goYamlAst.MappingNode).Values, 1)
 
 		mappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[7]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), mappingAliasMappingValueAnchorNode.Value)
@@ -355,8 +334,9 @@ func (s *ParserSuite) TestAnchors() {
 		s.Require().NoError(err)
 
 		singleMappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[2]
-		s.Require().IsType((*goYamlAst.MappingValueNode)(nil), singleMappingAliasMappingValueAnchorNode.Value)
-		s.Equal("bar", singleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingValueNode).Value.(*goYamlAst.StringNode).Value)
+		s.Require().IsType((*goYamlAst.MappingNode)(nil), singleMappingAliasMappingValueAnchorNode.Value)
+		s.Require().Len(singleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values, 1)
+		s.Equal("bar", singleMappingAliasMappingValueAnchorNode.Value.(*goYamlAst.MappingNode).Values[0].Value.(*goYamlAst.StringNode).Value)
 
 		multipleMappingAliasMappingValueAnchorNode := node.(*goYamlAst.MappingNode).Values[3]
 		s.Require().IsType((*goYamlAst.MappingNode)(nil), multipleMappingAliasMappingValueAnchorNode.Value)

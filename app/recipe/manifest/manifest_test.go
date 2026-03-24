@@ -54,13 +54,13 @@ func (s *Suite) TestReadFromErrors() {
 				Message: "irregular recipe manifest",
 				Errors: []*serrors.Assertion{
 					{
-						Message: "unexpected mapping key",
+						Message: "'@' is a reserved character",
 						Arguments: []any{
 							"line", 1,
 							"column", 1,
 						},
 						Details: `
-							>  1 | ::
+							>  1 | @
 							       ^
 						`,
 					},
@@ -98,7 +98,7 @@ func (s *Suite) TestReadFromErrors() {
 							"column", 2,
 						},
 						Details: `
-							>  1 | 0: bar
+							>  1 | 0: foo
 							        ^
 						`,
 					},
@@ -115,7 +115,13 @@ func (s *Suite) TestReadFromErrors() {
 						Arguments: []any{
 							"expected", "object",
 							"actual", "string",
+							"line", 1,
+							"column", 1,
 						},
+						Details: `
+							>  1 | foo
+							       ^
+						`,
 					},
 				},
 			},
@@ -130,7 +136,13 @@ func (s *Suite) TestReadFromErrors() {
 						Message: "missing manala property",
 						Arguments: []any{
 							"property", "manala",
+							"line", 1,
+							"column", 4,
 						},
+						Details: `
+							>  1 | foo: bar
+							          ^
+						`,
 					},
 				},
 			},

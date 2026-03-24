@@ -2,7 +2,6 @@ package yaml
 
 import (
 	"os"
-	"strings"
 
 	"github.com/manala/manala/internal/serrors"
 
@@ -56,7 +55,7 @@ func (parser *Parser) ParseBytes(bytes []byte) (goYamlAst.Node, error) {
 	}
 
 	// File must not be empty...
-	if len(file.Docs) == 0 {
+	if len(file.Docs) == 0 || file.Docs[0].Body == nil {
 		return nil, serrors.New("empty yaml file")
 	}
 
@@ -82,46 +81,33 @@ func (parser *Parser) ParseBytes(bytes []byte) (goYamlAst.Node, error) {
 }
 
 func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
-	// Comment of the first MappingValueNode is set on its MappingNode.
-	// Work around by manually move it.
-	// See: https://github.com/goccy/go-yaml/issues/311
-	if parser.comments {
-		if n, ok := node.(*goYamlAst.MappingNode); ok {
-			if len(n.Values) > 0 && n.Comment != nil {
-				n.Values[0].Comment = n.Comment
-				n.Comment = nil
-			}
-		}
-	}
-
-	// Irregular map keys
-	if n, ok := node.(*goYamlAst.MappingValueNode); ok {
-		if _, ok := n.Key.(*goYamlAst.MergeKeyNode); ok {
-			return parser
-		}
-
-		if _, ok := n.Key.(*goYamlAst.StringNode); ok {
-			return parser
-		}
-
-		parser.err = NewNodeError("irregular map key", node)
-
-		return nil
-	}
-
-	// Remove literal string's trailing new lines pollution
-	// See: https://github.com/goccy/go-yaml/issues/406
-	if n, ok := node.(*goYamlAst.LiteralNode); ok {
-		if n.Start.Value == "|" {
-			n.Value.Value = strings.TrimRight(n.Value.Value, "\n") + "\n"
-		}
-	}
-
 	switch n := node.(type) {
 	case *goYamlAst.AnchorNode:
 		// Store anchors for further resolution
 		anchorName := n.Name.GetToken().Value
 		parser.anchors[anchorName] = n.Value
+		return parser
+	case *goYamlAst.MappingValueNode:
+		switch n.Key.(type) {
+		case
+			*goYamlAst.MergeKeyNode,
+			*goYamlAst.StringNode,
+			*goYamlAst.MappingKeyNode:
+			return parser
+		}
+
+		parser.err = NewNodeError("irregular map key", n)
+		return nil
+	case *goYamlAst.MappingKeyNode:
+		switch n.Value.(type) {
+		case
+			*goYamlAst.MergeKeyNode,
+			*goYamlAst.StringNode:
+			return parser
+		}
+
+		parser.err = NewNodeError("irregular map key", n)
+		return nil
 	case
 		// Scalars
 		*goYamlAst.NullNode,
@@ -130,40 +116,28 @@ func (parser *Parser) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		*goYamlAst.StringNode, *goYamlAst.LiteralNode,
 		*goYamlAst.BoolNode,
 		// Maps
-		*goYamlAst.MappingKeyNode,
 		goYamlAst.MapNode,
+		// Tags
+		*goYamlAst.TagNode,
 		// Arrays
 		goYamlAst.ArrayNode,
 		// Aliases
 		*goYamlAst.AliasNode, *goYamlAst.MergeKeyNode,
-		// Tags
-		*goYamlAst.TagNode,
 		// Comments
 		*goYamlAst.CommentGroupNode:
-		// ¯\_(ツ)_/¯
-	default:
-		// Irregular types
-		parser.err = NewNodeError("irregular type", node)
-
-		return nil
+		return parser
 	}
 
-	return parser
+	parser.err = NewNodeError("irregular type", node)
+	return nil
 }
 
 func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 	switch n := node.(type) {
-	case goYamlAst.MapNode:
-		values := make([]*goYamlAst.MappingValueNode, 0)
-		if m, ok := n.(*goYamlAst.MappingNode); ok {
-			values = m.Values
-		} else {
-			values = append(values, n.(*goYamlAst.MappingValueNode))
-		}
-
+	case *goYamlAst.MappingNode:
 		deduplicatedValues := make([]*goYamlAst.MappingValueNode, 0)
 
-		for _, v := range values {
+		for _, v := range n.Values {
 			// Merge values
 			mergedValues := make([]*goYamlAst.MappingValueNode, 0)
 
@@ -180,8 +154,6 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 					switch a := anchor.(type) {
 					case *goYamlAst.MappingNode:
 						mergedValues = a.Values
-					case *goYamlAst.MappingValueNode:
-						mergedValues = append(mergedValues, a)
 					default:
 						return nil, NewNodeError("anchor must be a map", anchor).
 							WithArguments("anchor", alias)
@@ -215,24 +187,9 @@ func (parser *Parser) resolve(node goYamlAst.Node) (goYamlAst.Node, error) {
 			}
 		}
 
-		// Return either MappingValue or Mapping node,
-		// depending on deduplicated values number
-		if len(deduplicatedValues) == 1 {
-			return deduplicatedValues[0], nil
-		}
+		n.Values = deduplicatedValues
 
-		if m, ok := n.(*goYamlAst.MappingNode); ok {
-			m.Values = deduplicatedValues
-
-			return m, nil
-		}
-
-		m := &goYamlAst.MappingNode{
-			BaseNode: &goYamlAst.BaseNode{},
-		}
-		m.Values = deduplicatedValues
-
-		return m, nil
+		return n, nil
 	case *goYamlAst.TagNode:
 		return parser.resolve(n.Value)
 	case *goYamlAst.MappingKeyNode:

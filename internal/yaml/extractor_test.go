@@ -123,7 +123,7 @@ func (s *ExtractorSuite) TestRootMap() {
 		},
 		{
 			test:            "SingleSingle",
-			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
 			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
@@ -134,17 +134,17 @@ func (s *ExtractorSuite) TestRootMap() {
 		{
 			test:            "CoupleEmpty",
 			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
 			test:            "CoupleSingle",
-			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
-			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
 			test:            "CoupleMultiple",
 			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingValueNode)(nil),
+			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{
 			test:            "MultipleEmpty",
@@ -153,7 +153,7 @@ func (s *ExtractorSuite) TestRootMap() {
 		},
 		{
 			test:            "MultipleSingle",
-			expectedSubject: (*goYamlAst.MappingValueNode)(nil),
+			expectedSubject: (*goYamlAst.MappingNode)(nil),
 			expectedNode:    (*goYamlAst.MappingNode)(nil),
 		},
 		{

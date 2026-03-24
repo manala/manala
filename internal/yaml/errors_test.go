@@ -36,14 +36,14 @@ func (s *ErrorsSuite) Test() {
 			test: "Formatted",
 			err:  err,
 			expected: &serrors.Assertion{
-				Message: "unexpected anchor. anchor value is undefined",
+				Message: "undefined anchor value",
 				Arguments: []any{
 					"line", 1,
-					"column", 2,
+					"column", 1,
 				},
 				Details: `
 					>  1 | &foo
-					        ^
+					       ^
 				`,
 			},
 		},

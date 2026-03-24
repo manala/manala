@@ -146,7 +146,7 @@ func (s *FunctionsSuite) TestToYaml() {
 		content := s.execute(`{{ . | toYaml }}`, `'single' "double"`)
 
 		heredoc.Equal(s.T(),
-			`'\'single\' "double"'`,
+			`'''single'' "double"'`,
 			content,
 		)
 	})
@@ -160,8 +160,8 @@ bar\baz
 
 		heredoc.Equal(s.T(), `
 			scalar: |
-			  foo
-			  bar\baz`,
+			    foo
+			    bar\baz`,
 			content,
 		)
 	})
