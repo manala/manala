@@ -9,17 +9,14 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions",
-      "commitMessageTopic": "{{groupName}}"
     },
     {
       "matchDepTypes": ["components"],
       "groupName": "components",
-      "commitMessageTopic": "{{groupName}}"
     },
     {
       "matchManagers": ["gomod"],
       "groupName": "dependencies",
-      "commitMessageTopic": "{{groupName}}"
     }
   ],
   "customManagers": [
