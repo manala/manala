@@ -2,7 +2,7 @@ package sync
 
 import (
 	"bytes"
-	"crypto/sha1"
+	"crypto/sha256"
 	"errors"
 	"io"
 	"log/slog"
@@ -179,7 +179,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 		if node.Dst.IsExist {
 			// Get template hash
-			hash := sha1.New()
+			hash := sha256.New()
 			if _, err := io.Copy(hash, buffer); err != nil {
 				return err
 			}
@@ -199,7 +199,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 		if node.Dst.IsExist {
 			// Get source hash
-			hash := sha1.New()
+			hash := sha256.New()
 			if _, err := io.Copy(hash, srcFile); err != nil {
 				return err
 			}
@@ -380,7 +380,7 @@ func newNode(srcDir, src, dstDir, dst string, templateProvider template.Provider
 
 			defer file.Close()
 
-			hash := sha1.New()
+			hash := sha256.New()
 			if _, err := io.Copy(hash, file); err != nil {
 				return nil, err
 			}
