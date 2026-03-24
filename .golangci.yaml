@@ -8,21 +8,14 @@ linters:
   disable:
     - cyclop
     - depguard
-    - dupword
     - err113
-    - errcheck
-    - errname
-    - errorlint
     - exhaustruct
     - forcetypeassert
     - funlen
     - gochecknoglobals
     - gochecknoinits
     - gocognit
-    - goconst
     - gocyclo
-    - gosec
-    - govet
     - interfacebloat
     - ireturn
     - lll
@@ -30,17 +23,44 @@ linters:
     - mnd
     - nestif
     - nlreturn
-    - noctx
     - noinlineerr
     - paralleltest
     - recvcheck
-    - revive
-    - staticcheck
-    - testifylint
     - varnamelen
     - wrapcheck
     - wsl
     - wsl_v5
+  settings:
+    errcheck:
+      exclude-functions:
+        - (*os.File).Close
+        - (*github.com/fsnotify/fsnotify.Watcher).Close
+        - charm.land/lipgloss/v2.Fprintln
+    errorlint:
+      asserts: false
+      comparison: false
+    goconst:
+      ignore-string-values:
+        - foo
+        - bar
+        - baz
+    gosec:
+      excludes:
+        - G104
+        - G301
+        - G304
+        - G306
+        - G404
+    govet:
+      disable:
+        - stdmethods
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+    testifylint:
+      disable:
+        - error-is-as
 
 formatters:
   enable:
