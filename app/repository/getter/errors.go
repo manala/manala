@@ -36,7 +36,7 @@ func NewError(err error) serrors.Error {
 	} else
 	// Aws error
 	if err, ok := err.(awsError); ok {
-		arguments := []any{}
+		var arguments []any
 		if code := err.Code(); code != "" {
 			arguments = append(arguments, "code", code)
 		}

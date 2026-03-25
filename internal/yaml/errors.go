@@ -13,8 +13,8 @@ import (
 var errorRegex = regexp.MustCompile(`(?s)^(?:\x1b\[91m)?(?:\[(?P<line>\d+):(?P<column>\d+)] )?(?P<message>[^\n]*)(?:\x1b\[0m)?(?:\n(?P<details>.*))?$`)
 
 func NewError(err error) serrors.Error {
+	var arguments []any
 	message := err.Error()
-	arguments := []any{}
 
 	str := goYaml.FormatError(err, false, false)
 	if matches := errorRegex.FindStringSubmatch(str); matches != nil {

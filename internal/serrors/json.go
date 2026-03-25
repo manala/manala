@@ -5,8 +5,8 @@ import (
 )
 
 func NewJSON(err error) Error {
+	var arguments []any
 	message := err.Error()
-	arguments := []any{}
 
 	switch err := err.(type) {
 	case *json.SyntaxError:

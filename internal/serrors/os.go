@@ -6,8 +6,8 @@ import (
 )
 
 func NewOs(err error) Error {
+	var arguments []any
 	message := err.Error()
-	arguments := []any{}
 
 	var (
 		_pathError    *os.PathError
