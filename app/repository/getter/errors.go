@@ -7,25 +7,18 @@ import (
 	"github.com/manala/manala/internal/serrors"
 )
 
-// 1: error
-var detectErrorRegex = regexp.MustCompile(`(?s)^error downloading '(.*)'$`)
+var detectErrorRegex = regexp.MustCompile(`(?s)^error downloading '(?P<error>.*)'$`)
 
 func IsNotDetected(err error) bool {
 	// Go-getter don't provide a convenient way to catch a getter non detection...
 	return detectErrorRegex.MatchString(err.Error())
 }
 
-// 1: command
-// 2: code
-// 3: details (optional)
-var commandErrorCodeRegex = regexp.MustCompile(`(?s)(.+) exited with (\d+): (.*)$`)
-
-// 1: command
-// 2: details (optional)
-var commandErrorRegex = regexp.MustCompile(`(?s)error running ([^(: )]+): (.*)$`)
-
-// 1: details
-var multiErrorRegex = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(.*)\n\n$`)
+var (
+	commandErrorCodeRegex = regexp.MustCompile(`(?s)(?P<command>.+) exited with (?P<code>\d+): (?P<details>.*)$`)
+	commandErrorRegex     = regexp.MustCompile(`(?s)error running (?P<command>[^(: )]+): (?P<details>.*)$`)
+	multiErrorRegex       = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(?P<details>.*)\n\n$`)
+)
 
 // Mimic the aws sdk error interface to avoid direct dependency on it.
 type awsError interface {
@@ -59,25 +52,24 @@ func NewError(err error) serrors.Error {
 	} else
 	// Command error code
 	if matches := commandErrorCodeRegex.FindStringSubmatch(message); matches != nil {
-		err := serrors.New("command error").
-			WithArguments("command", matches[1]).
-			WithDetails(matches[3])
-		if code, _err := strconv.Atoi(matches[2]); _err == nil {
-			err = err.WithArguments("code", code)
-		}
-
-		return err
+		code, _ := strconv.Atoi(matches[commandErrorCodeRegex.SubexpIndex("code")])
+		return serrors.New("command error").
+			WithArguments(
+				"command", matches[commandErrorCodeRegex.SubexpIndex("command")],
+				"code", code,
+			).
+			WithDetails(matches[commandErrorCodeRegex.SubexpIndex("details")])
 	} else
 	// Command error
 	if matches := commandErrorRegex.FindStringSubmatch(message); matches != nil {
 		return serrors.New("command error").
-			WithArguments("command", matches[1]).
-			WithDetails(matches[2])
+			WithArguments("command", matches[commandErrorRegex.SubexpIndex("command")]).
+			WithDetails(matches[commandErrorRegex.SubexpIndex("details")])
 	} else
 	// Multi error
 	if matches := multiErrorRegex.FindStringSubmatch(message); matches != nil {
 		return serrors.New("unable to handle repository").
-			WithDetails(matches[1])
+			WithDetails(matches[multiErrorRegex.SubexpIndex("details")])
 	}
 
 	return serrors.New("unable to handle repository").

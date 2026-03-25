@@ -10,11 +10,7 @@ import (
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
 
-// 3: line (mutually optional with column)
-// 4: column (mutually optional with line)
-// 5: message
-// 8: details (optional)
-var errorRegex = regexp.MustCompile(`(?s)^(\x1b\[91m)?(\[(\d+):(\d+)] )?([^\n]*)(\x1b\[0m)?(\n(.*))?$`)
+var errorRegex = regexp.MustCompile(`(?s)^(?:\x1b\[91m)?(?:\[(?P<line>\d+):(?P<column>\d+)] )?(?P<message>[^\n]*)(?:\x1b\[0m)?(?:\n(?P<details>.*))?$`)
 
 func NewError(err error) serrors.Error {
 	message := err.Error()
@@ -23,13 +19,13 @@ func NewError(err error) serrors.Error {
 	str := goYaml.FormatError(err, false, false)
 	if matches := errorRegex.FindStringSubmatch(str); matches != nil {
 		// Message
-		message = matches[5]
+		message = matches[errorRegex.SubexpIndex("message")]
 		// Line
-		if line, _err := strconv.Atoi(matches[3]); _err == nil {
+		if line, _ := strconv.Atoi(matches[errorRegex.SubexpIndex("line")]); line != 0 {
 			arguments = append(arguments, "line", line)
 		}
 		// Column
-		if column, _err := strconv.Atoi(matches[4]); _err == nil {
+		if column, _ := strconv.Atoi(matches[errorRegex.SubexpIndex("column")]); column != 0 {
 			arguments = append(arguments, "column", column)
 		}
 	}
@@ -38,8 +34,8 @@ func NewError(err error) serrors.Error {
 	detailsFunc := func(ansi bool) string {
 		str := goYaml.FormatError(err, ansi, true)
 		if matches := errorRegex.FindStringSubmatch(str); matches != nil {
-			if matches[8] != "" {
-				return matches[8]
+			if details := matches[errorRegex.SubexpIndex("details")]; details != "" {
+				return details
 			}
 		}
 

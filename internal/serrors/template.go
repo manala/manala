@@ -8,33 +8,13 @@ import (
 	textTemplate "text/template"
 )
 
-// 1: template
-// 2: line
-// 3: column
-// 4: name
-// 5: context
-// 6: message
-var textExecErrorRegex = regexp.MustCompile(`template: (.*):(\d+):(\d+): executing "(.*)" at <(.*)>: (.*)`)
-
-// 1: template
-// 2: line
-// 3: message
-var textParsingErrorRegex = regexp.MustCompile(`template: (.*):(\d+): (.*)`)
-
-// 1: template
-// 2: line
-// 3: column
-// 4: message
-var htmlLineColumnErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+):(\d+): (.*)`)
-
-// 1: template
-// 2: line
-// 3: message
-var htmlLineErrorRegex = regexp.MustCompile(`html/template:(.*):(\d+): (.*)`)
-
-// 2: template (optional)
-// 3: message
-var htmlErrorRegex = regexp.MustCompile(`html/template:((.*):)? (.*)`)
+var (
+	textExecErrorRegex       = regexp.MustCompile(`template: (?P<template>.*):(?P<line>\d+):(?P<column>\d+): executing "(?P<name>.*)" at <(?P<context>.*)>: (?P<message>.*)`)
+	textParsingErrorRegex    = regexp.MustCompile(`template: (?P<template>.*):(?P<line>\d+): (?P<message>.*)`)
+	htmlLineColumnErrorRegex = regexp.MustCompile(`html/template:(?P<template>.*):(?P<line>\d+):(?P<column>\d+): (?P<message>.*)`)
+	htmlLineErrorRegex       = regexp.MustCompile(`html/template:(?P<template>.*):(?P<line>\d+): (?P<message>.*)`)
+	htmlErrorRegex           = regexp.MustCompile(`html/template:(?:(?P<template>.*):)? (?P<message>.*)`)
+)
 
 func NewTemplate(err error) Error {
 	var (
@@ -49,66 +29,60 @@ func NewTemplate(err error) Error {
 	// Text exec error
 	case errors.As(err, &_textExecError):
 		if matches := textExecErrorRegex.FindStringSubmatch(message); matches != nil {
-			message = matches[6]
-			arguments = append(arguments, "context", matches[5])
+			message = matches[textExecErrorRegex.SubexpIndex("message")]
+			arguments = append(arguments, "context", matches[textExecErrorRegex.SubexpIndex("context")])
 			// Template
-			if matches[1] != "" {
-				arguments = append(arguments, "template", matches[1])
+			if template := matches[textExecErrorRegex.SubexpIndex("template")]; template != "" {
+				arguments = append(arguments, "template", template)
 			}
 			// Line
-			if line, _err := strconv.Atoi(matches[2]); _err == nil {
-				arguments = append(arguments, "line", line)
-			}
+			line, _ := strconv.Atoi(matches[textExecErrorRegex.SubexpIndex("line")])
+			arguments = append(arguments, "line", line)
 			// Column
-			if column, _err := strconv.Atoi(matches[3]); _err == nil {
-				arguments = append(arguments, "column", column)
-			}
+			column, _ := strconv.Atoi(matches[textExecErrorRegex.SubexpIndex("column")])
+			arguments = append(arguments, "column", column)
 		}
 	// Html error
 	case errors.As(err, &_htmlError):
 		if matches := htmlLineColumnErrorRegex.FindStringSubmatch(message); matches != nil {
-			message = matches[4]
+			message = matches[htmlLineColumnErrorRegex.SubexpIndex("message")]
 			// Template
-			if matches[1] != "" {
-				arguments = append(arguments, "template", matches[1])
+			if template := matches[htmlLineColumnErrorRegex.SubexpIndex("template")]; template != "" {
+				arguments = append(arguments, "template", template)
 			}
 			// Line
-			if line, _err := strconv.Atoi(matches[2]); _err == nil {
-				arguments = append(arguments, "line", line)
-			}
+			line, _ := strconv.Atoi(matches[htmlLineColumnErrorRegex.SubexpIndex("line")])
+			arguments = append(arguments, "line", line)
 			// Column
-			if column, _err := strconv.Atoi(matches[3]); _err == nil {
-				arguments = append(arguments, "column", column)
-			}
+			column, _ := strconv.Atoi(matches[htmlLineColumnErrorRegex.SubexpIndex("column")])
+			arguments = append(arguments, "column", column)
 		} else if matches := htmlLineErrorRegex.FindStringSubmatch(message); matches != nil {
-			message = matches[3]
+			message = matches[htmlLineErrorRegex.SubexpIndex("message")]
 			// Template
-			if matches[1] != "" {
-				arguments = append(arguments, "template", matches[1])
+			if template := matches[htmlLineErrorRegex.SubexpIndex("template")]; template != "" {
+				arguments = append(arguments, "template", template)
 			}
 			// Line
-			if line, _err := strconv.Atoi(matches[2]); _err == nil {
-				arguments = append(arguments, "line", line)
-			}
+			line, _ := strconv.Atoi(matches[htmlLineErrorRegex.SubexpIndex("line")])
+			arguments = append(arguments, "line", line)
 		} else if matches := htmlErrorRegex.FindStringSubmatch(message); matches != nil {
-			message = matches[3]
+			message = matches[htmlErrorRegex.SubexpIndex("message")]
 			// Template
-			if matches[2] != "" {
-				arguments = append(arguments, "template", matches[2])
+			if template := matches[htmlErrorRegex.SubexpIndex("template")]; template != "" {
+				arguments = append(arguments, "template", template)
 			}
 		}
 	default:
 		// Text parsing error
 		if matches := textParsingErrorRegex.FindStringSubmatch(message); matches != nil {
-			message = matches[3]
+			message = matches[textParsingErrorRegex.SubexpIndex("message")]
 			// Template
-			if matches[1] != "" {
-				arguments = append(arguments, "template", matches[1])
+			if template := matches[textParsingErrorRegex.SubexpIndex("template")]; template != "" {
+				arguments = append(arguments, "template", template)
 			}
 			// Line
-			if line, _err := strconv.Atoi(matches[2]); _err == nil {
-				arguments = append(arguments, "line", line)
-			}
+			line, _ := strconv.Atoi(matches[textParsingErrorRegex.SubexpIndex("line")])
+			arguments = append(arguments, "line", line)
 		}
 	}
 
