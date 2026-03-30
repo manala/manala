@@ -8,15 +8,15 @@
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
-      "groupName": "github actions",
+      "groupName": "github actions"
     },
     {
       "matchDepTypes": ["components"],
-      "groupName": "components",
+      "groupName": "components"
     },
     {
       "matchManagers": ["gomod"],
-      "groupName": "dependencies",
+      "groupName": "dependencies"
     }
   ],
   "customManagers": [
