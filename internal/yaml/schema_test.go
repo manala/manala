@@ -7,6 +7,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/annotations"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
@@ -44,12 +45,12 @@ func (s *SchemaSuite) TestNodeInferrerErrors() {
 			},
 		},
 		{
-			test: "MisplacedTag",
+			test: "MisplacedAnnotation",
 			node: `
 node: ~  # @schema {"type": "string", "minLength": 1}
 `,
 			expected: &serrors.Assertion{
-				Message: "misplaced schema tag",
+				Message: "misplaced schema annotation",
 				Arguments: []any{
 					"line", 2,
 					"column", 10,
@@ -61,7 +62,7 @@ node: ~  # @schema {"type": "string", "minLength": 1}
 			},
 		},
 		{
-			test: "TagError",
+			test: "AnnotationError",
 			node: `
 # @schema foo
 node: ~
@@ -174,7 +175,7 @@ object_multiple:
 			},
 		},
 		{
-			test: "ScalarsTags",
+			test: "ScalarsAnnotations",
 			node: `
 # @schema {"type": "string", "minLength": 1}
 string: ~
@@ -191,7 +192,7 @@ integer: 12
 			},
 		},
 		{
-			test: "ArraysTags",
+			test: "ArraysAnnotations",
 			node: `
 # @schema {"items": {"type": "string"}}
 array_empty: []
@@ -207,7 +208,7 @@ array_empty: []
 			},
 		},
 		{
-			test: "ObjectsTags",
+			test: "ObjectsAnnotations",
 			node: `
 # @schema {"additionalProperties": false}
 object_empty: {}
@@ -445,17 +446,15 @@ node:
 	}
 }
 
-func (s *SchemaSuite) TestNodeTagsInferrerErrors() {
+func (s *SchemaSuite) TestNodeAnnotationsInferrerErrors() {
 	tests := []struct {
 		test     string
-		tags     *yaml.Tags
+		src      string
 		expected *serrors.Assertion
 	}{
 		{
 			test: "Syntax",
-			tags: &yaml.Tags{
-				{Name: "Tag", Value: `foo`},
-			},
+			src:  `# @annotation foo`,
 			expected: &serrors.Assertion{
 				Message: "invalid character 'o' in literal false (expecting 'a')",
 				Arguments: []any{
@@ -465,9 +464,7 @@ func (s *SchemaSuite) TestNodeTagsInferrerErrors() {
 		},
 		{
 			test: "Type",
-			tags: &yaml.Tags{
-				{Name: "Tag", Value: `[]`},
-			},
+			src:  `# @annotation []`,
 			expected: &serrors.Assertion{
 				Message: "cannot unmarshal into value",
 				Arguments: []any{
@@ -483,7 +480,10 @@ func (s *SchemaSuite) TestNodeTagsInferrerErrors() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := yaml.NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
+			annots, _ := annotations.Parse(test.src)
+			annot, _ := annots.Lookup("annotation")
+
+			err := yaml.NewNodeAnnotationSchemaInferrer(nil, annot).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
@@ -493,21 +493,17 @@ func (s *SchemaSuite) TestNodeTagsInferrerErrors() {
 func (s *SchemaSuite) TestNodeTagsInferrer() {
 	tests := []struct {
 		test     string
-		tags     *yaml.Tags
+		src      string
 		expected schema.Schema
 	}{
 		{
-			test: "Extend",
-			tags: &yaml.Tags{
-				{Name: "Tag", Value: `{"bar": "baz"}`},
-			},
+			test:     "Extend",
+			src:      `# @annotation {"bar": "baz"}`,
 			expected: schema.Schema{"foo": "bar", "bar": "baz"},
 		},
 		{
-			test: "Override",
-			tags: &yaml.Tags{
-				{Name: "Tag", Value: `{"foo": "baz"}`},
-			},
+			test:     "Override",
+			src:      `# @annotation {"foo": "baz"}`,
 			expected: schema.Schema{"foo": "baz"},
 		},
 	}
@@ -516,7 +512,10 @@ func (s *SchemaSuite) TestNodeTagsInferrer() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			err := yaml.NewNodeTagsSchemaInferrer(nil, test.tags).Infer(schema)
+			annots, _ := annotations.Parse(test.src)
+			annot, _ := annots.Lookup("annotation")
+
+			err := yaml.NewNodeAnnotationSchemaInferrer(nil, annot).Infer(schema)
 
 			s.Require().NoError(err)
 			s.Equal(test.expected, schema)

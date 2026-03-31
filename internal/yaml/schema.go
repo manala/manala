@@ -4,6 +4,7 @@ import (
 	"github.com/manala/manala/internal/json"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
+	"github.com/manala/manala/internal/yaml/annotations"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
@@ -33,63 +34,70 @@ func (inf *NodeSchemaInferrer) Infer(schema schema.Schema) error {
 }
 
 func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
-	schemaTags := &Tags{}
+	// Schema annotation
+	var schemaAnnot *annotations.Annotation
 
-	// Get schema comment tags
+	// Get comment
 	comment := node.GetComment()
 	if comment != nil {
-		var tags Tags
+		// Get annotations
+		annots, err := annotations.Parse(comment.String())
+		if err != nil {
+			inf.err = err
+			return nil
+		}
 
-		ParseCommentTags(comment.String(), &tags)
-		schemaTags = tags.Filter("schema")
+		// Schema annotation
+		schemaAnnot, _ = annots.Lookup("schema")
 	}
 
-	if n, ok := node.(*goYamlAst.MappingValueNode); ok {
-		// Get property key
-		propertyKey := n.Key.GetToken().Value
+	n, ok := node.(*goYamlAst.MappingValueNode)
+	if !ok {
+		if schemaAnnot != nil {
+			// Misplaced annotation
+			inf.err = NewNodeError("misplaced schema annotation", node.GetComment())
+			return nil
+		}
+		return inf
+	}
 
-		// Infer property schema
-		propertySchema := schema.Schema{}
-		if err := inferrer.NewChain(
-			inferrer.NewFunc(func(schema schema.Schema) error {
-				// Only mapping value
-				if n, ok := node.(*goYamlAst.MappingValueNode); ok {
-					if _, ok := n.Value.(goYamlAst.MapNode); ok {
-						return NewNodeSchemaInferrer(n.Value).Infer(schema)
-					}
+	// Get property key
+	propertyKey := n.Key.GetToken().Value
 
-					return nil
+	// Infer property schema
+	propertySchema := schema.Schema{}
+	if err := inferrer.NewChain(
+		inferrer.NewFunc(func(schema schema.Schema) error {
+			// Only mapping value
+			if n, ok := node.(*goYamlAst.MappingValueNode); ok {
+				if _, ok := n.Value.(goYamlAst.MapNode); ok {
+					return NewNodeSchemaInferrer(n.Value).Infer(schema)
 				}
+				return nil
+			}
 
-				return NewNodeError("unable to infer schema type", node)
-			}),
-			NewNodeTagsSchemaInferrer(n, schemaTags),
-			NewNodeTypeSchemaInferrer(n),
-		).Infer(propertySchema); err != nil {
-			inf.err = err
+			return NewNodeError("unable to infer schema type", node)
+		}),
+		NewNodeAnnotationSchemaInferrer(n, schemaAnnot),
+		NewNodeTypeSchemaInferrer(n),
+	).Infer(propertySchema); err != nil {
+		inf.err = err
+		return nil
+	}
 
-			return nil
-		}
+	// Ensure schema is set
+	inf.schema["type"] = "object"
+	inf.schema["additionalProperties"] = false
 
-		// Ensure schema is set
-		inf.schema["type"] = "object"
-		inf.schema["additionalProperties"] = false
+	if _, ok := inf.schema["properties"]; !ok {
+		inf.schema["properties"] = map[string]any{}
+	}
 
-		if _, ok := inf.schema["properties"]; !ok {
-			inf.schema["properties"] = map[string]any{}
-		}
+	// Set schema property
+	inf.schema["properties"].(map[string]any)[propertyKey] = map[string]any(propertySchema)
 
-		// Set schema property
-		inf.schema["properties"].(map[string]any)[propertyKey] = map[string]any(propertySchema)
-
-		// Stop visiting when map nodes
-		if _, ok := n.Value.(goYamlAst.MapNode); ok {
-			return nil
-		}
-	} else if len(*schemaTags) > 0 {
-		// Misplaced tag
-		inf.err = NewNodeError("misplaced schema tag", node.GetComment())
-
+	// Stop visiting when map nodes
+	if _, ok := n.Value.(goYamlAst.MapNode); ok {
 		return nil
 	}
 
@@ -144,27 +152,29 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 	return nil
 }
 
-type NodeTagsSchemaInferrer struct {
-	node goYamlAst.Node
-	tags *Tags
+type NodeAnnotationSchemaInferrer struct {
+	node       goYamlAst.Node
+	annotation *annotations.Annotation
 }
 
-func NewNodeTagsSchemaInferrer(node goYamlAst.Node, tags *Tags) *NodeTagsSchemaInferrer {
-	return &NodeTagsSchemaInferrer{
-		node: node,
-		tags: tags,
+func NewNodeAnnotationSchemaInferrer(node goYamlAst.Node, annot *annotations.Annotation) *NodeAnnotationSchemaInferrer {
+	return &NodeAnnotationSchemaInferrer{
+		node:       node,
+		annotation: annot,
 	}
 }
 
-func (inf *NodeTagsSchemaInferrer) Infer(schema schema.Schema) error {
-	for _, tag := range *inf.tags {
-		if err := json.Unmarshal([]byte(tag.Value), &schema); err != nil {
-			if inf.node != nil {
-				return NewNodeError(err.Error(), inf.node.GetComment())
-			}
+func (inf *NodeAnnotationSchemaInferrer) Infer(schema schema.Schema) error {
+	if inf.annotation == nil {
+		return nil
+	}
 
-			return err
+	err := json.Unmarshal([]byte(inf.annotation.Value()), &schema)
+	if err != nil {
+		if inf.node != nil {
+			return NewNodeError(err.Error(), inf.node.GetComment())
 		}
+		return err
 	}
 
 	return nil

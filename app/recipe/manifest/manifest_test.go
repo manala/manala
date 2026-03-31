@@ -548,12 +548,12 @@ func (s *Suite) TestReadFromErrors() {
 		},
 		// Schema
 		{
-			test: "SchemaMisplacedTag",
+			test: "SchemaMisplacedAnnotation",
 			expected: &serrors.Assertion{
 				Message: "unable to infer recipe manifest schema",
 				Errors: []*serrors.Assertion{
 					{
-						Message: "misplaced schema tag",
+						Message: "misplaced schema annotation",
 						Arguments: []any{
 							"line", 4,
 							"column", 9,

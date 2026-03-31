@@ -7,6 +7,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/annotations"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
@@ -33,52 +34,54 @@ func (inf *Inferrer) Infer(node goYamlAst.Node, options *[]app.RecipeOption) err
 }
 
 func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
-	optionTags := &yaml.Tags{}
-	schemaTags := &yaml.Tags{}
-
-	// Get comment tags
+	// Get comment
 	comment := node.GetComment()
-	if comment != nil {
-		var tags yaml.Tags
-
-		yaml.ParseCommentTags(comment.String(), &tags)
-		optionTags = tags.Filter("option")
-		schemaTags = tags.Filter("schema")
+	if comment == nil {
+		return inf
 	}
 
-	if len(*optionTags) > 0 {
-		if _node, ok := node.(*goYamlAst.MappingValueNode); ok {
-			// Infer schema
-			schema := schema.Schema{}
-			if err := inferrer.NewChain(
-				yaml.NewNodeTagsSchemaInferrer(_node, schemaTags),
-				yaml.NewNodeTypeSchemaInferrer(_node),
-			).Infer(schema); err != nil {
-				inf.err = err
-
-				return nil
-			}
-
-			// Handle option tags
-			for _, tag := range *optionTags {
-				// Read from tag
-				option, err := New(strings.NewReader(tag.Value), schema, yaml.NewNodePath(_node))
-				if err != nil {
-					inf.err = yaml.NewNodeError("unable to read recipe option", _node.GetComment()).
-						WithErrors(err)
-
-					return nil
-				}
-
-				*inf.options = append(*inf.options, option)
-			}
-		} else {
-			// Misplaced tag
-			inf.err = yaml.NewNodeError("misplaced recipe option tag", node.GetComment())
-
-			return nil
-		}
+	// Get annotations
+	annots, err := annotations.Parse(comment.String())
+	if err != nil {
+		inf.err = err
+		return nil
 	}
+
+	// Option annotation
+	optionAnnot, ok := annots.Lookup("option")
+	if !ok {
+		return inf
+	}
+
+	// Misplaced annotation
+	n, ok := node.(*goYamlAst.MappingValueNode)
+	if !ok {
+		inf.err = yaml.NewNodeError("misplaced recipe option annotation", node.GetComment())
+		return nil
+	}
+
+	// Schema annotation
+	schemaAnnot, _ := annots.Lookup("schema")
+
+	// Infer schema
+	schema := schema.Schema{}
+	if err := inferrer.NewChain(
+		yaml.NewNodeAnnotationSchemaInferrer(n, schemaAnnot),
+		yaml.NewNodeTypeSchemaInferrer(n),
+	).Infer(schema); err != nil {
+		inf.err = err
+		return nil
+	}
+
+	// Read from annotation
+	option, err := New(strings.NewReader(optionAnnot.Value()), schema, yaml.NewNodePath(n))
+	if err != nil {
+		inf.err = yaml.NewNodeError("unable to read recipe option", n.GetComment()).
+			WithErrors(err)
+		return nil
+	}
+
+	*inf.options = append(*inf.options, option)
 
 	return inf
 }
