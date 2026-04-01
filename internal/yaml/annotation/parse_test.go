@@ -1,9 +1,9 @@
-package annotations_test
+package annotation_test
 
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/yaml/annotations"
+	"github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -16,7 +16,7 @@ func TestParseSuite(t *testing.T) {
 
 func (s *ParseSuite) Test() {
 	src := `
-		# text before annotations
+		# text before annotation
 		# @line foo
 		# @multiline foo
 		# bar
@@ -30,7 +30,7 @@ func (s *ParseSuite) Test() {
   		 # @indented foo
 		# @empty
 	`
-	annots, err := annotations.Parse(src)
+	annots, err := annotation.Parse(src)
 	s.Require().NoError(err)
 
 	tests := []struct {

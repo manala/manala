@@ -1,9 +1,9 @@
-package annotations_test
+package annotation_test
 
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/yaml/annotations"
+	"github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -19,11 +19,11 @@ func (s *AnnotationsSuite) TestLookup() {
 		# @foo bar
 		# @bar baz
 	`
-	annots, err := annotations.Parse(src)
+	annots, err := annotation.Parse(src)
 	s.Require().NoError(err)
 	s.Require().Len(annots, 2)
 
-	var annot *annotations.Annotation
+	var annot *annotation.Annotation
 	var ok bool
 
 	annot, ok = annots.Lookup("foo")

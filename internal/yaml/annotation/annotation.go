@@ -1,4 +1,4 @@
-package annotations
+package annotation
 
 import (
 	"strings"
