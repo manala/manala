@@ -1,4 +1,4 @@
-package annotations
+package annotation
 
 // Parse parses the given source into annotations.
 func Parse(src string) (Annotations, error) {

@@ -7,7 +7,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/yaml"
-	"github.com/manala/manala/internal/yaml/annotations"
+	"github.com/manala/manala/internal/yaml/annotation"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
@@ -41,7 +41,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	}
 
 	// Get annotations
-	annots, err := annotations.Parse(comment.String())
+	annots, err := annotation.Parse(comment.String())
 	if err != nil {
 		inf.err = err
 		return nil

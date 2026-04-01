@@ -4,7 +4,7 @@ import (
 	"github.com/manala/manala/internal/json"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
-	"github.com/manala/manala/internal/yaml/annotations"
+	"github.com/manala/manala/internal/yaml/annotation"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 )
@@ -35,13 +35,13 @@ func (inf *NodeSchemaInferrer) Infer(schema schema.Schema) error {
 
 func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	// Schema annotation
-	var schemaAnnot *annotations.Annotation
+	var schemaAnnot *annotation.Annotation
 
 	// Get comment
 	comment := node.GetComment()
 	if comment != nil {
 		// Get annotations
-		annots, err := annotations.Parse(comment.String())
+		annots, err := annotation.Parse(comment.String())
 		if err != nil {
 			inf.err = err
 			return nil
@@ -154,10 +154,10 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 
 type NodeAnnotationSchemaInferrer struct {
 	node       goYamlAst.Node
-	annotation *annotations.Annotation
+	annotation *annotation.Annotation
 }
 
-func NewNodeAnnotationSchemaInferrer(node goYamlAst.Node, annot *annotations.Annotation) *NodeAnnotationSchemaInferrer {
+func NewNodeAnnotationSchemaInferrer(node goYamlAst.Node, annot *annotation.Annotation) *NodeAnnotationSchemaInferrer {
 	return &NodeAnnotationSchemaInferrer{
 		node:       node,
 		annotation: annot,

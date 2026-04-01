@@ -1,4 +1,4 @@
-package annotations
+package annotation
 
 type Scanner struct {
 	source string

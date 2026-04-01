@@ -7,7 +7,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
-	"github.com/manala/manala/internal/yaml/annotations"
+	"github.com/manala/manala/internal/yaml/annotation"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
@@ -480,7 +480,7 @@ func (s *SchemaSuite) TestNodeAnnotationsInferrerErrors() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			annots, _ := annotations.Parse(test.src)
+			annots, _ := annotation.Parse(test.src)
 			annot, _ := annots.Lookup("annotation")
 
 			err := yaml.NewNodeAnnotationSchemaInferrer(nil, annot).Infer(schema)
@@ -512,7 +512,7 @@ func (s *SchemaSuite) TestNodeTagsInferrer() {
 		s.Run(test.test, func() {
 			schema := schema.Schema{"foo": "bar"}
 
-			annots, _ := annotations.Parse(test.src)
+			annots, _ := annotation.Parse(test.src)
 			annot, _ := annots.Lookup("annotation")
 
 			err := yaml.NewNodeAnnotationSchemaInferrer(nil, annot).Infer(schema)
