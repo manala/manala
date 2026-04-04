@@ -1,12 +1,12 @@
 package caching_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/caching"
-	"github.com/manala/manala/internal/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -20,7 +20,7 @@ func TestLoaderSuite(t *testing.T) {
 func (s *LoaderSuite) TestHandler() {
 	cache := caching.NewCache()
 
-	handler := caching.NewLoaderHandler(log.Discard, cache)
+	handler := caching.NewLoaderHandler(slog.New(slog.DiscardHandler), cache)
 	handlerQueryFoo := &repository.LoaderQuery{URL: "foo"}
 	handlerQueryBar := &repository.LoaderQuery{URL: "bar"}
 

@@ -1,12 +1,12 @@
 package sync_test
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template"
@@ -26,7 +26,7 @@ func TestSyncerSuite(t *testing.T) {
 }
 
 func (s *SyncerSuite) SetupTest() {
-	s.syncer = sync.NewSyncer(log.Discard)
+	s.syncer = sync.NewSyncer(slog.New(slog.DiscardHandler))
 	s.templateProvider = &template.Provider{}
 }
 

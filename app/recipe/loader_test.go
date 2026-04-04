@@ -1,6 +1,7 @@
 package recipe_test
 
 import (
+	"log/slog"
 	"path/filepath"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/mock"
@@ -22,7 +22,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := recipe.NewLoader(log.Discard)
+	loader := recipe.NewLoader(slog.New(slog.DiscardHandler))
 
 	s.Run("NotFound", func() {
 		repositoryMock := &app.RepositoryMock{}
@@ -51,7 +51,7 @@ func (s *LoaderSuite) TestLoad() {
 	handlerMock.
 		On("Handle", &recipe.LoaderQuery{Repository: repositoryMock, Name: "name"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(handlerMock))
+	loader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(handlerMock))
 
 	recipe, err := loader.Load(repositoryMock, "name")
 
@@ -61,13 +61,13 @@ func (s *LoaderSuite) TestLoad() {
 }
 
 func (s *LoaderSuite) TestLoadAllErrors() {
-	loader := recipe.NewLoader(log.Discard)
+	loader := recipe.NewLoader(slog.New(slog.DiscardHandler))
 
 	s.Run("EmptyRepository", func() {
 		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAllErrors/EmptyRepository/repository")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-			getter.NewFileLoaderHandler(log.Discard),
+			getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 		))
 		repository, _ := repositoryLoader.Load(repositoryURL)
 
@@ -88,7 +88,7 @@ func (s *LoaderSuite) TestLoadAll() {
 	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAll/repository")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
+		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
@@ -99,7 +99,7 @@ func (s *LoaderSuite) TestLoadAll() {
 		On("Handle", &recipe.LoaderQuery{Repository: repository, Name: "foo"}, mock.Anything).Return(recipeMock, nil).
 		On("Handle", &recipe.LoaderQuery{Repository: repository, Name: "bar"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(handlerMock))
+	loader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(handlerMock))
 
 	recipes, err := loader.LoadAll(repository)
 

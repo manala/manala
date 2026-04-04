@@ -1,6 +1,7 @@
 package manifest_test
 
 import (
+	"log/slog"
 	"path/filepath"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
@@ -27,11 +27,11 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Directory/project")
 
 		repositoryLoader := repository.NewLoader()
-		recipeLoader := recipe.NewLoader(log.Discard)
+		recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler))
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
-		handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+		handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler), repositoryLoader, recipeLoader)
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
@@ -48,15 +48,15 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Vars/project")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-			getter.NewFileLoaderHandler(log.Discard),
+			getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 		))
-		recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-			recipeManifest.NewLoaderHandler(log.Discard),
+		recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
+			recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
 		))
 
 		chainMock := &project.LoaderHandlerChainMock{}
 
-		handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+		handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler), repositoryLoader, recipeLoader)
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
@@ -95,15 +95,15 @@ func (s *LoaderSuite) TestHandler() {
 	projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandler/project")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
+		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
-	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(log.Discard),
+	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 
 	chainMock := &project.LoaderHandlerChainMock{}
 
-	handler := manifest.NewLoaderHandler(log.Discard, repositoryLoader, recipeLoader)
+	handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler), repositoryLoader, recipeLoader)
 	project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 	s.Require().NoError(err)

@@ -1,6 +1,7 @@
 package manifest_test
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,7 +11,6 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/heredoc"
 
@@ -28,12 +28,12 @@ func (s *CreatorSuite) TestCreateErrors() {
 	recipeName := "recipe"
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
+		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(log.Discard),
+	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
@@ -63,12 +63,12 @@ func (s *CreatorSuite) TestCreate() {
 	_ = os.RemoveAll(projectDir)
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
+		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeLoader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(log.Discard),
+	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 

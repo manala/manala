@@ -1,6 +1,7 @@
 package manifest_test
 
 import (
+	"log/slog"
 	"path/filepath"
 	"testing"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
@@ -25,13 +25,13 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors/Directory/repository")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-			getter.NewFileLoaderHandler(log.Discard),
+			getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 		))
 		repository, _ := repositoryLoader.Load(repositoryURL)
 
 		chainMock := &recipe.LoaderHandlerChainMock{}
 
-		handler := manifest.NewLoaderHandler(log.Discard)
+		handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler))
 		recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
 		s.Nil(recipe)
@@ -50,13 +50,13 @@ func (s *LoaderSuite) TestHandler() {
 	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandler/repository")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
+		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
 	chainMock := &recipe.LoaderHandlerChainMock{}
 
-	handler := manifest.NewLoaderHandler(log.Discard)
+	handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler))
 	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
 	s.Require().NoError(err)

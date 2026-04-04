@@ -1,12 +1,12 @@
 package name_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/recipe/name"
-	"github.com/manala/manala/internal/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -18,10 +18,10 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := name.NewProcessor(log.Discard)
+	processor := name.NewProcessor(slog.New(slog.DiscardHandler))
 	processor.Add("name", 10)
 
-	handler := name.NewProcessorLoaderHandler(log.Discard, processor)
+	handler := name.NewProcessorLoaderHandler(slog.New(slog.DiscardHandler), processor)
 
 	repositoryMock := &app.RepositoryMock{}
 	recipeMock := &app.RecipeMock{}

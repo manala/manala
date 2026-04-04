@@ -1,10 +1,10 @@
 package url_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/manala/manala/app/repository/url"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
@@ -139,7 +139,7 @@ func (s *ProcessorSuite) TestProcess() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			processor := url.NewProcessor(log.Discard)
+			processor := url.NewProcessor(slog.New(slog.DiscardHandler))
 
 			for weight, url := range test.urls {
 				processor.Add(url, weight)

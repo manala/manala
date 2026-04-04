@@ -1,12 +1,12 @@
 package url_test
 
 import (
+	"log/slog"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
-	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/suite"
@@ -19,9 +19,9 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandlerErrors() {
-	processor := url.NewProcessor(log.Discard)
+	processor := url.NewProcessor(slog.New(slog.DiscardHandler))
 
-	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(slog.New(slog.DiscardHandler), processor)
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
@@ -43,10 +43,10 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := url.NewProcessor(log.Discard)
+	processor := url.NewProcessor(slog.New(slog.DiscardHandler))
 	processor.Add("url", 10)
 
-	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
+	handler := url.NewProcessorLoaderHandler(slog.New(slog.DiscardHandler), processor)
 
 	repositoryMock := &app.RepositoryMock{}
 
