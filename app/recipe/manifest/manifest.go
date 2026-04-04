@@ -13,6 +13,7 @@ import (
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/validator"
 	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/parser"
 
 	goYaml "github.com/goccy/go-yaml"
 	goYamlAst "github.com/goccy/go-yaml/ast"
@@ -74,7 +75,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	var err error
 
 	// Parse content to node
-	manifest.node, err = yaml.NewParser(yaml.WithComments()).ParseBytes(content)
+	manifest.node, err = parser.NewParser().ParseBytes(content)
 	if err != nil {
 		return serrors.New("irregular recipe manifest").
 			WithErrors(err)

@@ -1,26 +1,25 @@
-package yaml_test
+package parser_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/parser"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
-type ParserSuite struct{ suite.Suite }
+type Suite struct{ suite.Suite }
 
-func TestParserSuite(t *testing.T) {
-	suite.Run(t, new(ParserSuite))
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(Suite))
 }
 
-func (s *ParserSuite) TestEmpty() {
-	parser := yaml.NewParser()
-
-	node, err := parser.ParseBytes(nil)
+func (s *Suite) TestEmpty() {
+	node, err := parser.NewParser().ParseBytes(nil)
 
 	s.Nil(node)
 
@@ -29,7 +28,7 @@ func (s *ParserSuite) TestEmpty() {
 	}, err)
 }
 
-func (s *ParserSuite) TestInvalids() {
+func (s *Suite) TestInvalids() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -52,10 +51,10 @@ func (s *ParserSuite) TestInvalids() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ParserSuite/TestInvalids/" + test.test)
+			dir := filepath.FromSlash("testdata/TestInvalids")
+			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			parser := yaml.NewParser()
-			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+			node, err := parser.NewParser().ParseBytes(content)
 
 			s.Nil(node)
 
@@ -64,11 +63,11 @@ func (s *ParserSuite) TestInvalids() {
 	}
 }
 
-func (s *ParserSuite) TestMultipleDocuments() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestMultipleDocuments")
+func (s *Suite) TestMultipleDocuments() {
+	dir := filepath.FromSlash("testdata/TestMultipleDocuments")
+	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	parser := yaml.NewParser()
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+	node, err := parser.NewParser().ParseBytes(content)
 
 	s.Nil(node)
 
@@ -88,7 +87,7 @@ func (s *ParserSuite) TestMultipleDocuments() {
 	}, err)
 }
 
-func (s *ParserSuite) TestIrregularMapKeys() {
+func (s *Suite) TestIrregularMapKeys() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -126,10 +125,10 @@ func (s *ParserSuite) TestIrregularMapKeys() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularMapKeys/" + test.test)
+			dir := filepath.FromSlash("testdata/TestIrregularMapKeys")
+			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			parser := yaml.NewParser()
-			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+			node, err := parser.NewParser().ParseBytes(content)
 
 			s.Nil(node)
 
@@ -138,7 +137,7 @@ func (s *ParserSuite) TestIrregularMapKeys() {
 	}
 }
 
-func (s *ParserSuite) TestIrregularTypes() {
+func (s *Suite) TestIrregularTypes() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -175,10 +174,10 @@ func (s *ParserSuite) TestIrregularTypes() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularTypes/" + test.test)
+			dir := filepath.FromSlash("testdata/TestIrregularTypes")
+			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			parser := yaml.NewParser()
-			node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+			node, err := parser.NewParser().ParseBytes(content)
 
 			s.Nil(node)
 
@@ -187,11 +186,11 @@ func (s *ParserSuite) TestIrregularTypes() {
 	}
 }
 
-func (s *ParserSuite) TestMappingKey() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestMappingKey")
+func (s *Suite) TestMappingKey() {
+	dir := filepath.FromSlash("testdata/TestMappingKey")
+	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	parser := yaml.NewParser()
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+	node, err := parser.NewParser().ParseBytes(content)
 
 	s.Require().NoError(err)
 
@@ -209,11 +208,11 @@ func (s *ParserSuite) TestMappingKey() {
 	s.Equal("bar", valueNode.(*goYamlAst.StringNode).Value)
 }
 
-func (s *ParserSuite) TestIrregularMappingKey() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestIrregularMappingKey")
+func (s *Suite) TestIrregularMappingKey() {
+	dir := filepath.FromSlash("testdata/TestIrregularMappingKey")
+	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	parser := yaml.NewParser()
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+	node, err := parser.NewParser().ParseBytes(content)
 
 	s.Nil(node)
 
@@ -230,11 +229,11 @@ func (s *ParserSuite) TestIrregularMappingKey() {
 	}, err)
 }
 
-func (s *ParserSuite) TestTags() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestTags")
+func (s *Suite) TestTags() {
+	dir := filepath.FromSlash("testdata/TestTags")
+	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	parser := yaml.NewParser()
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+	node, err := parser.NewParser().ParseBytes(content)
 
 	s.Require().NoError(err)
 
@@ -242,11 +241,11 @@ func (s *ParserSuite) TestTags() {
 	s.Equal("foo", node.(*goYamlAst.StringNode).Value)
 }
 
-func (s *ParserSuite) TestUnknownAnchors() {
-	dir := filepath.FromSlash("testdata/ParserSuite/TestUnknownAnchors")
+func (s *Suite) TestUnknownAnchors() {
+	dir := filepath.FromSlash("testdata/TestUnknownAnchors")
+	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	parser := yaml.NewParser()
-	node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+	node, err := parser.NewParser().ParseBytes(content)
 
 	s.Nil(node)
 
@@ -264,12 +263,12 @@ func (s *ParserSuite) TestUnknownAnchors() {
 	}, err)
 }
 
-func (s *ParserSuite) TestAnchors() {
+func (s *Suite) TestAnchors() {
 	s.Run("Anchors", func() {
-		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/Anchors")
+		dir := filepath.FromSlash("testdata/TestAnchors")
+		content, _ := os.ReadFile(filepath.Join(dir, "Anchors.yaml"))
 
-		parser := yaml.NewParser()
-		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+		node, err := parser.NewParser().ParseBytes(content)
 
 		s.Require().NoError(err)
 
@@ -282,10 +281,10 @@ func (s *ParserSuite) TestAnchors() {
 		s.Equal("foo", aliasNode.Value.(*goYamlAst.StringNode).Value)
 	})
 	s.Run("MergeKeys", func() {
-		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/MergeKeys")
+		dir := filepath.FromSlash("testdata/TestAnchors")
+		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeys.yaml"))
 
-		parser := yaml.NewParser()
-		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+		node, err := parser.NewParser().ParseBytes(content)
 
 		s.Require().NoError(err)
 
@@ -326,10 +325,10 @@ func (s *ParserSuite) TestAnchors() {
 		s.Require().Len(mappingValueAliasMappingNode.Value.(*goYamlAst.MappingNode).Values, 3)
 	})
 	s.Run("MergeKeysDuplicated", func() {
-		dir := filepath.FromSlash("testdata/ParserSuite/TestAnchors/MergeKeysDuplicated")
+		dir := filepath.FromSlash("testdata/TestAnchors")
+		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeysDuplicated.yaml"))
 
-		parser := yaml.NewParser()
-		node, err := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+		node, err := parser.NewParser().ParseBytes(content)
 
 		s.Require().NoError(err)
 

@@ -1,13 +1,15 @@
 package yaml_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/parser"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -96,9 +98,9 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 	for _, test := range tests {
 		s.Run(test.test, func() {
 			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMapErrors/" + test.test)
+			content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-			parser := yaml.NewParser()
-			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+			node, _ := parser.NewParser().ParseBytes(content)
 
 			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
@@ -118,57 +120,57 @@ func (s *ExtractorSuite) TestRootMap() {
 	}{
 		{
 			test:            "SingleEmpty",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "SingleSingle",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "SingleMultiple",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "CoupleEmpty",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "CoupleSingle",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "CoupleMultiple",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "MultipleEmpty",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "MultipleSingle",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 		{
 			test:            "MultipleMultiple",
-			expectedSubject: (*goYamlAst.MappingNode)(nil),
-			expectedNode:    (*goYamlAst.MappingNode)(nil),
+			expectedSubject: (*ast.MappingNode)(nil),
+			expectedNode:    (*ast.MappingNode)(nil),
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
 			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMap/" + test.test)
+			content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-			parser := yaml.NewParser()
-			node, _ := parser.ParseFile(filepath.Join(dir, "node.yaml"))
+			node, _ := parser.NewParser().ParseBytes(content)
 
 			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")

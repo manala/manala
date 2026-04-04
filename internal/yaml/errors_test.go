@@ -5,6 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/parser"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
 	goYamlParser "github.com/goccy/go-yaml/parser"
@@ -59,7 +60,7 @@ func (s *ErrorsSuite) Test() {
 }
 
 func (s *ErrorsSuite) TestNode() {
-	node, _ := yaml.NewParser().ParseBytes([]byte(`foo: bar`))
+	node, _ := parser.NewParser().ParseBytes([]byte(`foo: bar`))
 
 	tests := []struct {
 		test     string

@@ -8,8 +8,9 @@ import (
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/annotation"
+	"github.com/manala/manala/internal/yaml/parser"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -84,9 +85,9 @@ node: ~
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
-			schema := schema.Schema{}
+			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
 
+			schema := schema.Schema{}
 			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
 
 			serrors.Equal(s.T(), test.expected, err)
@@ -280,9 +281,9 @@ object_multiple_with_comment:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
-			schema := schema.Schema{}
+			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
 
+			schema := schema.Schema{}
 			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
 
 			s.Require().NoError(err)
@@ -316,7 +317,7 @@ func (s *SchemaSuite) TestNodeTypeInferrerErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
+			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
 
 			schema := schema.Schema{"foo": "bar"}
 			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(schema)
@@ -433,12 +434,12 @@ node:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := yaml.NewParser(yaml.WithComments()).ParseBytes([]byte(test.node))
+			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
 
-			s.Require().IsType((*goYamlAst.MappingNode)(nil), node)
-			s.Require().Len(node.(*goYamlAst.MappingNode).Values, 1)
+			s.Require().IsType((*ast.MappingNode)(nil), node)
+			s.Require().Len(node.(*ast.MappingNode).Values, 1)
 
-			err := yaml.NewNodeTypeSchemaInferrer(node.(*goYamlAst.MappingNode).Values[0]).Infer(test.schema)
+			err := yaml.NewNodeTypeSchemaInferrer(node.(*ast.MappingNode).Values[0]).Infer(test.schema)
 
 			s.Require().NoError(err)
 			s.Equal(test.expected, test.schema)
