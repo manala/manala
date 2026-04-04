@@ -11,14 +11,14 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/cmd"
-	"github.com/manala/manala/internal/notifier"
+	"github.com/manala/manala/internal/notify"
 	"github.com/manala/manala/internal/ui"
 
 	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier notifier.Notifier) *cobra.Command {
+func NewCommand(log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier *notify.Notifier) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -59,7 +59,7 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier notifier.Notifier, dir string, all, notify bool) error {
+func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier *notify.Notifier, dir string, all, notify bool) error {
 	var (
 		project app.Project
 		err     error

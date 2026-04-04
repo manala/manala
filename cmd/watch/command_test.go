@@ -10,7 +10,7 @@ import (
 	"github.com/manala/manala/app/api"
 	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
-	"github.com/manala/manala/internal/notifier"
+	"github.com/manala/manala/internal/notify"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
@@ -315,7 +315,7 @@ func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 		),
 		stdOut,
 		ui,
-		notifier.NewNil(),
+		notify.New(notify.DiscardHandler),
 	)
 
 	command.SilenceErrors = true

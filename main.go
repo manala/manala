@@ -14,7 +14,7 @@ import (
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
-	"github.com/manala/manala/internal/notifier"
+	"github.com/manala/manala/internal/notify"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
 
@@ -36,8 +36,8 @@ func main() {
 	// User interface
 	ui := charm.New(err)
 
-	// Notify
-	notify := notifier.NewBeeep("Manala")
+	// Notifier
+	notifier := notify.New(notify.NewBeeepHandler("Manala"))
 
 	var (
 		appLog = new(slog.Logger)
@@ -51,7 +51,7 @@ func main() {
 		cmdList.NewCommand(appLog, appAPI, out),
 		cmdMascot.NewCommand(in, out),
 		cmdUpdate.NewCommand(appLog, appAPI, out),
-		cmdWatch.NewCommand(appLog, appAPI, out, ui, notify),
+		cmdWatch.NewCommand(appLog, appAPI, out, ui, notifier),
 	)
 
 	// App commands persistent flags
