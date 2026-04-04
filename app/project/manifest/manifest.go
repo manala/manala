@@ -48,20 +48,13 @@ func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
-	// Read content
-	content, err := io.ReadAll(reader)
-	n := int64(len(content))
-
-	if err != nil {
-		return n, serrors.New("unable to read project manifest").
-			WithErrors(err)
-	}
+func (manifest *Manifest) UnmarshalYAML(content []byte) error {
+	var err error
 
 	// Parse content to node
 	manifest.node, err = yaml.NewParser().ParseBytes(content)
 	if err != nil {
-		return n, serrors.New("irregular project manifest").
+		return serrors.New("irregular project manifest").
 			WithErrors(err)
 	}
 
@@ -70,10 +63,10 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
 		// Nil or empty content
 		if err == io.EOF {
-			return n, serrors.New("empty content")
+			return serrors.New("empty content")
 		}
 
-		return n, yaml.NewError(err)
+		return yaml.NewError(err)
 	}
 
 	// Validate node data
@@ -100,33 +93,33 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 			manifest.ValidatorFormatter(),
 		),
 	).Validate(data); err != nil {
-		return n, serrors.New("unable to validate project manifest").
+		return serrors.New("unable to validate project manifest").
 			WithErrors(err)
 	} else if len(violations) != 0 {
-		return n, serrors.New("invalid project manifest").
+		return serrors.New("invalid project manifest").
 			WithErrors(violations.StructuredErrors()...)
 	}
 
 	// Extract config node
 	configNode, err := yaml.NewExtractor(&manifest.node).ExtractRootMap("manala")
 	if err != nil {
-		return n, serrors.New("incorrect project manifest").
+		return serrors.New("incorrect project manifest").
 			WithErrors(err)
 	}
 
 	// Decode config
 	if err = goYaml.NodeToValue(configNode, manifest.config); err != nil {
-		return n, serrors.New("unable to decode project manifest config").
+		return serrors.New("unable to decode project manifest config").
 			WithErrors(err)
 	}
 
 	// Decode vars
 	if err = goYaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
-		return n, serrors.New("unable to decode recipe manifest vars").
+		return serrors.New("unable to decode recipe manifest vars").
 			WithErrors(err)
 	}
 
-	return n, err
+	return nil
 }
 
 func (manifest *Manifest) ValidatorFormatter() validator.Formatter {

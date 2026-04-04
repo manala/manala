@@ -3,6 +3,7 @@ package manifest_test
 import (
 	"bytes"
 	_ "embed"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -44,8 +45,10 @@ func (s *ProjectSuite) Test() {
 
 	m := manifest.New()
 
-	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	_, err := m.ReadFrom(mFile)
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
 
 	s.Require().NoError(err)
 

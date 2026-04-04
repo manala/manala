@@ -3,6 +3,7 @@ package manifest_test
 import (
 	"bytes"
 	_ "embed"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,8 +27,10 @@ func (s *RecipeSuite) Test() {
 
 	dir := filepath.FromSlash("testdata/RecipeSuite/Test")
 
-	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	_, err := m.ReadFrom(mFile)
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
 
 	s.Require().NoError(err)
 

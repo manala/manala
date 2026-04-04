@@ -284,7 +284,7 @@ func (s *Suite) TestRecipeErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read recipe manifest",
+			Message: "unable to parse recipe manifest",
 			Arguments: []any{
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},

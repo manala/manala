@@ -34,7 +34,7 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 	manifestFile := filepath.Join(dir, filename)
 
 	manifest := New()
-	if _, err := manifest.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
+	if err := manifest.UnmarshalYAML(buffer.Bytes()); err != nil {
 		return nil, err
 	}
 

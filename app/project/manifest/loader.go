@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"errors"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -50,8 +51,6 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 			WithArguments("dir", file)
 	}
 
-	manifest := New()
-
 	// Open file
 	reader, err := os.Open(file)
 	if err != nil {
@@ -59,10 +58,21 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 			WithArguments("file", file).
 			WithErrors(serrors.NewOs(err))
 	}
+	defer reader.Close()
 
-	// Read from file
-	if _, err = manifest.ReadFrom(reader); err != nil {
+	// Read file
+	content, err := io.ReadAll(reader)
+	if err != nil {
 		return nil, serrors.New("unable to read project manifest").
+			WithArguments("file", file).
+			WithErrors(err)
+	}
+
+	// Parse file content
+	// Bypass yaml.Unmarshal as goccy's decoder discards comments
+	manifest := New()
+	if err := manifest.UnmarshalYAML(content); err != nil {
+		return nil, serrors.New("unable to parse project manifest").
 			WithArguments("file", file).
 			WithErrors(err)
 	}

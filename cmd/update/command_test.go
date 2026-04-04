@@ -80,7 +80,7 @@ func (s *Suite) TestProjectErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read project manifest",
+			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
@@ -110,7 +110,7 @@ func (s *Suite) TestProjectErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read project manifest",
+			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
@@ -189,7 +189,7 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read project manifest",
+			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
@@ -220,7 +220,7 @@ func (s *Suite) TestRecursiveProjectErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read project manifest",
+			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
@@ -441,7 +441,7 @@ func (s *Suite) TestRecipeErrors() {
 		`, stdErr)
 
 		serrors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to read recipe manifest",
+			Message: "unable to parse recipe manifest",
 			Arguments: []any{
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},

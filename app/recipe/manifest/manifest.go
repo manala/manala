@@ -70,20 +70,13 @@ func (manifest *Manifest) Options() []app.RecipeOption {
 	return manifest.options
 }
 
-func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
-	// Read content
-	content, err := io.ReadAll(reader)
-	n := int64(len(content))
-
-	if err != nil {
-		return n, serrors.New("unable to read recipe manifest").
-			WithErrors(err)
-	}
+func (manifest *Manifest) UnmarshalYAML(content []byte) error {
+	var err error
 
 	// Parse content to node
 	manifest.node, err = yaml.NewParser(yaml.WithComments()).ParseBytes(content)
 	if err != nil {
-		return n, serrors.New("irregular recipe manifest").
+		return serrors.New("irregular recipe manifest").
 			WithErrors(err)
 	}
 
@@ -92,10 +85,10 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
 		// Nil or empty content
 		if err == io.EOF {
-			return n, serrors.New("empty content")
+			return serrors.New("empty content")
 		}
 
-		return n, yaml.NewError(err)
+		return yaml.NewError(err)
 	}
 
 	// Validate node data
@@ -132,45 +125,45 @@ func (manifest *Manifest) ReadFrom(reader io.Reader) (int64, error) {
 			manifest.ValidatorFormatter(),
 		),
 	).Validate(data); err != nil {
-		return n, serrors.New("unable to validate recipe manifest").
+		return serrors.New("unable to validate recipe manifest").
 			WithErrors(err)
 	} else if len(violations) != 0 {
-		return n, serrors.New("invalid recipe manifest").
+		return serrors.New("invalid recipe manifest").
 			WithErrors(violations.StructuredErrors()...)
 	}
 
 	// Extract config node
 	configNode, err := yaml.NewExtractor(&manifest.node).ExtractRootMap("manala")
 	if err != nil {
-		return n, serrors.New("incorrect recipe manifest").
+		return serrors.New("incorrect recipe manifest").
 			WithErrors(err)
 	}
 
 	// Decode config
 	if err = goYaml.NodeToValue(configNode, manifest.config); err != nil {
-		return n, serrors.New("unable to decode recipe manifest config").
+		return serrors.New("unable to decode recipe manifest config").
 			WithErrors(err)
 	}
 
 	// Decode vars
 	if err = goYaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
-		return n, serrors.New("unable to decode recipe manifest vars").
+		return serrors.New("unable to decode recipe manifest vars").
 			WithErrors(err)
 	}
 
 	// Infer schema
 	if err = yaml.NewNodeSchemaInferrer(manifest.node).Infer(manifest.schema); err != nil {
-		return n, serrors.New("unable to infer recipe manifest schema").
+		return serrors.New("unable to infer recipe manifest schema").
 			WithErrors(err)
 	}
 
 	// Infer options
 	if err = option.NewInferrer().Infer(manifest.node, &manifest.options); err != nil {
-		return n, serrors.New("unable to infer recipe manifest options").
+		return serrors.New("unable to infer recipe manifest options").
 			WithErrors(err)
 	}
 
-	return n, err
+	return nil
 }
 
 func (manifest *Manifest) ValidatorFormatter() validator.Formatter {

@@ -2,6 +2,7 @@ package manifest_test
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -32,7 +33,7 @@ func (s *Suite) Test() {
 	s.Equal(schema.Schema{}, m.Schema())
 }
 
-func (s *Suite) TestReadFromErrors() {
+func (s *Suite) TestUnmarshalYAMLErrors() {
 	tests := []struct {
 		test     string
 		expected *serrors.Assertion
@@ -598,17 +599,19 @@ func (s *Suite) TestReadFromErrors() {
 		s.Run(test.test, func() {
 			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/Suite/TestReadFromErrors/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestUnmarshalYAMLErrors")
 
-			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := m.ReadFrom(mFile)
+			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
+			content, _ := io.ReadAll(reader)
+
+			err := m.UnmarshalYAML(content)
 
 			serrors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
 
-func (s *Suite) TestReadFrom() {
+func (s *Suite) TestUnmarshalYAML() {
 	tests := []struct {
 		test                string
 		expectedDescription string
@@ -818,10 +821,12 @@ func (s *Suite) TestReadFrom() {
 		s.Run(test.test, func() {
 			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/Suite/TestReadFrom/" + test.test)
+			dir := filepath.FromSlash("testdata/Suite/TestUnmarshalYAML")
 
-			mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-			_, err := m.ReadFrom(mFile)
+			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
+			content, _ := io.ReadAll(reader)
+
+			err := m.UnmarshalYAML(content)
 
 			s.Require().NoError(err)
 
@@ -840,8 +845,10 @@ func (s *Suite) TestOptions() {
 
 	dir := filepath.FromSlash("testdata/Suite/TestOptions")
 
-	mFile, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	_, err := m.ReadFrom(mFile)
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
 
 	options := m.Options()
 
