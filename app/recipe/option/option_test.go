@@ -203,6 +203,7 @@ func (s *Suite) TestReadFrom() {
 			option, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Require().NoError(err)
+
 			s.Require().IsType(test.expectedType, option)
 			s.Equal(test.expectedLabel, option.Label())
 			s.Equal(test.expectedName, option.Name())
