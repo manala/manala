@@ -1,1 +1,1 @@
-!!str foo
+foo: !!str bar

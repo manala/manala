@@ -19,7 +19,7 @@ func TestSuite(t *testing.T) {
 }
 
 func (s *Suite) TestEmpty() {
-	node, err := parser.NewParser().ParseBytes(nil)
+	node, err := parser.Parse(nil)
 
 	s.Nil(node)
 
@@ -54,7 +54,7 @@ func (s *Suite) TestInvalids() {
 			dir := filepath.FromSlash("testdata/TestInvalids")
 			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			node, err := parser.NewParser().ParseBytes(content)
+			node, err := parser.Parse(content)
 
 			s.Nil(node)
 
@@ -67,7 +67,7 @@ func (s *Suite) TestMultipleDocuments() {
 	dir := filepath.FromSlash("testdata/TestMultipleDocuments")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	node, err := parser.NewParser().ParseBytes(content)
+	node, err := parser.Parse(content)
 
 	s.Nil(node)
 
@@ -128,7 +128,7 @@ func (s *Suite) TestIrregularMapKeys() {
 			dir := filepath.FromSlash("testdata/TestIrregularMapKeys")
 			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			node, err := parser.NewParser().ParseBytes(content)
+			node, err := parser.Parse(content)
 
 			s.Nil(node)
 
@@ -177,7 +177,7 @@ func (s *Suite) TestIrregularTypes() {
 			dir := filepath.FromSlash("testdata/TestIrregularTypes")
 			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
 
-			node, err := parser.NewParser().ParseBytes(content)
+			node, err := parser.Parse(content)
 
 			s.Nil(node)
 
@@ -190,7 +190,7 @@ func (s *Suite) TestMappingKey() {
 	dir := filepath.FromSlash("testdata/TestMappingKey")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	node, err := parser.NewParser().ParseBytes(content)
+	node, err := parser.Parse(content)
 
 	s.Require().NoError(err)
 
@@ -212,7 +212,7 @@ func (s *Suite) TestIrregularMappingKey() {
 	dir := filepath.FromSlash("testdata/TestIrregularMappingKey")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	node, err := parser.NewParser().ParseBytes(content)
+	node, err := parser.Parse(content)
 
 	s.Nil(node)
 
@@ -233,19 +233,23 @@ func (s *Suite) TestTags() {
 	dir := filepath.FromSlash("testdata/TestTags")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	node, err := parser.NewParser().ParseBytes(content)
+	node, err := parser.Parse(content)
 
 	s.Require().NoError(err)
 
-	s.Require().IsType((*goYamlAst.StringNode)(nil), node)
-	s.Equal("foo", node.(*goYamlAst.StringNode).Value)
+	s.Require().IsType((*goYamlAst.MappingNode)(nil), node)
+	mapping, _ := node.(*goYamlAst.MappingNode)
+	s.Require().Len(mapping.Values, 1)
+
+	s.Require().IsType((*goYamlAst.StringNode)(nil), mapping.Values[0].Value)
+	s.Equal("bar", mapping.Values[0].Value.String())
 }
 
 func (s *Suite) TestUnknownAnchors() {
 	dir := filepath.FromSlash("testdata/TestUnknownAnchors")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-	node, err := parser.NewParser().ParseBytes(content)
+	node, err := parser.Parse(content)
 
 	s.Nil(node)
 
@@ -253,12 +257,12 @@ func (s *Suite) TestUnknownAnchors() {
 		Message: "cannot find anchor",
 		Arguments: []any{
 			"line", 1,
-			"column", 2,
+			"column", 7,
 			"anchor", "anchor",
 		},
 		Details: `
-			>  1 | *anchor
-			        ^
+			>  1 | foo: *anchor
+			             ^
 		`,
 	}, err)
 }
@@ -268,7 +272,7 @@ func (s *Suite) TestAnchors() {
 		dir := filepath.FromSlash("testdata/TestAnchors")
 		content, _ := os.ReadFile(filepath.Join(dir, "Anchors.yaml"))
 
-		node, err := parser.NewParser().ParseBytes(content)
+		node, err := parser.Parse(content)
 
 		s.Require().NoError(err)
 
@@ -284,7 +288,7 @@ func (s *Suite) TestAnchors() {
 		dir := filepath.FromSlash("testdata/TestAnchors")
 		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeys.yaml"))
 
-		node, err := parser.NewParser().ParseBytes(content)
+		node, err := parser.Parse(content)
 
 		s.Require().NoError(err)
 
@@ -328,7 +332,7 @@ func (s *Suite) TestAnchors() {
 		dir := filepath.FromSlash("testdata/TestAnchors")
 		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeysDuplicated.yaml"))
 
-		node, err := parser.NewParser().ParseBytes(content)
+		node, err := parser.Parse(content)
 
 		s.Require().NoError(err)
 

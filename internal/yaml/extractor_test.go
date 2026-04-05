@@ -7,9 +7,9 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
-	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,7 +31,7 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 			},
 		},
 		{
-			test: "NonMap",
+			test: "NotMap",
 			expected: &serrors.Assertion{
 				Message: "root must be a map",
 				Arguments: []any{
@@ -63,7 +63,7 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 			},
 		},
 		{
-			test: "SubjectNonMapSingle",
+			test: "SubjectNotMapSingle",
 			expected: &serrors.Assertion{
 				Message: "key is not a map",
 				Arguments: []any{
@@ -78,7 +78,7 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 			},
 		},
 		{
-			test: "SubjectNonMapMultiple",
+			test: "SubjectNotMapMultiple",
 			expected: &serrors.Assertion{
 				Message: "key is not a map",
 				Arguments: []any{
@@ -100,7 +100,8 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMapErrors/" + test.test)
 			content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-			node, _ := parser.NewParser().ParseBytes(content)
+			file, _ := parser.ParseBytes(content, 0)
+			node := file.Docs[0].Body
 
 			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
@@ -170,7 +171,8 @@ func (s *ExtractorSuite) TestRootMap() {
 			dir := filepath.FromSlash("testdata/ExtractorSuite/TestRootMap/" + test.test)
 			content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
-			node, _ := parser.NewParser().ParseBytes(content)
+			file, _ := parser.ParseBytes(content, 0)
+			node := file.Docs[0].Body
 
 			extractor := yaml.NewExtractor(&node)
 			subjectNode, err := extractor.ExtractRootMap("subject")

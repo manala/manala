@@ -109,13 +109,11 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		{
 			test: "NotMap",
 			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
+				Message: "irregular recipe manifest",
 				Errors: []*serrors.Assertion{
 					{
 						Message: "yaml document must be a map",
 						Arguments: []any{
-							"expected", "object",
-							"actual", "string",
 							"line", 1,
 							"column", 1,
 						},

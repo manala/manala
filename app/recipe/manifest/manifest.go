@@ -75,7 +75,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	var err error
 
 	// Parse content to node
-	manifest.node, err = parser.NewParser().ParseBytes(content)
+	manifest.node, err = parser.Parse(content)
 	if err != nil {
 		return serrors.New("irregular recipe manifest").
 			WithErrors(err)
@@ -98,7 +98,6 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 			schema.NewValidator(_schema),
 		),
 		validator.WithFilters(validator.Filters{
-			{Path: "", Type: validator.InvalidType, StructuredMessage: "yaml document must be a map"},
 			{Path: "", Type: validator.Required, Property: "manala", StructuredMessage: "missing manala property"},
 			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
 			{Path: "manala", Type: validator.Required, Property: "description", StructuredMessage: "missing manala description property"},

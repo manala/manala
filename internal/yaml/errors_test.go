@@ -60,7 +60,7 @@ func (s *ErrorsSuite) Test() {
 }
 
 func (s *ErrorsSuite) TestNode() {
-	node, _ := parser.NewParser().ParseBytes([]byte(`foo: bar`))
+	node, _ := parser.Parse([]byte(`foo: bar`))
 
 	tests := []struct {
 		test     string

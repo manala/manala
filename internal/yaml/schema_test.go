@@ -8,9 +8,9 @@ import (
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/annotation"
-	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,7 +31,7 @@ func (s *SchemaSuite) TestNodeInferrerErrors() {
 		expected *serrors.Assertion
 	}{
 		{
-			test: "NonMap",
+			test: "NotMap",
 			node: `string`,
 			expected: &serrors.Assertion{
 				Message: "unable to infer schema type",
@@ -85,7 +85,8 @@ node: ~
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
+			file, _ := parser.ParseBytes([]byte(test.node), parser.ParseComments)
+			node := file.Docs[0].Body
 
 			schema := schema.Schema{}
 			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
@@ -281,7 +282,8 @@ object_multiple_with_comment:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
+			file, _ := parser.ParseBytes([]byte(test.node), parser.ParseComments)
+			node := file.Docs[0].Body
 
 			schema := schema.Schema{}
 			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
@@ -317,7 +319,8 @@ func (s *SchemaSuite) TestNodeTypeInferrerErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
+			file, _ := parser.ParseBytes([]byte(test.node), 0)
+			node := file.Docs[0].Body
 
 			schema := schema.Schema{"foo": "bar"}
 			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(schema)
@@ -434,7 +437,8 @@ node:
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, _ := parser.NewParser().ParseBytes([]byte(test.node))
+			file, _ := parser.ParseBytes([]byte(test.node), 0)
+			node := file.Docs[0].Body
 
 			s.Require().IsType((*ast.MappingNode)(nil), node)
 			s.Require().Len(node.(*ast.MappingNode).Values, 1)
