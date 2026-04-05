@@ -1,7 +1,7 @@
 package option
 
 import (
-	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/json/number"
 	"github.com/manala/manala/internal/serrors"
 )
 
@@ -24,7 +24,7 @@ func NewTextOption(option *option, _ map[string]any) (*TextOption, error) {
 	}
 
 	// Max length
-	if maxLength, ok := json.NumberType(option.schema["maxLength"]); ok {
+	if maxLength, ok := number.NumberType(option.schema["maxLength"]); ok {
 		textOption.MaxLength = maxLength.Int()
 	}
 

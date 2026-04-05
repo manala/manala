@@ -1,7 +1,7 @@
 package option
 
 import (
-	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/json/number"
 	"github.com/manala/manala/internal/serrors"
 )
 
@@ -33,7 +33,7 @@ func NewSelectOption(option *option, _ map[string]any) (*SelectOption, error) {
 	selectOption.Values = make([]any, len(enum))
 
 	for i := range enum {
-		if value, ok := json.NumberType(enum[i]); ok {
+		if value, ok := number.NumberType(enum[i]); ok {
 			selectOption.Values[i] = value.Normalize()
 		} else {
 			selectOption.Values[i] = enum[i]

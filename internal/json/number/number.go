@@ -1,4 +1,4 @@
-package json
+package number
 
 import (
 	"encoding/json"
@@ -15,14 +15,14 @@ type Number struct {
 	json.Number
 }
 
-func (number Number) Int() int {
-	value, _ := number.Int64()
+func (n Number) Int() int {
+	value, _ := n.Int64()
 
 	return int(value)
 }
 
-func (number Number) Normalize() any {
-	str := number.String()
+func (n Number) Normalize() any {
+	str := n.String()
 
 	_int64, err := strconv.ParseInt(str, 10, 64)
 	if err == nil {

@@ -1,10 +1,10 @@
-package json_test
+package number_test
 
 import (
-	gojson "encoding/json"
+	"encoding/json"
 	"testing"
 
-	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/json/number"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -28,16 +28,16 @@ func (s *NumberSuite) TestType() {
 		},
 		{
 			test:     "Number",
-			value:    gojson.Number("0"),
+			value:    json.Number("0"),
 			expected: true,
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			number, ok := json.NumberType(test.value)
+			num, ok := number.NumberType(test.value)
 
-			s.Require().IsType(json.Number{}, number)
+			s.Require().IsType(number.Number{}, num)
 			s.Equal(test.expected, ok)
 		})
 	}
@@ -46,43 +46,43 @@ func (s *NumberSuite) TestType() {
 func (s *NumberSuite) Test() {
 	tests := []struct {
 		test              string
-		number            gojson.Number
+		number            json.Number
 		expectedInt       int
 		expectedNormalize any
 	}{
 		{
 			test:              "Zero",
-			number:            gojson.Number("0"),
+			number:            json.Number("0"),
 			expectedInt:       0,
 			expectedNormalize: 0,
 		},
 		{
 			test:              "Integer",
-			number:            gojson.Number("3"),
+			number:            json.Number("3"),
 			expectedInt:       3,
 			expectedNormalize: int64(3),
 		},
 		{
 			test:              "FloatZero",
-			number:            gojson.Number("3.0"),
+			number:            json.Number("3.0"),
 			expectedInt:       0,
 			expectedNormalize: 3.0,
 		},
 		{
 			test:              "FloatMidLow",
-			number:            gojson.Number("3.25"),
+			number:            json.Number("3.25"),
 			expectedInt:       0,
 			expectedNormalize: 3.25,
 		},
 		{
 			test:              "FloatMid",
-			number:            gojson.Number("3.5"),
+			number:            json.Number("3.5"),
 			expectedInt:       0,
 			expectedNormalize: 3.5,
 		},
 		{
 			test:              "FloatMidHigh",
-			number:            gojson.Number("3.75"),
+			number:            json.Number("3.75"),
 			expectedInt:       0,
 			expectedNormalize: 3.75,
 		},
@@ -90,9 +90,9 @@ func (s *NumberSuite) Test() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			number := json.Number{Number: test.number}
+			num := number.Number{Number: test.number}
 
-			s.Equal(test.expectedInt, number.Int())
+			s.Equal(test.expectedInt, num.Int())
 		})
 	}
 }

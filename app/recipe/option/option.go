@@ -5,7 +5,7 @@ import (
 	"io"
 
 	"github.com/manala/manala/app"
-	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
@@ -60,7 +60,7 @@ func New(reader io.Reader, optionSchema schema.Schema, optionPath path.Path) (ap
 
 	// Parse content to fields
 	var fields map[string]any
-	if err := json.Unmarshal(content, &fields); err != nil {
+	if err := unmarshaler.Unmarshal(content, &fields); err != nil {
 		return nil, serrors.New("irregular recipe option").
 			WithErrors(err)
 	}

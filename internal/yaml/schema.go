@@ -1,7 +1,7 @@
 package yaml
 
 import (
-	"github.com/manala/manala/internal/json"
+	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/yaml/annotation"
@@ -169,7 +169,7 @@ func (inf *NodeAnnotationSchemaInferrer) Infer(schema schema.Schema) error {
 		return nil
 	}
 
-	err := json.Unmarshal([]byte(inf.annotation.Value()), &schema)
+	err := unmarshaler.Unmarshal([]byte(inf.annotation.Value()), &schema)
 	if err != nil {
 		if inf.node != nil {
 			return NewNodeError(err.Error(), inf.node.GetComment())

@@ -1,4 +1,4 @@
-package json
+package unmarshaler
 
 import (
 	"bytes"
