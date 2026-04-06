@@ -7,10 +7,10 @@ import (
 )
 
 type Extractor struct {
-	node *goYamlAst.Node
+	node goYamlAst.Node
 }
 
-func NewExtractor(node *goYamlAst.Node) *Extractor {
+func NewExtractor(node goYamlAst.Node) *Extractor {
 	return &Extractor{
 		node: node,
 	}
@@ -19,7 +19,7 @@ func NewExtractor(node *goYamlAst.Node) *Extractor {
 func (extractor *Extractor) ExtractRootMap(key string) (goYamlAst.Node, error) {
 	var subject goYamlAst.Node
 
-	switch node := (*extractor.node).(type) {
+	switch node := (extractor.node).(type) {
 	case *goYamlAst.MappingNode:
 		for i, n := range node.Values {
 			if n.Key.GetToken().Value == key {

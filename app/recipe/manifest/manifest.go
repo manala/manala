@@ -36,7 +36,7 @@ func New() *Manifest {
 }
 
 type Manifest struct {
-	node    goYamlAst.Node
+	node    *goYamlAst.MappingNode
 	config  *config
 	vars    map[string]any
 	schema  schema.Schema
@@ -133,7 +133,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	}
 
 	// Extract config node
-	configNode, err := yaml.NewExtractor(&manifest.node).ExtractRootMap("manala")
+	configNode, err := yaml.NewExtractor(manifest.node).ExtractRootMap("manala")
 	if err != nil {
 		return serrors.New("incorrect recipe manifest").
 			WithErrors(err)

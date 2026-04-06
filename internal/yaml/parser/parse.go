@@ -8,7 +8,7 @@ import (
 	"github.com/goccy/go-yaml/parser"
 )
 
-func Parse(bytes []byte) (ast.Node, error) {
+func Parse(bytes []byte) (*ast.MappingNode, error) {
 	file, err := parser.ParseBytes(bytes, parser.ParseComments)
 	if err != nil {
 		return nil, yaml.NewError(err)
@@ -24,10 +24,10 @@ func Parse(bytes []byte) (ast.Node, error) {
 		return nil, yaml.NewNodeError("multiple documents yaml file", file.Docs[1].Body)
 	}
 
-	node := file.Docs[0].Body
-
-	if _, ok := node.(ast.MapNode); !ok {
-		return nil, yaml.NewNodeError("yaml document must be a map", node)
+	// ... and the first document must be a map
+	node, ok := file.Docs[0].Body.(*ast.MappingNode)
+	if !ok {
+		return nil, yaml.NewNodeError("yaml document must be a map", file.Docs[0].Body)
 	}
 
 	// Walk
@@ -40,8 +40,7 @@ func Parse(bytes []byte) (ast.Node, error) {
 	}
 
 	// Resolve
-	node, err = resolve(node, w.anchors)
-	if err != nil {
+	if err := resolve(node, w.anchors); err != nil {
 		return nil, err
 	}
 

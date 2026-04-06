@@ -103,7 +103,7 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 			file, _ := parser.ParseBytes(content, 0)
 			node := file.Docs[0].Body
 
-			extractor := yaml.NewExtractor(&node)
+			extractor := yaml.NewExtractor(node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
 			s.Nil(subjectNode)
@@ -174,7 +174,7 @@ func (s *ExtractorSuite) TestRootMap() {
 			file, _ := parser.ParseBytes(content, 0)
 			node := file.Docs[0].Body
 
-			extractor := yaml.NewExtractor(&node)
+			extractor := yaml.NewExtractor(node)
 			subjectNode, err := extractor.ExtractRootMap("subject")
 
 			s.Require().NoError(err)
