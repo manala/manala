@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"io"
 	"regexp"
+	"slices"
 
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
@@ -59,6 +60,16 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		return err
 	}
 
+	// Partition config & vars
+	i := slices.IndexFunc(manifest.node.Values, func(node *goYamlAst.MappingValueNode) bool {
+		return node.Key.String() == "manala"
+	})
+	if i == -1 {
+		return &parsing.Error{
+			Err: serrors.New("missing manala property"),
+		}
+	}
+
 	// Decode node
 	var data any
 	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
@@ -78,7 +89,6 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 			schema.NewValidator(_schema),
 		),
 		validator.WithFilters(validator.Filters{
-			{Path: "", Type: validator.Required, Property: "manala", StructuredMessage: "missing manala property"},
 			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
 			{Path: "manala", Type: validator.Required, Property: "recipe", StructuredMessage: "missing manala recipe property"},
 			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.AdditionalPropertyNotAllowed, StructuredMessage: "manala field don't support additional properties"},
@@ -102,12 +112,8 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 			WithErrors(violations.StructuredErrors()...)
 	}
 
-	// Extract config node
-	configNode, err := yaml.NewExtractor(manifest.node).ExtractRootMap("manala")
-	if err != nil {
-		return serrors.New("incorrect project manifest").
-			WithErrors(err)
-	}
+	configNode := manifest.node.Values[i].Value
+	manifest.node.Values = slices.Concat(manifest.node.Values[:i], manifest.node.Values[i+1:])
 
 	// Decode config
 	if err = goYaml.NodeToValue(configNode, manifest.config); err != nil {

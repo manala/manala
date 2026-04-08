@@ -91,21 +91,9 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config
 		{
 			test: "ConfigAbsent",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "missing manala property",
-						Arguments: []any{
-							"property", "manala",
-							"line", 1,
-							"column", 4,
-						},
-						Details: `
-							>  1 | foo: bar
-							          ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Err: &serrors.Assertion{
+					Message: "missing manala property",
 				},
 			},
 		},
