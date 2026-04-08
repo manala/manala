@@ -32,7 +32,7 @@ func (s *Suite) TestEmpty() {
 func (s *Suite) TestInvalids() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "At",
@@ -91,7 +91,7 @@ func (s *Suite) TestMultipleDocuments() {
 func (s *Suite) TestIrregularMapKeys() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Integer",
@@ -141,7 +141,7 @@ func (s *Suite) TestIrregularMapKeys() {
 func (s *Suite) TestIrregularTypes() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Inf",

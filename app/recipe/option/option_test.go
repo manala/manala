@@ -24,7 +24,7 @@ func (s *Suite) TestNewFromErrors() {
 		test     string
 		data     string
 		schema   schema.Schema
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test:   "Syntax",

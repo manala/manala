@@ -21,7 +21,7 @@ func (s *ChainSuite) TestErrors() {
 	tests := []struct {
 		test      string
 		inferrers []inferrer.Inferrer
-		expected  *serrors.Assertion
+		expected  errors.Assertion
 	}{
 		{
 			test: "Error",

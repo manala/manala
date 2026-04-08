@@ -29,7 +29,7 @@ func (s *SchemaSuite) TestNodeInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "NotMap",
@@ -299,7 +299,7 @@ func (s *SchemaSuite) TestNodeTypeInferrerErrors() {
 	tests := []struct {
 		test     string
 		node     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "UninferableNode",
@@ -456,7 +456,7 @@ func (s *SchemaSuite) TestNodeAnnotationsInferrerErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Syntax",

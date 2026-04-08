@@ -78,7 +78,7 @@ sequence_multiple:
 	tests := []struct {
 		test     string
 		path     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Root",

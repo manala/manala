@@ -25,7 +25,7 @@ func (s *ErrorsSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Unknown",
@@ -66,7 +66,7 @@ func (s *ErrorsSuite) TestNode() {
 	tests := []struct {
 		test     string
 		node     goYamlAst.Node
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Content",

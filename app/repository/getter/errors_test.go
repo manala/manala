@@ -68,7 +68,7 @@ func (s *ErrorsSuite) TestError() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *serrors.Assertion
+		expected testingErrors.Assertion
 	}{
 		{
 			test: "Any",

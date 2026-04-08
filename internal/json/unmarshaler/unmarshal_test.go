@@ -21,7 +21,7 @@ func (s *Suite) TestErrors() {
 	tests := []struct {
 		test     string
 		data     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Syntax",

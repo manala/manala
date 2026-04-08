@@ -21,7 +21,7 @@ func (s *JSONSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Unknown",

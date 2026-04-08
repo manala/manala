@@ -37,7 +37,7 @@ func (s *Suite) Test() {
 func (s *Suite) TestUnmarshalYAMLErrors() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Empty",

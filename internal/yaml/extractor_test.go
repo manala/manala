@@ -23,7 +23,7 @@ func TestExtractorSuite(t *testing.T) {
 func (s *ExtractorSuite) TestRootMapErrors() {
 	tests := []struct {
 		test     string
-		expected *serrors.Assertion
+		expected errors.Assertion
 	}{
 		{
 			test: "Empty",

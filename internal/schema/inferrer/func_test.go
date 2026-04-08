@@ -21,7 +21,7 @@ func (s *FuncSuite) TestErrors() {
 	tests := []struct {
 		test       string
 		schemaFunc func(schema schema.Schema) error
-		expected   *serrors.Assertion
+		expected   errors.Assertion
 	}{
 		{
 			test: "Error",
