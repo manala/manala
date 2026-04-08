@@ -6,6 +6,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -39,7 +40,7 @@ func (s *FuncSuite) TestErrors() {
 
 			err := inferrer.NewFunc(test.schemaFunc).Infer(schema)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -32,7 +33,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 		recipe, err := loader.Load(repositoryMock, "name")
 
 		s.Nil(recipe)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRecipeError{},
 			Message: "recipe not found",
 			Arguments: []any{
@@ -74,7 +75,7 @@ func (s *LoaderSuite) TestLoadAllErrors() {
 		recipes, err := loader.LoadAll(repository)
 
 		s.Empty(recipes)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.EmptyRepositoryError{},
 			Message: "empty repository",
 			Arguments: []any{

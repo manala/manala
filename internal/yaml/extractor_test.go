@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml"
 
 	"github.com/goccy/go-yaml/ast"
@@ -108,7 +109,7 @@ func (s *ExtractorSuite) TestRootMapErrors() {
 
 			s.Nil(subjectNode)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

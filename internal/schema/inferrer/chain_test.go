@@ -6,6 +6,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -41,7 +42,7 @@ func (s *ChainSuite) TestErrors() {
 
 			err := inferrer.NewChain(test.inferrers...).Infer(schema)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

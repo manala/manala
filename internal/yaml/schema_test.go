@@ -6,6 +6,7 @@ import (
 
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/annotation"
 
@@ -91,7 +92,7 @@ node: ~
 			schema := schema.Schema{}
 			err := yaml.NewNodeSchemaInferrer(node).Infer(schema)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -325,7 +326,7 @@ func (s *SchemaSuite) TestNodeTypeInferrerErrors() {
 			schema := schema.Schema{"foo": "bar"}
 			err := yaml.NewNodeTypeSchemaInferrer(node).Infer(schema)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -490,7 +491,7 @@ func (s *SchemaSuite) TestNodeAnnotationsInferrerErrors() {
 
 			err := yaml.NewNodeAnnotationSchemaInferrer(nil, annot).Infer(schema)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

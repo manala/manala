@@ -12,6 +12,7 @@ import (
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	"github.com/manala/manala/internal/caching"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
@@ -38,7 +39,7 @@ func (s *Suite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundProjectError{},
 			Message: "project not found",
 			Arguments: []any{
@@ -59,7 +60,7 @@ func (s *Suite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "project manifest is a directory",
 			Arguments: []any{
 				"dir", filepath.Join(projectDir, ".manala.yaml"),
@@ -79,16 +80,16 @@ func (s *Suite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "irregular project manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "empty yaml file",
 						},
 					},
@@ -109,16 +110,16 @@ func (s *Suite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "invalid project manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "missing manala recipe property",
 							Arguments: []any{
 								"path", "manala",
@@ -167,7 +168,7 @@ func (s *Suite) TestRecursiveProjectErrors() {
 			 • loading projects recursive…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "project manifest is a directory",
 			Arguments: []any{
 				"dir", filepath.Join(projectDir, ".manala.yaml"),
@@ -188,16 +189,16 @@ func (s *Suite) TestRecursiveProjectErrors() {
 			 • loading projects recursive…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "irregular project manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "empty yaml file",
 						},
 					},
@@ -219,16 +220,16 @@ func (s *Suite) TestRecursiveProjectErrors() {
 			 • loading projects recursive…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse project manifest",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "invalid project manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "missing manala recipe property",
 							Arguments: []any{
 								"path", "manala",
@@ -261,7 +262,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -284,7 +285,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -307,7 +308,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -392,7 +393,7 @@ func (s *Suite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRecipeError{},
 			Message: "recipe not found",
 			Arguments: []any{
@@ -417,7 +418,7 @@ func (s *Suite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "recipe manifest is a directory",
 			Arguments: []any{
 				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
@@ -440,16 +441,16 @@ func (s *Suite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse recipe manifest",
 			Arguments: []any{
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "invalid recipe manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "missing manala description property",
 							Arguments: []any{
 								"path", "manala",

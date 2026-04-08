@@ -5,6 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -59,7 +60,7 @@ func (s *AccessorSuite) TestGetErrors() {
 
 			value, err := accessor.Get()
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 			s.Nil(value)
 		})
 	}

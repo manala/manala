@@ -12,6 +12,7 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -42,8 +43,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "Empty",
 			expected: &serrors.Assertion{
 				Message: "irregular recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty yaml file",
 					},
 				},
@@ -53,8 +54,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "Invalid",
 			expected: &serrors.Assertion{
 				Message: "irregular recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "'@' is a reserved character",
 						Arguments: []any{
 							"line", 1,
@@ -72,8 +73,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "IrregularType",
 			expected: &serrors.Assertion{
 				Message: "irregular recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "irregular type",
 						Arguments: []any{
 							"line", 1,
@@ -91,8 +92,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "IrregularMapKey",
 			expected: &serrors.Assertion{
 				Message: "irregular recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "irregular map key",
 						Arguments: []any{
 							"line", 1,
@@ -110,8 +111,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "NotMap",
 			expected: &serrors.Assertion{
 				Message: "irregular recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "yaml document must be a map",
 						Arguments: []any{
 							"line", 1,
@@ -130,8 +131,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigAbsent",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala property",
 						Arguments: []any{
 							"property", "manala",
@@ -150,8 +151,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigNotMap",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala field must be a map",
 						Arguments: []any{
 							"expected", "object",
@@ -172,8 +173,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala description property",
 						Arguments: []any{
 							"path", "manala",
@@ -193,8 +194,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigAdditionalProperties",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala field don't support additional properties",
 						Arguments: []any{
 							"path", "manala.foo",
@@ -216,8 +217,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigDescriptionAbsent",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala description property",
 						Arguments: []any{
 							"path", "manala",
@@ -238,8 +239,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigDescriptionNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala description field must be a string",
 						Arguments: []any{
 							"expected", "string",
@@ -262,8 +263,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigDescriptionEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala description field",
 						Arguments: []any{
 							"minimum", 1,
@@ -285,8 +286,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigDescriptionTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala description field",
 						Arguments: []any{
 							"maximum", 256,
@@ -309,8 +310,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigIconNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala icon field must be a string",
 						Arguments: []any{
 							"expected", "string",
@@ -333,8 +334,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigIconEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala icon field",
 						Arguments: []any{
 							"minimum", 1,
@@ -356,8 +357,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigIconTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala icon field",
 						Arguments: []any{
 							"maximum", 100,
@@ -380,8 +381,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigTemplateNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala template field must be a string",
 						Arguments: []any{
 							"expected", "string",
@@ -404,8 +405,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigTemplateEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala template field",
 						Arguments: []any{
 							"minimum", 1,
@@ -427,8 +428,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigTemplateTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala template field",
 						Arguments: []any{
 							"maximum", 100,
@@ -451,8 +452,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigSyncNotArray",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala sync field must be a sequence",
 						Arguments: []any{
 							"expected", "array",
@@ -476,8 +477,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigSyncItemNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala sync sequence entries must be strings",
 						Arguments: []any{
 							"expected", "string",
@@ -501,8 +502,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigSyncItemEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala sync sequence entry",
 						Arguments: []any{
 							"minimum", 1,
@@ -525,8 +526,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigSyncItemTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid recipe manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala sync sequence entry",
 						Arguments: []any{
 							"maximum", 256,
@@ -550,8 +551,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "SchemaMisplacedAnnotation",
 			expected: &serrors.Assertion{
 				Message: "unable to infer recipe manifest schema",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "misplaced schema annotation",
 						Arguments: []any{
 							"line", 4,
@@ -572,8 +573,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "SchemaInvalidJson",
 			expected: &serrors.Assertion{
 				Message: "unable to infer recipe manifest schema",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "invalid character 'o' in literal false (expecting 'a')",
 						Arguments: []any{
 							"line", 4,
@@ -604,7 +605,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 
 			err := m.UnmarshalYAML(content)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

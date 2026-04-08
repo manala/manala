@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/parser"
 
@@ -54,7 +55,7 @@ func (s *ErrorsSuite) Test() {
 		s.Run(test.test, func() {
 			err := yaml.NewError(test.err)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -88,7 +89,7 @@ func (s *ErrorsSuite) TestNode() {
 		s.Run(test.test, func() {
 			err := yaml.NewNodeError("error", test.node)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

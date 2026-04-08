@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -19,7 +20,7 @@ func (s *Suite) TestError() {
 	s.Run("New", func() {
 		err := serrors.New("error")
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
 		}, err)
@@ -31,7 +32,7 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithMessage(message)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: message,
 		}, err)
@@ -44,7 +45,7 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithArguments(foo, bar)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
 			Arguments: []any{
@@ -59,7 +60,7 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithDetails(details)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
 			Details: details,
@@ -74,7 +75,7 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithDetailsFunc(detailsFunc)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
 			Details: "details func false",
@@ -88,15 +89,15 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithErrors(foo, bar)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Type:    serrors.Error{},
 					Message: "foo",
 				},
-				{
+				&serrors.Assertion{
 					Type:    serrors.Error{},
 					Message: "bar",
 				},
@@ -110,11 +111,11 @@ func (s *Suite) TestError() {
 		err := serrors.New("error").
 			WithErrors(nil, foo, nil)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "error",
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Type:    serrors.Error{},
 					Message: "foo",
 				},

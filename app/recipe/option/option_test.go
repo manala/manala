@@ -8,6 +8,7 @@ import (
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -31,8 +32,8 @@ func (s *Suite) TestNewFromErrors() {
 			schema: schema.Schema{},
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "invalid character 'o' in literal false (expecting 'a')",
 						Arguments: []any{
 							"offset", int64(2),
@@ -47,8 +48,8 @@ func (s *Suite) TestNewFromErrors() {
 			schema: schema.Schema{},
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "cannot unmarshal into value",
 						Arguments: []any{
 							"offset", int64(1),
@@ -65,14 +66,14 @@ func (s *Suite) TestNewFromErrors() {
 			schema: schema.Schema{},
 			expected: &serrors.Assertion{
 				Message: "invalid recipe option",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing property",
 						Arguments: []any{
 							"property", "label",
 						},
 					},
-					{
+					&serrors.Assertion{
 						Message: "additional property is not allowed",
 						Arguments: []any{
 							"path", "foo",
@@ -157,7 +158,7 @@ func (s *Suite) TestNewFromErrors() {
 			option, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Nil(option)
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

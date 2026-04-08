@@ -11,6 +11,7 @@ import (
 	cmdList "github.com/manala/manala/cmd/list"
 	"github.com/manala/manala/internal/caching"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/ui/adapters/charm"
 	"github.com/manala/manala/internal/ui/log"
@@ -33,7 +34,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -54,7 +55,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -75,7 +76,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
@@ -97,7 +98,7 @@ func (s *Suite) TestRepositoryErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.EmptyRepositoryError{},
 			Message: "empty repository",
 			Arguments: []any{
@@ -159,7 +160,7 @@ func (s *Suite) TestRecipeErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "recipe manifest is a directory",
 			Arguments: []any{
 				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
@@ -180,16 +181,16 @@ func (s *Suite) TestRecipeErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unable to parse recipe manifest",
 			Arguments: []any{
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "invalid recipe manifest",
-					Errors: []*serrors.Assertion{
-						{
+					Errors: []errors.Assertion{
+						&serrors.Assertion{
 							Message: "missing manala description property",
 							Arguments: []any{
 								"path", "manala",

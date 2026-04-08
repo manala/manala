@@ -6,6 +6,7 @@ import (
 
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/serrors"
+	testingErrors "github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -134,7 +135,7 @@ func (s *ErrorsSuite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			serrors.Equal(s.T(), test.expected, getter.NewError(test.err))
+			testingErrors.Equal(s.T(), test.expected, getter.NewError(test.err))
 		})
 	}
 }

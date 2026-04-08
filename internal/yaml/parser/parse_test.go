@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
@@ -23,7 +24,7 @@ func (s *Suite) TestEmpty() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.T(), &serrors.Assertion{
+	errors.Equal(s.T(), &serrors.Assertion{
 		Message: "empty yaml file",
 	}, err)
 }
@@ -58,7 +59,7 @@ func (s *Suite) TestInvalids() {
 
 			s.Nil(node)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -71,7 +72,7 @@ func (s *Suite) TestMultipleDocuments() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.T(), &serrors.Assertion{
+	errors.Equal(s.T(), &serrors.Assertion{
 		Message: "multiple documents yaml file",
 		Arguments: []any{
 			"line", 4,
@@ -132,7 +133,7 @@ func (s *Suite) TestIrregularMapKeys() {
 
 			s.Nil(node)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -181,7 +182,7 @@ func (s *Suite) TestIrregularTypes() {
 
 			s.Nil(node)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }
@@ -215,7 +216,7 @@ func (s *Suite) TestIrregularMappingKey() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.T(), &serrors.Assertion{
+	errors.Equal(s.T(), &serrors.Assertion{
 		Message: "irregular map key",
 		Arguments: []any{
 			"line", 1,
@@ -250,7 +251,7 @@ func (s *Suite) TestUnknownAnchors() {
 
 	s.Nil(node)
 
-	serrors.Equal(s.T(), &serrors.Assertion{
+	errors.Equal(s.T(), &serrors.Assertion{
 		Message: "cannot find anchor",
 		Arguments: []any{
 			"line", 1,

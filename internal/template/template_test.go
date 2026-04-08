@@ -7,6 +7,7 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -108,7 +109,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ .foo }`)
 		err := template.WriteTo(s.buffer)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "unexpected \"}\" in operand",
 			Arguments: []any{
 				"line", 1,
@@ -123,7 +124,7 @@ func (s *Suite) TestWriteTo() {
 		template.WithDefaultContent(`{{ .foo }}`)
 		err := template.WriteTo(s.buffer)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "nil data; no entry for key \"foo\"",
 			Arguments: []any{
 				"context", ".foo",

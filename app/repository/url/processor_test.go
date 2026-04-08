@@ -6,6 +6,7 @@ import (
 
 	"github.com/manala/manala/app/repository/url"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -23,7 +24,7 @@ func (s *ProcessorSuite) TestProcess() {
 		urls        map[int]string
 		queries     map[int]map[string]string
 		expectedURL string
-		expectedErr *serrors.Assertion
+		expectedErr errors.Assertion
 	}{
 		{
 			test: "QuerySemicolon",
@@ -33,8 +34,8 @@ func (s *ProcessorSuite) TestProcess() {
 				Arguments: []any{
 					"query", "bar;baz",
 				},
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "invalid semicolon separator in query",
 					},
 				},
@@ -154,7 +155,7 @@ func (s *ProcessorSuite) TestProcess() {
 			url, err := processor.Process(test.url)
 
 			if test.expectedErr != nil {
-				serrors.Equal(s.T(), test.expectedErr, err)
+				errors.Equal(s.T(), test.expectedErr, err)
 				s.Empty(url)
 			} else {
 				s.Require().NoError(err)

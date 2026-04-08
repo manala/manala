@@ -8,6 +8,7 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -26,7 +27,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 		project, err := loader.Load("dir")
 
 		s.Nil(project)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundProjectError{},
 			Message: "project not found",
 			Arguments: []any{
@@ -62,7 +63,7 @@ func (s *LoaderSuite) TestLoadRecursiveErrors() {
 			return nil
 		})
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "dir not found",
 			Arguments: []any{
 				"dir", "dir",

@@ -12,6 +12,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -35,7 +36,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "project manifest is a directory",
 			Arguments: []any{
@@ -60,14 +61,14 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 		s.Nil(project)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "invalid project manifest vars",
 			Arguments: []any{
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Type:    serrors.Error{},
 					Message: "invalid type",
 					Arguments: []any{

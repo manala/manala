@@ -8,6 +8,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -28,13 +29,13 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
-	serrors.Equal(s.T(), &serrors.Assertion{
+	errors.Equal(s.T(), &serrors.Assertion{
 		Message: "unable to process repository query",
 		Arguments: []any{
 			"query", "bar;baz",
 		},
-		Errors: []*serrors.Assertion{
-			{
+		Errors: []errors.Assertion{
+			&serrors.Assertion{
 				Message: "invalid semicolon separator in query",
 			},
 		},

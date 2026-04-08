@@ -10,6 +10,7 @@ import (
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -50,7 +51,7 @@ func (s *SyncerSuite) TestSync() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz"),
@@ -206,7 +207,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "no source file or directory",
 			Arguments: []any{
 				"path", filepath.Join(sourcePath, "baz.tmpl"),
@@ -244,10 +245,10 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("Invalid", func() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateProvider)
 
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "template error",
-			Errors: []*serrors.Assertion{
-				{
+			Errors: []errors.Assertion{
+				&serrors.Assertion{
 					Message: "nil data; no entry for key \"foo\"",
 					Arguments: []any{
 						"context", ".foo",

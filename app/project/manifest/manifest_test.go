@@ -8,6 +8,7 @@ import (
 
 	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -35,8 +36,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "Empty",
 			expected: &serrors.Assertion{
 				Message: "irregular project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty yaml file",
 					},
 				},
@@ -46,8 +47,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "Invalid",
 			expected: &serrors.Assertion{
 				Message: "irregular project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "'@' is a reserved character",
 						Arguments: []any{
 							"line", 1,
@@ -65,8 +66,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "IrregularType",
 			expected: &serrors.Assertion{
 				Message: "irregular project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "irregular type",
 						Arguments: []any{
 							"line", 1,
@@ -84,8 +85,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "IrregularMapKey",
 			expected: &serrors.Assertion{
 				Message: "irregular project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "irregular map key",
 						Arguments: []any{
 							"line", 1,
@@ -103,8 +104,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "NotMap",
 			expected: &serrors.Assertion{
 				Message: "irregular project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "yaml document must be a map",
 						Arguments: []any{
 							"line", 1,
@@ -123,8 +124,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigAbsent",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala property",
 						Arguments: []any{
 							"property", "manala",
@@ -143,8 +144,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigNotMap",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala field must be a map",
 						Arguments: []any{
 							"expected", "object",
@@ -165,8 +166,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala recipe property",
 						Arguments: []any{
 							"path", "manala",
@@ -186,8 +187,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigAdditionalProperties",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala field don't support additional properties",
 						Arguments: []any{
 							"path", "manala.foo",
@@ -209,8 +210,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRecipeAbsent",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "missing manala recipe property",
 						Arguments: []any{
 							"path", "manala",
@@ -231,8 +232,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRecipeNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala recipe field must be a string",
 						Arguments: []any{
 							"expected", "string",
@@ -255,8 +256,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRecipeEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala recipe field",
 						Arguments: []any{
 							"minimum", 1,
@@ -278,8 +279,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRecipeTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala recipe field",
 						Arguments: []any{
 							"maximum", 100,
@@ -302,8 +303,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRepositoryNotString",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "manala repository field must be a string",
 						Arguments: []any{
 							"expected", "string",
@@ -326,8 +327,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRepositoryEmpty",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "empty manala repository field",
 						Arguments: []any{
 							"minimum", 1,
@@ -349,8 +350,8 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 			test: "ConfigRepositoryTooLong",
 			expected: &serrors.Assertion{
 				Message: "invalid project manifest",
-				Errors: []*serrors.Assertion{
-					{
+				Errors: []errors.Assertion{
+					&serrors.Assertion{
 						Message: "too long manala repository field",
 						Arguments: []any{
 							"maximum", 256,
@@ -381,7 +382,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 
 			err := m.UnmarshalYAML(content)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -93,7 +94,7 @@ func (s *JSONSuite) Test() {
 		s.Run(test.test, func() {
 			err := serrors.NewJSON(test.err)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 		})
 	}
 }

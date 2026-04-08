@@ -5,6 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
@@ -107,7 +108,7 @@ sequence_multiple:
 
 			_node, err := accessor.Get(node.Docs[0].Body)
 
-			serrors.Equal(s.T(), test.expected, err)
+			errors.Equal(s.T(), test.expected, err)
 			s.Nil(_node)
 		})
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -35,7 +36,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 
 		s.Nil(recipe)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    serrors.Error{},
 			Message: "recipe manifest is a directory",
 			Arguments: []any{

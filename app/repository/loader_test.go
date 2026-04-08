@@ -6,6 +6,7 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -24,7 +25,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 		repository, err := loader.Load("url")
 
 		s.Nil(repository)
-		serrors.Equal(s.T(), &serrors.Assertion{
+		errors.Equal(s.T(), &serrors.Assertion{
 			Type:    &app.NotFoundRepositoryError{},
 			Message: "repository not found",
 			Arguments: []any{
