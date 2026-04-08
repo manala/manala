@@ -35,7 +35,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "Directory",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "recipe manifest is a directory",
 				Arguments: []any{
 					"dir", filepath.Join(repositoryBaseURL, "Directory", "repository", "recipe", ".manala.yaml"),
@@ -45,7 +44,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "SyntaxError",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse recipe manifest",
 				Arguments: []any{
 					"file", filepath.Join(repositoryBaseURL, "SyntaxError", "repository", "recipe", ".manala.yaml"),
@@ -61,7 +59,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "Empty",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse recipe manifest",
 				Arguments: []any{
 					"file", filepath.Join(repositoryBaseURL, "Empty", "repository", "recipe", ".manala.yaml"),
@@ -78,7 +75,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "MultipleDocuments",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse recipe manifest",
 				Arguments: []any{
 					"file", filepath.Join(repositoryBaseURL, "MultipleDocuments", "repository", "recipe", ".manala.yaml"),
@@ -98,7 +94,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "NotMap",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse recipe manifest",
 				Arguments: []any{
 					"file", filepath.Join(repositoryBaseURL, "NotMap", "repository", "recipe", ".manala.yaml"),

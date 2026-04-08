@@ -40,7 +40,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "Directory",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "project manifest is a directory",
 				Arguments: []any{
 					"dir", filepath.Join(projectBaseDir, "Directory", "project", ".manala.yaml"),
@@ -50,7 +49,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "SyntaxError",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse project manifest",
 				Arguments: []any{
 					"file", filepath.Join(projectBaseDir, "SyntaxError", "project", ".manala.yaml"),
@@ -66,7 +64,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "Empty",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse project manifest",
 				Arguments: []any{
 					"file", filepath.Join(projectBaseDir, "Empty", "project", ".manala.yaml"),
@@ -83,7 +80,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "MultipleDocuments",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse project manifest",
 				Arguments: []any{
 					"file", filepath.Join(projectBaseDir, "MultipleDocuments", "project", ".manala.yaml"),
@@ -103,7 +99,6 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "NotMap",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unable to parse project manifest",
 				Arguments: []any{
 					"file", filepath.Join(projectBaseDir, "NotMap", "project", ".manala.yaml"),
@@ -119,14 +114,12 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		{
 			test: "Vars",
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "invalid project manifest vars",
 				Arguments: []any{
 					"file", filepath.Join(projectBaseDir, "Vars", "project", ".manala.yaml"),
 				},
 				Errors: []errors.Assertion{
 					&serrors.Assertion{
-						Type:    serrors.Error{},
 						Message: "invalid type",
 						Arguments: []any{
 							"expected", "integer",

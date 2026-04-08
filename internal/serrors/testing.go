@@ -23,6 +23,8 @@ func (a *Assertion) AssertError(t *testing.T, err error) {
 
 	if a.Type != nil {
 		require.IsType(t, a.Type, err)
+	} else {
+		require.IsType(t, Error{}, err)
 	}
 
 	require.EqualError(t, err, a.Message)

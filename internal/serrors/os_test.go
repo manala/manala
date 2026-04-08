@@ -26,7 +26,6 @@ func (s *OsSuite) Test() {
 			test: "Unknown",
 			err:  serrors.New("unknown"),
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "unknown",
 			},
 		},
@@ -38,7 +37,6 @@ func (s *OsSuite) Test() {
 				Err:  serrors.New("path"),
 			},
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "path",
 				Arguments: []any{
 					"operation", "operation",
@@ -53,7 +51,6 @@ func (s *OsSuite) Test() {
 				Err:     serrors.New("syscall"),
 			},
 			expected: &serrors.Assertion{
-				Type:    serrors.Error{},
 				Message: "syscall",
 				Arguments: []any{
 					"syscall", "syscall",

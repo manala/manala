@@ -46,7 +46,6 @@ func (s *CreatorSuite) TestCreateErrors() {
 
 		s.Nil(project)
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "project is not a directory",
 			Arguments: []any{
 				"path", projectDir,

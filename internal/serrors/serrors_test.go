@@ -21,7 +21,6 @@ func (s *Suite) TestError() {
 		err := serrors.New("error")
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 		}, err)
 	})
@@ -33,7 +32,6 @@ func (s *Suite) TestError() {
 			WithMessage(message)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: message,
 		}, err)
 	})
@@ -46,7 +44,6 @@ func (s *Suite) TestError() {
 			WithArguments(foo, bar)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 			Arguments: []any{
 				foo, bar,
@@ -61,7 +58,6 @@ func (s *Suite) TestError() {
 			WithDetails(details)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 			Details: details,
 		}, err)
@@ -76,7 +72,6 @@ func (s *Suite) TestError() {
 			WithDetailsFunc(detailsFunc)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 			Details: "details func false",
 		}, err)
@@ -90,15 +85,12 @@ func (s *Suite) TestError() {
 			WithErrors(foo, bar)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 			Errors: []errors.Assertion{
 				&serrors.Assertion{
-					Type:    serrors.Error{},
 					Message: "foo",
 				},
 				&serrors.Assertion{
-					Type:    serrors.Error{},
 					Message: "bar",
 				},
 			},
@@ -112,11 +104,9 @@ func (s *Suite) TestError() {
 			WithErrors(nil, foo, nil)
 
 		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    serrors.Error{},
 			Message: "error",
 			Errors: []errors.Assertion{
 				&serrors.Assertion{
-					Type:    serrors.Error{},
 					Message: "foo",
 				},
 			},

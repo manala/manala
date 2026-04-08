@@ -1,6 +1,7 @@
 package url_test
 
 import (
+	stderrors "errors"
 	"log/slog"
 	"testing"
 
@@ -36,6 +37,7 @@ func (s *ProcessorSuite) TestProcess() {
 				},
 				Errors: []errors.Assertion{
 					&serrors.Assertion{
+						Type:    stderrors.New(""),
 						Message: "invalid semicolon separator in query",
 					},
 				},

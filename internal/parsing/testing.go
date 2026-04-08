@@ -10,6 +10,7 @@ import (
 )
 
 type Assertion struct {
+	Type   any
 	Line   int
 	Column int
 	Err    errors.Assertion
@@ -18,7 +19,11 @@ type Assertion struct {
 func (a *Assertion) AssertError(t *testing.T, err error) {
 	t.Helper()
 
-	require.IsType(t, (*Error)(nil), err)
+	if a.Type != nil {
+		require.IsType(t, a.Type, err)
+	} else {
+		require.IsType(t, (*Error)(nil), err)
+	}
 
 	e := err.(*Error)
 
