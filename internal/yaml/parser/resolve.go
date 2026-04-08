@@ -1,11 +1,12 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/serrors"
 
 	"github.com/goccy/go-yaml/ast"
 )
 
+// resolve replaces aliases with their anchor values and deduplicates mapping keys.
 func resolve(node ast.Node, anchors map[string]ast.Node) error {
 	switch n := node.(type) {
 	case *ast.MappingNode:
@@ -21,19 +22,26 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 
 					anchor := anchors[alias]
 					if anchor == nil {
-						return yaml.NewNodeError("cannot find anchor", vv.Value).
-							WithArguments("anchor", alias)
+						return ErrorAt(
+							serrors.New("cannot find anchor").WithArguments("anchor", alias),
+							vv.Value.GetToken(),
+						)
 					}
 
 					switch a := anchor.(type) {
 					case *ast.MappingNode:
 						mergedValues = a.Values
 					default:
-						return yaml.NewNodeError("anchor must be a map", anchor).
-							WithArguments("anchor", alias)
+						return ErrorAt(
+							serrors.New("anchor must be a map").WithArguments("anchor", alias),
+							anchor.GetToken(),
+						)
 					}
 				} else {
-					return yaml.NewNodeError("map value must be an alias", v.Value)
+					return ErrorAt(
+						serrors.New("map value must be an alias"),
+						v.Value.GetToken(),
+					)
 				}
 			} else {
 				mergedValues = append(mergedValues, v)
@@ -44,7 +52,6 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 				for i, dv := range deduplicatedValues {
 					if mv.Key.GetToken().Value == dv.Key.GetToken().Value {
 						deduplicatedValues = append(deduplicatedValues[:i], deduplicatedValues[i+1:]...)
-
 						break
 					}
 				}
@@ -84,8 +91,10 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node) error {
 		anchor := anchors[alias]
 
 		if anchor == nil {
-			return yaml.NewNodeError("cannot find anchor", n.Value).
-				WithArguments("anchor", alias)
+			return ErrorAt(
+				serrors.New("cannot find anchor").WithArguments("anchor", alias),
+				n.Value.GetToken(),
+			)
 		}
 
 		*node = anchor

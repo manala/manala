@@ -8,6 +8,7 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
@@ -77,8 +78,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	// Parse content to node
 	manifest.node, err = parser.Parse(content)
 	if err != nil {
-		return serrors.New("irregular recipe manifest").
-			WithErrors(err)
+		return err
 	}
 
 	// Decode node
@@ -86,10 +86,12 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
 		// Nil or empty content
 		if err == io.EOF {
-			return serrors.New("empty content")
+			return &parsing.Error{
+				Err: serrors.New("empty yaml content"),
+			}
 		}
 
-		return yaml.NewError(err)
+		return parser.ErrorFrom(err)
 	}
 
 	// Validate node data

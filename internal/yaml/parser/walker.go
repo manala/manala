@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/serrors"
 
 	"github.com/goccy/go-yaml/ast"
 )
@@ -11,6 +11,7 @@ type walker struct {
 	err     error
 }
 
+// Visit validates node types and collects anchors.
 func (w *walker) Visit(node ast.Node) ast.Visitor {
 	switch n := node.(type) {
 	case *ast.AnchorNode:
@@ -27,7 +28,10 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 			return w
 		}
 
-		w.err = yaml.NewNodeError("irregular map key", n)
+		w.err = ErrorAt(
+			serrors.New("irregular map key"),
+			n.GetToken(),
+		)
 		return nil
 	case *ast.MappingKeyNode:
 		switch n.Value.(type) {
@@ -37,7 +41,10 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 			return w
 		}
 
-		w.err = yaml.NewNodeError("irregular map key", n)
+		w.err = ErrorAt(
+			serrors.New("irregular map key"),
+			n.GetToken(),
+		)
 		return nil
 	case
 		// Scalars
@@ -59,6 +66,9 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 		return w
 	}
 
-	w.err = yaml.NewNodeError("irregular type", node)
+	w.err = ErrorAt(
+		serrors.New("irregular type"),
+		node.GetToken(),
+	)
 	return nil
 }

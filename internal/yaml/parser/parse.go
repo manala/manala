@@ -1,33 +1,42 @@
 package parser
 
 import (
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/yaml"
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 )
 
+// Parse parses yaml bytes into a validated and resolved MappingNode.
 func Parse(bytes []byte) (*ast.MappingNode, error) {
 	file, err := parser.ParseBytes(bytes, parser.ParseComments)
 	if err != nil {
-		return nil, yaml.NewError(err)
+		return nil, ErrorFrom(err)
 	}
 
 	// File must not be empty...
 	if len(file.Docs) == 0 || file.Docs[0].Body == nil {
-		return nil, serrors.New("empty yaml file")
+		return nil, &parsing.Error{
+			Err: serrors.New("empty yaml content"),
+		}
 	}
 
 	// ... nor include multiple documents
 	if len(file.Docs) > 1 {
-		return nil, yaml.NewNodeError("multiple documents yaml file", file.Docs[1].Body)
+		return nil, ErrorAt(
+			serrors.New("multiple documents yaml content"),
+			file.Docs[1].GetToken().Prev.Prev,
+		)
 	}
 
 	// ... and the first document must be a map
 	node, ok := file.Docs[0].Body.(*ast.MappingNode)
 	if !ok {
-		return nil, yaml.NewNodeError("yaml document must be a map", file.Docs[0].Body)
+		return nil, ErrorAt(
+			serrors.New("yaml document must be a map"),
+			file.Docs[0].Body.GetToken(),
+		)
 	}
 
 	// Walk

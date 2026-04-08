@@ -11,6 +11,7 @@ import (
 	"github.com/manala/manala/app/api"
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -86,12 +87,9 @@ func (s *Suite) TestProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
 			Errors: []errors.Assertion{
-				&serrors.Assertion{
-					Message: "irregular project manifest",
-					Errors: []errors.Assertion{
-						&serrors.Assertion{
-							Message: "empty yaml file",
-						},
+				&parsing.Assertion{
+					Err: &serrors.Assertion{
+						Message: "empty yaml content",
 					},
 				},
 			},
@@ -195,12 +193,9 @@ func (s *Suite) TestRecursiveProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
 			Errors: []errors.Assertion{
-				&serrors.Assertion{
-					Message: "irregular project manifest",
-					Errors: []errors.Assertion{
-						&serrors.Assertion{
-							Message: "empty yaml file",
-						},
+				&parsing.Assertion{
+					Err: &serrors.Assertion{
+						Message: "empty yaml content",
 					},
 				},
 			},

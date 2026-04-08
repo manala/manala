@@ -9,6 +9,7 @@ import (
 
 	"github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
@@ -41,88 +42,49 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 	}{
 		{
 			test: "Empty",
-			expected: &serrors.Assertion{
-				Message: "irregular recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty yaml file",
-					},
+			expected: &parsing.Assertion{
+				Err: &serrors.Assertion{
+					Message: "empty yaml content",
 				},
 			},
 		},
 		{
 			test: "Invalid",
-			expected: &serrors.Assertion{
-				Message: "irregular recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "'@' is a reserved character",
-						Arguments: []any{
-							"line", 1,
-							"column", 1,
-						},
-						Details: `
-							>  1 | @
-							       ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "'@' is a reserved character",
 				},
 			},
 		},
 		{
 			test: "IrregularType",
-			expected: &serrors.Assertion{
-				Message: "irregular recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "irregular type",
-						Arguments: []any{
-							"line", 1,
-							"column", 6,
-						},
-						Details: `
-							>  1 | foo: .inf
-							            ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 6,
+				Err: &serrors.Assertion{
+					Message: "irregular type",
 				},
 			},
 		},
 		{
 			test: "IrregularMapKey",
-			expected: &serrors.Assertion{
-				Message: "irregular recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "irregular map key",
-						Arguments: []any{
-							"line", 1,
-							"column", 2,
-						},
-						Details: `
-							>  1 | 0: foo
-							        ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 2,
+				Err: &serrors.Assertion{
+					Message: "irregular map key",
 				},
 			},
 		},
 		{
 			test: "NotMap",
-			expected: &serrors.Assertion{
-				Message: "irregular recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "yaml document must be a map",
-						Arguments: []any{
-							"line", 1,
-							"column", 1,
-						},
-						Details: `
-							>  1 | foo
-							       ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "yaml document must be a map",
 				},
 			},
 		},

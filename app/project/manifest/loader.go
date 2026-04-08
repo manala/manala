@@ -12,6 +12,7 @@ import (
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/filepath/backwalk"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/validator"
 )
@@ -72,9 +73,14 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	// Bypass yaml.Unmarshal as goccy's decoder discards comments
 	manifest := New()
 	if err := manifest.UnmarshalYAML(content); err != nil {
-		return nil, serrors.New("unable to parse project manifest").
-			WithArguments("file", file).
-			WithErrors(err)
+		e := serrors.New("unable to parse project manifest").WithArguments("file", file)
+		if err, ok := errors.AsType[*parsing.Error](err); ok {
+			return nil, parsing.ErrorTo(e, err, parsing.Options{
+				Src:   string(content),
+				Lexer: "yaml",
+			})
+		}
+		return nil, e.WithErrors(err)
 	}
 
 	handler.log.Debug("project manifest loaded", "file", file,

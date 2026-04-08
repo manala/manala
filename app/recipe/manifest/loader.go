@@ -9,6 +9,7 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 )
 
@@ -64,9 +65,14 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 	// Bypass yaml.Unmarshal as goccy's decoder discards comments
 	manifest := New()
 	if err := manifest.UnmarshalYAML(content); err != nil {
-		return nil, serrors.New("unable to parse recipe manifest").
-			WithArguments("file", file).
-			WithErrors(err)
+		e := serrors.New("unable to parse recipe manifest").WithArguments("file", file)
+		if err, ok := errors.AsType[*parsing.Error](err); ok {
+			return nil, parsing.ErrorTo(e, err, parsing.Options{
+				Src:   string(content),
+				Lexer: "yaml",
+			})
+		}
+		return nil, e.WithErrors(err)
 	}
 
 	handler.log.Debug("recipe manifest loaded", "file", file)
