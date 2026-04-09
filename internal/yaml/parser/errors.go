@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
@@ -21,40 +22,22 @@ func ErrorAt(err error, token *token.Token) *parsing.Error {
 
 // ErrorFrom converts a go-yaml error into a parsing.Error, extracting position from the error itself.
 func ErrorFrom(err error) *parsing.Error {
-	// Syntax error
-	if err, ok := errors.AsType[*yaml.SyntaxError](err); ok {
-		return ErrorAt(serrors.New(err.Message), err.Token)
-	}
-
 	// Type error
 	if err, ok := errors.AsType[*yaml.TypeError](err); ok {
-		return ErrorAt(serrors.New(err.Error()), err.Token)
+		return ErrorAt(
+			serrors.New(fmt.Sprintf("field must be a %s", err.DstType)),
+			err.GetToken(),
+		)
 	}
 
-	// Overflow error
-	if err, ok := errors.AsType[*yaml.OverflowError](err); ok {
-		return ErrorAt(serrors.New(err.Error()), err.Token)
-	}
-
-	// Duplicate key error
-	if err, ok := errors.AsType[*yaml.DuplicateKeyError](err); ok {
-		return ErrorAt(serrors.New(err.Message), err.Token)
-	}
-
-	// Unknown field error
-	if err, ok := errors.AsType[*yaml.UnknownFieldError](err); ok {
-		return ErrorAt(serrors.New(err.Message), err.Token)
-	}
-
-	// Unexpected node type error
-	if err, ok := errors.AsType[*yaml.UnexpectedNodeTypeError](err); ok {
-		return ErrorAt(serrors.New(err.Error()), err.Token)
+	if err, ok := errors.AsType[yaml.Error](err); ok {
+		return ErrorAt(serrors.New(err.GetMessage()), err.GetToken())
 	}
 
 	// Exceeded max depth error
 	if errors.Is(err, yaml.ErrExceededMaxDepth) {
 		return &parsing.Error{
-			Err: serrors.New(err.Error()),
+			Err: serrors.New("yaml exceeded max depth"),
 		}
 	}
 
