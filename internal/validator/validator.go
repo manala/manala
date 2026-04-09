@@ -19,7 +19,6 @@ func New(opts ...Option) Validator {
 
 type validator struct {
 	validators []Validator
-	formatters []Formatter
 }
 
 func (validator *validator) Validate(value any) (Violations, error) {
@@ -33,13 +32,6 @@ func (validator *validator) Validate(value any) (Violations, error) {
 		}
 
 		violations = append(violations, _violations...)
-	}
-
-	// Formatters
-	for _, formatter := range validator.formatters {
-		for i := range violations {
-			formatter.Format(&violations[i])
-		}
 	}
 
 	// Sort violations

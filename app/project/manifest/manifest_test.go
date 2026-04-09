@@ -92,230 +92,93 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigNotMap",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala field must be a map",
-						Arguments: []any{
-							"expected", "object",
-							"actual", "string",
-							"path", "manala",
-							"line", 1,
-							"column", 9,
-						},
-						Details: `
-							>  1 | manala: foo
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 9,
+				Err: &serrors.Assertion{
+					Message: "string was used where mapping is expected",
 				},
 			},
 		},
 		{
 			test: "ConfigEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "missing manala recipe property",
-						Arguments: []any{
-							"path", "manala",
-							"property", "recipe",
-							"line", 1,
-							"column", 9,
-						},
-						Details: `
-							>  1 | manala: {}
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "missing manala recipe property",
 				},
 			},
 		},
 		{
 			test: "ConfigAdditionalProperties",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala field don't support additional properties",
-						Arguments: []any{
-							"path", "manala.foo",
-							"line", 3,
-							"column", 8,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   recipe: recipe
-							>  3 |   foo: bar
-							              ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 3,
+				Err: &serrors.Assertion{
+					Message: "unknown field \"foo\"",
 				},
 			},
 		},
 		// Config - Recipe
 		{
 			test: "ConfigRecipeAbsent",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "missing manala recipe property",
-						Arguments: []any{
-							"path", "manala",
-							"property", "recipe",
-							"line", 2,
-							"column", 13,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   repository: repository
-							                   ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 7,
+				Err: &serrors.Assertion{
+					Message: "missing manala recipe property",
 				},
 			},
 		},
 		{
 			test: "ConfigRecipeNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala recipe field must be a string",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.recipe",
-							"line", 2,
-							"column", 11,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   recipe: []
-							                 ^
-							   3 |   repository: repository
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigRecipeEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala recipe field",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.recipe",
-							"line", 2,
-							"column", 11,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   recipe: ""
-							                 ^
-							   3 |   repository: repository
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "missing manala recipe property",
 				},
 			},
 		},
 		{
 			test: "ConfigRecipeTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala recipe field",
-						Arguments: []any{
-							"maximum", 100,
-							"path", "manala.recipe",
-							"line", 2,
-							"column", 11,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   recipe: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							                 ^
-							   3 |   repository: repository
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "too long manala recipe field (max=100)",
 				},
 			},
 		},
 		// Config - Repository
 		{
 			test: "ConfigRepositoryNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala repository field must be a string",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.repository",
-							"line", 3,
-							"column", 15,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   recipe: recipe
-							>  3 |   repository: []
-							                     ^
-						`,
-					},
-				},
-			},
-		},
-		{
-			test: "ConfigRepositoryEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala repository field",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.repository",
-							"line", 3,
-							"column", 15,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   recipe: recipe
-							>  3 |   repository: ""
-							                     ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 15,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigRepositoryTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid project manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala repository field",
-						Arguments: []any{
-							"maximum", 256,
-							"path", "manala.repository",
-							"line", 3,
-							"column", 15,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   recipe: recipe
-							>  3 |   repository: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							                     ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 15,
+				Err: &serrors.Assertion{
+					Message: "too long manala repository field (max=256)",
 				},
 			},
 		},

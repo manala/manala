@@ -125,16 +125,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 							"expected", "integer",
 							"actual", "string",
 							"path", "foo",
-							"line", 5,
-							"column", 6,
 						},
-						Details: `
-						   2 |   recipe: recipe
-						   3 |   repository: testdata/LoaderSuite/TestHandlerErrors/Vars/repository
-						   4 |
-						>  5 | foo: bar
-						            ^
-					`,
 					},
 				},
 			},

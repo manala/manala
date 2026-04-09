@@ -2,29 +2,20 @@ package manifest
 
 import (
 	_ "embed"
-	"io"
-	"regexp"
 	"slices"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/validator"
-	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/parser"
 
-	goYaml "github.com/goccy/go-yaml"
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/ast"
 )
 
 const filename = ".manala.yaml"
 
 //go:embed template.yaml.tmpl
 var _template string
-
-//go:embed schema.json
-var _schemaSource []byte
-var _schema = schema.MustParse(_schemaSource)
 
 func New() *Manifest {
 	return &Manifest{
@@ -34,7 +25,7 @@ func New() *Manifest {
 }
 
 type Manifest struct {
-	node   *goYamlAst.MappingNode
+	node   *ast.MappingNode
 	config *config
 	vars   map[string]any
 }
@@ -61,7 +52,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	}
 
 	// Partition config & vars
-	i := slices.IndexFunc(manifest.node.Values, func(node *goYamlAst.MappingValueNode) bool {
+	i := slices.IndexFunc(manifest.node.Values, func(node *ast.MappingValueNode) bool {
 		return node.Key.String() == "manala"
 	})
 	if i == -1 {
@@ -70,71 +61,22 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		}
 	}
 
-	// Decode node
-	var data any
-	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
-		// Nil or empty content
-		if err == io.EOF {
-			return &parsing.Error{
-				Err: serrors.New("empty yaml content"),
-			}
-		}
-
-		return parser.ErrorFrom(err)
-	}
-
-	// Validate node data
-	if violations, err := validator.New(
-		validator.WithValidators(
-			schema.NewValidator(_schema),
-		),
-		validator.WithFilters(validator.Filters{
-			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
-			{Path: "manala", Type: validator.Required, Property: "recipe", StructuredMessage: "missing manala recipe property"},
-			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.AdditionalPropertyNotAllowed, StructuredMessage: "manala field don't support additional properties"},
-			// Recipe
-			{Path: "manala.recipe", Type: validator.InvalidType, StructuredMessage: "manala recipe field must be a string"},
-			{Path: "manala.recipe", Type: validator.StringGte, StructuredMessage: "empty manala recipe field"},
-			{Path: "manala.recipe", Type: validator.StringLte, StructuredMessage: "too long manala recipe field"},
-			// Repository
-			{Path: "manala.repository", Type: validator.InvalidType, StructuredMessage: "manala repository field must be a string"},
-			{Path: "manala.repository", Type: validator.StringGte, StructuredMessage: "empty manala repository field"},
-			{Path: "manala.repository", Type: validator.StringLte, StructuredMessage: "too long manala repository field"},
-		}),
-		validator.WithFormatters(
-			manifest.ValidatorFormatter(),
-		),
-	).Validate(data); err != nil {
-		return serrors.New("unable to validate project manifest").
-			WithErrors(err)
-	} else if len(violations) != 0 {
-		return serrors.New("invalid project manifest").
-			WithErrors(violations.StructuredErrors()...)
-	}
-
 	configNode := manifest.node.Values[i].Value
 	manifest.node.Values = slices.Concat(manifest.node.Values[:i], manifest.node.Values[i+1:])
 
 	// Decode config
-	if err = goYaml.NodeToValue(configNode, manifest.config); err != nil {
-		return serrors.New("unable to decode project manifest config").
-			WithErrors(err)
+	if err = yaml.NodeToValue(configNode, manifest.config,
+		yaml.Validator(configValidator{}),
+		yaml.DisallowUnknownField(),
+	); err != nil {
+		return parser.ErrorFrom(err)
 	}
 
 	// Decode vars
-	if err = goYaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
+	if err = yaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
 		return serrors.New("unable to decode recipe manifest vars").
 			WithErrors(err)
 	}
 
 	return nil
-}
-
-func (manifest *Manifest) ValidatorFormatter() validator.Formatter {
-	return yaml.NodeValidatorFormatter(manifest.node)
-}
-
-type config struct {
-	Recipe     string
-	Repository string
 }

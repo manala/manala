@@ -288,27 +288,13 @@ func (s *Suite) TestRecipeErrors() {
 			Message: "unable to parse recipe manifest",
 			Arguments: []any{
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+				"line", 1, "column", 1,
 			},
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
-					Message: "invalid recipe manifest",
-					Errors: []errors.Assertion{
-						&serrors.Assertion{
-							Message: "missing manala description property",
-							Arguments: []any{
-								"path", "manala",
-								"property", "description",
-								"line", 1,
-								"column", 9,
-							},
-							Details: `
-								>  1 | manala: {}
-								               ^
-							`,
-						},
-					},
-				},
-			},
+			Details: `
+				> 1 | manala: {}
+				      ^
+				* missing manala description property
+			`,
 		}, err)
 	})
 }

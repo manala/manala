@@ -99,400 +99,156 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigNotMap",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala field must be a map",
-						Arguments: []any{
-							"expected", "object",
-							"actual", "string",
-							"path", "manala",
-							"line", 1,
-							"column", 9,
-						},
-						Details: `
-							>  1 | manala: foo
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 9,
+				Err: &serrors.Assertion{
+					Message: "string was used where mapping is expected",
 				},
 			},
 		},
 		{
 			test: "ConfigEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "missing manala description property",
-						Arguments: []any{
-							"path", "manala",
-							"property", "description",
-							"line", 1,
-							"column", 9,
-						},
-						Details: `
-							>  1 | manala: {}
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "missing manala description property",
 				},
 			},
 		},
 		{
 			test: "ConfigAdditionalProperties",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala field don't support additional properties",
-						Arguments: []any{
-							"path", "manala.foo",
-							"line", 3,
-							"column", 8,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   foo: bar
-							              ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 3,
+				Err: &serrors.Assertion{
+					Message: "unknown field \"foo\"",
 				},
 			},
 		},
 		// Config - Description
 		{
 			test: "ConfigDescriptionAbsent",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "missing manala description property",
-						Arguments: []any{
-							"path", "manala",
-							"property", "description",
-							"line", 2,
-							"column", 11,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   template: template
-							                 ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 7,
+				Err: &serrors.Assertion{
+					Message: "missing manala description property",
 				},
 			},
 		},
 		{
 			test: "ConfigDescriptionNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala description field must be a string",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.description",
-							"line", 2,
-							"column", 16,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   description: []
-							                      ^
-							   3 |   template: template
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 16,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigDescriptionEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala description field",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.description",
-							"line", 2,
-							"column", 16,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   description: ""
-							                      ^
-							   3 |   template: template
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 16,
+				Err: &serrors.Assertion{
+					Message: "missing manala description property",
 				},
 			},
 		},
 		{
 			test: "ConfigDescriptionTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala description field",
-						Arguments: []any{
-							"maximum", 256,
-							"path", "manala.description",
-							"line", 2,
-							"column", 16,
-						},
-						Details: `
-							   1 | manala:
-							>  2 |   description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							                      ^
-							   3 |   template: template
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   2,
+				Column: 16,
+				Err: &serrors.Assertion{
+					Message: "too long manala description field (max=256)",
 				},
 			},
 		},
 		// Config - Icon
 		{
 			test: "ConfigIconNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala icon field must be a string",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.icon",
-							"line", 3,
-							"column", 9,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   icon: []
-							               ^
-						`,
-					},
-				},
-			},
-		},
-		{
-			test: "ConfigIconEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala icon field",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.icon",
-							"line", 3,
-							"column", 9,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   icon: ""
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 9,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigIconTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala icon field",
-						Arguments: []any{
-							"maximum", 100,
-							"path", "manala.icon",
-							"line", 3,
-							"column", 9,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   icon: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 9,
+				Err: &serrors.Assertion{
+					Message: "too long manala icon field (max=100)",
 				},
 			},
 		},
 		// Config - Template
 		{
 			test: "ConfigTemplateNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala template field must be a string",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.template",
-							"line", 3,
-							"column", 13,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   template: []
-							                   ^
-						`,
-					},
-				},
-			},
-		},
-		{
-			test: "ConfigTemplateEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala template field",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.template",
-							"line", 3,
-							"column", 13,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   template: ""
-							                   ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 13,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigTemplateTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala template field",
-						Arguments: []any{
-							"maximum", 100,
-							"path", "manala.template",
-							"line", 3,
-							"column", 13,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   template: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							                   ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 13,
+				Err: &serrors.Assertion{
+					Message: "too long manala template field (max=100)",
 				},
 			},
 		},
 		// Config - Sync
 		{
 			test: "ConfigSyncNotArray",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala sync field must be a sequence",
-						Arguments: []any{
-							"expected", "array",
-							"actual", "string",
-							"path", "manala.sync",
-							"line", 3,
-							"column", 9,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							>  3 |   sync: foo
-							               ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 9,
+				Err: &serrors.Assertion{
+					Message: "sync field must be a sequence",
 				},
 			},
 		},
 		// Config - Sync Item
 		{
 			test: "ConfigSyncItemNotString",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "manala sync sequence entries must be strings",
-						Arguments: []any{
-							"expected", "string",
-							"actual", "array",
-							"path", "manala.sync[0]",
-							"line", 4,
-							"column", 7,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							   3 |   sync:
-							>  4 |     - []
-							             ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   4,
+				Column: 5,
+				Err: &serrors.Assertion{
+					Message: "sync entry must be a string",
 				},
 			},
 		},
 		{
 			test: "ConfigSyncItemEmpty",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "empty manala sync sequence entry",
-						Arguments: []any{
-							"minimum", 1,
-							"path", "manala.sync[0]",
-							"line", 4,
-							"column", 7,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							   3 |   sync:
-							>  4 |     - ""
-							             ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   4,
+				Column: 5,
+				Err: &serrors.Assertion{
+					Message: "empty sync entry",
 				},
 			},
 		},
 		{
 			test: "ConfigSyncItemTooLong",
-			expected: &serrors.Assertion{
-				Message: "invalid recipe manifest",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "too long manala sync sequence entry",
-						Arguments: []any{
-							"maximum", 256,
-							"path", "manala.sync[0]",
-							"line", 4,
-							"column", 7,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							   3 |   sync:
-							>  4 |     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-							             ^
-						`,
-					},
+			expected: &parsing.Assertion{
+				Line:   4,
+				Column: 5,
+				Err: &serrors.Assertion{
+					Message: "too long sync entry (max=256)",
 				},
 			},
 		},

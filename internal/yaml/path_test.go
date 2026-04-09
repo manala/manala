@@ -3,13 +3,9 @@ package yaml_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/path"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlParser "github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -61,126 +57,6 @@ func (s *PathSuite) TestNode() {
 			path := yaml.NewNodePath(node)
 
 			s.Equal(test.expected, path.String())
-		})
-	}
-}
-
-func (s *PathSuite) TestNodeAccessorGetErrors() {
-	node, _ := goYamlParser.ParseBytes([]byte(`
-sequence_empty: {}
-sequence_single:
-  first: foo
-sequence_multiple:
-  first: foo
-  last: bar
-`), 0)
-
-	tests := []struct {
-		test     string
-		path     string
-		expected errors.Assertion
-	}{
-		{
-			test: "Root",
-			path: "baz",
-			expected: &serrors.Assertion{
-				Message: "unable to access yaml path",
-				Arguments: []any{
-					"path", "baz",
-				},
-			},
-		},
-		{
-			test: "Leaf",
-			path: "bar.bar",
-			expected: &serrors.Assertion{
-				Message: "unable to access yaml path",
-				Arguments: []any{
-					"path", "bar.bar",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			accessor := yaml.NewNodePathAccessor(path.Path(test.path))
-
-			_node, err := accessor.Get(node.Docs[0].Body)
-
-			errors.Equal(s.T(), test.expected, err)
-			s.Nil(_node)
-		})
-	}
-}
-
-func (s *PathSuite) TestNodeAccessorGet() {
-	node, _ := goYamlParser.ParseBytes([]byte(`
-sequence_empty: {}
-sequence_single:
-  first: foo
-sequence_multiple:
-  first: foo
-  last: bar
-`), 0)
-
-	tests := []struct {
-		test           string
-		path           string
-		expectedLine   int
-		expectedColumn int
-	}{
-		{
-			test:           "SequenceEmpty",
-			path:           "sequence_empty",
-			expectedLine:   2,
-			expectedColumn: 17,
-		},
-		{
-			test:           "SequenceSingle",
-			path:           "sequence_single",
-			expectedLine:   4,
-			expectedColumn: 8,
-		},
-		{
-			test:           "SequenceSingleFirst",
-			path:           "sequence_single.first",
-			expectedLine:   4,
-			expectedColumn: 10,
-		},
-		{
-			test:           "SequenceMultiple",
-			path:           "sequence_multiple",
-			expectedLine:   6,
-			expectedColumn: 8,
-		},
-		{
-			test:           "SequenceMultipleFirst",
-			path:           "sequence_multiple.first",
-			expectedLine:   6,
-			expectedColumn: 10,
-		},
-		{
-			test:           "SequenceMultipleLast",
-			path:           "sequence_multiple.last",
-			expectedLine:   7,
-			expectedColumn: 9,
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			accessor := yaml.NewNodePathAccessor(path.Path(test.path))
-
-			_node, err := accessor.Get(node.Docs[0].Body)
-
-			s.Require().NoError(err)
-			s.NotNil(node)
-
-			token := _node.GetToken()
-
-			s.Equal(test.expectedLine, token.Position.Line)
-			s.Equal(test.expectedColumn, token.Position.Column)
 		})
 	}
 }

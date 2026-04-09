@@ -1,9 +1,6 @@
 package manifest
 
 import (
-	_ "embed"
-	"io"
-	"regexp"
 	"slices"
 
 	"github.com/manala/manala/app"
@@ -13,7 +10,6 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/validator"
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/parser"
 
@@ -22,10 +18,6 @@ import (
 )
 
 const filename = ".manala.yaml"
-
-//go:embed schema.json
-var _schemaSource []byte
-var _schema = schema.MustParse(_schemaSource)
 
 func New() *Manifest {
 	return &Manifest{
@@ -92,65 +84,15 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		}
 	}
 
-	// Decode node
-	var data any
-	if err := goYaml.NewDecoder(manifest.node).Decode(&data); err != nil {
-		// Nil or empty content
-		if err == io.EOF {
-			return &parsing.Error{
-				Err: serrors.New("empty yaml content"),
-			}
-		}
-
-		return parser.ErrorFrom(err)
-	}
-
-	// Validate node data
-	if violations, err := validator.New(
-		validator.WithValidators(
-			schema.NewValidator(_schema),
-		),
-		validator.WithFilters(validator.Filters{
-			{Path: "manala", Type: validator.InvalidType, StructuredMessage: "manala field must be a map"},
-			{Path: "manala", Type: validator.Required, Property: "description", StructuredMessage: "missing manala description property"},
-			{PathRegex: regexp.MustCompile(`^manala\.[^.\[]+$`), Type: validator.AdditionalPropertyNotAllowed, StructuredMessage: "manala field don't support additional properties"},
-			// Description
-			{Path: "manala.description", Type: validator.InvalidType, StructuredMessage: "manala description field must be a string"},
-			{Path: "manala.description", Type: validator.StringGte, StructuredMessage: "empty manala description field"},
-			{Path: "manala.description", Type: validator.StringLte, StructuredMessage: "too long manala description field"},
-			// Icon
-			{Path: "manala.icon", Type: validator.InvalidType, StructuredMessage: "manala icon field must be a string"},
-			{Path: "manala.icon", Type: validator.StringGte, StructuredMessage: "empty manala icon field"},
-			{Path: "manala.icon", Type: validator.StringLte, StructuredMessage: "too long manala icon field"},
-			// Template
-			{Path: "manala.template", Type: validator.InvalidType, StructuredMessage: "manala template field must be a string"},
-			{Path: "manala.template", Type: validator.StringGte, StructuredMessage: "empty manala template field"},
-			{Path: "manala.template", Type: validator.StringLte, StructuredMessage: "too long manala template field"},
-			// Sync
-			{Path: "manala.sync", Type: validator.InvalidType, StructuredMessage: "manala sync field must be a sequence"},
-			// Sync Item
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.InvalidType, StructuredMessage: "manala sync sequence entries must be strings"},
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.StringGte, StructuredMessage: "empty manala sync sequence entry"},
-			{PathRegex: regexp.MustCompile(`^manala\.sync\[\d+]$`), Type: validator.StringLte, StructuredMessage: "too long manala sync sequence entry"},
-		}),
-		validator.WithFormatters(
-			manifest.ValidatorFormatter(),
-		),
-	).Validate(data); err != nil {
-		return serrors.New("unable to validate recipe manifest").
-			WithErrors(err)
-	} else if len(violations) != 0 {
-		return serrors.New("invalid recipe manifest").
-			WithErrors(violations.StructuredErrors()...)
-	}
-
 	configNode := manifest.node.Values[i].Value
 	manifest.node.Values = slices.Concat(manifest.node.Values[:i], manifest.node.Values[i+1:])
 
 	// Decode config
-	if err = goYaml.NodeToValue(configNode, manifest.config); err != nil {
-		return serrors.New("unable to decode recipe manifest config").
-			WithErrors(err)
+	if err = goYaml.NodeToValue(configNode, manifest.config,
+		goYaml.Validator(configValidator{}),
+		goYaml.DisallowUnknownField(),
+	); err != nil {
+		return parser.ErrorFrom(err)
 	}
 
 	// Decode vars
@@ -172,15 +114,4 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	}
 
 	return nil
-}
-
-func (manifest *Manifest) ValidatorFormatter() validator.Formatter {
-	return yaml.NodeValidatorFormatter(manifest.node)
-}
-
-type config struct {
-	Description string
-	Icon        string
-	Template    string
-	Sync        recipe.Sync
 }

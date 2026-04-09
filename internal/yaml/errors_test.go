@@ -9,7 +9,6 @@ import (
 	"github.com/manala/manala/internal/yaml/parser"
 
 	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlParser "github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,47 +16,6 @@ type ErrorsSuite struct{ suite.Suite }
 
 func TestErrorsSuite(t *testing.T) {
 	suite.Run(t, new(ErrorsSuite))
-}
-
-func (s *ErrorsSuite) Test() {
-	_, err := goYamlParser.ParseBytes([]byte(`&foo`), 0)
-
-	tests := []struct {
-		test     string
-		err      error
-		expected errors.Assertion
-	}{
-		{
-			test: "Unknown",
-			err:  serrors.New("error"),
-			expected: &serrors.Assertion{
-				Message: "error",
-			},
-		},
-		{
-			test: "Formatted",
-			err:  err,
-			expected: &serrors.Assertion{
-				Message: "undefined anchor value",
-				Arguments: []any{
-					"line", 1,
-					"column", 1,
-				},
-				Details: `
-					>  1 | &foo
-					       ^
-				`,
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			err := yaml.NewError(test.err)
-
-			errors.Equal(s.T(), test.expected, err)
-		})
-	}
 }
 
 func (s *ErrorsSuite) TestNode() {

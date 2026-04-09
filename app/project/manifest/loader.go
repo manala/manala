@@ -105,7 +105,6 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	// Validate project vars against recipe
 	if violations, err := validator.New(
 		validator.WithValidators(project.Recipe().ProjectValidator()),
-		validator.WithFormatters(manifest.ValidatorFormatter()),
 	).Validate(project.Vars()); err != nil {
 		return nil, serrors.New("unable to validate project manifest").
 			WithArguments("file", file).
