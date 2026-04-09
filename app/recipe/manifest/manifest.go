@@ -30,7 +30,6 @@ func New() *Manifest {
 }
 
 type Manifest struct {
-	node    *goYamlAst.MappingNode
 	config  *config
 	vars    map[string]any
 	schema  schema.Schema
@@ -66,16 +65,14 @@ func (manifest *Manifest) Options() []app.RecipeOption {
 }
 
 func (manifest *Manifest) UnmarshalYAML(content []byte) error {
-	var err error
-
 	// Parse content to node
-	manifest.node, err = parser.Parse(content)
+	node, err := parser.Parse(content)
 	if err != nil {
 		return err
 	}
 
 	// Partition config & vars
-	i := slices.IndexFunc(manifest.node.Values, func(node *goYamlAst.MappingValueNode) bool {
+	i := slices.IndexFunc(node.Values, func(node *goYamlAst.MappingValueNode) bool {
 		return node.Key.String() == "manala"
 	})
 	if i == -1 {
@@ -84,8 +81,8 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		}
 	}
 
-	configNode := manifest.node.Values[i].Value
-	manifest.node.Values = slices.Concat(manifest.node.Values[:i], manifest.node.Values[i+1:])
+	configNode := node.Values[i].Value
+	node.Values = slices.Concat(node.Values[:i], node.Values[i+1:])
 
 	// Decode config
 	if err = goYaml.NodeToValue(configNode, manifest.config,
@@ -96,18 +93,18 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 	}
 
 	// Decode vars
-	if err = goYaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
+	if err = goYaml.NodeToValue(node, &manifest.vars); err != nil {
 		return parser.ErrorFrom(err)
 	}
 
 	// Infer schema
-	if err = yaml.NewNodeSchemaInferrer(manifest.node).Infer(manifest.schema); err != nil {
+	if err = yaml.NewNodeSchemaInferrer(node).Infer(manifest.schema); err != nil {
 		return serrors.New("unable to infer recipe manifest schema").
 			WithErrors(err)
 	}
 
 	// Infer options
-	if err = option.NewInferrer().Infer(manifest.node, &manifest.options); err != nil {
+	if err = option.NewInferrer().Infer(node, &manifest.options); err != nil {
 		return serrors.New("unable to infer recipe manifest options").
 			WithErrors(err)
 	}
