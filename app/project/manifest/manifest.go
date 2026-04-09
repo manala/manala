@@ -74,8 +74,7 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 
 	// Decode vars
 	if err = yaml.NodeToValue(manifest.node, &manifest.vars); err != nil {
-		return serrors.New("unable to decode recipe manifest vars").
-			WithErrors(err)
+		return parser.ErrorFrom(err)
 	}
 
 	return nil
