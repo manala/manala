@@ -9,8 +9,8 @@ import (
 )
 
 // Parse parses yaml bytes into a validated and resolved MappingNode.
-func Parse(bytes []byte) (*ast.MappingNode, error) {
-	file, err := parser.ParseBytes(bytes, parser.ParseComments)
+func Parse(data []byte) (*ast.MappingNode, error) {
+	file, err := parser.ParseBytes(data, parser.ParseComments)
 	if err != nil {
 		return nil, ErrorFrom(err)
 	}
