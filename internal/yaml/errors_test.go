@@ -8,7 +8,7 @@ import (
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/parser"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,7 +23,7 @@ func (s *ErrorsSuite) TestNode() {
 
 	tests := []struct {
 		test     string
-		node     goYamlAst.Node
+		node     ast.Node
 		expected errors.Assertion
 	}{
 		{

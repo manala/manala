@@ -5,7 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/yaml"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -16,7 +16,7 @@ func TestPathSuite(t *testing.T) {
 }
 
 func (s *PathSuite) TestNode() {
-	node := goYamlAst.Null(nil)
+	node := ast.Null(nil)
 
 	tests := []struct {
 		test     string

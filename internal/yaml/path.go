@@ -3,11 +3,12 @@ package yaml
 import (
 	"strings"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
 	"github.com/manala/manala/internal/path"
+
+	"github.com/goccy/go-yaml/ast"
 )
 
-func NewNodePath(node goYamlAst.Node) path.Path {
+func NewNodePath(node ast.Node) path.Path {
 	nodePath := node.GetPath()
 
 	if nodePath == "$" {

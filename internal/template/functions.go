@@ -7,7 +7,7 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 
-	goYaml "github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml"
 )
 
 func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
@@ -19,19 +19,19 @@ func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
 
 // As seen in helm.
 func functionToYaml(value any) string {
-	marshalOptions := []goYaml.EncodeOption{
-		goYaml.Indent(4),
-		goYaml.UseSingleQuote(true),
-		goYaml.UseLiteralStyleIfMultiline(true),
+	marshalOptions := []yaml.EncodeOption{
+		yaml.Indent(4),
+		yaml.UseSingleQuote(true),
+		yaml.UseLiteralStyleIfMultiline(true),
 	}
 
 	// Root sequences should not be indented
 	// see: https://github.com/goccy/go-yaml/pull/855
 	if reflect.ValueOf(value).Kind() != reflect.Slice {
-		marshalOptions = append(marshalOptions, goYaml.IndentSequence(true))
+		marshalOptions = append(marshalOptions, yaml.IndentSequence(true))
 	}
 
-	data, err := goYaml.MarshalWithOptions(value, marshalOptions...)
+	data, err := yaml.MarshalWithOptions(value, marshalOptions...)
 	if err != nil {
 		// Swallow errors inside a template.
 		return ""

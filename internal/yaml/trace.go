@@ -3,8 +3,8 @@ package yaml
 import (
 	"strings"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
-	goYamlPrinter "github.com/goccy/go-yaml/printer"
+	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/printer"
 )
 
 type NodeTrace struct {
@@ -13,7 +13,7 @@ type NodeTrace struct {
 	DetailsFunc func(ansi bool) string
 }
 
-func NewNodeTrace(node goYamlAst.Node) NodeTrace {
+func NewNodeTrace(node ast.Node) NodeTrace {
 	// Token
 	token := node.GetToken()
 
@@ -21,7 +21,7 @@ func NewNodeTrace(node goYamlAst.Node) NodeTrace {
 		Line:   token.Position.Line,
 		Column: token.Position.Column,
 		DetailsFunc: func(ansi bool) string {
-			var pp goYamlPrinter.Printer
+			var pp printer.Printer
 
 			// Ensure there is *always* a trailing line feed
 			return strings.TrimRight(

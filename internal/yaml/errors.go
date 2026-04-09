@@ -3,10 +3,10 @@ package yaml
 import (
 	"github.com/manala/manala/internal/serrors"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 )
 
-func NewNodeError(message string, node goYamlAst.Node) serrors.Error {
+func NewNodeError(message string, node ast.Node) serrors.Error {
 	err := serrors.New(message)
 
 	if node == nil {

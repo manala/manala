@@ -6,34 +6,34 @@ import (
 	"github.com/manala/manala/internal/schema/inferrer"
 	"github.com/manala/manala/internal/yaml/annotation"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 )
 
 type NodeSchemaInferrer struct {
-	node   goYamlAst.Node
+	node   ast.Node
 	schema schema.Schema
 	err    error
 }
 
-func NewNodeSchemaInferrer(node goYamlAst.Node) *NodeSchemaInferrer {
+func NewNodeSchemaInferrer(node ast.Node) *NodeSchemaInferrer {
 	return &NodeSchemaInferrer{
 		node: node,
 	}
 }
 
 func (inf *NodeSchemaInferrer) Infer(schema schema.Schema) error {
-	if _, ok := any(inf.node).(goYamlAst.MapNode); !ok {
+	if _, ok := any(inf.node).(ast.MapNode); !ok {
 		return NewNodeError("unable to infer schema type", inf.node)
 	}
 
 	inf.schema = schema
 
-	goYamlAst.Walk(inf, inf.node)
+	ast.Walk(inf, inf.node)
 
 	return inf.err
 }
 
-func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
+func (inf *NodeSchemaInferrer) Visit(node ast.Node) ast.Visitor {
 	// Schema annotation
 	var schemaAnnot *annotation.Annotation
 
@@ -51,7 +51,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 		schemaAnnot, _ = annots.Lookup("schema")
 	}
 
-	n, ok := node.(*goYamlAst.MappingValueNode)
+	n, ok := node.(*ast.MappingValueNode)
 	if !ok {
 		if schemaAnnot != nil {
 			// Misplaced annotation
@@ -69,8 +69,8 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	if err := inferrer.NewChain(
 		inferrer.NewFunc(func(schema schema.Schema) error {
 			// Only mapping value
-			if n, ok := node.(*goYamlAst.MappingValueNode); ok {
-				if _, ok := n.Value.(goYamlAst.MapNode); ok {
+			if n, ok := node.(*ast.MappingValueNode); ok {
+				if _, ok := n.Value.(ast.MapNode); ok {
 					return NewNodeSchemaInferrer(n.Value).Infer(schema)
 				}
 				return nil
@@ -97,7 +97,7 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	inf.schema["properties"].(map[string]any)[propertyKey] = map[string]any(propertySchema)
 
 	// Stop visiting when map nodes
-	if _, ok := n.Value.(goYamlAst.MapNode); ok {
+	if _, ok := n.Value.(ast.MapNode); ok {
 		return nil
 	}
 
@@ -105,10 +105,10 @@ func (inf *NodeSchemaInferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 }
 
 type NodeTypeSchemaInferrer struct {
-	node goYamlAst.Node
+	node ast.Node
 }
 
-func NewNodeTypeSchemaInferrer(node goYamlAst.Node) *NodeTypeSchemaInferrer {
+func NewNodeTypeSchemaInferrer(node ast.Node) *NodeTypeSchemaInferrer {
 	return &NodeTypeSchemaInferrer{
 		node: node,
 	}
@@ -125,22 +125,22 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 		return nil
 	}
 
-	if n, ok := inf.node.(*goYamlAst.MappingValueNode); ok {
+	if n, ok := inf.node.(*ast.MappingValueNode); ok {
 		// Infer schema type based on node value type
 		switch v := n.Value.(type) {
-		case *goYamlAst.StringNode:
+		case *ast.StringNode:
 			schema["type"] = "string"
-		case *goYamlAst.IntegerNode:
+		case *ast.IntegerNode:
 			schema["type"] = "integer"
-		case *goYamlAst.FloatNode:
+		case *ast.FloatNode:
 			schema["type"] = "number"
-		case *goYamlAst.BoolNode:
+		case *ast.BoolNode:
 			schema["type"] = "boolean"
-		case goYamlAst.ArrayNode:
+		case ast.ArrayNode:
 			schema["type"] = "array"
-		case goYamlAst.MapNode:
+		case ast.MapNode:
 			schema["type"] = "object"
-		case *goYamlAst.NullNode:
+		case *ast.NullNode:
 			// No type
 		default:
 			return NewNodeError("unable to infer schema value type", v)
@@ -153,11 +153,11 @@ func (inf *NodeTypeSchemaInferrer) Infer(schema schema.Schema) error {
 }
 
 type NodeAnnotationSchemaInferrer struct {
-	node       goYamlAst.Node
+	node       ast.Node
 	annotation *annotation.Annotation
 }
 
-func NewNodeAnnotationSchemaInferrer(node goYamlAst.Node, annot *annotation.Annotation) *NodeAnnotationSchemaInferrer {
+func NewNodeAnnotationSchemaInferrer(node ast.Node, annot *annotation.Annotation) *NodeAnnotationSchemaInferrer {
 	return &NodeAnnotationSchemaInferrer{
 		node:       node,
 		annotation: annot,

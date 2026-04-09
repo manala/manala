@@ -9,7 +9,7 @@ import (
 	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/annotation"
 
-	goYamlAst "github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/ast"
 )
 
 type Inferrer struct {
@@ -21,19 +21,19 @@ func NewInferrer() *Inferrer {
 	return &Inferrer{}
 }
 
-func (inf *Inferrer) Infer(node goYamlAst.Node, options *[]app.RecipeOption) error {
-	if _, ok := any(node).(goYamlAst.MapNode); !ok {
+func (inf *Inferrer) Infer(node ast.Node, options *[]app.RecipeOption) error {
+	if _, ok := any(node).(ast.MapNode); !ok {
 		return yaml.NewNodeError("unable to infer options type", node)
 	}
 
 	inf.options = options
 
-	goYamlAst.Walk(inf, node)
+	ast.Walk(inf, node)
 
 	return inf.err
 }
 
-func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
+func (inf *Inferrer) Visit(node ast.Node) ast.Visitor {
 	// Get comment
 	comment := node.GetComment()
 	if comment == nil {
@@ -54,7 +54,7 @@ func (inf *Inferrer) Visit(node goYamlAst.Node) goYamlAst.Visitor {
 	}
 
 	// Misplaced annotation
-	n, ok := node.(*goYamlAst.MappingValueNode)
+	n, ok := node.(*ast.MappingValueNode)
 	if !ok {
 		inf.err = yaml.NewNodeError("misplaced recipe option annotation", node.GetComment())
 		return nil
