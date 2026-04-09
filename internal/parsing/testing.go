@@ -27,8 +27,8 @@ func (a *Assertion) AssertError(t *testing.T, err error) {
 
 	e := err.(*Error)
 
-	assert.Equal(t, a.Line, e.Line)
-	assert.Equal(t, a.Column, e.Column)
+	assert.Equal(t, a.Line, e.Line, "Line not equal")
+	assert.Equal(t, a.Column, e.Column, "Column not equal")
 
 	if a.Err != nil {
 		a.Err.AssertError(t, e.Err)
