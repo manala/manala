@@ -1,21 +1,21 @@
-package yaml_test
+package path_test
 
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/yaml"
+	"github.com/manala/manala/internal/yaml/path"
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
 )
 
-type PathSuite struct{ suite.Suite }
+type NodeSuite struct{ suite.Suite }
 
-func TestPathSuite(t *testing.T) {
-	suite.Run(t, new(PathSuite))
+func TestNodeSuite(t *testing.T) {
+	suite.Run(t, new(NodeSuite))
 }
 
-func (s *PathSuite) TestNode() {
+func (s *NodeSuite) TestNode() {
 	node := ast.Null(nil)
 
 	tests := []struct {
@@ -54,9 +54,9 @@ func (s *PathSuite) TestNode() {
 		s.Run(test.test, func() {
 			node.Path = test.path
 
-			path := yaml.NewNodePath(node)
+			p := path.NewNodePath(node)
 
-			s.Equal(test.expected, path.String())
+			s.Equal(test.expected, p.String())
 		})
 	}
 }

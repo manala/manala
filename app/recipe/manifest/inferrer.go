@@ -7,9 +7,9 @@ import (
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/yaml"
 	"github.com/manala/manala/internal/yaml/annotation"
 	"github.com/manala/manala/internal/yaml/parser"
+	"github.com/manala/manala/internal/yaml/path"
 
 	"dario.cat/mergo"
 	"github.com/goccy/go-yaml/ast"
@@ -97,7 +97,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 
 			// Option
 			if err := annotations.Func("option", func(a *annotation.Annotation) error {
-				opt, err := option.New(strings.NewReader(a.Value.String()), property, yaml.NewNodePath(node))
+				opt, err := option.New(strings.NewReader(a.Value.String()), property, path.NewNodePath(node))
 				if err != nil {
 					return annotation.ErrorAt(err, a.Value.Tokens[0])
 				}
