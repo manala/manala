@@ -134,20 +134,14 @@ func (s *ErrorsSuite) TestErrorFrom() {
 				Offset: 123,
 				Value:  "value",
 				Struct: "struct",
-				Field:  "field",
+				Field:  "foo",
 				Type:   reflect.TypeFor[float64](),
 			},
 			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
-					Message: "cannot unmarshal into struct field",
-					Arguments: []any{
-						"value", "value",
-						"struct", "struct",
-						"field", "field",
-						"type", "float64",
-					},
+					Message: "wrong value type for field \"foo\"",
 				},
 			},
 		},
@@ -155,18 +149,14 @@ func (s *ErrorsSuite) TestErrorFrom() {
 			test: "UnmarshalTypeError",
 			err: &json.UnmarshalTypeError{
 				Offset: 123,
-				Value:  "value",
+				Value:  "foo",
 				Type:   reflect.TypeFor[float64](),
 			},
 			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
-					Message: "cannot unmarshal into value",
-					Arguments: []any{
-						"value", "value",
-						"type", "float64",
-					},
+					Message: "wrong foo value type",
 				},
 			},
 		},

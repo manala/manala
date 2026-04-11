@@ -1,10 +1,11 @@
 package manifest
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/annotation"
@@ -97,11 +98,58 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 
 			// Option
 			if err := annotations.Func("option", func(a *annotation.Annotation) error {
-				opt, err := option.New(strings.NewReader(a.Value.String()), property, path.NewNodePath(node))
-				if err != nil {
-					return annotation.ErrorAt(err, a.Value.Tokens[0])
+				// Stencil preserves source positions for accurate error reporting
+				value := a.Value.Stencil()
+
+				// Unmarshal option type discriminator
+				var disc struct {
+					Type string `json:"type"`
 				}
+				if err := unmarshaler.Unmarshal([]byte(value), &disc); err != nil {
+					return err
+				}
+
+				// Resolve option type
+				optionType := disc.Type
+				if optionType == "" {
+					if _, ok := property["enum"]; ok {
+						optionType = "select"
+					} else if t, ok := property["type"]; ok && t == "string" {
+						optionType = "text"
+					}
+				}
+
+				var opt app.RecipeOption
+				switch optionType {
+				case "text":
+					if opt, err = option.NewTextOption(property, path.NewNodePath(node)); err != nil {
+						return annotation.ErrorAt(err, a.Value.Start())
+					}
+					if err := unmarshaler.Unmarshal([]byte(value), opt); err != nil {
+						return err
+					}
+				case "select":
+					if opt, err = option.NewSelectOption(property, path.NewNodePath(node)); err != nil {
+						return annotation.ErrorAt(err, a.Value.Start())
+					}
+					if err := unmarshaler.Unmarshal([]byte(value), opt); err != nil {
+						return err
+					}
+				default:
+					if disc.Type == "" {
+						return annotation.ErrorAt(
+							serrors.New("unable to auto detect option type"),
+							a.Value.Start(),
+						)
+					}
+					return annotation.ErrorAt(
+						serrors.New(fmt.Sprintf("unexpected \"%s\" option type", disc.Type)),
+						a.Value.Start(),
+					)
+				}
+
 				*i.Options = append(*i.Options, opt)
+
 				return nil
 			}); err != nil {
 				return nil, parser.ErrorAt(err, comment.GetToken())

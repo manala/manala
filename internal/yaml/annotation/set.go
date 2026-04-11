@@ -33,7 +33,10 @@ func (s *Set) JSONVar(p any, name string) error {
 		return nil
 	}
 
-	return unmarshaler.Unmarshal([]byte(annot.Value.Stencil()), p)
+	// Stencil preserves source positions for accurate error reporting
+	value := annot.Value.Stencil()
+
+	return unmarshaler.Unmarshal([]byte(value), p)
 }
 
 // Func calls fn with the named annotation, if present.

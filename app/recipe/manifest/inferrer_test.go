@@ -22,14 +22,14 @@ func TestInferrerSuite(t *testing.T) {
 	suite.Run(t, new(InferrerSuite))
 }
 
-func (s *InferrerSuite) TestErrors() {
+func (s *InferrerSuite) TestSchemaErrors() {
 	tests := []struct {
 		test     string
 		src      string
 		expected errors.Assertion
 	}{
 		{
-			test: "AnnotationError",
+			test: "Annotation",
 			src: `
 # @schema foo
 node: ~
@@ -301,6 +301,184 @@ node: string
 	}
 }
 
+func (s *InferrerSuite) TestOptionErrors() {
+	tests := []struct {
+		test     string
+		src      string
+		expected errors.Assertion
+	}{
+		{
+			test: "Syntax",
+			src: `
+# @option foo
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 12,
+				Err: &serrors.Assertion{
+					Message: "invalid character 'o' in literal false (expecting 'a')",
+				},
+			},
+		},
+		{
+			test: "Type",
+			src: `
+# @option []
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "wrong array value type",
+				},
+			},
+		},
+		{
+			test: "InvalidType",
+			src: `
+# @option {"label": "Label", "type": 123}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 40,
+				Err: &serrors.Assertion{
+					Message: "wrong number type for field \"type\"",
+				},
+			},
+		},
+		{
+			test: "UnexpectedType",
+			src: `
+# @option {"label": "Label", "type": "unexpected"}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "unexpected \"unexpected\" option type",
+				},
+			},
+		},
+		{
+			test: "Validation",
+			src: `
+# @option {"foo": "bar"}
+foo: string
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "missing option label property",
+				},
+			},
+		},
+		{
+			test: "AutoDetection",
+			src: `
+# @option {"label": "Label"}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "unable to auto detect option type",
+				},
+			},
+		},
+		{
+			test: "InvalidTextMissingType",
+			src: `
+# @option {"label": "Label", "type": "text"}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "invalid recipe option string type",
+				},
+			},
+		},
+		{
+			test: "InvalidTextWrongType",
+			src: `
+# @option {"label": "Label", "type": "text"}
+# @schema {"type": null}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "invalid recipe option string type",
+				},
+			},
+		},
+		{
+			test: "InvalidSelectMissingEnum",
+			src: `
+# @option {"label": "Label", "type": "select"}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "invalid recipe option enum",
+				},
+			},
+		},
+		{
+			test: "InvalidSelectWrongEnum",
+			src: `
+# @option {"label": "Label", "type": "select"}
+# @schema {"enum": null}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "invalid recipe option enum",
+				},
+			},
+		},
+		{
+			test: "InvalidSelectEmptyEnum",
+			src: `
+# @option {"label": "Label", "type": "select"}
+# @schema {"enum": []}
+foo: ~
+`,
+			expected: &parsing.FlattenErrorAssertion{
+				Line:   2,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "empty recipe option enum",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			node, err := parser.Parse([]byte(test.src))
+			s.Require().NoError(err)
+
+			inf := manifest.Inferrer{}
+			err = inf.Infer(node)
+
+			errors.Equal(s.T(), test.expected, err)
+		})
+	}
+}
+
 func (s *InferrerSuite) TestOptions() {
 	tests := []struct {
 		test     string
@@ -308,16 +486,46 @@ func (s *InferrerSuite) TestOptions() {
 		expected option.Assertions
 	}{
 		{
-			test: "Label",
+			test: "Text",
 			src: `
-# @option {"label": "Label"}
+# @option {"label": "Foo", "name": "bar", "type": "text"}
 foo: bar
 `,
 			expected: option.Assertions{
 				{
 					Type:  &option.TextOption{},
-					Label: "Label",
-					Name:  "label",
+					Label: "Foo",
+					Name:  "bar",
+					Path:  "foo",
+				},
+			},
+		},
+		{
+			test: "TextNoName",
+			src: `
+# @option {"label": "Foo Bar", "type": "text"}
+foo: bar
+`,
+			expected: option.Assertions{
+				{
+					Type:  &option.TextOption{},
+					Label: "Foo Bar",
+					Name:  "foo-bar",
+					Path:  "foo",
+				},
+			},
+		},
+		{
+			test: "TextTypeImplicit",
+			src: `
+# @option {"label": "Foo", "name": "bar"}
+foo: bar
+`,
+			expected: option.Assertions{
+				{
+					Type:  &option.TextOption{},
+					Label: "Foo",
+					Name:  "bar",
 					Path:  "foo",
 				},
 			},

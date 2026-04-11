@@ -629,7 +629,7 @@ func (s *Suite) TestOptions() {
 			Label:     "Custom name",
 			Name:      "foo-bar",
 			Path:      "custom_name",
-			MaxLength: 12,
+			MaxLength: 0,
 		},
 	}, opts)
 }

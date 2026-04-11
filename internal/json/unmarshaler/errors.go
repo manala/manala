@@ -3,6 +3,7 @@ package unmarshaler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
@@ -46,23 +47,13 @@ func ErrorFrom(err error, src string) *parsing.Error {
 	if err, ok := errors.AsType[*json.UnmarshalTypeError](err); ok {
 		if err.Struct != "" || err.Field != "" {
 			return ErrorAt(
-				serrors.New("cannot unmarshal into struct field").
-					WithArguments(
-						"value", err.Value,
-						"struct", err.Struct,
-						"field", err.Field,
-						"type", err.Type.String(),
-					),
+				serrors.New(fmt.Sprintf("wrong %s type for field \"%s\"", err.Value, err.Field)),
 				src, err.Offset,
 			)
 		}
 
 		return ErrorAt(
-			serrors.New("cannot unmarshal into value").
-				WithArguments(
-					"value", err.Value,
-					"type", err.Type.String(),
-				),
+			serrors.New(fmt.Sprintf("wrong %s value type", err.Value)),
 			src, err.Offset,
 		)
 	}
