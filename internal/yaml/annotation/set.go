@@ -1,8 +1,6 @@
 package annotation
 
 import (
-	"strings"
-
 	"github.com/manala/manala/internal/json/unmarshaler"
 )
 
@@ -35,28 +33,7 @@ func (s *Set) JSONVar(p any, name string) error {
 		return nil
 	}
 
-	// Build a JSON value from annotation tokens, padded with empty lines
-	// and leading spaces to match each token's line/column in the source.
-	// Newlines and spaces are valid JSON whitespace, so padding is transparent.
-	// This makes the unmarshaler's error position directly correct
-	// relative to the source, with no resolution needed.
-	//
-	//   # comment         →  ``
-	//   # @foo {          →  `       {`
-	//   #   "bar": 123    →  `    "bar": 123`
-	//   # }               →  `  }`
-	var b strings.Builder
-	line := 1
-	for _, token := range annot.Value.Tokens {
-		for line < token.Line {
-			b.WriteString("\n")
-			line++
-		}
-		b.WriteString(strings.Repeat(" ", token.Column-1))
-		b.WriteString(token.Value)
-	}
-
-	return unmarshaler.Unmarshal([]byte(b.String()), p)
+	return unmarshaler.Unmarshal([]byte(annot.Value.Stencil()), p)
 }
 
 // Func calls fn with the named annotation, if present.

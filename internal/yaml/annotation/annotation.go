@@ -36,3 +36,24 @@ func (v Value) String() string {
 
 	return b.String()
 }
+
+// Stencil returns the value padded with empty lines and leading spaces
+// to match each token's line/column in the source.
+//
+//	# comment         →  ``
+//	# @foo {          →  Pause, `       {`
+//	#   "bar": 123    →  `    "bar": 123`
+//	# }               →  `  }`
+func (v Value) Stencil() string {
+	var b strings.Builder
+	line := 1
+	for _, token := range v.Tokens {
+		for line < token.Line {
+			b.WriteString("\n")
+			line++
+		}
+		b.WriteString(strings.Repeat(" ", token.Column-1))
+		b.WriteString(token.Value)
+	}
+	return b.String()
+}
