@@ -10,7 +10,7 @@ import (
 	"github.com/gosimple/slug"
 )
 
-type TextOption struct {
+type Text struct {
 	name   string
 	label  string
 	help   string
@@ -20,7 +20,7 @@ type TextOption struct {
 	MaxLength int
 }
 
-func NewTextOption(sch schema.Schema, p path.Path) (*TextOption, error) {
+func NewText(sch schema.Schema, p path.Path) (*Text, error) {
 	// Schema type *MUST* be string
 	if t, ok := sch["type"]; !ok || t != "string" {
 		return nil, serrors.New("invalid recipe option string type")
@@ -32,20 +32,20 @@ func NewTextOption(sch schema.Schema, p path.Path) (*TextOption, error) {
 		maxLength = length.Int()
 	}
 
-	return &TextOption{
+	return &Text{
 		schema:    sch,
 		path:      p,
 		MaxLength: maxLength,
 	}, nil
 }
 
-func (o *TextOption) Name() string          { return o.name }
-func (o *TextOption) Label() string         { return o.label }
-func (o *TextOption) Help() string          { return o.help }
-func (o *TextOption) Path() path.Path       { return o.path }
-func (o *TextOption) Schema() schema.Schema { return o.schema }
+func (o *Text) Name() string          { return o.name }
+func (o *Text) Label() string         { return o.label }
+func (o *Text) Help() string          { return o.help }
+func (o *Text) Path() path.Path       { return o.path }
+func (o *Text) Schema() schema.Schema { return o.schema }
 
-func (o *TextOption) UnmarshalJSON(data []byte) error {
+func (o *Text) UnmarshalJSON(data []byte) error {
 	var env struct {
 		Name  string `json:"name"`
 		Label string `json:"label"`

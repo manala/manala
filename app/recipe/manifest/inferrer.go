@@ -122,7 +122,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 				var opt app.RecipeOption
 				switch optionType {
 				case "text":
-					o, err := option.NewTextOption(property, path.NewNodePath(node))
+					o, err := option.NewText(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}
@@ -131,7 +131,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 					}
 					opt = o
 				case "select":
-					o, err := option.NewSelectOption(property, path.NewNodePath(node))
+					o, err := option.NewSelect(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}

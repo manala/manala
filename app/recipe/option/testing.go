@@ -29,12 +29,12 @@ func (a *Assertion) Assert(t *testing.T, opt app.RecipeOption) {
 	assert.Equal(t, a.Path, opt.Path().String(), "Path not equal")
 
 	// Text
-	if opt, ok := opt.(*TextOption); ok {
+	if opt, ok := opt.(*Text); ok {
 		assert.Equal(t, a.MaxLength, opt.MaxLength, "MaxLength not equal")
 	}
 
 	// Select
-	if opt, ok := opt.(*SelectOption); ok {
+	if opt, ok := opt.(*Select); ok {
 		assert.Equal(t, a.Values, opt.Values, "Values not equals")
 	}
 }

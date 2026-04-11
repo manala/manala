@@ -493,7 +493,7 @@ foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.TextOption{},
+					Type:  &option.Text{},
 					Label: "Foo",
 					Name:  "bar",
 					Path:  "foo",
@@ -508,7 +508,7 @@ foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.TextOption{},
+					Type:  &option.Text{},
 					Label: "Foo Bar",
 					Name:  "foo-bar",
 					Path:  "foo",
@@ -523,7 +523,7 @@ foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.TextOption{},
+					Type:  &option.Text{},
 					Label: "Foo",
 					Name:  "bar",
 					Path:  "foo",

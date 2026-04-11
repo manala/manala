@@ -59,7 +59,7 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 	var items []DialogFormItem
 	for _, opt := range options {
 		switch opt := opt.(type) {
-		case *option.SelectOption:
+		case *option.Select:
 			item, err := NewSelectFormItem(opt, vars, form.errored)
 			if err != nil {
 				return serrors.New("invalid recipe option").
@@ -68,7 +68,7 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
-		case *option.TextOption:
+		case *option.Text:
 			item, err := NewDialogTextFormItem(opt, vars, form.errored)
 			if err != nil {
 				return serrors.New("invalid recipe option").
@@ -108,14 +108,14 @@ type DialogFormItem interface {
 type DialogTextFormItem struct {
 	*cview.InputField
 
-	option    *option.TextOption
+	option    *option.Text
 	accessor  accessor.Accessor
 	validator *schema.Validator
 	errored   func(error)
 }
 
 func NewDialogTextFormItem(
-	option *option.TextOption,
+	option *option.Text,
 	vars *map[string]any,
 	errored func(error),
 ) (*DialogTextFormItem, error) {
@@ -130,8 +130,8 @@ func NewDialogTextFormItem(
 		InputField: cview.NewInputField(),
 		option:     option,
 		accessor:   itemAccessor,
-		validator: schema.NewValidator(option.Schema()),
-		errored:   errored,
+		validator:  schema.NewValidator(option.Schema()),
+		errored:    errored,
 	}
 
 	// Input field
@@ -194,13 +194,13 @@ func (item *DialogTextFormItem) Apply() bool {
 type DialogSelectFormItem struct {
 	*cview.DropDown
 
-	option   *option.SelectOption
+	option   *option.Select
 	accessor accessor.Accessor
 	errored  func(error)
 }
 
 func NewSelectFormItem(
-	option *option.SelectOption,
+	option *option.Select,
 	vars *map[string]any,
 	errored func(error),
 ) (*DialogSelectFormItem, error) {

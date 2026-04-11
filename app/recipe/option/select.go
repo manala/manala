@@ -10,7 +10,7 @@ import (
 	"github.com/gosimple/slug"
 )
 
-type SelectOption struct {
+type Select struct {
 	name   string
 	label  string
 	help   string
@@ -20,7 +20,7 @@ type SelectOption struct {
 	Values []any
 }
 
-func NewSelectOption(sch schema.Schema, p path.Path) (*SelectOption, error) {
+func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
 	// Enum
 	enum, ok := sch["enum"].([]any)
 	if !ok {
@@ -41,20 +41,20 @@ func NewSelectOption(sch schema.Schema, p path.Path) (*SelectOption, error) {
 		}
 	}
 
-	return &SelectOption{
+	return &Select{
 		schema: sch,
 		path:   p,
 		Values: values,
 	}, nil
 }
 
-func (o *SelectOption) Name() string          { return o.name }
-func (o *SelectOption) Label() string         { return o.label }
-func (o *SelectOption) Help() string          { return o.help }
-func (o *SelectOption) Path() path.Path       { return o.path }
-func (o *SelectOption) Schema() schema.Schema { return o.schema }
+func (o *Select) Name() string          { return o.name }
+func (o *Select) Label() string         { return o.label }
+func (o *Select) Help() string          { return o.help }
+func (o *Select) Path() path.Path       { return o.path }
+func (o *Select) Schema() schema.Schema { return o.schema }
 
-func (o *SelectOption) UnmarshalJSON(data []byte) error {
+func (o *Select) UnmarshalJSON(data []byte) error {
 	var env struct {
 		Name  string `json:"name"`
 		Label string `json:"label"`
