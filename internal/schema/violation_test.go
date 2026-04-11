@@ -5,7 +5,6 @@ import (
 
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/validator"
 
 	"github.com/stretchr/testify/suite"
 	"github.com/xeipuuv/gojsonschema"
@@ -43,13 +42,12 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 	tests := []struct {
 		test        string
 		resultError gojsonschema.ResultError
-		expected    validator.Violation
+		expected    schema.Violation
 	}{
 		{
 			test:        "InternalError",
 			resultError: internalError,
-			expected: validator.Violation{
-				Type:              0,
+			expected: schema.Violation{
 				Message:           "",
 				StructuredMessage: "",
 				Arguments:         []any(nil),
@@ -60,8 +58,7 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 		{
 			test:        "InvalidTypeError",
 			resultError: invalidTypeError,
-			expected: validator.Violation{
-				Type:              validator.InvalidType,
+			expected: schema.Violation{
 				Message:           "invalid type, expected foo, actual bar",
 				StructuredMessage: "invalid type",
 				Arguments: []any{
@@ -75,8 +72,7 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 		{
 			test:        "RequiredError",
 			resultError: requiredError,
-			expected: validator.Violation{
-				Type:              validator.Required,
+			expected: schema.Violation{
 				Message:           "missing foo property",
 				StructuredMessage: "missing property",
 				Arguments:         []any(nil),
@@ -87,8 +83,7 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 		{
 			test:        "AdditionalPropertyNotAllowedError",
 			resultError: additionalPropertyNotAllowedError,
-			expected: validator.Violation{
-				Type:              validator.AdditionalPropertyNotAllowed,
+			expected: schema.Violation{
 				Message:           "additional property foo is not allowed",
 				StructuredMessage: "additional property is not allowed",
 				Arguments:         []any(nil),

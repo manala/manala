@@ -10,7 +10,6 @@ import (
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/validator"
 
 	"codeberg.org/tslocum/cview"
 	"github.com/gdamore/tcell/v3/color"
@@ -111,7 +110,7 @@ type DialogTextFormItem struct {
 
 	option    *option.TextOption
 	accessor  accessor.Accessor
-	validator validator.Validator
+	validator *schema.Validator
 	errored   func(error)
 }
 
@@ -195,10 +194,9 @@ func (item *DialogTextFormItem) Apply() bool {
 type DialogSelectFormItem struct {
 	*cview.DropDown
 
-	option    *option.SelectOption
-	accessor  accessor.Accessor
-	validator validator.Validator
-	errored   func(error)
+	option   *option.SelectOption
+	accessor accessor.Accessor
+	errored  func(error)
 }
 
 func NewSelectFormItem(
@@ -217,8 +215,7 @@ func NewSelectFormItem(
 		DropDown: cview.NewDropDown(),
 		option:   option,
 		accessor: itemAccessor,
-		validator: schema.NewValidator(option.Schema()),
-		errored:   errored,
+		errored:  errored,
 	}
 
 	// Dropdown

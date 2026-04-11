@@ -5,7 +5,6 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template"
-	"github.com/manala/manala/internal/validator"
 )
 
 /***********/
@@ -38,7 +37,7 @@ type Recipe interface {
 	Repository() Repository
 	Template() *template.Template
 	ProjectManifestTemplate() *template.Template
-	ProjectValidator() validator.Validator
+	ProjectValidator() *schema.Validator
 	Watches() ([]string, error)
 }
 

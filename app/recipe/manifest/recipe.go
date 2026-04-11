@@ -8,7 +8,6 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/template"
-	"github.com/manala/manala/internal/validator"
 )
 
 type Recipe struct {
@@ -62,7 +61,7 @@ func (recipe *Recipe) ProjectManifestTemplate() *template.Template {
 	return tmpl
 }
 
-func (recipe *Recipe) ProjectValidator() validator.Validator {
+func (recipe *Recipe) ProjectValidator() *schema.Validator {
 	return schema.NewValidator(recipe.Schema())
 }
 

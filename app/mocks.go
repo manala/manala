@@ -4,7 +4,6 @@ import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template"
-	"github.com/manala/manala/internal/validator"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -123,10 +122,10 @@ func (mock *RecipeMock) ProjectManifestTemplate() *template.Template {
 	return args.Get(0).(*template.Template)
 }
 
-func (mock *RecipeMock) ProjectValidator() validator.Validator {
+func (mock *RecipeMock) ProjectValidator() *schema.Validator {
 	args := mock.Called()
 
-	return args.Get(0).(validator.Validator)
+	return args.Get(0).(*schema.Validator)
 }
 
 func (mock *RecipeMock) Watches() ([]string, error) {

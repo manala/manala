@@ -1,8 +1,6 @@
 package schema
 
 import (
-	"github.com/manala/manala/internal/validator"
-
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -16,7 +14,7 @@ func NewValidator(schema Schema) *Validator {
 	}
 }
 
-func (v *Validator) Validate(value any) (validator.Violations, error) {
+func (v *Validator) Validate(value any) (Violations, error) {
 	// Validate
 	result, err := gojsonschema.Validate(
 		gojsonschema.NewRawLoader(map[string]any(v.schema)),
@@ -32,7 +30,7 @@ func (v *Validator) Validate(value any) (validator.Violations, error) {
 	}
 
 	// Violations
-	var violations validator.Violations
+	var violations Violations
 	for _, resultError := range result.Errors() {
 		violations = append(violations, ResultErrorViolation(resultError))
 	}
