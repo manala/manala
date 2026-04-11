@@ -21,6 +21,10 @@ type Value struct {
 	Tokens []Token
 }
 
+func (v Value) Start() Token {
+	return v.Tokens[0]
+}
+
 func (v Value) String() string {
 	if len(v.Tokens) == 0 {
 		return ""

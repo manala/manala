@@ -70,3 +70,14 @@ func (s *AnnotationSuite) TestValueStencil() {
 		s.Equal("\n       {\n    \"bar\":           123\n  }", value.Stencil())
 	})
 }
+
+func (s *AnnotationSuite) TestValueStart() {
+	token1 := annotation.Token{Value: "foo", Line: 2, Column: 5}
+	token2 := annotation.Token{Value: "bar", Line: 3, Column: 3}
+
+	value := annotation.Value{
+		Tokens: []annotation.Token{token1, token2},
+	}
+
+	s.Equal(token1, value.Start())
+}
