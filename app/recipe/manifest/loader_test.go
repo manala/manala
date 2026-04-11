@@ -64,7 +64,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 					"file", filepath.Join(repositoryBaseURL, "Empty", "repository", "recipe", ".manala.yaml"),
 				},
 				Errors: []errors.Assertion{
-					&parsing.Assertion{
+					&parsing.ErrorAssertion{
 						Err: &serrors.Assertion{
 							Message: "empty yaml content",
 						},

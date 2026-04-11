@@ -34,7 +34,7 @@ func (s *InferrerSuite) TestErrors() {
 # @schema foo
 node: ~
 `,
-			expected: &parsing.FlattenAssertion{
+			expected: &parsing.FlattenErrorAssertion{
 				Line:   2,
 				Column: 12,
 				Err: &serrors.Assertion{

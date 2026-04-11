@@ -34,7 +34,7 @@ func (s *Suite) TestNewFromErrors() {
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
 				Errors: []errors.Assertion{
-					&parsing.Assertion{
+					&parsing.ErrorAssertion{
 						Line:   1,
 						Column: 2,
 						Err: &serrors.Assertion{
@@ -51,7 +51,7 @@ func (s *Suite) TestNewFromErrors() {
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
 				Errors: []errors.Assertion{
-					&parsing.Assertion{
+					&parsing.ErrorAssertion{
 						Line:   1,
 						Column: 1,
 						Err: &serrors.Assertion{

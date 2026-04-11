@@ -30,7 +30,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 			test:   "EmptySource",
 			src:    "",
 			offset: 0,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -42,7 +42,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 			test:   "Beginning",
 			src:    "foo",
 			offset: 1,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -54,7 +54,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 			test:   "Middle",
 			src:    "foo",
 			offset: 2,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 2,
 				Err: &serrors.Assertion{
@@ -66,7 +66,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 			test:   "AfterLine",
 			src:    "foo\nbar",
 			offset: 5,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -78,7 +78,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 			test:   "MultipleLines",
 			src:    "foo\nbar\nbaz",
 			offset: 10,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 2,
 				Err: &serrors.Assertion{
@@ -109,7 +109,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		{
 			test: "Unknown",
 			err:  serrors.New("unknown"),
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -120,7 +120,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		{
 			test: "SyntaxError",
 			err:  &json.SyntaxError{Offset: 0},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -137,7 +137,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 				Field:  "field",
 				Type:   reflect.TypeFor[float64](),
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -158,7 +158,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 				Value:  "value",
 				Type:   reflect.TypeFor[float64](),
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -175,7 +175,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 			err: &json.InvalidUnmarshalError{
 				Type: reflect.TypeFor[float64](),
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{

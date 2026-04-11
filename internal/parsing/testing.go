@@ -9,14 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type Assertion struct {
+type ErrorAssertion struct {
 	Type   any
 	Line   int
 	Column int
 	Err    errors.Assertion
 }
 
-func (a *Assertion) AssertError(t *testing.T, err error) {
+func (a *ErrorAssertion) Assert(t *testing.T, err error) {
 	t.Helper()
 
 	if a.Type != nil {
@@ -31,16 +31,16 @@ func (a *Assertion) AssertError(t *testing.T, err error) {
 	assert.Equal(t, a.Column, e.Column, "Column not equal")
 
 	if a.Err != nil {
-		a.Err.AssertError(t, e.Err)
+		a.Err.Assert(t, e.Err)
 	}
 }
 
-type FlattenAssertion Assertion
+type FlattenErrorAssertion ErrorAssertion
 
-func (a *FlattenAssertion) AssertError(t *testing.T, err error) {
+func (a *FlattenErrorAssertion) Assert(t *testing.T, err error) {
 	t.Helper()
 
 	require.IsType(t, (*Error)(nil), err)
 
-	(*Assertion)(a).AssertError(t, err.(*Error).Flatten())
+	(*ErrorAssertion)(a).Assert(t, err.(*Error).Flatten())
 }

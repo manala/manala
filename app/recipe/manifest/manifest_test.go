@@ -42,7 +42,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 	}{
 		{
 			test: "Empty",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Err: &serrors.Assertion{
 					Message: "empty yaml content",
 				},
@@ -50,7 +50,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "Invalid",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -60,7 +60,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "IrregularType",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 6,
 				Err: &serrors.Assertion{
@@ -70,7 +70,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "IrregularMapKey",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 2,
 				Err: &serrors.Assertion{
@@ -80,7 +80,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "NotMap",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -91,7 +91,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config
 		{
 			test: "ConfigAbsent",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Err: &serrors.Assertion{
 					Message: "missing manala property",
 				},
@@ -99,7 +99,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigNotMap",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 9,
 				Err: &serrors.Assertion{
@@ -109,7 +109,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigEmpty",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -119,7 +119,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigAdditionalProperties",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 3,
 				Err: &serrors.Assertion{
@@ -130,7 +130,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config - Description
 		{
 			test: "ConfigDescriptionAbsent",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 7,
 				Err: &serrors.Assertion{
@@ -140,7 +140,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigDescriptionNotString",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 16,
 				Err: &serrors.Assertion{
@@ -150,7 +150,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigDescriptionEmpty",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 16,
 				Err: &serrors.Assertion{
@@ -160,7 +160,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigDescriptionTooLong",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 16,
 				Err: &serrors.Assertion{
@@ -171,7 +171,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config - Icon
 		{
 			test: "ConfigIconNotString",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 9,
 				Err: &serrors.Assertion{
@@ -181,7 +181,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigIconTooLong",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 9,
 				Err: &serrors.Assertion{
@@ -192,7 +192,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config - Template
 		{
 			test: "ConfigTemplateNotString",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 13,
 				Err: &serrors.Assertion{
@@ -202,7 +202,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigTemplateTooLong",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 13,
 				Err: &serrors.Assertion{
@@ -213,7 +213,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config - Sync
 		{
 			test: "ConfigSyncNotArray",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 9,
 				Err: &serrors.Assertion{
@@ -224,7 +224,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Config - Sync Item
 		{
 			test: "ConfigSyncItemNotString",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   4,
 				Column: 5,
 				Err: &serrors.Assertion{
@@ -234,7 +234,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigSyncItemEmpty",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   4,
 				Column: 5,
 				Err: &serrors.Assertion{
@@ -244,7 +244,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "ConfigSyncItemTooLong",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   4,
 				Column: 5,
 				Err: &serrors.Assertion{
@@ -255,7 +255,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		// Schema
 		{
 			test: "SchemaInvalidJson",
-			expected: &parsing.FlattenAssertion{
+			expected: &parsing.FlattenErrorAssertion{
 				Line:   4,
 				Column: 12,
 				Err: &serrors.Assertion{

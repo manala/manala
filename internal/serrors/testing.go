@@ -18,7 +18,7 @@ type Assertion struct {
 	Errors    []errors.Assertion
 }
 
-func (a *Assertion) AssertError(t *testing.T, err error) {
+func (a *Assertion) Assert(t *testing.T, err error) {
 	t.Helper()
 
 	if a.Type != nil {
@@ -59,7 +59,7 @@ func (a *Assertion) AssertError(t *testing.T, err error) {
 				require.Len(t, _errs, len(a.Errors), "Incorrect error's errors length")
 
 				for i, _assert := range a.Errors {
-					_assert.AssertError(t, _errs[i])
+					_assert.Assert(t, _errs[i])
 				}
 			}
 		}

@@ -29,7 +29,7 @@ func (s *ErrorsSuite) TestErrorAt() {
 		},
 	)
 
-	errors.Equal(s.T(), &parsing.Assertion{
+	errors.Equal(s.T(), &parsing.ErrorAssertion{
 		Line:   2,
 		Column: 3,
 		Err: &serrors.Assertion{
@@ -47,7 +47,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		{
 			test: "Unknown",
 			err:  serrors.New("unknown"),
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{
@@ -63,7 +63,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 3, Column: 5},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 5,
 				Err: &serrors.Assertion{
@@ -79,7 +79,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 2, Column: 4},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 4,
 				Err: &serrors.Assertion{
@@ -95,7 +95,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 4, Column: 1},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   4,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -112,7 +112,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 1, Column: 3},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 3,
 				Err: &serrors.Assertion{
@@ -128,7 +128,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 5, Column: 2},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   5,
 				Column: 2,
 				Err: &serrors.Assertion{
@@ -145,7 +145,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 2, Column: 1},
 				},
 			},
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -156,7 +156,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		{
 			test: "ExceededMaxDepth",
 			err:  yaml.ErrExceededMaxDepth,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   0,
 				Column: 0,
 				Err: &serrors.Assertion{

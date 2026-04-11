@@ -25,7 +25,7 @@ func (s *Suite) TestEmpty() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.Assertion{
+	errors.Equal(s.T(), &parsing.ErrorAssertion{
 		Err: &serrors.Assertion{
 			Message: "empty yaml content",
 		},
@@ -39,7 +39,7 @@ func (s *Suite) TestInvalids() {
 	}{
 		{
 			test: "At",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
 				Err: &serrors.Assertion{
@@ -70,7 +70,7 @@ func (s *Suite) TestMultipleDocuments() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.Assertion{
+	errors.Equal(s.T(), &parsing.ErrorAssertion{
 		Line:   2,
 		Column: 1,
 		Err: &serrors.Assertion{
@@ -86,7 +86,7 @@ func (s *Suite) TestIrregularMapKeys() {
 	}{
 		{
 			test: "Integer",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 2,
 				Err: &serrors.Assertion{
@@ -96,7 +96,7 @@ func (s *Suite) TestIrregularMapKeys() {
 		},
 		{
 			test: "IntegerAnchor",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 4,
 				Err: &serrors.Assertion{
@@ -126,7 +126,7 @@ func (s *Suite) TestIrregularTypes() {
 	}{
 		{
 			test: "Inf",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 6,
 				Err: &serrors.Assertion{
@@ -136,7 +136,7 @@ func (s *Suite) TestIrregularTypes() {
 		},
 		{
 			test: "Nan",
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 6,
 				Err: &serrors.Assertion{
@@ -188,7 +188,7 @@ func (s *Suite) TestIrregularMappingKey() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.Assertion{
+	errors.Equal(s.T(), &parsing.ErrorAssertion{
 		Line:   1,
 		Column: 1,
 		Err: &serrors.Assertion{
@@ -219,7 +219,7 @@ func (s *Suite) TestUnknownAnchors() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.Assertion{
+	errors.Equal(s.T(), &parsing.ErrorAssertion{
 		Line:   1,
 		Column: 7,
 		Err: &serrors.Assertion{

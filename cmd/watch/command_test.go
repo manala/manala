@@ -87,7 +87,7 @@ func (s *Suite) TestProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
 			Errors: []errors.Assertion{
-				&parsing.Assertion{
+				&parsing.ErrorAssertion{
 					Err: &serrors.Assertion{
 						Message: "empty yaml content",
 					},

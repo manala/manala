@@ -29,7 +29,7 @@ func (s *ParseSuite) TestErrors() {
 # @foo bar
 # @foo baz
 `,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 3,
 				Err: &serrors.Assertion{

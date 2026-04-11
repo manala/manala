@@ -69,7 +69,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 					"file", filepath.Join(projectBaseDir, "Empty", "project", ".manala.yaml"),
 				},
 				Errors: []errors.Assertion{
-					&parsing.Assertion{
+					&parsing.ErrorAssertion{
 						Err: &serrors.Assertion{
 							Message: "empty yaml content",
 						},

@@ -87,7 +87,7 @@ func (s *Suite) TestProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
 			Errors: []errors.Assertion{
-				&parsing.Assertion{
+				&parsing.ErrorAssertion{
 					Err: &serrors.Assertion{
 						Message: "empty yaml content",
 					},
@@ -179,7 +179,7 @@ func (s *Suite) TestRecursiveProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 			},
 			Errors: []errors.Assertion{
-				&parsing.Assertion{
+				&parsing.ErrorAssertion{
 					Err: &serrors.Assertion{
 						Message: "empty yaml content",
 					},

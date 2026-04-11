@@ -81,7 +81,7 @@ func (s *SetSuite) TestJSONVar() {
 		var foo map[string]any
 		err = set.JSONVar(&foo, "foo")
 
-		errors.Equal(s.T(), &parsing.FlattenAssertion{
+		errors.Equal(s.T(), &parsing.FlattenErrorAssertion{
 			Line:   2,
 			Column: 8,
 			Err: &serrors.Assertion{

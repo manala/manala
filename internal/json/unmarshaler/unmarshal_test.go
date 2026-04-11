@@ -27,7 +27,7 @@ func (s *Suite) TestErrors() {
 		{
 			test: "Syntax",
 			data: `foo`,
-			expected: &parsing.Assertion{
+			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 2,
 				Err: &serrors.Assertion{
