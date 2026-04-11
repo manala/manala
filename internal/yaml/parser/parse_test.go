@@ -47,6 +47,16 @@ func (s *Suite) TestInvalids() {
 				},
 			},
 		},
+		{
+			test: "Tab",
+			expected: &parsing.ErrorAssertion{
+				Line:   2,
+				Column: 1,
+				Err: &serrors.Assertion{
+					Message: "found a tab character where an indentation space is expected ",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

@@ -30,6 +30,21 @@ func ErrorFrom(err error) *parsing.Error {
 		)
 	}
 
+	// Syntax error
+	if err, ok := errors.AsType[*yaml.SyntaxError](err); ok {
+		message := err.GetMessage()
+
+		// Replace confusing tab message
+		if message == "found character '\t' that cannot start any token" {
+			message = "found a tab character where an indentation space is expected "
+		}
+
+		return ErrorAt(
+			serrors.New(message),
+			err.GetToken(),
+		)
+	}
+
 	if err, ok := errors.AsType[yaml.Error](err); ok {
 		return ErrorAt(serrors.New(err.GetMessage()), err.GetToken())
 	}
