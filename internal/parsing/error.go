@@ -61,7 +61,7 @@ func ErrorTo(serr serrors.Error, err *Error, options Options) serrors.Error {
 		serr = serr.WithDetailsFunc((&Dumper{
 			Err:   err,
 			Src:   options.Src,
-			Lexer: options.Src,
+			Lexer: options.Lexer,
 		}).Dump)
 	} else {
 		serr = serr.WithErrors(err)
