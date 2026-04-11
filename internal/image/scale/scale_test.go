@@ -12,21 +12,21 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct {
+type ScaleSuite struct {
 	suite.Suite
 
 	reference *image.NRGBA
 }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestScaleSuite(t *testing.T) {
+	suite.Run(t, new(ScaleSuite))
 }
 
-func (s *Suite) SetupTest() {
+func (s *ScaleSuite) SetupTest() {
 	s.reference = s.load(filepath.Join("testdata", "reference.png"))
 }
 
-func (s *Suite) Test() {
+func (s *ScaleSuite) Test() {
 	tests := []struct {
 		test     string
 		expected *image.NRGBA
@@ -62,7 +62,7 @@ func (s *Suite) Test() {
 	}
 }
 
-func (s *Suite) load(path string) *image.NRGBA {
+func (s *ScaleSuite) load(path string) *image.NRGBA {
 	s.T().Helper()
 
 	file, _ := os.Open(path)

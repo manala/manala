@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type SerrorsSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestSerrorsSuite(t *testing.T) {
+	suite.Run(t, new(SerrorsSuite))
 }
 
-func (s *Suite) TestError() {
+func (s *SerrorsSuite) TestError() {
 	s.Run("New", func() {
 		err := serrors.New("error")
 

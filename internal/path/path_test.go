@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type PathSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestPathSuite(t *testing.T) {
+	suite.Run(t, new(PathSuite))
 }
 
-func (s *Suite) TestJoin() {
+func (s *PathSuite) TestJoin() {
 	tests := []struct {
 		test     string
 		path     string

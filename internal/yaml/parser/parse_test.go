@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type ParseSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestParseSuite(t *testing.T) {
+	suite.Run(t, new(ParseSuite))
 }
 
-func (s *Suite) TestEmpty() {
+func (s *ParseSuite) TestEmpty() {
 	node, err := parser.Parse(nil)
 
 	s.Nil(node)
@@ -32,7 +32,7 @@ func (s *Suite) TestEmpty() {
 	}, err)
 }
 
-func (s *Suite) TestInvalids() {
+func (s *ParseSuite) TestInvalids() {
 	tests := []struct {
 		test     string
 		expected errors.Assertion
@@ -72,7 +72,7 @@ func (s *Suite) TestInvalids() {
 	}
 }
 
-func (s *Suite) TestMultipleDocuments() {
+func (s *ParseSuite) TestMultipleDocuments() {
 	dir := filepath.FromSlash("testdata/TestMultipleDocuments")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
@@ -89,7 +89,7 @@ func (s *Suite) TestMultipleDocuments() {
 	}, err)
 }
 
-func (s *Suite) TestIrregularMapKeys() {
+func (s *ParseSuite) TestIrregularMapKeys() {
 	tests := []struct {
 		test     string
 		expected errors.Assertion
@@ -129,7 +129,7 @@ func (s *Suite) TestIrregularMapKeys() {
 	}
 }
 
-func (s *Suite) TestIrregularTypes() {
+func (s *ParseSuite) TestIrregularTypes() {
 	tests := []struct {
 		test     string
 		expected errors.Assertion
@@ -169,7 +169,7 @@ func (s *Suite) TestIrregularTypes() {
 	}
 }
 
-func (s *Suite) TestMappingKey() {
+func (s *ParseSuite) TestMappingKey() {
 	dir := filepath.FromSlash("testdata/TestMappingKey")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
@@ -190,7 +190,7 @@ func (s *Suite) TestMappingKey() {
 	s.Equal("bar", valueNode.(*ast.StringNode).Value)
 }
 
-func (s *Suite) TestIrregularMappingKey() {
+func (s *ParseSuite) TestIrregularMappingKey() {
 	dir := filepath.FromSlash("testdata/TestIrregularMappingKey")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
@@ -207,7 +207,7 @@ func (s *Suite) TestIrregularMappingKey() {
 	}, err)
 }
 
-func (s *Suite) TestTags() {
+func (s *ParseSuite) TestTags() {
 	dir := filepath.FromSlash("testdata/TestTags")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
@@ -221,7 +221,7 @@ func (s *Suite) TestTags() {
 	s.Equal("bar", node.Values[0].Value.String())
 }
 
-func (s *Suite) TestUnknownAnchors() {
+func (s *ParseSuite) TestUnknownAnchors() {
 	dir := filepath.FromSlash("testdata/TestUnknownAnchors")
 	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
 
@@ -241,7 +241,7 @@ func (s *Suite) TestUnknownAnchors() {
 	}, err)
 }
 
-func (s *Suite) TestAnchors() {
+func (s *ParseSuite) TestAnchors() {
 	s.Run("Anchors", func() {
 		dir := filepath.FromSlash("testdata/TestAnchors")
 		content, _ := os.ReadFile(filepath.Join(dir, "Anchors.yaml"))

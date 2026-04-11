@@ -12,13 +12,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type UnmarshalSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestUnmarshalSuite(t *testing.T) {
+	suite.Run(t, new(UnmarshalSuite))
 }
 
-func (s *Suite) TestErrors() {
+func (s *UnmarshalSuite) TestErrors() {
 	tests := []struct {
 		test     string
 		data     string
@@ -46,7 +46,7 @@ func (s *Suite) TestErrors() {
 	}
 }
 
-func (s *Suite) Test() {
+func (s *UnmarshalSuite) Test() {
 	tests := []struct {
 		test     string
 		data     string

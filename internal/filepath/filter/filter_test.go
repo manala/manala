@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type FilterSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestFilterSuite(t *testing.T) {
+	suite.Run(t, new(FilterSuite))
 }
 
-func (s *Suite) Test() {
+func (s *FilterSuite) Test() {
 	s.Run("Default", func() {
 		filter := filter.New()
 

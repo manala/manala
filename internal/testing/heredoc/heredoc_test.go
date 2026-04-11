@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type HeredocSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestHeredocSuite(t *testing.T) {
+	suite.Run(t, new(HeredocSuite))
 }
 
-func (s *Suite) TestDoc() {
+func (s *HeredocSuite) TestDoc() {
 	tests := []struct {
 		test     string
 		doc      string

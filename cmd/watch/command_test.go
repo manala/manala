@@ -21,13 +21,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type CommandSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestCommandSuite(t *testing.T) {
+	suite.Run(t, new(CommandSuite))
 }
 
-func (s *Suite) TestProjectErrors() {
+func (s *CommandSuite) TestProjectErrors() {
 	s.Run("ProjectNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/ProjectNotFound/project")
 
@@ -123,7 +123,7 @@ func (s *Suite) TestProjectErrors() {
 	})
 }
 
-func (s *Suite) TestRepositoryErrors() {
+func (s *CommandSuite) TestRepositoryErrors() {
 	s.Run("NoRepository", func() {
 		projectDir := filepath.FromSlash("testdata/TestRepositoryErrors/NoRepository/project")
 
@@ -192,7 +192,7 @@ func (s *Suite) TestRepositoryErrors() {
 	})
 }
 
-func (s *Suite) TestRecipeErrors() {
+func (s *CommandSuite) TestRecipeErrors() {
 	s.Run("RecipeNotFound", func() {
 		projectDir := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/project")
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
@@ -271,7 +271,7 @@ func (s *Suite) TestRecipeErrors() {
 	})
 }
 
-func (s *Suite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *CommandSuite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 

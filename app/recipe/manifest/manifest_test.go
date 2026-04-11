@@ -18,13 +18,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type ManifestSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestManifestSuite(t *testing.T) {
+	suite.Run(t, new(ManifestSuite))
 }
 
-func (s *Suite) Test() {
+func (s *ManifestSuite) Test() {
 	m := manifest.New()
 
 	s.Empty(m.Description())
@@ -35,7 +35,7 @@ func (s *Suite) Test() {
 	s.Equal(schema.Schema{}, m.Schema())
 }
 
-func (s *Suite) TestUnmarshalYAMLErrors() {
+func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 	tests := []struct {
 		test     string
 		expected errors.Assertion
@@ -269,7 +269,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		s.Run(test.test, func() {
 			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/Suite/TestUnmarshalYAMLErrors")
+			dir := filepath.FromSlash("testdata/ManifestSuite/TestUnmarshalYAMLErrors")
 
 			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
 			content, _ := io.ReadAll(reader)
@@ -281,7 +281,7 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 	}
 }
 
-func (s *Suite) TestUnmarshalYAML() {
+func (s *ManifestSuite) TestUnmarshalYAML() {
 	tests := []struct {
 		test                string
 		expectedDescription string
@@ -497,7 +497,7 @@ func (s *Suite) TestUnmarshalYAML() {
 		s.Run(test.test, func() {
 			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/Suite/TestUnmarshalYAML")
+			dir := filepath.FromSlash("testdata/ManifestSuite/TestUnmarshalYAML")
 
 			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
 			content, _ := io.ReadAll(reader)
@@ -516,10 +516,10 @@ func (s *Suite) TestUnmarshalYAML() {
 	}
 }
 
-func (s *Suite) TestOptions() {
+func (s *ManifestSuite) TestOptions() {
 	m := manifest.New()
 
-	dir := filepath.FromSlash("testdata/Suite/TestOptions")
+	dir := filepath.FromSlash("testdata/ManifestSuite/TestOptions")
 
 	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
 	content, _ := io.ReadAll(reader)

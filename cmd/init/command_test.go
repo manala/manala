@@ -20,13 +20,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type CommandSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestCommandSuite(t *testing.T) {
+	suite.Run(t, new(CommandSuite))
 }
 
-func (s *Suite) TestProjectErrors() {
+func (s *CommandSuite) TestProjectErrors() {
 	s.Run("AlreadyExistingProject", func() {
 		projectDir := filepath.FromSlash("testdata/TestProjectErrors/AlreadyExistingProject/project")
 
@@ -49,7 +49,7 @@ func (s *Suite) TestProjectErrors() {
 	})
 }
 
-func (s *Suite) TestRepositoryErrors() {
+func (s *CommandSuite) TestRepositoryErrors() {
 	s.Run("NoRepository", func() {
 		stdOut, stdErr, err := s.execute("")
 
@@ -136,7 +136,7 @@ func (s *Suite) TestRepositoryErrors() {
 	})
 }
 
-func (s *Suite) TestRepositoryCustom() {
+func (s *CommandSuite) TestRepositoryCustom() {
 	projectDir := filepath.FromSlash("testdata/TestRepositoryCustom/project")
 	repositoryURL := filepath.FromSlash("testdata/TestRepositoryCustom/repository")
 
@@ -174,7 +174,7 @@ func (s *Suite) TestRepositoryCustom() {
 	`, filepath.Join(projectDir, ".manala.yaml"), repositoryURL)
 }
 
-func (s *Suite) TestRepositoryConfig() {
+func (s *CommandSuite) TestRepositoryConfig() {
 	projectDir := filepath.FromSlash("testdata/TestRepositoryConfig/project")
 	repositoryURL := filepath.FromSlash("testdata/TestRepositoryConfig/repository")
 
@@ -220,7 +220,7 @@ func (s *Suite) TestRepositoryConfig() {
 	`, filepath.Join(projectDir, "template"))
 }
 
-func (s *Suite) TestRecipeErrors() {
+func (s *CommandSuite) TestRecipeErrors() {
 	s.Run("RecipeNotFound", func() {
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
 
@@ -299,7 +299,7 @@ func (s *Suite) TestRecipeErrors() {
 	})
 }
 
-func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 

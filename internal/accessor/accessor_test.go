@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type AccessorSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestAccessorSuite(t *testing.T) {
+	suite.Run(t, new(AccessorSuite))
 }
 
-func (s *Suite) TestGet() {
+func (s *AccessorSuite) TestGet() {
 	var value any = "foo"
 
 	accessor := accessor.New(&value)
@@ -24,7 +24,7 @@ func (s *Suite) TestGet() {
 	s.Equal("foo", _value)
 }
 
-func (s *Suite) TestSet() {
+func (s *AccessorSuite) TestSet() {
 	var value any = "foo"
 
 	accessor := accessor.New(&value)

@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type BackwalkSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestBackwalkSuite(t *testing.T) {
+	suite.Run(t, new(BackwalkSuite))
 }
 
-func (s *Suite) Test() {
+func (s *BackwalkSuite) Test() {
 	dir := filepath.FromSlash("testdata/Test")
 
 	i := 0

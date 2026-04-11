@@ -19,13 +19,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct{ suite.Suite }
+type CommandSuite struct{ suite.Suite }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestCommandSuite(t *testing.T) {
+	suite.Run(t, new(CommandSuite))
 }
 
-func (s *Suite) TestRepositoryErrors() {
+func (s *CommandSuite) TestRepositoryErrors() {
 	s.Run("NoRepository", func() {
 		stdOut, stdErr, err := s.execute("")
 
@@ -108,7 +108,7 @@ func (s *Suite) TestRepositoryErrors() {
 	})
 }
 
-func (s *Suite) TestRepositoryCustom() {
+func (s *CommandSuite) TestRepositoryCustom() {
 	repositoryURL := filepath.FromSlash("testdata/TestRepositoryCustom/repository")
 
 	stdOut, stdErr, err := s.execute("",
@@ -128,7 +128,7 @@ func (s *Suite) TestRepositoryCustom() {
 	`, stdErr)
 }
 
-func (s *Suite) TestRepositoryConfig() {
+func (s *CommandSuite) TestRepositoryConfig() {
 	repositoryURL := filepath.FromSlash("testdata/TestRepositoryConfig/repository")
 
 	stdOut, stdErr, err := s.execute(repositoryURL)
@@ -146,7 +146,7 @@ func (s *Suite) TestRepositoryConfig() {
 	`, stdErr)
 }
 
-func (s *Suite) TestRecipeErrors() {
+func (s *CommandSuite) TestRecipeErrors() {
 	s.Run("WrongRecipeManifest", func() {
 		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
 
@@ -196,7 +196,7 @@ func (s *Suite) TestRecipeErrors() {
 	})
 }
 
-func (s *Suite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 

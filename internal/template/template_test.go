@@ -12,26 +12,26 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct {
+type TemplateSuite struct {
 	suite.Suite
 
 	provider template.ProviderInterface
 	buffer   *bytes.Buffer
 }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestTemplateSuite(t *testing.T) {
+	suite.Run(t, new(TemplateSuite))
 }
 
-func (s *Suite) SetupSuite() {
+func (s *TemplateSuite) SetupSuite() {
 	s.provider = &template.Provider{}
 }
 
-func (s *Suite) SetupTest() {
+func (s *TemplateSuite) SetupTest() {
 	s.buffer = &bytes.Buffer{}
 }
 
-func (s *Suite) TestWriteTo() {
+func (s *TemplateSuite) TestWriteTo() {
 	template := s.provider.Template()
 	err := template.WriteTo(s.buffer)
 
@@ -41,7 +41,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("DefaultFile", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/DefaultFile")
+		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/DefaultFile")
 
 		template := s.provider.Template()
 		template.WithDefaultFile(filepath.Join(dir, "template.tmpl"))
@@ -55,7 +55,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("File", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/File")
+		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/File")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))
@@ -79,7 +79,7 @@ func (s *Suite) TestWriteTo() {
 	s.Run("FileOverDefaultContent", func() {
 		s.buffer.Reset()
 
-		dir := filepath.FromSlash("testdata/Suite/TestWriteTo/FileOverDefaultContent")
+		dir := filepath.FromSlash("testdata/TemplateSuite/TestWriteTo/FileOverDefaultContent")
 
 		template := s.provider.Template()
 		template.WithFile(filepath.Join(dir, "template.tmpl"))

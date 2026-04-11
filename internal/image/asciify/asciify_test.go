@@ -12,15 +12,15 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct {
+type AsciifySuite struct {
 	suite.Suite
 }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(Suite))
+func TestAsciifySuite(t *testing.T) {
+	suite.Run(t, new(AsciifySuite))
 }
 
-func (s *Suite) Test() {
+func (s *AsciifySuite) Test() {
 	tests := []struct {
 		test      string
 		reference *image.NRGBA
@@ -60,7 +60,7 @@ func (s *Suite) Test() {
 	}
 }
 
-func (s *Suite) load(path string) *image.NRGBA {
+func (s *AsciifySuite) load(path string) *image.NRGBA {
 	s.T().Helper()
 
 	file, _ := os.Open(path)
