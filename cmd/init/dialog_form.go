@@ -7,7 +7,6 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/accessor"
-	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 
@@ -120,17 +119,14 @@ func NewDialogTextFormItem(
 	errored func(error),
 ) (*DialogTextFormItem, error) {
 	// Accessor
-	itemAccessor := path.NewAccessor(
-		option.Path(),
-		vars,
-	)
+	itemAccessor := option.Accessor(vars)
 
 	// Item
 	item := &DialogTextFormItem{
 		InputField: cview.NewInputField(),
 		option:     option,
 		accessor:   itemAccessor,
-		validator:  schema.NewValidator(option.Schema()),
+		validator:  option.Validator(),
 		errored:    errored,
 	}
 
@@ -195,6 +191,7 @@ type DialogSelectFormItem struct {
 	*cview.DropDown
 
 	option   *option.Select
+	values   []any
 	accessor accessor.Accessor
 	errored  func(error)
 }
@@ -205,16 +202,14 @@ func NewSelectFormItem(
 	errored func(error),
 ) (*DialogSelectFormItem, error) {
 	// Accessor
-	itemAccessor := path.NewAccessor(
-		option.Path(),
-		vars,
-	)
+	itemAccessor := option.Accessor(vars)
 
 	// Item
 	item := &DialogSelectFormItem{
 		DropDown: cview.NewDropDown(),
 		option:   option,
 		accessor: itemAccessor,
+		values:   option.Values(),
 		errored:  errored,
 	}
 
@@ -228,7 +223,7 @@ func NewSelectFormItem(
 		item.Apply()
 	})
 
-	for _, value := range option.Values {
+	for _, value := range item.values {
 		var text string
 		switch value {
 		case nil:
@@ -249,7 +244,7 @@ func NewSelectFormItem(
 		return nil, err
 	}
 
-	i := slices.Index(option.Values, value)
+	i := slices.Index(item.values, value)
 	if i != -1 {
 		item.SetCurrentOption(i)
 	} else {
@@ -261,7 +256,7 @@ func NewSelectFormItem(
 
 func (item *DialogSelectFormItem) Apply() bool {
 	i, _ := item.GetCurrentOption()
-	value := item.option.Values[i]
+	value := item.values[i]
 
 	// Accession
 	if err := item.accessor.Set(value); err != nil {

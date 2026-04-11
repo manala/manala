@@ -13,7 +13,6 @@ type Assertion struct {
 	Type  any
 	Label string
 	Name  string
-	Path  string
 	// Text
 	MaxLength int
 	// Select
@@ -26,16 +25,15 @@ func (a *Assertion) Assert(t *testing.T, opt app.RecipeOption) {
 	require.IsType(t, a.Type, opt)
 	assert.Equal(t, a.Label, opt.Label(), "Label not equal")
 	assert.Equal(t, a.Name, opt.Name(), "Name not equal")
-	assert.Equal(t, a.Path, opt.Path().String(), "Path not equal")
 
 	// Text
 	if opt, ok := opt.(*Text); ok {
-		assert.Equal(t, a.MaxLength, opt.MaxLength, "MaxLength not equal")
+		assert.Equal(t, a.MaxLength, opt.MaxLength(), "MaxLength not equal")
 	}
 
 	// Select
 	if opt, ok := opt.(*Select); ok {
-		assert.Equal(t, a.Values, opt.Values, "Values not equals")
+		assert.Equal(t, a.Values, opt.Values(), "Values not equals")
 	}
 }
 

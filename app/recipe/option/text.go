@@ -1,6 +1,7 @@
 package option
 
 import (
+	"github.com/manala/manala/internal/accessor"
 	"github.com/manala/manala/internal/json/number"
 	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/path"
@@ -16,8 +17,6 @@ type Text struct {
 	help   string
 	schema schema.Schema
 	path   path.Path
-
-	MaxLength int
 }
 
 func NewText(sch schema.Schema, p path.Path) (*Text, error) {
@@ -26,24 +25,30 @@ func NewText(sch schema.Schema, p path.Path) (*Text, error) {
 		return nil, serrors.New("invalid recipe option string type")
 	}
 
-	// Max length
-	maxLength := 0
-	if length, ok := number.NumberType(sch["maxLength"]); ok {
-		maxLength = length.Int()
-	}
-
 	return &Text{
-		schema:    sch,
-		path:      p,
-		MaxLength: maxLength,
+		schema: sch,
+		path:   p,
 	}, nil
 }
 
-func (o *Text) Name() string          { return o.name }
-func (o *Text) Label() string         { return o.label }
-func (o *Text) Help() string          { return o.help }
-func (o *Text) Path() path.Path       { return o.path }
-func (o *Text) Schema() schema.Schema { return o.schema }
+func (o *Text) Name() string  { return o.name }
+func (o *Text) Label() string { return o.label }
+func (o *Text) Help() string  { return o.help }
+
+func (o *Text) MaxLength() int {
+	if maxLength, ok := number.NumberType(o.schema["maxLength"]); ok {
+		return maxLength.Int()
+	}
+	return 0
+}
+
+func (o *Text) Accessor(data any) accessor.Accessor {
+	return path.NewAccessor(o.path, data)
+}
+
+func (o *Text) Validator() *schema.Validator {
+	return schema.NewValidator(o.schema)
+}
 
 func (o *Text) UnmarshalJSON(data []byte) error {
 	var env struct {

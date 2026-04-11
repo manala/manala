@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template"
@@ -46,8 +45,6 @@ type RecipeOption interface {
 	Name() string
 	Label() string
 	Help() string
-	Path() path.Path
-	Schema() schema.Schema
 }
 
 /**************/

@@ -1,6 +1,7 @@
 package option
 
 import (
+	"github.com/manala/manala/internal/accessor"
 	"github.com/manala/manala/internal/json/number"
 	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/path"
@@ -16,8 +17,6 @@ type Select struct {
 	help   string
 	schema schema.Schema
 	path   path.Path
-
-	Values []any
 }
 
 func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
@@ -31,7 +30,18 @@ func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
 		return nil, serrors.New("empty recipe option enum")
 	}
 
-	// Values
+	return &Select{
+		schema: sch,
+		path:   p,
+	}, nil
+}
+
+func (o *Select) Name() string  { return o.name }
+func (o *Select) Label() string { return o.label }
+func (o *Select) Help() string  { return o.help }
+
+func (o *Select) Values() []any {
+	enum := o.schema["enum"].([]any)
 	values := make([]any, len(enum))
 	for i := range enum {
 		if value, ok := number.NumberType(enum[i]); ok {
@@ -40,19 +50,12 @@ func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
 			values[i] = enum[i]
 		}
 	}
-
-	return &Select{
-		schema: sch,
-		path:   p,
-		Values: values,
-	}, nil
+	return values
 }
 
-func (o *Select) Name() string          { return o.name }
-func (o *Select) Label() string         { return o.label }
-func (o *Select) Help() string          { return o.help }
-func (o *Select) Path() path.Path       { return o.path }
-func (o *Select) Schema() schema.Schema { return o.schema }
+func (o *Select) Accessor(data any) accessor.Accessor {
+	return path.NewAccessor(o.path, data)
+}
 
 func (o *Select) UnmarshalJSON(data []byte) error {
 	var env struct {
