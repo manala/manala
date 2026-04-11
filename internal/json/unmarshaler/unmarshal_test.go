@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/json/unmarshaler"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/errors"
 
@@ -26,10 +27,11 @@ func (s *Suite) TestErrors() {
 		{
 			test: "Syntax",
 			data: `foo`,
-			expected: &serrors.Assertion{
-				Message: "invalid character 'o' in literal false (expecting 'a')",
-				Arguments: []any{
-					"offset", int64(2),
+			expected: &parsing.Assertion{
+				Line:   1,
+				Column: 2,
+				Err: &serrors.Assertion{
+					Message: "invalid character 'o' in literal false (expecting 'a')",
 				},
 			},
 		},

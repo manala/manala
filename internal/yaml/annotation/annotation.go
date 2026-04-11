@@ -5,23 +5,29 @@ import (
 )
 
 type Annotation struct {
-	nameToken   Token
-	valueTokens []Token
+	Name  Name
+	Value Value
 }
 
-// Name returns the annotation name.
-func (a *Annotation) Name() string {
-	return a.nameToken.Value
+type Name struct {
+	Token Token
 }
 
-// Value returns the annotation value, joining text lines with newlines.
-func (a *Annotation) Value() string {
-	if len(a.valueTokens) == 0 {
+func (n Name) String() string {
+	return n.Token.Value
+}
+
+type Value struct {
+	Tokens []Token
+}
+
+func (v Value) String() string {
+	if len(v.Tokens) == 0 {
 		return ""
 	}
 
 	var b strings.Builder
-	for i, t := range a.valueTokens {
+	for i, t := range v.Tokens {
 		if i > 0 {
 			b.WriteString("\n")
 		}
@@ -29,17 +35,4 @@ func (a *Annotation) Value() string {
 	}
 
 	return b.String()
-}
-
-type Annotations []*Annotation
-
-// Lookup returns the annotation with the given name, if any.
-func (annotations Annotations) Lookup(name string) (*Annotation, bool) {
-	for _, a := range annotations {
-		if a.Name() == name {
-			return a, true
-		}
-	}
-
-	return nil, false
 }

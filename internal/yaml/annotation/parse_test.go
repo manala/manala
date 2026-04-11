@@ -3,6 +3,9 @@ package annotation_test
 import (
 	"testing"
 
+	"github.com/manala/manala/internal/parsing"
+	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
@@ -12,6 +15,37 @@ type ParseSuite struct{ suite.Suite }
 
 func TestParseSuite(t *testing.T) {
 	suite.Run(t, new(ParseSuite))
+}
+
+func (s *ParseSuite) TestErrors() {
+	tests := []struct {
+		test     string
+		src      string
+		expected errors.Assertion
+	}{
+		{
+			test: "Duplicate",
+			src: `
+# @foo bar
+# @foo baz
+`,
+			expected: &parsing.Assertion{
+				Line:   3,
+				Column: 3,
+				Err: &serrors.Assertion{
+					Message: "duplicate annotation @foo",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			_, err := annotation.Parse(test.src)
+
+			errors.Equal(s.T(), test.expected, err)
+		})
+	}
 }
 
 func (s *ParseSuite) Test() {
@@ -30,7 +64,7 @@ func (s *ParseSuite) Test() {
   		 # @indented foo
 		# @empty
 	`
-	annots, err := annotation.Parse(src)
+	set, err := annotation.Parse(src)
 	s.Require().NoError(err)
 
 	tests := []struct {
@@ -80,12 +114,13 @@ func (s *ParseSuite) Test() {
 		},
 	}
 
-	for i, test := range tests {
+	for _, test := range tests {
 		s.Run(test.test, func() {
-			s.Equal(test.name, annots[i].Name())
-			s.Equal(test.value, annots[i].Value())
+			annot, ok := set.Lookup(test.name)
+			s.Require().True(ok)
+			s.Equal(test.value, annot.Value.String())
 		})
 	}
 
-	s.Require().Len(annots, len(tests))
+	s.Equal(len(tests), set.Len())
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/app/recipe/option"
+	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
@@ -33,10 +34,11 @@ func (s *Suite) TestNewFromErrors() {
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
 				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "invalid character 'o' in literal false (expecting 'a')",
-						Arguments: []any{
-							"offset", int64(2),
+					&parsing.Assertion{
+						Line:   1,
+						Column: 2,
+						Err: &serrors.Assertion{
+							Message: "invalid character 'o' in literal false (expecting 'a')",
 						},
 					},
 				},
@@ -49,12 +51,15 @@ func (s *Suite) TestNewFromErrors() {
 			expected: &serrors.Assertion{
 				Message: "irregular recipe option",
 				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "cannot unmarshal into value",
-						Arguments: []any{
-							"offset", int64(1),
-							"value", "array",
-							"type", "map[string]interface {}",
+					&parsing.Assertion{
+						Line:   1,
+						Column: 1,
+						Err: &serrors.Assertion{
+							Message: "cannot unmarshal into value",
+							Arguments: []any{
+								"value", "array",
+								"type", "map[string]interface {}",
+							},
 						},
 					},
 				},
@@ -155,9 +160,9 @@ func (s *Suite) TestNewFromErrors() {
 		s.Run(test.test, func() {
 			path := path.Path("")
 
-			option, err := option.New(strings.NewReader(test.data), test.schema, path)
+			opt, err := option.New(strings.NewReader(test.data), test.schema, path)
 
-			s.Nil(option)
+			s.Nil(opt)
 			errors.Equal(s.T(), test.expected, err)
 		})
 	}
@@ -165,49 +170,51 @@ func (s *Suite) TestNewFromErrors() {
 
 func (s *Suite) TestReadFrom() {
 	tests := []struct {
-		test          string
-		data          string
-		schema        schema.Schema
-		expectedType  any
-		expectedLabel string
-		expectedName  string
+		test     string
+		data     string
+		schema   schema.Schema
+		expected option.Assertion
 	}{
 		{
-			test:          "Text",
-			data:          `{"label": "Foo", "name": "bar", "type": "text"}`,
-			schema:        schema.Schema{"type": "string"},
-			expectedType:  (*option.TextOption)(nil),
-			expectedLabel: "Foo",
-			expectedName:  "bar",
+			test:   "Text",
+			data:   `{"label": "Foo", "name": "bar", "type": "text"}`,
+			schema: schema.Schema{"type": "string"},
+			expected: option.Assertion{
+				Type:  &option.TextOption{},
+				Label: "Foo",
+				Name:  "bar",
+			},
 		},
 		{
-			test:          "TextNoName",
-			data:          `{"label": "Foo Bar", "type": "text"}`,
-			schema:        schema.Schema{"type": "string"},
-			expectedType:  (*option.TextOption)(nil),
-			expectedLabel: "Foo Bar",
-			expectedName:  "foo-bar",
+			test:   "TextNoName",
+			data:   `{"label": "Foo Bar", "type": "text"}`,
+			schema: schema.Schema{"type": "string"},
+			expected: option.Assertion{
+				Type:  &option.TextOption{},
+				Label: "Foo Bar",
+				Name:  "foo-bar",
+			},
 		},
 		{
-			test:          "TextTypeImplicit",
-			data:          `{"label": "Foo", "name": "bar"}`,
-			schema:        schema.Schema{"type": "string"},
-			expectedType:  (*option.TextOption)(nil),
-			expectedLabel: "Foo",
-			expectedName:  "bar",
+			test:   "TextTypeImplicit",
+			data:   `{"label": "Foo", "name": "bar"}`,
+			schema: schema.Schema{"type": "string"},
+			expected: option.Assertion{
+				Type:  &option.TextOption{},
+				Label: "Foo",
+				Name:  "bar",
+			},
 		},
 	}
 	for _, test := range tests {
 		s.Run(test.test, func() {
 			path := path.Path("")
 
-			option, err := option.New(strings.NewReader(test.data), test.schema, path)
+			opt, err := option.New(strings.NewReader(test.data), test.schema, path)
 
 			s.Require().NoError(err)
 
-			s.Require().IsType(test.expectedType, option)
-			s.Equal(test.expectedLabel, option.Label())
-			s.Equal(test.expectedName, option.Name())
+			option.Equal(s.T(), test.expected, opt)
 		})
 	}
 }

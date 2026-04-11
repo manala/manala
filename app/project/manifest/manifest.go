@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"slices"
 
-	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/parser"
 
@@ -53,9 +52,9 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		return node.Key.String() == "manala"
 	})
 	if i == -1 {
-		return &parsing.Error{
-			Err: serrors.New("missing manala property"),
-		}
+		return parser.ErrorFrom(
+			serrors.New("missing manala property"),
+		)
 	}
 
 	configNode := node.Values[i].Value

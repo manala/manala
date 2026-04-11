@@ -2,4 +2,4 @@ manala:
   recipe: recipe
   repository: testdata/LoaderSuite/TestHandler/repository
 
-foo: bar
+foo: baz

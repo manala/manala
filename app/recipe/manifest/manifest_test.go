@@ -254,47 +254,12 @@ func (s *Suite) TestUnmarshalYAMLErrors() {
 		},
 		// Schema
 		{
-			test: "SchemaMisplacedAnnotation",
-			expected: &serrors.Assertion{
-				Message: "unable to infer recipe manifest schema",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "misplaced schema annotation",
-						Arguments: []any{
-							"line", 4,
-							"column", 9,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							   3 |
-							>  4 | foo: ~  # @schema {"type": "string", "minLength": 1}
-							               ^
-						`,
-					},
-				},
-			},
-		},
-		{
 			test: "SchemaInvalidJson",
-			expected: &serrors.Assertion{
-				Message: "unable to infer recipe manifest schema",
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Message: "invalid character 'o' in literal false (expecting 'a')",
-						Arguments: []any{
-							"line", 4,
-							"column", 1,
-						},
-						Details: `
-							   1 | manala:
-							   2 |   description: description
-							   3 |
-							>  4 | # @schema foo
-							       ^
-							   5 | foo: ~
-						`,
-					},
+			expected: &parsing.FlattenAssertion{
+				Line:   4,
+				Column: 12,
+				Err: &serrors.Assertion{
+					Message: "invalid character 'o' in literal false (expecting 'a')",
 				},
 			},
 		},
@@ -415,7 +380,9 @@ func (s *Suite) TestUnmarshalYAML() {
 						},
 					},
 					"map_empty": map[string]any{
-						"type": "object",
+						"type":                 "object",
+						"additionalProperties": false,
+						"properties":           map[string]any{},
 					},
 					"map_single": map[string]any{
 						"type":                 "object",
@@ -491,7 +458,11 @@ func (s *Suite) TestUnmarshalYAML() {
 			expectedTemplate:    "template",
 			expectedVars:        map[string]any{},
 			expectedSync:        &sync.UnitsAssertion{},
-			expectedSchema:      schema.Schema{},
+			expectedSchema: schema.Schema{
+				"type":                 "object",
+				"additionalProperties": false,
+				"properties":           map[string]any{},
+			},
 		},
 		{
 			test:                "VarsKeys",
@@ -555,95 +526,110 @@ func (s *Suite) TestOptions() {
 
 	err := m.UnmarshalYAML(content)
 
-	options := m.Options()
+	opts := m.Options()
 
 	s.Require().NoError(err)
 
-	s.Require().Len(options, 13)
-
-	s.Require().IsType((*option.TextOption)(nil), options[0])
-	s.Equal("string", options[0].Name())
-	s.Equal("String", options[0].Label())
-	s.Equal("string", options[0].Path().String())
-	s.Equal(0, options[0].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[1])
-	s.Equal("string-null", options[1].Name())
-	s.Equal("String null", options[1].Label())
-	s.Equal("string_null", options[1].Path().String())
-	s.Equal(0, options[1].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[2])
-	s.Equal("string-max-length", options[2].Name())
-	s.Equal("String max length", options[2].Label())
-	s.Equal("string_max_length", options[2].Path().String())
-	s.Equal(123, options[2].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.SelectOption)(nil), options[3])
-	s.Equal("string-float-int", options[3].Name())
-	s.Equal("String float int", options[3].Label())
-	s.Equal("string_float_int", options[3].Path().String())
-	s.Equal([]any{"3.0"}, options[3].(*option.SelectOption).Values)
-
-	s.Require().IsType((*option.SelectOption)(nil), options[4])
-	s.Equal("string-asterisk", options[4].Name())
-	s.Equal("String asterisk", options[4].Label())
-	s.Equal("string_asterisk", options[4].Path().String())
-	s.Equal([]any{"*"}, options[4].(*option.SelectOption).Values)
-
-	s.Require().IsType((*option.TextOption)(nil), options[5])
-	s.Equal("map-single-first", options[5].Name())
-	s.Equal("Map single first", options[5].Label())
-	s.Equal("map_single.first", options[5].Path().String())
-	s.Equal(0, options[5].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[6])
-	s.Equal("map-multiple-first", options[6].Name())
-	s.Equal("Map multiple first", options[6].Label())
-	s.Equal("map_multiple.first", options[6].Path().String())
-	s.Equal(0, options[6].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[7])
-	s.Equal("map-multiple-second", options[7].Name())
-	s.Equal("Map multiple second", options[7].Label())
-	s.Equal("map_multiple.second", options[7].Path().String())
-	s.Equal(0, options[7].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.SelectOption)(nil), options[8])
-	s.Equal("Enum null", options[8].Label())
-	s.Equal("enum-null", options[8].Name())
-	s.Equal("enum", options[8].Path().String())
-	s.Equal([]any{
-		nil,
-		true,
-		false,
-		"string",
-		int64(12),
-		2.3,
-		3.0,
-		"3.0",
-	}, options[8].(*option.SelectOption).Values)
-
-	s.Require().IsType((*option.TextOption)(nil), options[9])
-	s.Equal("underscore-key", options[9].Name())
-	s.Equal("Underscore key", options[9].Label())
-	s.Equal("underscore_key", options[9].Path().String())
-	s.Equal(0, options[9].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[10])
-	s.Equal("hyphen-key", options[10].Name())
-	s.Equal("Hyphen key", options[10].Label())
-	s.Equal("hyphen-key", options[10].Path().String())
-	s.Equal(0, options[10].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[11])
-	s.Equal("Dot key", options[11].Label())
-	s.Equal("dot-key", options[11].Name())
-	s.Equal("'dot.key'", options[11].Path().String())
-	s.Equal(0, options[11].(*option.TextOption).MaxLength)
-
-	s.Require().IsType((*option.TextOption)(nil), options[12])
-	s.Equal("foo-bar", options[12].Name())
-	s.Equal("Custom name", options[12].Label())
-	s.Equal(0, options[12].(*option.TextOption).MaxLength)
+	option.Equals(s.T(), option.Assertions{
+		{
+			Type:      &option.TextOption{},
+			Label:     "String",
+			Name:      "string",
+			Path:      "string",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "String null",
+			Name:      "string-null",
+			Path:      "string_null",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "String max length",
+			Name:      "string-max-length",
+			Path:      "string_max_length",
+			MaxLength: 123,
+		},
+		{
+			Type:   &option.SelectOption{},
+			Label:  "String float int",
+			Name:   "string-float-int",
+			Path:   "string_float_int",
+			Values: []any{"3.0"},
+		},
+		{
+			Type:   &option.SelectOption{},
+			Label:  "String asterisk",
+			Name:   "string-asterisk",
+			Path:   "string_asterisk",
+			Values: []any{"*"},
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Map single first",
+			Name:      "map-single-first",
+			Path:      "map_single.first",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Map multiple first",
+			Name:      "map-multiple-first",
+			Path:      "map_multiple.first",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Map multiple second",
+			Name:      "map-multiple-second",
+			Path:      "map_multiple.second",
+			MaxLength: 0,
+		},
+		{
+			Type:  &option.SelectOption{},
+			Label: "Enum null",
+			Name:  "enum-null",
+			Path:  "enum",
+			Values: []any{
+				nil,
+				true,
+				false,
+				"string",
+				int64(12),
+				2.3,
+				3.0,
+				"3.0",
+			},
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Underscore key",
+			Name:      "underscore-key",
+			Path:      "underscore_key",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Hyphen key",
+			Name:      "hyphen-key",
+			Path:      "hyphen-key",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Dot key",
+			Name:      "dot-key",
+			Path:      "'dot.key'",
+			MaxLength: 0,
+		},
+		{
+			Type:      &option.TextOption{},
+			Label:     "Custom name",
+			Name:      "foo-bar",
+			Path:      "custom_name",
+			MaxLength: 12,
+		},
+	}, opts)
 }

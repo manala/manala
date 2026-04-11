@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/goccy/go-yaml/ast"
@@ -17,9 +16,9 @@ func Parse(data []byte) (*ast.MappingNode, error) {
 
 	// File must not be empty...
 	if len(file.Docs) == 0 || file.Docs[0].Body == nil {
-		return nil, &parsing.Error{
-			Err: serrors.New("empty yaml content"),
-		}
+		return nil, ErrorFrom(
+			serrors.New("empty yaml content"),
+		)
 	}
 
 	// ... nor include multiple documents

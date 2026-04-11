@@ -34,3 +34,13 @@ func (a *Assertion) AssertError(t *testing.T, err error) {
 		a.Err.AssertError(t, e.Err)
 	}
 }
+
+type FlattenAssertion Assertion
+
+func (a *FlattenAssertion) AssertError(t *testing.T, err error) {
+	t.Helper()
+
+	require.IsType(t, (*Error)(nil), err)
+
+	(*Assertion)(a).AssertError(t, err.(*Error).Flatten())
+}

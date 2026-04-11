@@ -163,6 +163,6 @@ func (s *LoaderSuite) TestHandler() {
 
 	s.Require().NoError(err)
 	s.Equal(projectDir, project.Dir())
-	s.Equal(map[string]any{"foo": "bar"}, project.Vars())
+	s.Equal(map[string]any{"foo": "baz"}, project.Vars())
 	chainMock.AssertExpectations(s.T())
 }
