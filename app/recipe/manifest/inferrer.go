@@ -122,19 +122,23 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 				var opt app.RecipeOption
 				switch optionType {
 				case "text":
-					if opt, err = option.NewTextOption(property, path.NewNodePath(node)); err != nil {
+					o, err := option.NewTextOption(property, path.NewNodePath(node))
+					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}
-					if err := unmarshaler.Unmarshal([]byte(value), opt); err != nil {
+					if err := o.UnmarshalJSON([]byte(value)); err != nil {
 						return err
 					}
+					opt = o
 				case "select":
-					if opt, err = option.NewSelectOption(property, path.NewNodePath(node)); err != nil {
+					o, err := option.NewSelectOption(property, path.NewNodePath(node))
+					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}
-					if err := unmarshaler.Unmarshal([]byte(value), opt); err != nil {
+					if err := o.UnmarshalJSON([]byte(value)); err != nil {
 						return err
 					}
+					opt = o
 				default:
 					if disc.Type == "" {
 						return annotation.ErrorAt(
