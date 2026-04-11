@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
-	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/template"
 	"github.com/manala/manala/internal/validator"
@@ -64,18 +63,7 @@ func (recipe *Recipe) ProjectManifestTemplate() *template.Template {
 }
 
 func (recipe *Recipe) ProjectValidator() validator.Validator {
-	options := recipe.Options()
-
-	// Validators
-	validators := make([]validator.Validator, len(options))
-	for i, _option := range options {
-		validators[i] = option.NewPathedValidator(_option)
-	}
-
-	return validator.Validators(
-		schema.NewValidator(recipe.Schema()),
-		validator.Validators(validators...),
-	)
+	return schema.NewValidator(recipe.Schema())
 }
 
 func (recipe *Recipe) Watches() ([]string, error) {

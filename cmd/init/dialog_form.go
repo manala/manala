@@ -131,13 +131,8 @@ func NewDialogTextFormItem(
 		InputField: cview.NewInputField(),
 		option:     option,
 		accessor:   itemAccessor,
-		validator: validator.New(
-			validator.WithValidators(
-				schema.NewValidator(option.Schema()),
-				option,
-			),
-		),
-		errored: errored,
+		validator: schema.NewValidator(option.Schema()),
+		errored:   errored,
 	}
 
 	// Input field
@@ -222,13 +217,8 @@ func NewSelectFormItem(
 		DropDown: cview.NewDropDown(),
 		option:   option,
 		accessor: itemAccessor,
-		validator: validator.New(
-			validator.WithValidators(
-				schema.NewValidator(option.Schema()),
-				option,
-			),
-		),
-		errored: errored,
+		validator: schema.NewValidator(option.Schema()),
+		errored:   errored,
 	}
 
 	// Dropdown

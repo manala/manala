@@ -6,7 +6,6 @@ import (
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/validator"
 
 	"github.com/gosimple/slug"
 )
@@ -54,10 +53,6 @@ func (o *SelectOption) Label() string         { return o.label }
 func (o *SelectOption) Help() string          { return o.help }
 func (o *SelectOption) Path() path.Path       { return o.path }
 func (o *SelectOption) Schema() schema.Schema { return o.schema }
-
-func (o *SelectOption) Validate(_ any) (validator.Violations, error) {
-	return nil, nil
-}
 
 func (o *SelectOption) UnmarshalJSON(data []byte) error {
 	var env struct {

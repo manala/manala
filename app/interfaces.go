@@ -49,7 +49,6 @@ type RecipeOption interface {
 	Help() string
 	Path() path.Path
 	Schema() schema.Schema
-	Validate(value any) (validator.Violations, error)
 }
 
 /**************/

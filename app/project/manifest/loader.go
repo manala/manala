@@ -14,7 +14,6 @@ import (
 	"github.com/manala/manala/internal/filepath/backwalk"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/validator"
 )
 
 type LoaderHandler struct {
@@ -103,9 +102,7 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	project := NewProject(dir, manifest, recipe)
 
 	// Validate project vars against recipe
-	if violations, err := validator.New(
-		validator.WithValidators(project.Recipe().ProjectValidator()),
-	).Validate(project.Vars()); err != nil {
+	if violations, err := project.Recipe().ProjectValidator().Validate(project.Vars()); err != nil {
 		return nil, serrors.New("unable to validate project manifest").
 			WithArguments("file", file).
 			WithErrors(err)
