@@ -37,11 +37,6 @@ type NotFoundRepositoryError struct{ URL string }
 func (err *NotFoundRepositoryError) Error() string         { return "repository not found" }
 func (err *NotFoundRepositoryError) ErrorArguments() []any { return []any{"url", err.URL} }
 
-type UnsupportedRepositoryError struct{ URL string }
-
-func (err *UnsupportedRepositoryError) Error() string         { return "unsupported repository url" }
-func (err *UnsupportedRepositoryError) ErrorArguments() []any { return []any{"url", err.URL} }
-
 type EmptyRepositoryError struct{ Repository Repository }
 
 func (err *EmptyRepositoryError) Error() string { return "empty repository" }

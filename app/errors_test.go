@@ -50,12 +50,6 @@ func (s *ErrorsSuite) TestRepository() {
 		s.Require().EqualError(err, "repository not found")
 		s.Equal([]any{"url", "url"}, err.ErrorArguments())
 	})
-	s.Run("UnsupportedRepositoryError", func() {
-		err := &app.UnsupportedRepositoryError{URL: "url"}
-
-		s.Require().EqualError(err, "unsupported repository url")
-		s.Equal([]any{"url", "url"}, err.ErrorArguments())
-	})
 	s.Run("EmptyRepositoryError", func() {
 		repositoryMock := &app.RepositoryMock{}
 		repositoryMock.
