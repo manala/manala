@@ -392,9 +392,9 @@ foo: ~
 			},
 		},
 		{
-			test: "InvalidTextMissingType",
+			test: "InvalidStringMissingType",
 			src: `
-# @option {"label": "Label", "type": "text"}
+# @option {"label": "Label", "type": "string"}
 foo: ~
 `,
 			expected: &parsing.FlattenErrorAssertion{
@@ -406,9 +406,9 @@ foo: ~
 			},
 		},
 		{
-			test: "InvalidTextWrongType",
+			test: "InvalidStringWrongType",
 			src: `
-# @option {"label": "Label", "type": "text"}
+# @option {"label": "Label", "type": "string"}
 # @schema {"type": null}
 foo: ~
 `,
@@ -421,9 +421,9 @@ foo: ~
 			},
 		},
 		{
-			test: "InvalidSelectMissingEnum",
+			test: "InvalidEnumMissingValues",
 			src: `
-# @option {"label": "Label", "type": "select"}
+# @option {"label": "Label", "type": "enum"}
 foo: ~
 `,
 			expected: &parsing.FlattenErrorAssertion{
@@ -435,9 +435,9 @@ foo: ~
 			},
 		},
 		{
-			test: "InvalidSelectWrongEnum",
+			test: "InvalidEnumWrongValues",
 			src: `
-# @option {"label": "Label", "type": "select"}
+# @option {"label": "Label", "type": "enum"}
 # @schema {"enum": null}
 foo: ~
 `,
@@ -450,9 +450,9 @@ foo: ~
 			},
 		},
 		{
-			test: "InvalidSelectEmptyEnum",
+			test: "InvalidEnumEmptyValues",
 			src: `
-# @option {"label": "Label", "type": "select"}
+# @option {"label": "Label", "type": "enum"}
 # @schema {"enum": []}
 foo: ~
 `,
@@ -486,42 +486,42 @@ func (s *InferrerSuite) TestOptions() {
 		expected option.Assertions
 	}{
 		{
-			test: "Text",
+			test: "String",
 			src: `
-# @option {"label": "Foo", "name": "bar", "type": "text"}
+# @option {"label": "Foo", "name": "bar", "type": "string"}
 foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.Text{},
+					Type:  &option.String{},
 					Label: "Foo",
 					Name:  "bar",
 				},
 			},
 		},
 		{
-			test: "TextNoName",
+			test: "StringNoName",
 			src: `
-# @option {"label": "Foo Bar", "type": "text"}
+# @option {"label": "Foo Bar", "type": "string"}
 foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.Text{},
+					Type:  &option.String{},
 					Label: "Foo Bar",
 					Name:  "foo-bar",
 				},
 			},
 		},
 		{
-			test: "TextTypeImplicit",
+			test: "StringTypeImplicit",
 			src: `
 # @option {"label": "Foo", "name": "bar"}
 foo: bar
 `,
 			expected: option.Assertions{
 				{
-					Type:  &option.Text{},
+					Type:  &option.String{},
 					Label: "Foo",
 					Name:  "bar",
 				},

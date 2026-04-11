@@ -13,9 +13,9 @@ type Assertion struct {
 	Type  any
 	Label string
 	Name  string
-	// Text
+	// String
 	MaxLength int
-	// Select
+	// Enum
 	Values []any
 }
 
@@ -26,13 +26,13 @@ func (a *Assertion) Assert(t *testing.T, opt app.RecipeOption) {
 	assert.Equal(t, a.Label, opt.Label(), "Label not equal")
 	assert.Equal(t, a.Name, opt.Name(), "Name not equal")
 
-	// Text
-	if opt, ok := opt.(*Text); ok {
+	// String
+	if opt, ok := opt.(*String); ok {
 		assert.Equal(t, a.MaxLength, opt.MaxLength(), "MaxLength not equal")
 	}
 
-	// Select
-	if opt, ok := opt.(*Select); ok {
+	// Enum
+	if opt, ok := opt.(*Enum); ok {
 		assert.Equal(t, a.Values, opt.Values(), "Values not equals")
 	}
 }

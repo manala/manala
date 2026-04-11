@@ -11,7 +11,7 @@ import (
 	"github.com/gosimple/slug"
 )
 
-type Text struct {
+type String struct {
 	name   string
 	label  string
 	help   string
@@ -19,38 +19,38 @@ type Text struct {
 	path   path.Path
 }
 
-func NewText(sch schema.Schema, p path.Path) (*Text, error) {
+func NewString(sch schema.Schema, p path.Path) (*String, error) {
 	// Schema type *MUST* be string
 	if t, ok := sch["type"]; !ok || t != "string" {
 		return nil, serrors.New("invalid recipe option string type")
 	}
 
-	return &Text{
+	return &String{
 		schema: sch,
 		path:   p,
 	}, nil
 }
 
-func (o *Text) Name() string  { return o.name }
-func (o *Text) Label() string { return o.label }
-func (o *Text) Help() string  { return o.help }
+func (o *String) Name() string  { return o.name }
+func (o *String) Label() string { return o.label }
+func (o *String) Help() string  { return o.help }
 
-func (o *Text) MaxLength() int {
+func (o *String) MaxLength() int {
 	if maxLength, ok := number.NumberType(o.schema["maxLength"]); ok {
 		return maxLength.Int()
 	}
 	return 0
 }
 
-func (o *Text) Accessor(data any) accessor.Accessor {
+func (o *String) Accessor(data any) accessor.Accessor {
 	return path.NewAccessor(o.path, data)
 }
 
-func (o *Text) Validator() *schema.Validator {
+func (o *String) Validator() *schema.Validator {
 	return schema.NewValidator(o.schema)
 }
 
-func (o *Text) UnmarshalJSON(data []byte) error {
+func (o *String) UnmarshalJSON(data []byte) error {
 	var env struct {
 		Name  string `json:"name"`
 		Label string `json:"label"`

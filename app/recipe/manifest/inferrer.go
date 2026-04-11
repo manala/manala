@@ -113,16 +113,16 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 				optionType := disc.Type
 				if optionType == "" {
 					if _, ok := property["enum"]; ok {
-						optionType = "select"
+						optionType = "enum"
 					} else if t, ok := property["type"]; ok && t == "string" {
-						optionType = "text"
+						optionType = "string"
 					}
 				}
 
 				var opt app.RecipeOption
 				switch optionType {
-				case "text":
-					o, err := option.NewText(property, path.NewNodePath(node))
+				case "string":
+					o, err := option.NewString(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}
@@ -130,8 +130,8 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 						return err
 					}
 					opt = o
-				case "select":
-					o, err := option.NewSelect(property, path.NewNodePath(node))
+				case "enum":
+					o, err := option.NewEnum(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
 					}

@@ -11,7 +11,7 @@ import (
 	"github.com/gosimple/slug"
 )
 
-type Select struct {
+type Enum struct {
 	name   string
 	label  string
 	help   string
@@ -19,7 +19,7 @@ type Select struct {
 	path   path.Path
 }
 
-func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
+func NewEnum(sch schema.Schema, p path.Path) (*Enum, error) {
 	// Enum
 	enum, ok := sch["enum"].([]any)
 	if !ok {
@@ -30,17 +30,17 @@ func NewSelect(sch schema.Schema, p path.Path) (*Select, error) {
 		return nil, serrors.New("empty recipe option enum")
 	}
 
-	return &Select{
+	return &Enum{
 		schema: sch,
 		path:   p,
 	}, nil
 }
 
-func (o *Select) Name() string  { return o.name }
-func (o *Select) Label() string { return o.label }
-func (o *Select) Help() string  { return o.help }
+func (o *Enum) Name() string  { return o.name }
+func (o *Enum) Label() string { return o.label }
+func (o *Enum) Help() string  { return o.help }
 
-func (o *Select) Values() []any {
+func (o *Enum) Values() []any {
 	enum := o.schema["enum"].([]any)
 	values := make([]any, len(enum))
 	for i := range enum {
@@ -53,11 +53,11 @@ func (o *Select) Values() []any {
 	return values
 }
 
-func (o *Select) Accessor(data any) accessor.Accessor {
+func (o *Enum) Accessor(data any) accessor.Accessor {
 	return path.NewAccessor(o.path, data)
 }
 
-func (o *Select) UnmarshalJSON(data []byte) error {
+func (o *Enum) UnmarshalJSON(data []byte) error {
 	var env struct {
 		Name  string `json:"name"`
 		Label string `json:"label"`
