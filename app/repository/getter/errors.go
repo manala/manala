@@ -1,6 +1,7 @@
 package getter
 
 import (
+	"errors"
 	"regexp"
 	"strconv"
 
@@ -35,7 +36,7 @@ func NewError(err error) serrors.Error {
 		return serrors.New("subdir out of repository")
 	} else
 	// Aws error
-	if err, ok := err.(awsError); ok {
+	if err, ok := errors.AsType[awsError](err); ok {
 		var arguments []any
 		if code := err.Code(); code != "" {
 			arguments = append(arguments, "code", code)

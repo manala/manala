@@ -9,27 +9,25 @@ func NewOs(err error) Error {
 	var arguments []any
 	message := err.Error()
 
-	var (
-		_pathError    *os.PathError
-		_syscallError *os.SyscallError
-	)
-
-	switch {
-	case errors.As(err, &_pathError):
-		message = _pathError.Err.Error()
+	// Path error
+	if err, ok := errors.AsType[*os.PathError](err); ok {
+		message = err.Err.Error()
 		arguments = append(arguments,
-			"operation", _pathError.Op,
-			"path", _pathError.Path,
+			"operation", err.Op,
+			"path", err.Path,
 		)
 
-		if _pathError.Timeout() {
+		if err.Timeout() {
 			arguments = append(arguments, "timeout", true)
 		}
-	case errors.As(err, &_syscallError):
-		message = _syscallError.Err.Error()
-		arguments = append(arguments, "syscall", _syscallError.Syscall)
+	}
 
-		if _syscallError.Timeout() {
+	// Syscall error
+	if err, ok := errors.AsType[*os.SyscallError](err); ok {
+		message = err.Err.Error()
+		arguments = append(arguments, "syscall", err.Syscall)
+
+		if err.Timeout() {
 			arguments = append(arguments, "timeout", true)
 		}
 	}
