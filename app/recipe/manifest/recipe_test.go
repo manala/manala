@@ -1,7 +1,6 @@
 package manifest_test
 
 import (
-	"bytes"
 	_ "embed"
 	"io"
 	"os"
@@ -61,26 +60,11 @@ func (s *RecipeSuite) Test() {
 	s.Equal(repositoryMock, recipe.Repository())
 
 	s.Run("Template", func() {
-		template := recipe.Template()
-
-		out := &bytes.Buffer{}
-		err := template.
-			WithDefaultContent(`{{ template "_helpers" }}`).
-			WriteTo(out)
-
-		s.Require().NoError(err)
-		s.Equal("_helpers", out.String())
+		s.Equal(filepath.Join(dir, "templates", "foo.tmpl"), recipe.Template())
 	})
 
-	s.Run("ProjectManifestTemplate", func() {
-		template := recipe.ProjectManifestTemplate()
-
-		out := &bytes.Buffer{}
-		err := template.
-			WriteTo(out)
-
-		s.Require().NoError(err)
-		s.Equal("bar", out.String())
+	s.Run("Partials", func() {
+		s.Empty(recipe.Partials())
 	})
 
 	s.Run("Watches", func() {
@@ -92,4 +76,29 @@ func (s *RecipeSuite) Test() {
 			filepath.Join(dir, "templates"),
 		}, watches)
 	})
+}
+
+func (s *RecipeSuite) TestPartialHelpers() {
+	m := manifest.New()
+
+	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialHelpers")
+
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
+	s.Require().NoError(err)
+
+	repositoryMock := &app.RepositoryMock{}
+
+	recipe := manifest.NewRecipe(
+		dir,
+		"recipe",
+		m,
+		repositoryMock,
+	)
+
+	s.Equal([]string{
+		filepath.Join(dir, "_helpers.tmpl"),
+	}, recipe.Partials())
 }

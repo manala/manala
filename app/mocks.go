@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/template"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -33,12 +32,6 @@ func (mock *ProjectMock) Vars() map[string]any {
 	args := mock.Called()
 
 	return args.Get(0).(map[string]any)
-}
-
-func (mock *ProjectMock) Template() *template.Template {
-	args := mock.Called()
-
-	return args.Get(0).(*template.Template)
 }
 
 func (mock *ProjectMock) Watches() ([]string, error) {
@@ -110,16 +103,16 @@ func (mock *RecipeMock) Repository() Repository {
 	return args.Get(0).(Repository)
 }
 
-func (mock *RecipeMock) Template() *template.Template {
+func (mock *RecipeMock) Template() string {
 	args := mock.Called()
 
-	return args.Get(0).(*template.Template)
+	return args.String(0)
 }
 
-func (mock *RecipeMock) ProjectManifestTemplate() *template.Template {
+func (mock *RecipeMock) Partials() []string {
 	args := mock.Called()
 
-	return args.Get(0).(*template.Template)
+	return args.Get(0).([]string)
 }
 
 func (mock *RecipeMock) ProjectValidator() *schema.Validator {

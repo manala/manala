@@ -64,9 +64,14 @@ func (api *API) NewProjectFinder() *manifest.Finder {
 }
 
 func (api *API) NewProjectSyncer() *sync.Syncer {
-	return sync.NewSyncer(api.log)
+	return sync.NewSyncer(
+		api.log,
+		api.NewTemplateEngine(),
+	)
 }
 
 func (api *API) NewProjectCreator() *manifest.Creator {
-	return manifest.NewCreator()
+	return manifest.NewCreator(
+		api.NewTemplateEngine(),
+	)
 }

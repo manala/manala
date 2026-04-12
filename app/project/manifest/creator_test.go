@@ -11,6 +11,7 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/app/template"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/errors"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -41,7 +42,7 @@ func (s *CreatorSuite) TestCreateErrors() {
 	s.Run("File", func() {
 		projectDir := filepath.FromSlash("testdata/CreatorSuite/TestCreateErrors/File/project")
 
-		creator := manifest.NewCreator()
+		creator := manifest.NewCreator(template.NewEngine())
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
@@ -76,7 +77,7 @@ func (s *CreatorSuite) TestCreate() {
 	vars["string_float_int"] = "3.0"
 	vars["string_asterisk"] = "*"
 
-	creator := manifest.NewCreator()
+	creator := manifest.NewCreator(template.NewEngine())
 	project, err := creator.Create(projectDir, recipe, vars)
 
 	s.Require().NoError(err)

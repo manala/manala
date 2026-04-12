@@ -7,28 +7,42 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/template"
 	"github.com/manala/manala/internal/serrors"
 )
 
-type Creator struct{}
+type Creator struct {
+	templateEngine *template.Engine
+}
 
-func NewCreator() *Creator {
-	return &Creator{}
+func NewCreator(templateEngine *template.Engine) *Creator {
+	return &Creator{
+		templateEngine: templateEngine,
+	}
 }
 
 func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]any) (app.Project, error) {
-	template := recipe.ProjectManifestTemplate().
-		WithData(&app.ProjectView{
-			Vars:   vars,
-			Recipe: app.NewRecipeView(recipe),
-		}).
-		WithDefaultContent(_template)
+	templateExecutor, err := creator.templateEngine.Executor(
+		vars,
+		recipe,
+		dir,
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Get final manifest content
 	buffer := &bytes.Buffer{}
-	if err := template.WriteTo(buffer); err != nil {
-		return nil, serrors.New("recipe template error").
-			WithErrors(err)
+	if template := recipe.Template(); template != "" {
+		if err := templateExecutor.ExecuteTemplate(buffer, template); err != nil {
+			return nil, serrors.New("recipe template error").
+				WithErrors(err)
+		}
+	} else {
+		if err := templateExecutor.Execute(buffer, _template); err != nil {
+			return nil, serrors.New("recipe template error").
+				WithErrors(err)
+		}
 	}
 
 	manifestFile := filepath.Join(dir, filename)
