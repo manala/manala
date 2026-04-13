@@ -11,7 +11,7 @@ import (
 /* Project */
 /***********/
 
-// ProjectMock mock a project.
+// ProjectMock mock a Project.
 type ProjectMock struct {
 	mock.Mock
 }
@@ -44,7 +44,7 @@ func (mock *ProjectMock) Watches() ([]string, error) {
 /* Recipe */
 /**********/
 
-// RecipeMock mock a recipe.
+// RecipeMock mock a Recipe.
 type RecipeMock struct {
 	mock.Mock
 }
@@ -131,7 +131,7 @@ func (mock *RecipeMock) Watches() ([]string, error) {
 /* Repository */
 /**************/
 
-// RepositoryMock mock a repository.
+// RepositoryMock mock a Repository.
 type RepositoryMock struct {
 	mock.Mock
 }
