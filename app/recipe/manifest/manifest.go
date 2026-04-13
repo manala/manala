@@ -45,6 +45,10 @@ func (manifest *Manifest) Template() string {
 	return manifest.config.Template
 }
 
+func (manifest *Manifest) Partials() []string {
+	return manifest.config.Partials
+}
+
 func (manifest *Manifest) Vars() map[string]any {
 	return manifest.vars
 }

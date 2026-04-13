@@ -2,6 +2,9 @@ manala:
   description: description
   icon: icon
   template: template
+  partials:
+    - partial.tmpl
+    - dir/partial.tmpl
   sync:
     - file
     - dir/file

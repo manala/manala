@@ -78,10 +78,34 @@ func (s *RecipeSuite) Test() {
 	})
 }
 
-func (s *RecipeSuite) TestPartialHelpers() {
+func (s *RecipeSuite) TestPartials() {
 	m := manifest.New()
 
-	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialHelpers")
+	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartials")
+
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
+	s.Require().NoError(err)
+
+	recipe := manifest.NewRecipe(
+		dir,
+		"recipe",
+		m,
+		&app.RepositoryMock{},
+	)
+
+	s.Equal([]string{
+		filepath.Join(dir, "partial.tmpl"),
+		filepath.Join(dir, "dir/partial.tmpl"),
+	}, recipe.Partials())
+}
+
+func (s *RecipeSuite) TestPartialsHelpers() {
+	m := manifest.New()
+
+	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialsHelpers")
 
 	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
 	content, _ := io.ReadAll(reader)
@@ -101,4 +125,27 @@ func (s *RecipeSuite) TestPartialHelpers() {
 	s.Equal([]string{
 		filepath.Join(dir, "_helpers.tmpl"),
 	}, recipe.Partials())
+}
+
+func (s *RecipeSuite) TestPartialsNoHelpers() {
+	m := manifest.New()
+
+	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialsNoHelpers")
+
+	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
+	content, _ := io.ReadAll(reader)
+
+	err := m.UnmarshalYAML(content)
+	s.Require().NoError(err)
+
+	repositoryMock := &app.RepositoryMock{}
+
+	recipe := manifest.NewRecipe(
+		dir,
+		"recipe",
+		m,
+		repositoryMock,
+	)
+
+	s.Empty(recipe.Partials())
 }

@@ -9,6 +9,7 @@ type config struct {
 	Description string
 	Icon        string
 	Template    string
+	Partials    []string
 	Sync        recipe.Sync
 }
 
@@ -37,6 +38,18 @@ func (v configValidator) Struct(s any) error {
 	// Template (optional, max=100)
 	if len(cfg.Template) > 100 {
 		errs = append(errs, validator.NewFieldError("Template", "too long manala template field (max=100)"))
+	}
+
+	// Partials (optional, max=100 per entry)
+	for _, partial := range cfg.Partials {
+		if partial == "" {
+			errs = append(errs, validator.NewFieldError("Partials", "empty partials entry"))
+			break
+		}
+		if len(partial) > 100 {
+			errs = append(errs, validator.NewFieldError("Partials", "too long partials entry (max=100)"))
+			break
+		}
 	}
 
 	if len(errs) == 0 {

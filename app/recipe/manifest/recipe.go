@@ -48,9 +48,16 @@ func (recipe *Recipe) Template() string {
 func (recipe *Recipe) Partials() []string {
 	var partials []string
 
-	helpers := filepath.Join(recipe.Dir(), "_helpers.tmpl")
-	if _, err := os.Stat(helpers); err == nil {
-		partials = append(partials, helpers)
+	for _, partial := range recipe.Manifest.Partials() {
+		partials = append(partials, filepath.Join(recipe.Dir(), partial))
+	}
+
+	// Legacy: if no partials defined, check for _helpers.tmpl
+	if len(partials) == 0 {
+		helpers := filepath.Join(recipe.Dir(), "_helpers.tmpl")
+		if _, err := os.Stat(helpers); err == nil {
+			partials = append(partials, helpers)
+		}
 	}
 
 	return partials

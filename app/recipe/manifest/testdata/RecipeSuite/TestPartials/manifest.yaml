@@ -1,0 +1,5 @@
+manala:
+  description: description
+  partials:
+    - partial.tmpl
+    - dir/partial.tmpl

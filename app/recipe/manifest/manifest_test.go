@@ -30,6 +30,7 @@ func (s *ManifestSuite) Test() {
 	s.Empty(m.Description())
 	s.Empty(m.Icon())
 	s.Empty(m.Template())
+	s.Empty(m.Partials())
 	s.Equal(map[string]any{}, m.Vars())
 	s.Equal([]sync.UnitInterface{}, m.Sync())
 	s.Equal(schema.Schema{}, m.Schema())
@@ -210,6 +211,48 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 				},
 			},
 		},
+		// Config - Partials
+		{
+			test: "ConfigPartialsNotArray",
+			expected: &parsing.ErrorAssertion{
+				Line:   3,
+				Column: 13,
+				Err: &serrors.Assertion{
+					Message: "string was used where sequence is expected",
+				},
+			},
+		},
+		// Config - Partials Item
+		{
+			test: "ConfigPartialsItemNotString",
+			expected: &parsing.ErrorAssertion{
+				Line:   4,
+				Column: 7,
+				Err: &serrors.Assertion{
+					Message: "field must be a string",
+				},
+			},
+		},
+		{
+			test: "ConfigPartialsItemEmpty",
+			expected: &parsing.ErrorAssertion{
+				Line:   3,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "empty partials entry",
+				},
+			},
+		},
+		{
+			test: "ConfigPartialsItemTooLong",
+			expected: &parsing.ErrorAssertion{
+				Line:   3,
+				Column: 11,
+				Err: &serrors.Assertion{
+					Message: "too long partials entry (max=100)",
+				},
+			},
+		},
 		// Config - Sync
 		{
 			test: "ConfigSyncNotArray",
@@ -287,6 +330,7 @@ func (s *ManifestSuite) TestUnmarshalYAML() {
 		expectedDescription string
 		expectedIcon        string
 		expectedTemplate    string
+		expectedPartials    []string
 		expectedVars        map[string]any
 		expectedSync        *sync.UnitsAssertion
 		expectedSchema      schema.Schema
@@ -296,6 +340,7 @@ func (s *ManifestSuite) TestUnmarshalYAML() {
 			expectedDescription: "description",
 			expectedIcon:        "icon",
 			expectedTemplate:    "template",
+			expectedPartials:    []string{"partial.tmpl", "dir/partial.tmpl"},
 			expectedVars: map[string]any{
 				"string":      "string",
 				"string_null": nil,
@@ -509,6 +554,7 @@ func (s *ManifestSuite) TestUnmarshalYAML() {
 			s.Equal(test.expectedDescription, m.Description())
 			s.Equal(test.expectedIcon, m.Icon())
 			s.Equal(test.expectedTemplate, m.Template())
+			s.Equal(test.expectedPartials, m.Partials())
 			s.Equal(test.expectedVars, m.Vars())
 			sync.EqualUnits(s.T(), test.expectedSync, m.Sync())
 			s.Equal(test.expectedSchema, m.Schema())
