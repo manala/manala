@@ -45,6 +45,21 @@ func (s *OsSuite) Test() {
 			},
 		},
 		{
+			test: "PathErrorNotExist",
+			err: &os.PathError{
+				Op:   "open",
+				Path: "/foo/bar",
+				Err:  os.ErrNotExist,
+			},
+			expected: &serrors.Assertion{
+				Message: "file does not exist",
+				Arguments: []any{
+					"operation", "open",
+					"path", "/foo/bar",
+				},
+			},
+		},
+		{
 			test: "SyscallError",
 			err: &os.SyscallError{
 				Syscall: "syscall",

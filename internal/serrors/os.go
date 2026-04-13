@@ -11,7 +11,12 @@ func NewOs(err error) Error {
 
 	// Path error
 	if err, ok := errors.AsType[*os.PathError](err); ok {
-		message = err.Err.Error()
+		switch {
+		case errors.Is(err.Err, os.ErrNotExist):
+			message = os.ErrNotExist.Error()
+		default:
+			message = err.Err.Error()
+		}
 		arguments = append(arguments,
 			"operation", err.Op,
 			"path", err.Path,
