@@ -113,15 +113,20 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 				optionType := disc.Type
 				if optionType == "" {
 					if _, ok := property["enum"]; ok {
-						optionType = "enum"
-					} else if t, ok := property["type"]; ok && t == "string" {
-						optionType = "string"
+						optionType = option.ENUM
+					} else if property["type"] == "string" {
+						optionType = option.STRING
+					} else {
+						return annotation.ErrorAt(
+							serrors.New("unable to auto detect option type"),
+							a.Value.Start(),
+						)
 					}
 				}
 
 				var opt app.RecipeOption
 				switch optionType {
-				case "string":
+				case option.STRING:
 					o, err := option.NewString(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
@@ -130,7 +135,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 						return err
 					}
 					opt = o
-				case "enum":
+				case option.ENUM:
 					o, err := option.NewEnum(property, path.NewNodePath(node))
 					if err != nil {
 						return annotation.ErrorAt(err, a.Value.Start())
@@ -140,12 +145,6 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 					}
 					opt = o
 				default:
-					if disc.Type == "" {
-						return annotation.ErrorAt(
-							serrors.New("unable to auto detect option type"),
-							a.Value.Start(),
-						)
-					}
 					return annotation.ErrorAt(
 						serrors.New(fmt.Sprintf("unexpected \"%s\" option type", disc.Type)),
 						a.Value.Start(),

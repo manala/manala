@@ -11,6 +11,8 @@ import (
 	"github.com/gosimple/slug"
 )
 
+const STRING = "string"
+
 type String struct {
 	name   string
 	label  string

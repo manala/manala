@@ -11,6 +11,8 @@ import (
 	"github.com/gosimple/slug"
 )
 
+const ENUM = "enum"
+
 type Enum struct {
 	name   string
 	label  string
