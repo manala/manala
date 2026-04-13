@@ -64,7 +64,7 @@ func (violations Violations) StructuredErrors() []error {
 	return errs
 }
 
-func ResultErrorViolation(resultError gojsonschema.ResultError) Violation {
+func ViolationFrom(resultError gojsonschema.ResultError) Violation {
 	violation := Violation{
 		Message: lcFirst(resultError.Description()),
 	}

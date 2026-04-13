@@ -95,7 +95,7 @@ func (s *ViolationSuite) TestResultErrorViolation() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			s.Equal(test.expected, schema.ResultErrorViolation(test.resultError))
+			s.Equal(test.expected, schema.ViolationFrom(test.resultError))
 		})
 	}
 }

@@ -32,7 +32,7 @@ func (v *Validator) Validate(value any) (Violations, error) {
 	// Violations
 	var violations Violations
 	for _, resultError := range result.Errors() {
-		violations = append(violations, ResultErrorViolation(resultError))
+		violations = append(violations, ViolationFrom(resultError))
 	}
 
 	return violations, nil

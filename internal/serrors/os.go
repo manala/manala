@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func NewOs(err error) Error {
+func FromOs(err error) Error {
 	var arguments []any
 	message := err.Error()
 

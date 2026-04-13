@@ -45,7 +45,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	if err != nil {
 		return nil, serrors.New("file system error").
 			WithArguments("dir", repository.Dir()).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 
 	defer dir.Close()
@@ -54,7 +54,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	if err != nil {
 		return nil, serrors.New("file system error").
 			WithArguments("dir", repository.Dir()).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 
 	// Sort alphabetically

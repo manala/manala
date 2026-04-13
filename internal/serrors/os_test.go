@@ -76,7 +76,7 @@ func (s *OsSuite) Test() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := serrors.NewOs(test.err)
+			err := serrors.FromOs(test.err)
 
 			errors.Equal(s.T(), test.expected, err)
 		})

@@ -38,7 +38,7 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 
 		return nil, serrors.New("unable to stat recipe manifest").
 			WithArguments("file", file).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	} else if fileInfo.IsDir() {
 		return nil, serrors.New("recipe manifest is a directory").
 			WithArguments("dir", file)
@@ -49,7 +49,7 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 	if err != nil {
 		return nil, serrors.New("unable to open recipe manifest").
 			WithArguments("file", file).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 	defer reader.Close()
 

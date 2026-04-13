@@ -72,7 +72,7 @@ func (handler *GitLoaderHandler) Handle(query *repository.LoaderQuery, chain rep
 			return chain.Next(query)
 		}
 
-		return nil, NewError(err)
+		return nil, ErrorFrom(err)
 	}
 
 	return NewRepository(query.URL, response.Dst), nil

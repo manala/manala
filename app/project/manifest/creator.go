@@ -59,12 +59,12 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 			if err := os.MkdirAll(_dir, 0o755); err != nil {
 				return nil, serrors.New("unable to create project directory").
 					WithArguments("dir", _dir).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 		} else {
 			return nil, serrors.New("unable to stat project directory").
 				WithArguments("dir", _dir).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 	} else if !dirStat.IsDir() {
 		return nil, serrors.New("project is not a directory").
@@ -75,7 +75,7 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 	if err != nil {
 		return nil, serrors.New("unable to create project manifest file").
 			WithArguments("file", manifestFile).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 
 	if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {

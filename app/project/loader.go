@@ -51,7 +51,7 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 
 				return serrors.New("file system error").
 					WithArguments("path", path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			// Only directories

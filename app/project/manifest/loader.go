@@ -45,7 +45,7 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 
 		return nil, serrors.New("unable to stat project manifest").
 			WithArguments("file", file).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	} else if fileInfo.IsDir() {
 		return nil, serrors.New("project manifest is a directory").
 			WithArguments("dir", file)
@@ -56,7 +56,7 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	if err != nil {
 		return nil, serrors.New("unable to open project manifest").
 			WithArguments("file", file).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 	defer reader.Close()
 
@@ -138,7 +138,7 @@ func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain proje
 			if err != nil {
 				return serrors.New("file system error").
 					WithArguments("path", path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			// Update query

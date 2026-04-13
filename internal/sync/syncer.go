@@ -65,7 +65,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if err := os.Remove(node.Dst.Path); err != nil {
 				return serrors.New("file system error").
 					WithArguments("file", node.Dst.Path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			node.Dst.IsExist = false
@@ -76,7 +76,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if err := os.MkdirAll(node.Dst.Path, 0o755); err != nil {
 				return serrors.New("file system error").
 					WithArguments("dir", node.Dst.Path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			// Log
@@ -113,7 +113,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		if err != nil {
 			return serrors.New("file system error").
 				WithArguments("dir", node.Dst.Path).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		for _, file := range files {
@@ -122,7 +122,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 				if err := os.RemoveAll(path); err != nil {
 					return serrors.New("file system error").
 						WithArguments("file", path).
-						WithErrors(serrors.NewOs(err))
+						WithErrors(serrors.FromOs(err))
 				}
 			}
 		}
@@ -142,7 +142,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if err := os.RemoveAll(node.Dst.Path); err != nil {
 				return serrors.New("file system error").
 					WithArguments("dir", node.Dst.Path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			node.Dst.IsExist = false
@@ -158,7 +158,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return serrors.New("file system error").
 					WithArguments("dir", dir).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 		}
 	}
@@ -192,7 +192,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		if err != nil {
 			return serrors.New("file system error").
 				WithArguments("file", node.Src.Path).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		defer srcFile.Close()
@@ -227,7 +227,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 		if err != nil {
 			return serrors.New("file system error").
 				WithArguments("file", node.Dst.Path).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		defer dstFile.Close()
@@ -252,7 +252,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 			if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
 				return serrors.New("file system error").
 					WithArguments("file", node.Dst.Path).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 		}
 	}
@@ -306,7 +306,7 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 
 		return nil, serrors.New("file system error").
 			WithArguments("path", srcPath).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 
 	node.Src.IsDir = srcStat.IsDir()
@@ -316,7 +316,7 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 		if err != nil {
 			return nil, serrors.New("file system error").
 				WithArguments("dir", srcPath).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		for _, file := range files {
@@ -345,7 +345,7 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 		if !errors.Is(err, os.ErrNotExist) {
 			return nil, serrors.New("file system error").
 				WithArguments("path", dstPath).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		node.Dst.IsExist = false
@@ -363,7 +363,7 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 			if err != nil {
 				return nil, serrors.New("file system error").
 					WithArguments("dir", dstPath).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			for _, file := range files {
@@ -375,7 +375,7 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 			if err != nil {
 				return nil, serrors.New("file system error").
 					WithArguments("file", dstPath).
-					WithErrors(serrors.NewOs(err))
+					WithErrors(serrors.FromOs(err))
 			}
 
 			defer file.Close()

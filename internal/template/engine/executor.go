@@ -33,7 +33,7 @@ func (e *Executor) ExecuteTemplate(writer io.Writer, path string) error {
 	if err != nil {
 		return serrors.New("unable to read template file").
 			WithArguments("path", path).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	}
 
 	if err := e.execute(writer, string(content)); err != nil {

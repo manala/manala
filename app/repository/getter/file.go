@@ -54,7 +54,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 
 		return nil, serrors.New("file system error").
 			WithArguments("path", request.Src).
-			WithErrors(serrors.NewOs(err))
+			WithErrors(serrors.FromOs(err))
 	} else if !stat.IsDir() {
 		// Chain
 		return chain.Next(query)
@@ -76,7 +76,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			return chain.Next(query)
 		}
 
-		return nil, NewError(err)
+		return nil, ErrorFrom(err)
 	}
 
 	// Switch back to relative dst

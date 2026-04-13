@@ -135,7 +135,7 @@ func (s *ErrorsSuite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			testingErrors.Equal(s.T(), test.expected, getter.NewError(test.err))
+			testingErrors.Equal(s.T(), test.expected, getter.ErrorFrom(test.err))
 		})
 	}
 }

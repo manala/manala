@@ -29,7 +29,7 @@ type awsError interface {
 	OrigErr() error
 }
 
-func NewError(err error) serrors.Error {
+func ErrorFrom(err error) serrors.Error {
 	message := err.Error()
 
 	if message == "subdirectory component contain path traversal out of the repository" {

@@ -38,7 +38,7 @@ func (engine *Engine) Executor(data any, files ...string) (*Executor, error) {
 		if err != nil {
 			return nil, serrors.New("unable to read template file").
 				WithArguments("path", file).
-				WithErrors(serrors.NewOs(err))
+				WithErrors(serrors.FromOs(err))
 		}
 
 		if _, err := clone.Parse(string(content)); err != nil {
