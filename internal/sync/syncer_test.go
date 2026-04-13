@@ -256,7 +256,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 						"path", filepath.Join(sourcePath, "invalid.tmpl"),
 						"line", 2, "column", 6,
 					},
-					Details: `
+					Dump: `
 						  1 | foo
 						> 2 |   {{ .bar }}
 						           ^

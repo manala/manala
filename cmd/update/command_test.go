@@ -114,7 +114,7 @@ func (s *CommandSuite) TestProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 				"line", 1, "column", 1,
 			},
-			Details: `
+			Dump: `
 				> 1 | manala: {}
 				      ^
 				* missing manala recipe property
@@ -207,7 +207,7 @@ func (s *CommandSuite) TestRecursiveProjectErrors() {
 				"file", filepath.Join(projectDir, ".manala.yaml"),
 				"line", 1, "column", 1,
 			},
-			Details: `
+			Dump: `
 				> 1 | manala: {}
 				      ^
 				* missing manala recipe property
@@ -414,7 +414,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 				"line", 1, "column", 1,
 			},
-			Details: `
+			Dump: `
 				> 1 | manala: {}
 				      ^
 				* missing manala description property

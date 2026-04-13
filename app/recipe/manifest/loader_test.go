@@ -49,7 +49,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 					"file", filepath.Join(repositoryBaseURL, "SyntaxError", "repository", "recipe", ".manala.yaml"),
 					"line", 1, "column", 1,
 				},
-				Details: `
+				Dump: `
 					> 1 | @
 					      ^
 					* '@' is a reserved character
@@ -80,7 +80,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 					"file", filepath.Join(repositoryBaseURL, "MultipleDocuments", "repository", "recipe", ".manala.yaml"),
 					"line", 5, "column", 1,
 				},
-				Details: `
+				Dump: `
 					  3 | document: 1
 					  4 |
 					> 5 | ---
@@ -99,7 +99,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 					"file", filepath.Join(repositoryBaseURL, "NotMap", "repository", "recipe", ".manala.yaml"),
 					"line", 1, "column", 1,
 				},
-				Details: `
+				Dump: `
 					> 1 | foo
 					      ^
 					* yaml document must be a map

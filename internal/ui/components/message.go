@@ -17,7 +17,7 @@ type Message struct {
 	Type       MessageType
 	Message    string
 	Attributes []*MessageAttribute
-	Details    string
+	Dump       string
 	Messages   []*Message
 }
 
@@ -53,9 +53,9 @@ func MessageFromError(err error, ansi bool) *Message {
 		}
 	}
 
-	// Details
-	if _err, ok := err.(serrors.ErrorDetails); ok {
-		message.Details = _err.ErrorDetails(ansi)
+	// Dump
+	if _err, ok := err.(serrors.ErrorDumper); ok {
+		message.Dump = _err.ErrorDump(ansi)
 	}
 
 	// Wrapped

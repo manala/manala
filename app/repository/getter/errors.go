@@ -16,9 +16,9 @@ func IsNotDetected(err error) bool {
 }
 
 var (
-	commandErrorCodeRegex = regexp.MustCompile(`(?s)(?P<command>.+) exited with (?P<code>\d+): (?P<details>.*)$`)
-	commandErrorRegex     = regexp.MustCompile(`(?s)error running (?P<command>[^(: )]+): (?P<details>.*)$`)
-	multiErrorRegex       = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(?P<details>.*)\n\n$`)
+	commandErrorCodeRegex = regexp.MustCompile(`(?s)(?P<command>.+) exited with (?P<code>\d+): (?P<dump>.*)$`)
+	commandErrorRegex     = regexp.MustCompile(`(?s)error running (?P<command>[^(: )]+): (?P<dump>.*)$`)
+	multiErrorRegex       = regexp.MustCompile(`(?s)error downloading '.*': \d+ errors occurred:\n(?P<dump>.*)\n\n$`)
 )
 
 // Mimic the aws sdk error interface to avoid direct dependency on it.
@@ -49,7 +49,7 @@ func NewError(err error) serrors.Error {
 		return serrors.New("aws error").
 			WithArguments(arguments...).
 			WithErrors(err.OrigErr()).
-			WithDetails(err.Error())
+			WithDump(err.Error())
 	} else
 	// Command error code
 	if matches := commandErrorCodeRegex.FindStringSubmatch(message); matches != nil {
@@ -59,18 +59,18 @@ func NewError(err error) serrors.Error {
 				"command", matches[commandErrorCodeRegex.SubexpIndex("command")],
 				"code", code,
 			).
-			WithDetails(matches[commandErrorCodeRegex.SubexpIndex("details")])
+			WithDump(matches[commandErrorCodeRegex.SubexpIndex("dump")])
 	} else
 	// Command error
 	if matches := commandErrorRegex.FindStringSubmatch(message); matches != nil {
 		return serrors.New("command error").
 			WithArguments("command", matches[commandErrorRegex.SubexpIndex("command")]).
-			WithDetails(matches[commandErrorRegex.SubexpIndex("details")])
+			WithDump(matches[commandErrorRegex.SubexpIndex("dump")])
 	} else
 	// Multi error
 	if matches := multiErrorRegex.FindStringSubmatch(message); matches != nil {
 		return serrors.New("unable to handle repository").
-			WithDetails(matches[multiErrorRegex.SubexpIndex("details")])
+			WithDump(matches[multiErrorRegex.SubexpIndex("dump")])
 	}
 
 	return serrors.New("unable to handle repository").

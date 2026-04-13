@@ -53,7 +53,7 @@ var (
 				PaddingLeft(1)
 	messageAttributeValueStyle = lipgloss.NewStyle().
 					Foreground(messageColor)
-	messageDetailsStyle = lipgloss.NewStyle().
+	messageDumpStyle = lipgloss.NewStyle().
 				PaddingTop(1)
 )
 

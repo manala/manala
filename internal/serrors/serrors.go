@@ -9,10 +9,10 @@ func New(message string) Error {
 }
 
 type Error struct {
-	message     string
-	arguments   []any
-	detailsFunc func(ansi bool) string
-	errors      []error
+	message   string
+	arguments []any
+	dumper    Dumper
+	errors    []error
 }
 
 func (err Error) Error() string {
@@ -35,24 +35,22 @@ func (err Error) WithArguments(arguments ...any) Error {
 	return err
 }
 
-func (err Error) ErrorDetails(ansi bool) string {
-	if err.detailsFunc == nil {
+func (err Error) ErrorDump(ansi bool) string {
+	if err.dumper == nil {
 		return ""
 	}
 
-	return err.detailsFunc(ansi)
+	return err.dumper.Dump(ansi)
 }
 
-func (err Error) WithDetails(details string) Error {
-	err.detailsFunc = func(_ bool) string {
-		return details
-	}
+func (err Error) WithDump(dump string) Error {
+	err.dumper = StringDumper(dump)
 
 	return err
 }
 
-func (err Error) WithDetailsFunc(detailsFunc func(ansi bool) string) Error {
-	err.detailsFunc = detailsFunc
+func (err Error) WithDumper(dumper Dumper) Error {
+	err.dumper = dumper
 
 	return err
 }

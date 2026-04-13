@@ -34,12 +34,12 @@ func (s *MessageSuite) TestFromError() {
 			test: "StructuredError",
 			err: serrors.New("structured error").
 				WithArguments("foo", "bar").
-				WithDetails(`details`).
+				WithDump(`dump`).
 				WithErrors(
 					errors.New("wrapped error"),
 					serrors.New("wrapped structured error").
 						WithArguments("bar", "baz").
-						WithDetails(`wrapped details`),
+						WithDump(`wrapped dump`),
 				),
 			expected: &components.Message{
 				Type:    components.ErrorMessageType,
@@ -47,7 +47,7 @@ func (s *MessageSuite) TestFromError() {
 				Attributes: []*components.MessageAttribute{
 					{Key: "foo", Value: "bar"},
 				},
-				Details: `details`,
+				Dump: `dump`,
 				Messages: []*components.Message{
 					{
 						Type:    components.ErrorMessageType,
@@ -59,7 +59,7 @@ func (s *MessageSuite) TestFromError() {
 						Attributes: []*components.MessageAttribute{
 							{Key: "bar", Value: "baz"},
 						},
-						Details: `wrapped details`,
+						Dump: `wrapped dump`,
 					},
 				},
 			},

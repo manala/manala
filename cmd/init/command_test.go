@@ -290,7 +290,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
 				"line", 1, "column", 1,
 			},
-			Details: `
+			Dump: `
 				> 1 | manala: {}
 				      ^
 				* missing manala description property

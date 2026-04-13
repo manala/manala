@@ -107,7 +107,7 @@ func (s *ExecutorSuite) TestExecute() {
 			Arguments: []any{
 				"line", 2, "column", 0,
 			},
-			Details: `
+			Dump: `
 				  1 | foo
 				> 2 |   {{ .bar }
 				  3 | baz
@@ -129,7 +129,7 @@ func (s *ExecutorSuite) TestExecute() {
 			Arguments: []any{
 				"line", 2, "column", 6,
 			},
-			Details: `
+			Dump: `
 				  1 | foo
 				> 2 |   {{ .bar }}
 				           ^
@@ -260,7 +260,7 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 				"path", filepath.Join(dir, "template.tmpl"),
 				"line", 2, "column", 0,
 			},
-			Details: `
+			Dump: `
 				  1 | foo
 				> 2 |   {{ .bar }
 				  3 | baz
@@ -284,7 +284,7 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 				"path", filepath.Join(dir, "template.tmpl"),
 				"line", 2, "column", 6,
 			},
-			Details: `
+			Dump: `
 				  1 | foo
 				> 2 |   {{ .bar }}
 				           ^

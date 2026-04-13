@@ -45,7 +45,7 @@ func (adapter *Adapter) message(message *components.Message) string {
 	messageStyle := messageMessageStyle
 	attributesStyle := messageAttributesStyle
 	attributeValueStyle := messageAttributeValueStyle
-	detailsStyle := messageDetailsStyle
+	dumpStyle := messageDumpStyle
 
 	// Message
 	str := messageStyle.Render(
@@ -68,12 +68,12 @@ func (adapter *Adapter) message(message *components.Message) string {
 		)
 	}
 
-	// Details
-	if message.Details != "" {
+	// Dump
+	if message.Dump != "" {
 		str = lipgloss.JoinVertical(lipgloss.Left,
 			str,
-			detailsStyle.Render(
-				message.Details,
+			dumpStyle.Render(
+				message.Dump,
 			),
 		)
 	}

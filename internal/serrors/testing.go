@@ -14,7 +14,7 @@ type Assertion struct {
 	Type      any
 	Message   string
 	Arguments []any
-	Details   string
+	Dump      string
 	Errors    []errors.Assertion
 }
 
@@ -36,11 +36,11 @@ func (a *Assertion) Assert(t *testing.T, err error) {
 		assert.Fail(t, "Error does not contains arguments")
 	}
 
-	// Details
-	if _err, ok := err.(ErrorDetails); ok {
-		heredoc.Equal(t, a.Details, _err.ErrorDetails(false))
-	} else if a.Details != "" {
-		assert.Fail(t, "Error does not contains details")
+	// Dump
+	if _err, ok := err.(ErrorDumper); ok {
+		heredoc.Equal(t, a.Dump, _err.ErrorDump(false))
+	} else if a.Dump != "" {
+		assert.Fail(t, "Error does not contains dump")
 	}
 
 	// Errors

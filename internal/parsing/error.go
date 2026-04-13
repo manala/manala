@@ -58,11 +58,11 @@ func ErrorTo(serr serrors.Error, err *Error, options Options) serrors.Error {
 	serr = serr.WithArguments("line", err.Line, "column", err.Column)
 
 	if options.Src != "" {
-		serr = serr.WithDetailsFunc((&Dumper{
+		serr = serr.WithDumper((&Dumper{
 			Err:   err,
 			Src:   options.Src,
 			Lexer: options.Lexer,
-		}).Dump)
+		}))
 	} else {
 		serr = serr.WithErrors(err)
 	}

@@ -30,7 +30,7 @@ func (s *MessageSuite) Test() {
 			`,
 		},
 		{
-			test: "NoAttributesAndNoDetails",
+			test: "NoAttributesAndNoDump",
 			message: &components.Message{
 				Type:    components.InfoMessageType,
 				Message: "message",
@@ -40,7 +40,7 @@ func (s *MessageSuite) Test() {
 			`,
 		},
 		{
-			test: "AttributesAndNoDetails",
+			test: "AttributesAndNoDump",
 			message: &components.Message{
 				Type:    components.InfoMessageType,
 				Message: "message",
@@ -53,32 +53,32 @@ func (s *MessageSuite) Test() {
 			`,
 		},
 		{
-			test: "AttributesAndDetails",
+			test: "AttributesAndDump",
 			message: &components.Message{
 				Type:    components.InfoMessageType,
 				Message: "message",
 				Attributes: []*components.MessageAttribute{
 					{Key: "foo", Value: "bar"},
 				},
-				Details: "details",
+				Dump: "dump",
 			},
 			expected: `
 				 • message                          foo=bar
 
-				   details
+				   dump
 			`,
 		},
 		{
-			test: "NoAttributesAndDetails",
+			test: "NoAttributesAndDump",
 			message: &components.Message{
 				Type:    components.InfoMessageType,
 				Message: "message",
-				Details: "details",
+				Dump:    "dump",
 			},
 			expected: `
 				 • message
 
-				   details
+				   dump
 			`,
 		},
 		{
@@ -100,7 +100,7 @@ func (s *MessageSuite) Test() {
 					{Key: "foo", Value: "xyzzy"},
 					{Key: "foo", Value: "thud"},
 				},
-				Details: "Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.",
+				Dump: "Suspendisse nec sem ligula. Nunc ut quam eros. Interdum et malesuada fames ac ante ipsum primis in faucibus. Donec erat augue, porta et risus non, tempus convallis velit. Quisque sed ligula pharetra, dignissim est ac, pulvinar est. Sed et sapien auctor ipsum faucibus auctor. Etiam ut faucibus enim. In non nibh viverra massa consequat porttitor. Fusce rutrum neque a justo imperdiet lacinia. Vivamus ex felis, ultrices quis diam in, varius suscipit velit. Suspendisse feugiat ante enim, vitae fringilla neque maximus non.",
 			},
 			expected: `
 				 • Lorem ipsum dolor sit amet,      foo=bar foo=baz foo=qux foo=quux foo=corge foo=grault foo=garply foo=waldo foo=fred foo=plugh foo=xyzzy foo=thud
@@ -117,7 +117,7 @@ func (s *MessageSuite) Test() {
 				Attributes: []*components.MessageAttribute{
 					{Key: "foo", Value: "bar"},
 				},
-				Details: "details 1",
+				Dump: "dump 1",
 				Messages: []*components.Message{
 					{
 						Type:    components.InfoMessageType,
@@ -125,7 +125,7 @@ func (s *MessageSuite) Test() {
 						Attributes: []*components.MessageAttribute{
 							{Key: "foo", Value: "bar"},
 						},
-						Details: "details 2",
+						Dump: "dump 2",
 						Messages: []*components.Message{
 							{
 								Type:    components.InfoMessageType,
@@ -133,7 +133,7 @@ func (s *MessageSuite) Test() {
 								Attributes: []*components.MessageAttribute{
 									{Key: "foo", Value: "bar"},
 								},
-								Details: "details 3",
+								Dump: "dump 3",
 							},
 							{
 								Type:    components.InfoMessageType,
@@ -141,7 +141,7 @@ func (s *MessageSuite) Test() {
 								Attributes: []*components.MessageAttribute{
 									{Key: "foo", Value: "bar"},
 								},
-								Details: "details 4",
+								Dump: "dump 4",
 							},
 						},
 					},
@@ -150,16 +150,16 @@ func (s *MessageSuite) Test() {
 			expected: `
 				 • message 1                        foo=bar
 
-				   details 1
+				   dump 1
 				   • message 2                        foo=bar
 
-				     details 2
+				     dump 2
 				     • message 3                        foo=bar
 
-				       details 3
+				       dump 3
 				     • message 4                        foo=bar
 
-				       details 4
+				       dump 4
 			`,
 		},
 	}

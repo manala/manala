@@ -92,7 +92,7 @@ func (s *ErrorsSuite) TestError() {
 			err:  awsError{},
 			expected: &serrors.Assertion{
 				Message: "aws error",
-				Details: "error",
+				Dump:    "error",
 				Arguments: []any{
 					"code", "code",
 					"message", "message",
@@ -104,7 +104,7 @@ func (s *ErrorsSuite) TestError() {
 			err:  errors.New("foo exited with 123: bar"),
 			expected: &serrors.Assertion{
 				Message: "command error",
-				Details: "bar",
+				Dump:    "bar",
 				Arguments: []any{
 					"command", "foo",
 					"code", 123,
@@ -116,7 +116,7 @@ func (s *ErrorsSuite) TestError() {
 			err:  errors.New("error running foo: bar"),
 			expected: &serrors.Assertion{
 				Message: "command error",
-				Details: "bar",
+				Dump:    "bar",
 				Arguments: []any{
 					"command", "foo",
 				},
@@ -128,7 +128,7 @@ func (s *ErrorsSuite) TestError() {
 			err: errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
 			expected: &serrors.Assertion{
 				Message: "unable to handle repository",
-				Details: "bar\nbaz",
+				Dump:    "bar\nbaz",
 			},
 		},
 	}

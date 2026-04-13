@@ -71,7 +71,7 @@ func (s *EngineSuite) TestExecutor() {
 				"path", filepath.Join(dir, "partial.tmpl"),
 				"line", 2, "column", 0,
 			},
-			Details: `
+			Dump: `
 				  1 | foo
 				> 2 |   {{ .bar }
 				  3 | baz

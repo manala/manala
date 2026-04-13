@@ -1,7 +1,6 @@
 package serrors_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
@@ -51,29 +50,27 @@ func (s *SerrorsSuite) TestError() {
 		}, err)
 	})
 
-	s.Run("Details", func() {
-		details := "details"
+	s.Run("Dump", func() {
+		dump := "dump"
 
 		err := serrors.New("error").
-			WithDetails(details)
+			WithDump(dump)
 
 		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "error",
-			Details: details,
+			Dump:    dump,
 		}, err)
 	})
 
-	s.Run("DetailsFunc", func() {
-		detailsFunc := func(ansi bool) string {
-			return fmt.Sprintf("details func %v", ansi)
-		}
+	s.Run("Dumper", func() {
+		dump := "dump"
 
 		err := serrors.New("error").
-			WithDetailsFunc(detailsFunc)
+			WithDumper(serrors.StringDumper(dump))
 
 		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "error",
-			Details: "details func false",
+			Dump:    dump,
 		}, err)
 	})
 
