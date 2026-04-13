@@ -51,7 +51,7 @@ func (e *Error) Flatten() *Error {
 func ErrorTo(serr serrors.Error, err *Error, options Options) serrors.Error {
 	err = err.Flatten()
 
-	if err.Line == 0 && err.Column == 0 {
+	if err.Line == 0 {
 		return serr.WithErrors(err)
 	}
 

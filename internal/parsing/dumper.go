@@ -46,7 +46,9 @@ func (d *Dumper) Dump(ansi bool) string {
 	for i := minLine; i <= maxLine; i++ {
 		if i == d.Err.Line {
 			_, _ = fmt.Fprintf(&b, "> %*d | %s\n", width, i, lines[i-1])
-			_, _ = fmt.Fprintf(&b, "  %*s   %s^\n", width, "", strings.Repeat(" ", d.Err.Column-1))
+			if d.Err.Column > 0 {
+				_, _ = fmt.Fprintf(&b, "  %*s   %s^\n", width, "", strings.Repeat(" ", d.Err.Column-1))
+			}
 		} else {
 			_, _ = fmt.Fprintf(&b, "  %*d | %s\n", width, i, lines[i-1])
 		}
