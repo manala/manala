@@ -1,24 +1,24 @@
-package template
+package engine
 
 import (
 	"reflect"
 	"strings"
-	textTemplate "text/template"
+	"text/template"
 
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/goccy/go-yaml"
 )
 
-func FuncMap(template *textTemplate.Template) textTemplate.FuncMap {
-	return textTemplate.FuncMap{
-		"toYaml":  functionToYaml,
-		"include": functionInclude(template),
+func Funcs(t *template.Template) template.FuncMap {
+	return template.FuncMap{
+		"toYaml":  funcToYaml,
+		"include": funcInclude(t),
 	}
 }
 
 // As seen in helm.
-func functionToYaml(value any) string {
+func funcToYaml(value any) string {
 	marshalOptions := []yaml.EncodeOption{
 		yaml.Indent(4),
 		yaml.UseSingleQuote(true),
@@ -41,7 +41,7 @@ func functionToYaml(value any) string {
 }
 
 // As seen in helm.
-func functionInclude(template *textTemplate.Template) func(name string, data any) (string, error) {
+func funcInclude(t *template.Template) func(name string, data any) (string, error) {
 	includedNames := make(map[string]int)
 
 	return func(name string, data any) (string, error) {
@@ -58,7 +58,7 @@ func functionInclude(template *textTemplate.Template) func(name string, data any
 			includedNames[name] = 1
 		}
 
-		err := template.ExecuteTemplate(&buf, name, data)
+		err := t.ExecuteTemplate(&buf, name, data)
 
 		return buf.String(), err
 	}

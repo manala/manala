@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/template"
 )
 
 /***********/
@@ -15,7 +14,6 @@ type Project interface {
 	Dir() string
 	Recipe() Recipe
 	Vars() map[string]any
-	Template() *template.Template
 	Watches() ([]string, error)
 }
 
@@ -34,8 +32,8 @@ type Recipe interface {
 	Schema() schema.Schema
 	Options() []RecipeOption
 	Repository() Repository
-	Template() *template.Template
-	ProjectManifestTemplate() *template.Template
+	Template() string
+	Partials() []string
 	ProjectValidator() *schema.Validator
 	Watches() ([]string, error)
 }

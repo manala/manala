@@ -1,7 +1,6 @@
 package manifest_test
 
 import (
-	"bytes"
 	_ "embed"
 	"io"
 	"os"
@@ -10,8 +9,6 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/project/manifest"
-	"github.com/manala/manala/internal/template"
-	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -38,8 +35,7 @@ func (s *ProjectSuite) Test() {
 		"foo": "recipe",
 		"bar": "recipe",
 	}).
-		On("Repository").Return(repositoryMock).
-		On("Template").Return(template.NewTemplate())
+		On("Repository").Return(repositoryMock)
 
 	dir := filepath.FromSlash("testdata/ProjectSuite/Test")
 
@@ -67,21 +63,6 @@ func (s *ProjectSuite) Test() {
 			"bar": "project",
 			"baz": "project",
 		}, project.Vars())
-	})
-
-	s.Run("Template", func() {
-		template := project.Template()
-
-		out := &bytes.Buffer{}
-		err := template.
-			WithDefaultContent(`{{ .Vars | toYaml }}`).
-			WriteTo(out)
-
-		s.Require().NoError(err)
-		heredoc.Equal(s.T(), `
-			bar: project
-			baz: project
-			foo: recipe`, out)
 	})
 
 	s.Run("Watches", func() {

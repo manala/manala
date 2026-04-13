@@ -7,7 +7,6 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/template"
 )
 
 type Recipe struct {
@@ -39,26 +38,22 @@ func (recipe *Recipe) Repository() app.Repository {
 	return recipe.repository
 }
 
-func (recipe *Recipe) Template() *template.Template {
-	tmpl := template.NewTemplate()
-
-	// Include template helpers if any
-	helpersFile := filepath.Join(recipe.Dir(), "_helpers.tmpl")
-	if _, err := os.Stat(helpersFile); err == nil {
-		tmpl.WithDefaultFile(helpersFile)
+func (recipe *Recipe) Template() string {
+	if template := recipe.Manifest.Template(); template != "" {
+		return filepath.Join(recipe.Dir(), template)
 	}
-
-	return tmpl
+	return ""
 }
 
-func (recipe *Recipe) ProjectManifestTemplate() *template.Template {
-	tmpl := recipe.Template()
+func (recipe *Recipe) Partials() []string {
+	var partials []string
 
-	if recipe.Manifest.Template() != "" {
-		tmpl.WithFile(filepath.Join(recipe.Dir(), recipe.Manifest.Template()))
+	helpers := filepath.Join(recipe.Dir(), "_helpers.tmpl")
+	if _, err := os.Stat(helpers); err == nil {
+		partials = append(partials, helpers)
 	}
 
-	return tmpl
+	return partials
 }
 
 func (recipe *Recipe) ProjectValidator() *schema.Validator {

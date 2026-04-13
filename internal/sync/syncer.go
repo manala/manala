@@ -11,7 +11,7 @@ import (
 	"regexp"
 
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/template/engine"
 )
 
 type Syncer struct {
@@ -35,9 +35,9 @@ func (syncer *Syncer) Sync(
 	src string,
 	dstDir string,
 	dst string,
-	templateProvider template.ProviderInterface,
+	templateExecutor *engine.Executor,
 ) error {
-	node, err := newNode(srcDir, src, dstDir, dst, templateProvider)
+	node, err := newNode(srcDir, src, dstDir, dst, templateExecutor)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 				filepath.Join(relSrcPath, file),
 				node.Dst.Dir,
 				filepath.Join(relDstPath, file),
-				node.TemplateProvider,
+				node.TemplateExecutor,
 			)
 			if err != nil {
 				return err
@@ -170,7 +170,7 @@ func (syncer *Syncer) syncNode(node *node) error {
 	if node.IsTmpl {
 		// Write template
 		buffer := &bytes.Buffer{}
-		if err := node.TemplateProvider.Template().WithFile(node.Src.Path).WriteTo(buffer); err != nil {
+		if err := node.TemplateExecutor.ExecuteTemplate(buffer, node.Src.Path); err != nil {
 			return serrors.New("template error").
 				WithErrors(err)
 		}
@@ -279,7 +279,7 @@ type node struct {
 		IsDir   bool
 		Files   []string
 	}
-	TemplateProvider template.ProviderInterface
+	TemplateExecutor *engine.Executor
 }
 
 var (
@@ -287,11 +287,11 @@ var (
 	tmplRegex = regexp.MustCompile(`(\.tmpl)(?:$|\.dist$)`)
 )
 
-func newNode(srcDir, src, dstDir, dst string, templateProvider template.ProviderInterface) (*node, error) {
+func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor) (*node, error) {
 	node := &node{}
 	node.Src.Dir = srcDir
 	node.Dst.Dir = dstDir
-	node.TemplateProvider = templateProvider
+	node.TemplateExecutor = templateExecutor
 
 	srcPath := filepath.Join(node.Src.Dir, src)
 

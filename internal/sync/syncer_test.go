@@ -9,7 +9,7 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/template"
+	"github.com/manala/manala/internal/template/engine"
 	"github.com/manala/manala/internal/testing/errors"
 
 	"github.com/stretchr/testify/suite"
@@ -19,7 +19,7 @@ type SyncerSuite struct {
 	suite.Suite
 
 	syncer           *sync.Syncer
-	templateProvider template.ProviderInterface
+	templateExecutor *engine.Executor
 }
 
 func TestSyncerSuite(t *testing.T) {
@@ -28,7 +28,9 @@ func TestSyncerSuite(t *testing.T) {
 
 func (s *SyncerSuite) SetupTest() {
 	s.syncer = sync.NewSyncer(slog.New(slog.DiscardHandler))
-	s.templateProvider = &template.Provider{}
+
+	e := engine.New()
+	s.templateExecutor, _ = e.Executor(nil)
 }
 
 func (s *SyncerSuite) TestSync() {
@@ -205,7 +207,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	_ = os.WriteFile(filepath.Join(destinationPath, "file_bar"), []byte("bar"), 0o666)
 
 	s.Run("SourceNotExists", func() {
-		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateProvider)
+		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateExecutor)
 
 		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "no source file or directory",
@@ -216,7 +218,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	})
 
 	s.Run("DestinationFileNotExists", func() {
-		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "foo", s.templateProvider)
+		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "foo", s.templateExecutor)
 		s.Require().NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "foo"))
 
@@ -225,7 +227,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	})
 
 	s.Run("DestinationFileExistsAndSame", func() {
-		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_bar", s.templateProvider)
+		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_bar", s.templateExecutor)
 		s.Require().NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_bar"))
 
@@ -234,7 +236,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	})
 
 	s.Run("DestinationFileExistsAndDifferent", func() {
-		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_foo", s.templateProvider)
+		err := s.syncer.Sync(sourcePath, "foo.tmpl", destinationPath, "file_foo", s.templateExecutor)
 		s.Require().NoError(err)
 		s.FileExists(filepath.Join(destinationPath, "file_foo"))
 
@@ -243,20 +245,24 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	})
 
 	s.Run("Invalid", func() {
-		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateProvider)
+		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateExecutor)
 
 		errors.Equal(s.T(), &serrors.Assertion{
 			Message: "template error",
 			Errors: []errors.Assertion{
 				&serrors.Assertion{
-					Message: "nil data; no entry for key \"foo\"",
+					Message: "unable to parse template file",
 					Arguments: []any{
-						"context", ".foo",
-						"template", "invalid.tmpl",
-						"line", 1,
-						"column", 3,
-						"file", filepath.Join(sourcePath, "invalid.tmpl"),
+						"path", filepath.Join(sourcePath, "invalid.tmpl"),
+						"line", 2, "column", 6,
 					},
+					Details: `
+						  1 | foo
+						> 2 |   {{ .bar }}
+						           ^
+						  3 | baz
+						* nil data; no entry for key "bar"
+					`,
 				},
 			},
 		}, err)

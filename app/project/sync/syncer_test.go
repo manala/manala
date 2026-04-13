@@ -13,6 +13,7 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	repositoryGetter "github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/app/template"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -45,7 +46,7 @@ func (s *SyncerSuite) TestSync() {
 	project, err := projectLoader.Load(projectDir)
 	s.Require().NoError(err)
 
-	syncer := sync.NewSyncer(slog.New(slog.DiscardHandler))
+	syncer := sync.NewSyncer(slog.New(slog.DiscardHandler), template.NewEngine())
 	err = syncer.Sync(project)
 
 	s.Require().NoError(err)

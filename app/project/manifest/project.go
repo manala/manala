@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
-	"github.com/manala/manala/internal/template"
 
 	"dario.cat/mergo"
 )
@@ -39,11 +38,6 @@ func (project *Project) Vars() map[string]any {
 	_ = mergo.Merge(&vars, project.Manifest.Vars(), mergo.WithOverride)
 
 	return vars
-}
-
-func (project *Project) Template() *template.Template {
-	return project.recipe.Template().
-		WithData(app.NewProjectView(project))
 }
 
 func (project *Project) Watches() ([]string, error) {
