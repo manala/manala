@@ -7,11 +7,11 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/schema"
+	"github.com/manala/manala/internal/sync"
 )
 
 type Recipe struct {
-	*Manifest
-
+	manifest   *Manifest
 	dir        string
 	name       string
 	repository app.Repository
@@ -21,7 +21,7 @@ func NewRecipe(dir, name string, manifest *Manifest, repository app.Repository) 
 	return &Recipe{
 		dir:        dir,
 		name:       name,
-		Manifest:   manifest,
+		manifest:   manifest,
 		repository: repository,
 	}
 }
@@ -34,13 +34,37 @@ func (recipe *Recipe) Name() string {
 	return recipe.name
 }
 
+func (recipe *Recipe) Description() string {
+	return recipe.manifest.Description
+}
+
+func (recipe *Recipe) Icon() string {
+	return recipe.manifest.Icon
+}
+
+func (recipe *Recipe) Vars() map[string]any {
+	return recipe.manifest.Vars()
+}
+
+func (recipe *Recipe) Sync() []sync.UnitInterface {
+	return recipe.manifest.Sync
+}
+
+func (recipe *Recipe) Schema() schema.Schema {
+	return recipe.manifest.Schema()
+}
+
+func (recipe *Recipe) Options() []app.RecipeOption {
+	return recipe.manifest.Options()
+}
+
 func (recipe *Recipe) Repository() app.Repository {
 	return recipe.repository
 }
 
 func (recipe *Recipe) Template() string {
-	if template := recipe.Manifest.Template(); template != "" {
-		return filepath.Join(recipe.Dir(), template)
+	if recipe.manifest.Template != "" {
+		return filepath.Join(recipe.Dir(), recipe.manifest.Template)
 	}
 	return ""
 }
@@ -48,7 +72,7 @@ func (recipe *Recipe) Template() string {
 func (recipe *Recipe) Partials() []string {
 	var partials []string
 
-	for _, partial := range recipe.Manifest.Partials() {
+	for _, partial := range recipe.manifest.Partials {
 		partials = append(partials, filepath.Join(recipe.Dir(), partial))
 	}
 

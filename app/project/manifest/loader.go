@@ -69,9 +69,8 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	}
 
 	// Parse file content
-	// Bypass yaml.Unmarshal as goccy's decoder discards comments
 	manifest := New()
-	if err := manifest.UnmarshalYAML(content); err != nil {
+	if err := manifest.Unmarshal(content); err != nil {
 		e := serrors.New("unable to parse project manifest").WithArguments("file", file)
 		if err, ok := errors.AsType[*parsing.Error](err); ok {
 			return nil, parsing.ErrorTo(e, err, parsing.Options{
@@ -83,18 +82,18 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	}
 
 	handler.log.Debug("project manifest loaded", "file", file,
-		"repository", manifest.Repository(),
-		"recipe", manifest.Recipe(),
+		"repository", manifest.Repository,
+		"recipe", manifest.Recipe,
 	)
 
 	// Load repository
-	repository, err := handler.repositoryLoader.Load(manifest.Repository())
+	repository, err := handler.repositoryLoader.Load(manifest.Repository)
 	if err != nil {
 		return nil, err
 	}
 
 	// Load recipe
-	recipe, err := handler.recipeLoader.Load(repository, manifest.Recipe())
+	recipe, err := handler.recipeLoader.Load(repository, manifest.Recipe)
 	if err != nil {
 		return nil, err
 	}

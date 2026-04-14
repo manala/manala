@@ -62,9 +62,8 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 	}
 
 	// Parse file content
-	// Bypass yaml.Unmarshal as goccy's decoder discards comments
 	manifest := New()
-	if err := manifest.UnmarshalYAML(content); err != nil {
+	if err := manifest.Unmarshal(content); err != nil {
 		e := serrors.New("unable to parse recipe manifest").WithArguments("file", file)
 		if err, ok := errors.AsType[*parsing.Error](err); ok {
 			return nil, parsing.ErrorTo(e, err, parsing.Options{

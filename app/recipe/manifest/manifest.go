@@ -7,8 +7,8 @@ import (
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/yaml/parser"
+	"github.com/manala/manala/internal/yaml/validator"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -16,63 +16,47 @@ import (
 
 const filename = ".manala.yaml"
 
+type Manifest struct {
+	Description string
+	Icon        string
+	Template    string
+	Partials    []string
+	Sync        recipe.Sync
+	// Decoded separately.
+	vars map[string]any
+	// Inferred from vars.
+	schema  schema.Schema
+	options []app.RecipeOption
+}
+
 func New() *Manifest {
 	return &Manifest{
-		config: &config{
-			Sync: recipe.Sync{},
-		},
+		Sync:   recipe.Sync{},
 		vars:   map[string]any{},
 		schema: schema.Schema{},
 	}
 }
 
-type Manifest struct {
-	config  *config
-	vars    map[string]any
-	schema  schema.Schema
-	options []app.RecipeOption
+func (m *Manifest) Vars() map[string]any {
+	return m.vars
 }
 
-func (manifest *Manifest) Description() string {
-	return manifest.config.Description
+func (m *Manifest) Schema() schema.Schema {
+	return m.schema
 }
 
-func (manifest *Manifest) Icon() string {
-	return manifest.config.Icon
+func (m *Manifest) Options() []app.RecipeOption {
+	return m.options
 }
 
-func (manifest *Manifest) Template() string {
-	return manifest.config.Template
-}
-
-func (manifest *Manifest) Partials() []string {
-	return manifest.config.Partials
-}
-
-func (manifest *Manifest) Vars() map[string]any {
-	return manifest.vars
-}
-
-func (manifest *Manifest) Sync() []sync.UnitInterface {
-	return manifest.config.Sync
-}
-
-func (manifest *Manifest) Schema() schema.Schema {
-	return manifest.schema
-}
-
-func (manifest *Manifest) Options() []app.RecipeOption {
-	return manifest.options
-}
-
-func (manifest *Manifest) UnmarshalYAML(content []byte) error {
+func (m *Manifest) Unmarshal(content []byte) error {
 	// Parse content to node
 	node, err := parser.Parse(content)
 	if err != nil {
 		return err
 	}
 
-	// Partition config & vars
+	// Partition manala & vars
 	i := slices.IndexFunc(node.Values, func(node *ast.MappingValueNode) bool {
 		return node.Key.String() == "manala"
 	})
@@ -82,30 +66,76 @@ func (manifest *Manifest) UnmarshalYAML(content []byte) error {
 		)
 	}
 
-	configNode := node.Values[i].Value
+	manalaNode := node.Values[i].Value
 	node.Values = slices.Concat(node.Values[:i], node.Values[i+1:])
 
-	// Decode config
-	if err = yaml.NodeToValue(configNode, manifest.config,
-		yaml.Validator(configValidator{}),
+	// Decode manala
+	if err = yaml.NodeToValue(manalaNode, m,
+		yaml.Validator(manifestValidator{}),
 		yaml.DisallowUnknownField(),
 	); err != nil {
 		return parser.ErrorFrom(err)
 	}
 
 	// Decode vars
-	if err = yaml.NodeToValue(node, &manifest.vars); err != nil {
+	if err = yaml.NodeToValue(node, &m.vars); err != nil {
 		return parser.ErrorFrom(err)
 	}
 
 	// Infer schema & options
 	inf := Inferrer{
-		Schema:  &manifest.schema,
-		Options: &manifest.options,
+		Schema:  &m.schema,
+		Options: &m.options,
 	}
 	if err = inf.Infer(node); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+type manifestValidator struct{}
+
+func (v manifestValidator) Struct(s any) error {
+	m, ok := s.(Manifest)
+	if !ok {
+		return nil
+	}
+
+	var errs validator.FieldErrors
+
+	// Description (required, max=256)
+	if m.Description == "" {
+		errs = append(errs, validator.NewFieldError("Description", "missing manala description property"))
+	} else if len(m.Description) > 256 {
+		errs = append(errs, validator.NewFieldError("Description", "too long manala description field (max=256)"))
+	}
+
+	// Icon (optional, max=100)
+	if len(m.Icon) > 100 {
+		errs = append(errs, validator.NewFieldError("Icon", "too long manala icon field (max=100)"))
+	}
+
+	// Template (optional, max=100)
+	if len(m.Template) > 100 {
+		errs = append(errs, validator.NewFieldError("Template", "too long manala template field (max=100)"))
+	}
+
+	// Partials (optional, max=100 per entry)
+	for _, partial := range m.Partials {
+		if partial == "" {
+			errs = append(errs, validator.NewFieldError("Partials", "empty partials entry"))
+			break
+		}
+		if len(partial) > 100 {
+			errs = append(errs, validator.NewFieldError("Partials", "too long partials entry (max=100)"))
+			break
+		}
+	}
+
+	if len(errs) == 0 {
+		return nil
+	}
+
+	return errs
 }

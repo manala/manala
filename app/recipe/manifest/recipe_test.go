@@ -2,7 +2,6 @@ package manifest_test
 
 import (
 	_ "embed"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,11 +24,9 @@ func (s *RecipeSuite) Test() {
 	m := manifest.New()
 
 	dir := filepath.FromSlash("testdata/RecipeSuite/Test")
+	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
 
-	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	content, _ := io.ReadAll(reader)
-
-	err := m.UnmarshalYAML(content)
+	err := m.Unmarshal(content)
 
 	s.Require().NoError(err)
 
@@ -82,11 +79,9 @@ func (s *RecipeSuite) TestPartials() {
 	m := manifest.New()
 
 	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartials")
+	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
 
-	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	content, _ := io.ReadAll(reader)
-
-	err := m.UnmarshalYAML(content)
+	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
 	recipe := manifest.NewRecipe(
@@ -106,11 +101,9 @@ func (s *RecipeSuite) TestPartialsHelpers() {
 	m := manifest.New()
 
 	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialsHelpers")
+	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
 
-	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	content, _ := io.ReadAll(reader)
-
-	err := m.UnmarshalYAML(content)
+	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
 	repositoryMock := &app.RepositoryMock{}
@@ -131,11 +124,9 @@ func (s *RecipeSuite) TestPartialsNoHelpers() {
 	m := manifest.New()
 
 	dir := filepath.FromSlash("testdata/RecipeSuite/TestPartialsNoHelpers")
+	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
 
-	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	content, _ := io.ReadAll(reader)
-
-	err := m.UnmarshalYAML(content)
+	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
 	repositoryMock := &app.RepositoryMock{}

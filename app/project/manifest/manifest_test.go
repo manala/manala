@@ -1,15 +1,13 @@
 package manifest_test
 
 import (
-	"io"
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -20,21 +18,61 @@ func TestManifestSuite(t *testing.T) {
 	suite.Run(t, new(ManifestSuite))
 }
 
-func (s *ManifestSuite) Test() {
+func (s *ManifestSuite) TestNew() {
 	m := manifest.New()
 
-	s.Empty(m.Recipe())
-	s.Empty(m.Repository())
+	s.Empty(m.Recipe)
+	s.Empty(m.Repository)
 	s.Equal(map[string]any{}, m.Vars())
 }
 
-func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
+func (s *ManifestSuite) TestUnmarshalRequired() {
+	m := manifest.New()
+
+	err := m.Unmarshal([]byte(heredoc.Doc(`
+		manala:
+		  recipe: recipe
+	`)))
+	s.Require().NoError(err)
+
+	s.Equal("recipe", m.Recipe)
+	s.Empty(m.Repository)
+	s.Equal(map[string]any{}, m.Vars())
+}
+
+func (s *ManifestSuite) TestUnmarshal() {
+	m := manifest.New()
+
+	err := m.Unmarshal([]byte(heredoc.Doc(`
+		manala:
+		  recipe: recipe
+		  repository: repository
+		foo: bar
+		underscore_key: ok
+		hyphen-key: ok
+		dot.key: ok
+	`)))
+	s.Require().NoError(err)
+
+	s.Equal("recipe", m.Recipe)
+	s.Equal("repository", m.Repository)
+	s.Equal(map[string]any{
+		"foo":            "bar",
+		"underscore_key": "ok",
+		"hyphen-key":     "ok",
+		"dot.key":        "ok",
+	}, m.Vars())
+}
+
+func (s *ManifestSuite) TestUnmarshalErrors() {
 	tests := []struct {
 		test     string
+		content  string
 		expected errors.Assertion
 	}{
 		{
-			test: "Empty",
+			test:    "Empty",
+			content: "",
 			expected: &parsing.ErrorAssertion{
 				Err: &serrors.Assertion{
 					Message: "empty yaml content",
@@ -43,6 +81,9 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "Invalid",
+			content: heredoc.Doc(`
+				@
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
@@ -53,6 +94,9 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "IrregularType",
+			content: heredoc.Doc(`
+				foo: .inf
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 6,
@@ -63,6 +107,9 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "IrregularMapKey",
+			content: heredoc.Doc(`
+				0: foo
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 2,
@@ -73,6 +120,9 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 		},
 		{
 			test: "NotMap",
+			content: heredoc.Doc(`
+				foo
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
@@ -81,9 +131,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 				},
 			},
 		},
-		// Config
+		// Manala
 		{
-			test: "ConfigAbsent",
+			test: "ManalaAbsent",
+			content: heredoc.Doc(`
+				foo: bar
+			`),
 			expected: &parsing.ErrorAssertion{
 				Err: &serrors.Assertion{
 					Message: "missing manala property",
@@ -91,7 +144,10 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigNotMap",
+			test: "ManalaNotMap",
+			content: heredoc.Doc(`
+				manala: foo
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 9,
@@ -101,7 +157,10 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigEmpty",
+			test: "ManalaEmpty",
+			content: heredoc.Doc(`
+				manala: {}
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 1,
@@ -111,7 +170,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigAdditionalProperties",
+			test: "ManalaAdditionalProperties",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: recipe
+				  foo: bar
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 3,
@@ -120,9 +184,13 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 				},
 			},
 		},
-		// Config - Recipe
+		// Recipe
 		{
-			test: "ConfigRecipeAbsent",
+			test: "RecipeAbsent",
+			content: heredoc.Doc(`
+				manala:
+				  repository: repository
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   1,
 				Column: 7,
@@ -132,7 +200,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigRecipeNotString",
+			test: "RecipeNotString",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: []
+				  repository: repository
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 11,
@@ -142,7 +215,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigRecipeEmpty",
+			test: "RecipeEmpty",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: ""
+				  repository: repository
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 11,
@@ -152,7 +230,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigRecipeTooLong",
+			test: "RecipeTooLong",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+				  repository: repository
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   2,
 				Column: 11,
@@ -161,9 +244,14 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 				},
 			},
 		},
-		// Config - Repository
+		// Repository
 		{
-			test: "ConfigRepositoryNotString",
+			test: "RepositoryNotString",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: recipe
+				  repository: []
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 15,
@@ -173,7 +261,12 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 			},
 		},
 		{
-			test: "ConfigRepositoryTooLong",
+			test: "RepositoryTooLong",
+			content: heredoc.Doc(`
+				manala:
+				  recipe: recipe
+				  repository: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+			`),
 			expected: &parsing.ErrorAssertion{
 				Line:   3,
 				Column: 15,
@@ -188,74 +281,9 @@ func (s *ManifestSuite) TestUnmarshalYAMLErrors() {
 		s.Run(test.test, func() {
 			m := manifest.New()
 
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestUnmarshalYAMLErrors")
-
-			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
-			content, _ := io.ReadAll(reader)
-
-			err := m.UnmarshalYAML(content)
+			err := m.Unmarshal([]byte(test.content))
 
 			errors.Equal(s.T(), test.expected, err)
-		})
-	}
-}
-
-func (s *ManifestSuite) TestUnmarshalYAML() {
-	tests := []struct {
-		test               string
-		expectedRecipe     string
-		expectedRepository string
-		expectedVars       map[string]any
-	}{
-		{
-			test:               "All",
-			expectedRecipe:     "recipe",
-			expectedRepository: "repository",
-			expectedVars: map[string]any{
-				"foo": "bar",
-			},
-		},
-		{
-			test:               "ConfigRepositoryAbsent",
-			expectedRecipe:     "recipe",
-			expectedRepository: "",
-			expectedVars: map[string]any{
-				"foo": "bar",
-			},
-		},
-		{
-			test:               "VarsAbsent",
-			expectedRecipe:     "recipe",
-			expectedRepository: "repository",
-			expectedVars:       map[string]any{},
-		},
-		{
-			test:               "VarsKeys",
-			expectedRecipe:     "recipe",
-			expectedRepository: "repository",
-			expectedVars: map[string]any{
-				"underscore_key": "ok",
-				"hyphen-key":     "ok",
-				"dot.key":        "ok",
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			m := manifest.New()
-
-			dir := filepath.FromSlash("testdata/ManifestSuite/TestUnmarshalYAML")
-
-			reader, _ := os.Open(filepath.Join(dir, test.test+".yaml"))
-			content, _ := io.ReadAll(reader)
-
-			err := m.UnmarshalYAML(content)
-
-			s.Require().NoError(err)
-			s.Equal(test.expectedRecipe, m.Recipe())
-			s.Equal(test.expectedRepository, m.Repository())
-			s.Equal(test.expectedVars, m.Vars())
 		})
 	}
 }

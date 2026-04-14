@@ -9,16 +9,15 @@ import (
 )
 
 type Project struct {
-	*Manifest
-
-	dir    string
-	recipe app.Recipe
+	manifest *Manifest
+	dir      string
+	recipe   app.Recipe
 }
 
 func NewProject(dir string, manifest *Manifest, recipe app.Recipe) *Project {
 	return &Project{
 		dir:      dir,
-		Manifest: manifest,
+		manifest: manifest,
 		recipe:   recipe,
 	}
 }
@@ -35,7 +34,7 @@ func (project *Project) Vars() map[string]any {
 	var vars map[string]any
 
 	_ = mergo.Merge(&vars, project.recipe.Vars())
-	_ = mergo.Merge(&vars, project.Manifest.Vars(), mergo.WithOverride)
+	_ = mergo.Merge(&vars, project.manifest.Vars(), mergo.WithOverride)
 
 	return vars
 }

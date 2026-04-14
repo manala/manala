@@ -2,7 +2,6 @@ package manifest_test
 
 import (
 	_ "embed"
-	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,15 +36,12 @@ func (s *ProjectSuite) Test() {
 	}).
 		On("Repository").Return(repositoryMock)
 
-	dir := filepath.FromSlash("testdata/ProjectSuite/Test")
-
 	m := manifest.New()
 
-	reader, _ := os.Open(filepath.Join(dir, "manifest.yaml"))
-	content, _ := io.ReadAll(reader)
+	dir := filepath.FromSlash("testdata/ProjectSuite/Test")
+	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
 
-	err := m.UnmarshalYAML(content)
-
+	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
 	project := manifest.NewProject(

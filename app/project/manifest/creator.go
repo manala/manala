@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"bytes"
+	_ "embed"
 	"errors"
 	"os"
 	"path/filepath"
@@ -10,6 +11,9 @@ import (
 	"github.com/manala/manala/app/template"
 	"github.com/manala/manala/internal/serrors"
 )
+
+//go:embed template.yaml.tmpl
+var _template string
 
 type Creator struct {
 	templateEngine *template.Engine
@@ -48,7 +52,7 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 	manifestFile := filepath.Join(dir, filename)
 
 	manifest := New()
-	if err := manifest.UnmarshalYAML(buffer.Bytes()); err != nil {
+	if err := manifest.Unmarshal(buffer.Bytes()); err != nil {
 		return nil, err
 	}
 
