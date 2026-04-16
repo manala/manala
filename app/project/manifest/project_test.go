@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/project/manifest"
+	"github.com/manala/manala/app/testing/mocks"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -21,11 +21,11 @@ func TestProjectSuite(t *testing.T) {
 }
 
 func (s *ProjectSuite) Test() {
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 	repositoryMock.
 		On("URL").Return("repository")
 
-	recipeMock := &app.RecipeMock{}
+	recipeMock := &mocks.RecipeMock{}
 	recipeMock.
 		On("Name").Return("recipe").
 		On("Description").Return("description").

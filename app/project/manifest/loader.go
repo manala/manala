@@ -3,7 +3,6 @@ package manifest
 import (
 	"errors"
 	"io"
-	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -12,19 +11,20 @@ import (
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/filepath/backwalk"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
 )
 
 type LoaderHandler struct {
-	log              *slog.Logger
+	log              *log.Log
 	repositoryLoader *repository.Loader
 	recipeLoader     *recipe.Loader
 }
 
-func NewLoaderHandler(log *slog.Logger, repositoryLoader *repository.Loader, recipeLoader *recipe.Loader) *LoaderHandler {
+func NewLoaderHandler(log *log.Log, repositoryLoader *repository.Loader, recipeLoader *recipe.Loader) *LoaderHandler {
 	return &LoaderHandler{
-		log:              log.With("handler", "manifest"),
+		log:              log,
 		repositoryLoader: repositoryLoader,
 		recipeLoader:     recipeLoader,
 	}
@@ -34,7 +34,7 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	dir := query.Dir
 	file := filepath.Join(dir, filename)
 
-	handler.log.Debug("handle project manifest", "file", file)
+	handler.log.Debug("handle project manifest", "handler", "manifest", "file", file)
 
 	// Stat file
 	if fileInfo, err := os.Stat(file); err != nil {
@@ -44,18 +44,18 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 		}
 
 		return nil, serrors.New("unable to stat project manifest").
-			WithArguments("file", file).
+			With("file", file).
 			WithErrors(serrors.FromOs(err))
 	} else if fileInfo.IsDir() {
 		return nil, serrors.New("project manifest is a directory").
-			WithArguments("dir", file)
+			With("dir", file)
 	}
 
 	// Open file
 	reader, err := os.Open(file)
 	if err != nil {
 		return nil, serrors.New("unable to open project manifest").
-			WithArguments("file", file).
+			With("file", file).
 			WithErrors(serrors.FromOs(err))
 	}
 	defer reader.Close()
@@ -64,24 +64,28 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	content, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, serrors.New("unable to read project manifest").
-			WithArguments("file", file).
+			With("file", file).
 			WithErrors(err)
 	}
 
 	// Parse file content
 	manifest := New()
 	if err := manifest.Unmarshal(content); err != nil {
-		e := serrors.New("unable to parse project manifest").WithArguments("file", file)
+		e := serrors.New("unable to parse project manifest")
 		if err, ok := errors.AsType[*parsing.Error](err); ok {
-			return nil, parsing.ErrorTo(e, err, parsing.Options{
+			return nil, e.WithDumper(parsing.ErrorDumper{
+				Err:   err.Flatten(),
+				File:  file,
 				Src:   string(content),
 				Lexer: "yaml",
 			})
 		}
-		return nil, e.WithErrors(err)
+		return nil, e.With("file", file).
+			WithErrors(err)
 	}
 
-	handler.log.Debug("project manifest loaded", "file", file,
+	handler.log.Debug("project manifest loaded", "handler", "manifest",
+		"file", file,
 		"repository", manifest.Repository,
 		"recipe", manifest.Recipe,
 	)
@@ -103,11 +107,11 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	// Validate project vars against recipe
 	if violations, err := project.Recipe().ProjectValidator().Validate(project.Vars()); err != nil {
 		return nil, serrors.New("unable to validate project manifest").
-			WithArguments("file", file).
+			With("file", file).
 			WithErrors(err)
 	} else if len(violations) != 0 {
 		return nil, serrors.New("invalid project manifest vars").
-			WithArguments("file", file).
+			With("file", file).
 			WithErrors(violations.StructuredErrors()...)
 	}
 
@@ -115,19 +119,19 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 }
 
 type FromLoaderHandler struct {
-	log *slog.Logger
+	log *log.Log
 }
 
-func NewFromLoaderHandler(log *slog.Logger) *FromLoaderHandler {
+func NewFromLoaderHandler(log *log.Log) *FromLoaderHandler {
 	return &FromLoaderHandler{
-		log: log.With("handler", "manifest.from"),
+		log: log,
 	}
 }
 
 func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain project.LoaderHandlerChain) (app.Project, error) {
 	dir := query.Dir
 
-	handler.log.Debug("handle project manifest from", "dir", dir)
+	handler.log.Debug("handle project manifest from", "handler", "manifest.from", "dir", dir)
 
 	var project app.Project
 
@@ -136,7 +140,7 @@ func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain proje
 		func(path string, _ os.DirEntry, err error) error {
 			if err != nil {
 				return serrors.New("file system error").
-					WithArguments("path", path).
+					With("path", path).
 					WithErrors(serrors.FromOs(err))
 			}
 

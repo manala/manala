@@ -7,6 +7,7 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/output"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/serrors"
 
@@ -17,30 +18,34 @@ import (
 type DialogForm struct {
 	*cview.Form
 
+	profile output.Profile
 	errored func(error)
 	applied func()
 }
 
-func NewDialogForm(title string) (*DialogForm, *cview.Flex) {
+func NewDialogForm(title string, profile output.Profile) (*DialogForm, *cview.Flex) {
 	// Form
-	form := &DialogForm{Form: cview.NewForm()}
+	form := &DialogForm{
+		Form:    cview.NewForm(),
+		profile: profile,
+	}
 	form.SetWrapAround(true)
 	form.SetPadding(1, 1, 2, 1)
 	form.SetItemPadding(0)
 	form.SetButtonsAlign(cview.AlignLeft)
 	form.SetBackgroundColor(color.Default)
-	form.SetLabelColor(DialogStyles.SecondaryColor)
-	form.SetLabelColorFocused(DialogStyles.PrimaryColor)
-	form.SetFieldBackgroundColor(DialogStyles.PrimaryColor)
-	form.SetFieldBackgroundColorFocused(DialogStyles.SecondaryColor)
-	form.SetFieldTextColor(DialogStyles.PrimaryColor)
-	form.SetFieldTextColorFocused(DialogStyles.TertiaryColor)
-	form.SetButtonTextColor(DialogStyles.TertiaryColor)
-	form.SetButtonTextColorFocused(DialogStyles.PrimaryColor)
-	form.SetButtonBackgroundColor(DialogStyles.SecondaryColor)
-	form.SetButtonBackgroundColorFocused(DialogStyles.SecondaryColor)
+	form.SetLabelColor(profile.MutedColor())
+	form.SetLabelColorFocused(profile.Color())
+	form.SetFieldBackgroundColor(profile.Color())
+	form.SetFieldBackgroundColorFocused(profile.MutedColor())
+	form.SetFieldTextColor(profile.Color())
+	form.SetFieldTextColorFocused(profile.ReverseColor())
+	form.SetButtonTextColor(profile.ReverseColor())
+	form.SetButtonTextColorFocused(profile.Color())
+	form.SetButtonBackgroundColor(profile.MutedColor())
+	form.SetButtonBackgroundColorFocused(profile.MutedColor())
 
-	return form, NewDialogPanel(title, form)
+	return form, NewDialogPanel(title, form, profile)
 }
 
 func (form *DialogForm) SetErroredFunc(handler func(error)) {
@@ -59,26 +64,26 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 	for _, opt := range options {
 		switch opt := opt.(type) {
 		case *option.Enum:
-			item, err := NewSelectFormItem(opt, vars, form.errored)
+			item, err := NewSelectFormItem(opt, vars, form.errored, form.profile)
 			if err != nil {
 				return serrors.New("invalid recipe option").
-					WithArguments("label", opt.Label()).
+					With("label", opt.Label()).
 					WithErrors(err)
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
 		case *option.String:
-			item, err := NewDialogTextFormItem(opt, vars, form.errored)
+			item, err := NewDialogTextFormItem(opt, vars, form.errored, form.profile)
 			if err != nil {
 				return serrors.New("invalid recipe option").
-					WithArguments("label", opt.Label()).
+					With("label", opt.Label()).
 					WithErrors(err)
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
 		default:
 			return serrors.New("unknown recipe option").
-				WithArguments("label", opt.Label())
+				With("label", opt.Label())
 		}
 	}
 
@@ -110,6 +115,7 @@ type DialogTextFormItem struct {
 	option    *option.String
 	accessor  accessor.Accessor
 	validator *schema.Validator
+	profile   output.Profile
 	errored   func(error)
 }
 
@@ -117,6 +123,7 @@ func NewDialogTextFormItem(
 	option *option.String,
 	vars *map[string]any,
 	errored func(error),
+	profile output.Profile,
 ) (*DialogTextFormItem, error) {
 	// Accessor
 	itemAccessor := option.Accessor(vars)
@@ -128,10 +135,11 @@ func NewDialogTextFormItem(
 		accessor:   itemAccessor,
 		validator:  option.Validator(),
 		errored:    errored,
+		profile:    profile,
 	}
 
 	// Input field
-	item.SetFieldNoteTextColor(DialogStyles.SecondaryColor)
+	item.SetFieldNoteTextColor(profile.MutedColor())
 	item.SetLabel(option.Label())
 	item.SetChangedFunc(func(_ string) {
 		item.Apply()
@@ -156,7 +164,7 @@ func (item *DialogTextFormItem) Apply() bool {
 	violations, err := item.validator.Validate(value)
 	if err != nil {
 		item.errored(serrors.New("validation error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 
@@ -164,7 +172,7 @@ func (item *DialogTextFormItem) Apply() bool {
 	}
 	if violations != nil {
 		if errs := violations.Errors(); len(errs) > 0 {
-			item.SetFieldNoteTextColor(DialogStyles.AlertColor)
+			item.SetFieldNoteTextColor(item.profile.ErrorColor())
 			item.SetFieldNote(errs[0].Error())
 		}
 
@@ -172,12 +180,12 @@ func (item *DialogTextFormItem) Apply() bool {
 	}
 
 	item.SetFieldNote(item.option.Help())
-	item.SetFieldNoteTextColor(DialogStyles.SecondaryColor)
+	item.SetFieldNoteTextColor(item.profile.MutedColor())
 
 	// Accession
 	if err := item.accessor.Set(value); err != nil {
 		item.errored(serrors.New("accession error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 
@@ -200,6 +208,7 @@ func NewSelectFormItem(
 	option *option.Enum,
 	vars *map[string]any,
 	errored func(error),
+	profile output.Profile,
 ) (*DialogSelectFormItem, error) {
 	// Accessor
 	itemAccessor := option.Accessor(vars)
@@ -214,10 +223,10 @@ func NewSelectFormItem(
 	}
 
 	// Dropdown
-	item.SetDropDownTextColor(DialogStyles.TertiaryColor)
-	item.SetDropDownBackgroundColor(DialogStyles.SecondaryColor)
-	item.SetDropDownSelectedTextColor(DialogStyles.QuaternaryColor)
-	item.SetDropDownSelectedBackgroundColor(DialogStyles.SecondaryColor)
+	item.SetDropDownTextColor(profile.ReverseColor())
+	item.SetDropDownBackgroundColor(profile.MutedColor())
+	item.SetDropDownSelectedTextColor(profile.EmphasisColor())
+	item.SetDropDownSelectedBackgroundColor(profile.MutedColor())
 	item.SetLabel(option.Label())
 	item.SetSelectedFunc(func(_ int, _ *cview.DropDownOption) {
 		item.Apply()
@@ -261,7 +270,7 @@ func (item *DialogSelectFormItem) Apply() bool {
 	// Accession
 	if err := item.accessor.Set(value); err != nil {
 		item.errored(serrors.New("accession error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 

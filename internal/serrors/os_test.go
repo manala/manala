@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -20,12 +20,12 @@ func (s *OsSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Unknown",
 			err:  serrors.New("unknown"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unknown",
 			},
 		},
@@ -36,11 +36,11 @@ func (s *OsSuite) Test() {
 				Path: "path",
 				Err:  serrors.New("path"),
 			},
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "path",
-				Arguments: []any{
-					"operation", "operation",
-					"path", "path",
+				Attrs: [][2]any{
+					{"operation", "operation"},
+					{"path", "path"},
 				},
 			},
 		},
@@ -51,11 +51,11 @@ func (s *OsSuite) Test() {
 				Path: "/foo/bar",
 				Err:  os.ErrNotExist,
 			},
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "file does not exist",
-				Arguments: []any{
-					"operation", "open",
-					"path", "/foo/bar",
+				Attrs: [][2]any{
+					{"operation", "open"},
+					{"path", "/foo/bar"},
 				},
 			},
 		},
@@ -65,10 +65,10 @@ func (s *OsSuite) Test() {
 				Syscall: "syscall",
 				Err:     serrors.New("syscall"),
 			},
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "syscall",
-				Arguments: []any{
-					"syscall", "syscall",
+				Attrs: [][2]any{
+					{"syscall", "syscall"},
 				},
 			},
 		},
@@ -78,7 +78,7 @@ func (s *OsSuite) Test() {
 		s.Run(test.test, func() {
 			err := serrors.FromOs(test.err)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

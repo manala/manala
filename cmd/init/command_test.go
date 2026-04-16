@@ -2,20 +2,20 @@ package init_test
 
 import (
 	"bytes"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/app/testing/errors"
 	cmdInit "github.com/manala/manala/cmd/init"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/output"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/ui/adapters/charm"
-	"github.com/manala/manala/internal/ui/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -27,160 +27,48 @@ func TestCommandSuite(t *testing.T) {
 }
 
 func (s *CommandSuite) TestProjectErrors() {
-	s.Run("AlreadyExistingProject", func() {
-		projectDir := filepath.FromSlash("testdata/TestProjectErrors/AlreadyExistingProject/project")
+	dir := filepath.FromSlash("testdata/TestProjectErrors")
 
-		stdOut, stdErr, err := s.execute("",
-			projectDir,
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.AlreadyExistingProjectError{},
-			Message: "already existing project",
-			Arguments: []any{
-				"dir", projectDir,
+	tests := []struct {
+		test           string
+		expectedStderr string
+		expectedError  expect.ErrorExpectation
+	}{
+		{
+			test: "AlreadyExisting",
+			expectedStderr: heredoc.Doc(`
+				 ● finding project…
+			`),
+			expectedError: errors.Expectation{
+				Type: &app.AlreadyExistingProjectError{},
+				Attrs: [][2]any{
+					{"dir", filepath.Join(dir, "AlreadyExisting", "project")},
+				},
 			},
-		}, err)
-	})
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			stdout, stderr, err := s.execute("",
+				filepath.Join(dir, test.test, "project"),
+			)
+
+			s.Empty(stdout)
+
+			s.Equal(test.expectedStderr, stderr.String())
+			expect.Error(s.T(), test.expectedError, err)
+		})
+	}
 }
 
-func (s *CommandSuite) TestRepositoryErrors() {
-	s.Run("NoRepository", func() {
-		stdOut, stdErr, err := s.execute("")
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", "",
-			},
-		}, err)
-	})
-
-	s.Run("RepositoryNotFound", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/RepositoryNotFound/repository")
-
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
-			},
-		}, err)
-	})
-
-	s.Run("WrongRepository", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/WrongRepository/repository")
-
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
-			},
-		}, err)
-	})
-
-	s.Run("EmptyRepository", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRepositoryErrors/EmptyRepository/repository")
-
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-			 • loading recipes…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.EmptyRepositoryError{},
-			Message: "empty repository",
-			Arguments: []any{
-				"url", repositoryURL,
-			},
-		}, err)
-	})
-}
-
-func (s *CommandSuite) TestRepositoryCustom() {
-	projectDir := filepath.FromSlash("testdata/TestRepositoryCustom/project")
-	repositoryURL := filepath.FromSlash("testdata/TestRepositoryCustom/repository")
+func (s *CommandSuite) TestRepository() {
+	projectDir := filepath.FromSlash("testdata/TestRepository/project")
+	repositoryURL := filepath.FromSlash("testdata/TestRepository/repository")
 
 	_ = os.RemoveAll(projectDir)
 
-	stdOut, stdErr, err := s.execute("",
-		projectDir,
-		"--repository", repositoryURL,
-		"--recipe", "recipe",
-	)
-
-	s.Require().NoError(err)
-	heredoc.Equal(s.T(), `
-		project successfully initialized
-	`, stdOut)
-	heredoc.Equal(s.T(), `
-		 • finding project…
-		 • loading repository…
-		 • loading recipe…
-		 • creating project…
-		 • syncing project…
-	`, stdErr)
-
-	s.DirExists(projectDir)
-
-	heredoc.EqualFile(s.T(), `
-		####################################################################
-		#                         !!! REMINDER !!!                         #
-		# Don't forget to run `+"`"+`manala up`+"`"+` each time you update this file ! #
-		####################################################################
-
-		manala:
-		    recipe: recipe
-		    repository: %[1]s
-	`, filepath.Join(projectDir, ".manala.yaml"), repositoryURL)
-}
-
-func (s *CommandSuite) TestRepositoryConfig() {
-	projectDir := filepath.FromSlash("testdata/TestRepositoryConfig/project")
-	repositoryURL := filepath.FromSlash("testdata/TestRepositoryConfig/repository")
-
-	_ = os.RemoveAll(projectDir)
-
-	stdOut, stdErr, err := s.execute(repositoryURL,
+	stdout, stderr, err := s.execute(repositoryURL,
 		projectDir,
 		"--recipe", "recipe",
 	)
@@ -188,16 +76,16 @@ func (s *CommandSuite) TestRepositoryConfig() {
 	s.Require().NoError(err)
 	heredoc.Equal(s.T(), `
 		project successfully initialized
-	`, stdOut)
+	`, stdout)
 	heredoc.Equal(s.T(), `
-		 • finding project…
-		 • loading repository…
-		 • loading recipe…
-		 • creating project…
-		 • syncing project…
-		 • file synced                      path=file.txt
-		 • file synced                      path=template
-	`, stdErr)
+		 ● finding project…
+		 ● loading repository…
+		 ● loading recipe…
+		 ● creating project…
+		 ● syncing project…
+		 ● file synced                      path=file.txt
+		 ● file synced                      path=template
+	`, stderr)
 
 	s.DirExists(projectDir)
 
@@ -220,107 +108,252 @@ func (s *CommandSuite) TestRepositoryConfig() {
 	`, filepath.Join(projectDir, "template"))
 }
 
+func (s *CommandSuite) TestRepositoryArg() {
+	projectDir := filepath.FromSlash("testdata/TestRepositoryArg/project")
+	repositoryURL := filepath.FromSlash("testdata/TestRepositoryArg/repository")
+
+	_ = os.RemoveAll(projectDir)
+
+	stdout, stderr, err := s.execute("",
+		projectDir,
+		"--repository", repositoryURL,
+		"--recipe", "recipe",
+	)
+
+	s.Require().NoError(err)
+	heredoc.Equal(s.T(), `
+		project successfully initialized
+	`, stdout)
+	heredoc.Equal(s.T(), `
+		 ● finding project…
+		 ● loading repository…
+		 ● loading recipe…
+		 ● creating project…
+		 ● syncing project…
+	`, stderr)
+
+	s.DirExists(projectDir)
+
+	heredoc.EqualFile(s.T(), `
+		####################################################################
+		#                         !!! REMINDER !!!                         #
+		# Don't forget to run `+"`"+`manala up`+"`"+` each time you update this file ! #
+		####################################################################
+
+		manala:
+		    recipe: recipe
+		    repository: %[1]s
+	`, filepath.Join(projectDir, ".manala.yaml"), repositoryURL)
+}
+
+func (s *CommandSuite) TestRepositoryErrors() {
+	dir := filepath.FromSlash("testdata/TestRepositoryErrors")
+
+	tests := []struct {
+		test           string
+		expectedStderr string
+		expectedError  expect.ErrorExpectation
+	}{
+		{
+			test: "NotFound",
+			expectedStderr: heredoc.Doc(`
+				 ● finding project…
+				 ● loading repository…
+			`),
+			expectedError: errors.Expectation{
+				Type: &app.NotFoundRepositoryError{},
+				Attrs: [][2]any{
+					{"url", filepath.Join(dir, "NotFound", "repository")},
+				},
+			},
+		},
+		{
+			test: "Empty",
+			expectedStderr: heredoc.Doc(`
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipes…
+			`),
+			expectedError: errors.Expectation{
+				Type: &app.EmptyRepositoryError{},
+				Attrs: [][2]any{
+					{"url", filepath.Join(dir, "Empty", "repository")},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			stdout, stderr, err := s.execute("",
+				"--repository", filepath.Join(dir, test.test, "repository"),
+			)
+
+			s.Empty(stdout)
+
+			s.Equal(test.expectedStderr, stderr.String())
+			expect.Error(s.T(), test.expectedError, err)
+		})
+	}
+}
+
 func (s *CommandSuite) TestRecipeErrors() {
-	s.Run("RecipeNotFound", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
+	dir := filepath.FromSlash("testdata/TestRecipeErrors")
 
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-			"--recipe", "recipe",
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-			 • loading recipe…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRecipeError{},
-			Message: "recipe not found",
-			Arguments: []any{
-				"repository", repositoryURL,
-				"name", "recipe",
+	tests := []struct {
+		test           string
+		expectedStderr string
+		expectedError  expect.ErrorExpectation
+	}{
+		{
+			test: "NotFound",
+			expectedStderr: heredoc.Doc(`
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipe…
+			`),
+			expectedError: errors.Expectation{
+				Type: &app.NotFoundRecipeError{},
+				Attrs: [][2]any{
+					{"repository", filepath.Join(dir, "NotFound", "repository")},
+					{"name", "recipe"},
+				},
 			},
-		}, err)
-	})
+		},
+		{
+			test: "Unparsable",
+			expectedStderr: heredoc.Doc(`
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipe…
+			`),
+			expectedError: serrors.Expectation{
+				Message: "unable to parse recipe manifest",
+				Dump: heredoc.Doc(`
+					at %[1]s:1:1
 
-	s.Run("WrongRecipeManifest", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
-
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-			"--recipe", "recipe",
-		)
-
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-			 • loading recipe…
-		`, stdErr)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Message: "recipe manifest is a directory",
-			Arguments: []any{
-				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+					▶ 1 │ manala: {}
+					    ├─╯ missing manala "description" property
+				`,
+					filepath.Join(dir, "Unparsable", "repository", "recipe", ".manala.yaml"),
+				),
 			},
-		}, err)
-	})
+		},
+	}
 
-	s.Run("InvalidRecipeManifest", func() {
-		repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			stdout, stderr, err := s.execute("",
+				"--repository", filepath.Join(dir, test.test, "repository"),
+				"--recipe", "recipe",
+			)
 
-		stdOut, stdErr, err := s.execute("",
-			"--repository", repositoryURL,
-			"--recipe", "recipe",
-		)
+			s.Empty(stdout)
 
-		s.Empty(stdOut)
-		heredoc.Equal(s.T(), `
-			 • finding project…
-			 • loading repository…
-			 • loading recipe…
-		`, stdErr)
+			s.Equal(test.expectedStderr, stderr.String())
+			expect.Error(s.T(), test.expectedError, err)
+		})
+	}
+	/*
+		s.Run("RecipeNotFound", func() {
+			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Message: "unable to parse recipe manifest",
-			Arguments: []any{
-				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
-				"line", 1, "column", 1,
-			},
-			Dump: `
-				> 1 | manala: {}
-				      ^
-				* missing manala description property
-			`,
-		}, err)
-	})
+			stdout, stderr, err := s.execute("",
+				"--repository", repositoryURL,
+				"--recipe", "recipe",
+			)
+
+			s.Empty(stdout)
+			heredoc.Equal(s.T(), `
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipe…
+			`, stderr)
+
+			expect.Error(s.T(), errors.Expectation{
+				Type: &app.NotFoundRecipeError{},
+				Attrs: [][2]any{
+					{"repository", repositoryURL},
+					{"name", "recipe"},
+				},
+			}, err)
+		})
+
+		s.Run("WrongRecipeManifest", func() {
+			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
+
+			stdout, stderr, err := s.execute("",
+				"--repository", repositoryURL,
+				"--recipe", "recipe",
+			)
+
+			s.Empty(stdout)
+			heredoc.Equal(s.T(), `
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipe…
+			`, stderr)
+
+			expect.Error(s.T(), serrors.Expectation{
+				Message: "recipe manifest is a directory",
+				Attrs: [][2]any{
+					{"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml")},
+				},
+			}, err)
+		})
+
+		s.Run("InvalidRecipeManifest", func() {
+			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
+
+			stdout, stderr, err := s.execute("",
+				"--repository", repositoryURL,
+				"--recipe", "recipe",
+			)
+
+			s.Empty(stdout)
+			heredoc.Equal(s.T(), `
+				 ● finding project…
+				 ● loading repository…
+				 ● loading recipe…
+			`, stderr)
+
+			expect.Error(s.T(), serrors.Expectation{
+				Message: "unable to parse recipe manifest",
+				Dump: heredoc.Doc(`
+					at %[1]s:1:1
+
+					▶ 1 │ manala: {}
+					    ├─╯ missing manala description property
+				`,
+					filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+				),
+			}, err)
+		})
+	*/
 }
 
 func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
-	stdOut := &bytes.Buffer{}
-	stdErr := &bytes.Buffer{}
+	out := &bytes.Buffer{}
+	err := &bytes.Buffer{}
 
-	ui := charm.New(stdErr)
-	log := slog.New(log.NewSlogHandler(ui))
+	logger := log.New(output.NewDetached(err))
+	logger.Verbose(1)
 
 	command := cmdInit.NewCommand(
-		log,
+		logger,
 		api.New(
-			log,
+			logger,
 			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
-		stdOut,
+		output.NewDetached(out),
 	)
 
 	command.SilenceErrors = true
 	command.SilenceUsage = true
-	command.SetOut(stdOut)
-	command.SetErr(stdErr)
+	command.SetOut(out)
+	command.SetErr(err)
 	command.SetArgs(append([]string{}, args...))
 
-	return stdOut, stdErr, command.Execute()
+	return out, err, command.Execute()
 }

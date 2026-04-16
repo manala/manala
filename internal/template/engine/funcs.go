@@ -50,7 +50,7 @@ func funcInclude(t *template.Template) func(name string, data any) (string, erro
 		if v, ok := includedNames[name]; ok {
 			if v > 1000 {
 				return "", serrors.New("rendering template has a nested reference").
-					WithArguments("reference", name)
+					With("reference", name)
 			}
 
 			includedNames[name]++

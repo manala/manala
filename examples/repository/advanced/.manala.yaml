@@ -1,6 +1,8 @@
 manala:
     description: An advanced example recipe
     icon: https://raw.githubusercontent.com/manala/manala/main/examples/repository/advanced/icon.png
+    partials:
+      - _helpers.tmpl
     sync:
       - .manala/Makefile.tmpl
       - Makefile.dist
@@ -14,3 +16,5 @@ foo:
   bar: baz
   # @schema {"minimum": 1, "maximum": 6}
   repeat: 1
+  # @schema {"enum": [null, 1, "2"]}
+  enum: 1

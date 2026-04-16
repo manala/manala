@@ -9,8 +9,7 @@ import (
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/stretchr/testify/suite"
@@ -20,41 +19,6 @@ type InferrerSuite struct{ suite.Suite }
 
 func TestInferrerSuite(t *testing.T) {
 	suite.Run(t, new(InferrerSuite))
-}
-
-func (s *InferrerSuite) TestSchemaErrors() {
-	tests := []struct {
-		test     string
-		src      string
-		expected errors.Assertion
-	}{
-		{
-			test: "Annotation",
-			src: `
-# @schema foo
-node: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 12,
-				Err: &serrors.Assertion{
-					Message: "invalid character 'o' in literal false (expecting 'a')",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			node, err := parser.Parse([]byte(test.src))
-			s.Require().NoError(err)
-
-			inf := manifest.Inferrer{}
-			err = inf.Infer(node)
-
-			errors.Equal(s.T(), test.expected, err)
-		})
-	}
 }
 
 func (s *InferrerSuite) TestSchema() {
@@ -301,167 +265,22 @@ node: string
 	}
 }
 
-func (s *InferrerSuite) TestOptionErrors() {
+func (s *InferrerSuite) TestSchemaErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
-			test: "Syntax",
+			test: "Annotation",
 			src: `
-# @option foo
-foo: ~
+# @schema foo
+node: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 12,
-				Err: &serrors.Assertion{
-					Message: "invalid character 'o' in literal false (expecting 'a')",
-				},
-			},
-		},
-		{
-			test: "Type",
-			src: `
-# @option []
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "wrong array value type",
-				},
-			},
-		},
-		{
-			test: "InvalidType",
-			src: `
-# @option {"label": "Label", "type": 123}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 40,
-				Err: &serrors.Assertion{
-					Message: "wrong number type for field \"type\"",
-				},
-			},
-		},
-		{
-			test: "UnexpectedType",
-			src: `
-# @option {"label": "Label", "type": "unexpected"}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "unexpected \"unexpected\" option type",
-				},
-			},
-		},
-		{
-			test: "Validation",
-			src: `
-# @option {"foo": "bar"}
-foo: string
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "missing option label property",
-				},
-			},
-		},
-		{
-			test: "AutoDetection",
-			src: `
-# @option {"label": "Label"}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "unable to auto detect option type",
-				},
-			},
-		},
-		{
-			test: "InvalidStringMissingType",
-			src: `
-# @option {"label": "Label", "type": "string"}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option string type",
-				},
-			},
-		},
-		{
-			test: "InvalidStringWrongType",
-			src: `
-# @option {"label": "Label", "type": "string"}
-# @schema {"type": null}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option string type",
-				},
-			},
-		},
-		{
-			test: "InvalidEnumMissingValues",
-			src: `
-# @option {"label": "Label", "type": "enum"}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option enum",
-				},
-			},
-		},
-		{
-			test: "InvalidEnumWrongValues",
-			src: `
-# @option {"label": "Label", "type": "enum"}
-# @schema {"enum": null}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option enum",
-				},
-			},
-		},
-		{
-			test: "InvalidEnumEmptyValues",
-			src: `
-# @option {"label": "Label", "type": "enum"}
-# @schema {"enum": []}
-foo: ~
-`,
-			expected: &parsing.FlattenErrorAssertion{
-				Line:   2,
-				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "empty recipe option enum",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid character 'o' in literal false (expecting 'a')"),
 			},
 		},
 	}
@@ -474,7 +293,7 @@ foo: ~
 			inf := manifest.Inferrer{}
 			err = inf.Infer(node)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -483,7 +302,7 @@ func (s *InferrerSuite) TestOptions() {
 	tests := []struct {
 		test     string
 		src      string
-		expected option.Assertions
+		expected option.Expectations
 	}{
 		{
 			test: "String",
@@ -491,7 +310,7 @@ func (s *InferrerSuite) TestOptions() {
 # @option {"label": "Foo", "name": "bar", "type": "string"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo",
@@ -505,7 +324,7 @@ foo: bar
 # @option {"label": "Foo Bar", "type": "string"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo Bar",
@@ -519,7 +338,7 @@ foo: bar
 # @option {"label": "Foo", "name": "bar"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo",
@@ -543,7 +362,163 @@ foo: bar
 			err = inf.Infer(node)
 			s.Require().NoError(err)
 
-			option.Equals(s.T(), test.expected, options)
+			option.ExpectOptions(s.T(), test.expected, options)
+		})
+	}
+}
+
+func (s *InferrerSuite) TestOptionErrors() {
+	tests := []struct {
+		test     string
+		src      string
+		expected expect.ErrorExpectation
+	}{
+		{
+			test: "Syntax",
+			src: `
+# @option foo
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 12,
+				Err:    expect.ErrorMessageExpectation("invalid character 'o' in literal false (expecting 'a')"),
+			},
+		},
+		{
+			test: "Type",
+			src: `
+# @option []
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("wrong array value type"),
+			},
+		},
+		{
+			test: "InvalidType",
+			src: `
+# @option {"label": "Label", "type": 123}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 40,
+				Err:    expect.ErrorMessageExpectation("wrong number type for field \"type\""),
+			},
+		},
+		{
+			test: "UnexpectedType",
+			src: `
+# @option {"label": "Label", "type": "unexpected"}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("unexpected \"unexpected\" option type"),
+			},
+		},
+		{
+			test: "Validation",
+			src: `
+# @option {"foo": "bar"}
+foo: string
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("missing option label property"),
+			},
+		},
+		{
+			test: "AutoDetection",
+			src: `
+# @option {"label": "Label"}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("unable to auto detect option type"),
+			},
+		},
+		{
+			test: "InvalidStringMissingType",
+			src: `
+# @option {"label": "Label", "type": "string"}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("invalid recipe option string type"),
+			},
+		},
+		{
+			test: "InvalidStringWrongType",
+			src: `
+# @option {"label": "Label", "type": "string"}
+# @schema {"type": null}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("invalid recipe option string type"),
+			},
+		},
+		{
+			test: "InvalidEnumMissingValues",
+			src: `
+# @option {"label": "Label", "type": "enum"}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("invalid recipe option enum"),
+			},
+		},
+		{
+			test: "InvalidEnumWrongValues",
+			src: `
+# @option {"label": "Label", "type": "enum"}
+# @schema {"enum": null}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("invalid recipe option enum"),
+			},
+		},
+		{
+			test: "InvalidEnumEmptyValues",
+			src: `
+# @option {"label": "Label", "type": "enum"}
+# @schema {"enum": []}
+foo: ~
+`,
+			expected: parsing.FlattenErrorExpectation{
+				Line:   2,
+				Column: 11,
+				Err:    expect.ErrorMessageExpectation("empty recipe option enum"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			node, err := parser.Parse([]byte(test.src))
+			s.Require().NoError(err)
+
+			inf := manifest.Inferrer{}
+			err = inf.Infer(node)
+
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

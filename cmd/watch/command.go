@@ -2,23 +2,20 @@ package watch
 
 import (
 	"context"
-	"io"
-	"log/slog"
 	"os/signal"
 	"path/filepath"
 	"syscall"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	"github.com/manala/manala/cmd"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/notify"
-	"github.com/manala/manala/internal/ui"
+	"github.com/manala/manala/internal/output"
 
-	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier *notify.Notifier) *cobra.Command {
+func NewCommand(log *log.Log, api *api.API, out output.Output, notifier *notify.Notifier) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL, repositoryRef, recipeName string
@@ -45,7 +42,7 @@ current directory)`,
 			ctx = app.WithRepositoryRef(ctx, repositoryRef)
 			ctx = app.WithRecipeName(ctx, recipeName)
 
-			return run(ctx, log, api, out, output, notifier, dir, all, notify)
+			return run(ctx, log, api, out, notifier, dir, all, notify)
 		},
 	}
 
@@ -59,7 +56,7 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, output ui.Output, notifier *notify.Notifier, dir string, all, notify bool) error {
+func run(ctx context.Context, log *log.Log, api *api.API, out output.Output, notifier *notify.Notifier, dir string, all, notify bool) error {
 	var (
 		project app.Project
 		err     error
@@ -89,7 +86,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, out
 			// Load project
 			log.Info("loading project…")
 			if project, err = projectLoader.Load(project.Dir()); err != nil {
-				output.Error(err)
+				log.Error(err)
 
 				if notify {
 					notifier.Error(err)
@@ -101,7 +98,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, out
 			// Sync project
 			log.Info("syncing project…")
 			if err = projectSyncer.Sync(project); err != nil {
-				output.Error(err)
+				log.Error(err)
 
 				if notify {
 					notifier.Error(err)
@@ -110,7 +107,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, out
 				notifier.Message("Project synced")
 			}
 
-			lipgloss.Fprintln(out, cmd.Styles.Primary.Render("project successfully updated"))
+			out.Println(out.Style().Render("project successfully updated"))
 
 			return project
 		})

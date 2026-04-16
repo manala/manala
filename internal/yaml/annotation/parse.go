@@ -1,7 +1,8 @@
 package annotation
 
 import (
-	"github.com/manala/manala/internal/serrors"
+	"errors"
+	"fmt"
 )
 
 // Parse parses the given source into a Set of annotations.
@@ -19,7 +20,7 @@ func Parse(src string) (*Set, error) {
 		case TokenName:
 			if seen[token.Value] {
 				return nil, ErrorAt(
-					serrors.New("duplicate annotation @"+token.Value),
+					fmt.Errorf("duplicate annotation @%s", token.Value),
 					token,
 				)
 			}
@@ -33,7 +34,7 @@ func Parse(src string) (*Set, error) {
 			current.Value.Tokens = append(current.Value.Tokens, token)
 		case TokenUnknown:
 			return nil, ErrorAt(
-				serrors.New("Unknown annotation token"),
+				errors.New("unknown annotation token"),
 				token,
 			)
 		case TokenEOF:

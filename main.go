@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 
 	"github.com/manala/manala/app/api"
@@ -14,9 +13,9 @@ import (
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/notify"
-	"github.com/manala/manala/internal/ui/adapters/charm"
-	"github.com/manala/manala/internal/ui/log"
+	"github.com/manala/manala/internal/output"
 
 	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
@@ -30,81 +29,80 @@ var version = "dev"
 const defaultRepositoryURL = "https://github.com/manala/manala-recipes.git"
 
 func main() {
-	// Streams
-	in, out, err := os.Stdin, os.Stdout, os.Stderr
-
-	// User interface
-	ui := charm.New(err)
+	// Os
+	stdin, stdout, stderr := os.Stdin, os.Stdout, os.Stderr
+	env := os.Environ()
 
 	// Notifier
 	notifier := notify.New(notify.NewBeeepHandler("Manala"))
 
-	var (
-		appLog = new(slog.Logger)
-		appAPI = new(api.API)
+	// Logger
+	logger := log.New(output.New(stdin, stderr, env))
+
+	// Output
+	out := output.New(stdin, stdout, env)
+
+	// Api
+	appApi := new(api.API)
+
+	// Commands
+	command := cmd.NewCommand(version, stdin, stdout, stderr)
+	command.AddCommand(
+		cmdInit.NewCommand(logger, appApi, out),
+		cmdList.NewCommand(logger, appApi, out),
+		cmdMascot.NewCommand(stdin, stdout),
+		cmdUpdate.NewCommand(logger, appApi, out),
+		cmdWatch.NewCommand(logger, appApi, out, notifier),
 	)
 
-	// App commands
-	appCommand := cmd.NewCommand(version, in, out, err)
-	appCommand.AddCommand(
-		cmdInit.NewCommand(appLog, appAPI, out),
-		cmdList.NewCommand(appLog, appAPI, out),
-		cmdMascot.NewCommand(in, out),
-		cmdUpdate.NewCommand(appLog, appAPI, out),
-		cmdWatch.NewCommand(appLog, appAPI, out, ui, notifier),
-	)
+	// Commands persistent flags
+	command.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
+	command.PersistentFlags().CountP("verbose", "v", "more verbose output (repeatable)")
 
-	// App commands persistent flags
-	appCommand.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
-	appCommand.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
-
-	// Docs app command only available in dev
+	// Docs command only available in dev
 	if version == "dev" {
-		appCommand.AddCommand(cmdDocs.NewCommand(appCommand))
+		command.AddCommand(cmdDocs.NewCommand(command))
 	}
 
 	cobra.OnInitialize(func() {
 		// Viper
 		v := viper.New()
 
-		_ = v.BindPFlag("cache_dir", appCommand.PersistentFlags().Lookup("cache-dir"))
-		_ = v.BindPFlag("debug", appCommand.PersistentFlags().Lookup("debug"))
+		_ = v.BindPFlag("cache_dir", command.PersistentFlags().Lookup("cache-dir"))
+		_ = v.BindPFlag("verbose", command.PersistentFlags().Lookup("verbose"))
 		v.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
 		v.AutomaticEnv()
 		v.SetEnvPrefix("MANALA")
 
-		// App cache
-		appCache := caching.NewCache(v.GetString("cache_dir")).
+		// Cache
+		cache := caching.NewCache(v.GetString("cache_dir")).
 			WithUserDir("manala")
 
-		// Deferred app log instantiation
-		appLogHandler := log.NewSlogHandler(ui,
-			log.WithSlogHandlerDebug(v.GetBool("debug")),
-		)
-		*appLog = *slog.New(appLogHandler)
+		// Logger verbose mode
+		logger.Verbose(v.GetInt("verbose"))
 
 		// Deferred app api instantiation
-		*appAPI = *api.New(appLog, appCache,
+		*appApi = *api.New(logger, cache,
 			api.WithDefaultRepositoryURL(v.GetString("default_repository")),
 		)
 
 		// Log config
-		appLog.Debug("config",
+		logger.Debug("config",
 			"default_repository", v.GetString("default_repository"),
 			"cache_dir", v.GetString("cache_dir"),
-			"debug", v.GetBool("debug"),
+			"verbose", v.GetInt("verbose"),
 		)
 	})
 
-	// Execute app command
-	if err := appCommand.Execute(); err != nil {
+	// Execute command
+	if err := command.Execute(); err != nil {
 		if _, ok := errors.AsType[*cmd.CancelError](err); ok {
-			lipgloss.Fprintln(out, err.Error())
+			lipgloss.Fprintln(stdout, err.Error())
 			os.Exit(0)
 		}
-		ui.Error(err)
+		logger.Error(err)
 		os.Exit(1)
 	}
 }

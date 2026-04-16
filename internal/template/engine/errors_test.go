@@ -1,14 +1,14 @@
 package engine_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	textTemplate "text/template"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -27,69 +27,49 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		test     string
 		err      error
 		src      string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Unknown",
-			err:  serrors.New("unknown"),
-			expected: &parsing.ErrorAssertion{
-				Err: &serrors.Assertion{
-					Message: "unknown",
-				},
+			err:  errors.New("unknown"),
+			expected: parsing.ErrorExpectation{
+				Err: expect.ErrorMessageExpectation("unknown"),
 			},
 		},
 		{
 			test: "TextTemplateLine",
-			err:  serrors.New(`template: foo.tmpl:12: message`),
-			expected: &parsing.ErrorAssertion{
+			err:  errors.New(`template: foo.tmpl:12: message`),
+			expected: parsing.ErrorExpectation{
 				Line: 12,
-				Err: &serrors.Assertion{
-					Message: "message",
-					Arguments: []any{
-						"template", "foo.tmpl",
-					},
-				},
+				Err:  expect.ErrorMessageExpectation("message"),
 			},
 		},
 		{
 			test: "TextEmptyTemplateLine",
-			err:  serrors.New(`template: :12: message`),
-			expected: &parsing.ErrorAssertion{
+			err:  errors.New(`template: :12: message`),
+			expected: parsing.ErrorExpectation{
 				Line: 12,
-				Err: &serrors.Assertion{
-					Message: "message",
-				},
+				Err:  expect.ErrorMessageExpectation("message"),
 			},
 		},
 		{
 			test: "TextTemplateLineColumnContext",
-			err:  textTemplate.ExecError{Err: serrors.New(`template: foo.gohtml:12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
+			err:  textTemplate.ExecError{Err: errors.New(`template: foo.gohtml:12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
 			src:  asciiSrc,
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   12,
 				Column: 35,
-				Err: &serrors.Assertion{
-					Message: "can't evaluate field Bar in type []foo.Bar",
-					Arguments: []any{
-						"context", ".Bar",
-						"template", "foo.gohtml",
-					},
-				},
+				Err:    expect.ErrorMessageExpectation("can't evaluate field Bar in type []foo.Bar"),
 			},
 		},
 		{
 			test: "TextEmptyTemplateLineColumnContext",
-			err:  textTemplate.ExecError{Err: serrors.New(`template: :12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
+			err:  textTemplate.ExecError{Err: errors.New(`template: :12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
 			src:  asciiSrc,
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   12,
 				Column: 35,
-				Err: &serrors.Assertion{
-					Message: "can't evaluate field Bar in type []foo.Bar",
-					Arguments: []any{
-						"context", ".Bar",
-					},
-				},
+				Err:    expect.ErrorMessageExpectation("can't evaluate field Bar in type []foo.Bar"),
 			},
 		},
 	}
@@ -98,7 +78,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		s.Run(test.test, func() {
 			err := engine.ErrorFrom(test.err, test.src)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

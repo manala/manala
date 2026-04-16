@@ -1,2 +1,0 @@
-anchor: &anchor foo
-alias: *anchor

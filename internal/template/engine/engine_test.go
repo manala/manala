@@ -6,7 +6,8 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -42,17 +43,17 @@ func (s *EngineSuite) TestExecutor() {
 		executor, err := e.Executor("data", filepath.Join(dir, "not_found.tmpl"))
 
 		s.Nil(executor)
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to read template file",
-			Arguments: []any{
-				"path", filepath.Join(dir, "not_found.tmpl"),
+			Attrs: [][2]any{
+				{"path", filepath.Join(dir, "not_found.tmpl")},
 			},
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
+			Errors: []expect.ErrorExpectation{
+				serrors.Expectation{
 					Message: "file does not exist",
-					Arguments: []any{
-						"operation", "open",
-						"path", filepath.Join(dir, "not_found.tmpl"),
+					Attrs: [][2]any{
+						{"operation", "open"},
+						{"path", filepath.Join(dir, "not_found.tmpl")},
 					},
 				},
 			},
@@ -65,18 +66,18 @@ func (s *EngineSuite) TestExecutor() {
 		executor, err := e.Executor("data", filepath.Join(dir, "partial.tmpl"))
 
 		s.Nil(executor)
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse template file",
-			Arguments: []any{
-				"path", filepath.Join(dir, "partial.tmpl"),
-				"line", 2, "column", 0,
-			},
-			Dump: `
-				  1 | foo
-				> 2 |   {{ .bar }
-				  3 | baz
-				* unexpected "}" in operand
+			Dump: heredoc.Doc(`
+				at %[1]s:2
+
+				  1 │ foo
+				▶ 2 │   {{ .bar }
+				    ├ unexpected "}" in operand
+				  3 │ baz
 			`,
+				filepath.Join(dir, "partial.tmpl"),
+			),
 		}, err)
 	})
 }
