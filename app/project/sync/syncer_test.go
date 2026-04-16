@@ -1,7 +1,6 @@
 package sync_test
 
 import (
-	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	repositoryGetter "github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/app/template"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -30,14 +30,14 @@ func (s *SyncerSuite) TestSync() {
 
 	_ = os.RemoveAll(filepath.Join(projectDir, "file.txt"))
 
-	projectLoader := project.NewLoader(slog.New(slog.DiscardHandler),
+	projectLoader := project.NewLoader(log.Discard,
 		project.WithLoaderHandlers(
-			projectManifest.NewLoaderHandler(slog.New(slog.DiscardHandler),
+			projectManifest.NewLoaderHandler(log.Discard,
 				repository.NewLoader(repository.WithLoaderHandlers(
-					repositoryGetter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+					repositoryGetter.NewFileLoaderHandler(log.Discard),
 				)),
-				recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
-					recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
+				recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(
+					recipeManifest.NewLoaderHandler(log.Discard),
 				)),
 			),
 		),
@@ -46,7 +46,7 @@ func (s *SyncerSuite) TestSync() {
 	project, err := projectLoader.Load(projectDir)
 	s.Require().NoError(err)
 
-	syncer := sync.NewSyncer(slog.New(slog.DiscardHandler), template.NewEngine())
+	syncer := sync.NewSyncer(log.Discard, template.NewEngine())
 	err = syncer.Sync(project)
 
 	s.Require().NoError(err)

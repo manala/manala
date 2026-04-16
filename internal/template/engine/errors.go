@@ -8,7 +8,6 @@ import (
 	textTemplate "text/template"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
 )
 
 // ErrorAt creates a parsing.Error positioned at the given line and 0-based byte column.
@@ -51,17 +50,7 @@ func ErrorFrom(err error, src string) *parsing.Error {
 	// Exec error
 	if _, ok := errors.AsType[textTemplate.ExecError](err); ok {
 		if matches := textExecErrorRegex.FindStringSubmatch(message); matches != nil {
-			e := serrors.New(matches[textExecErrorRegex.SubexpIndex("message")])
-
-			// Context
-			if context := matches[textExecErrorRegex.SubexpIndex("context")]; context != "" {
-				e = e.WithArguments("context", context)
-			}
-
-			// Template
-			if template := matches[textExecErrorRegex.SubexpIndex("template")]; template != "" {
-				e = e.WithArguments("template", template)
-			}
+			e := errors.New(matches[textExecErrorRegex.SubexpIndex("message")])
 
 			// Line
 			line, _ := strconv.Atoi(matches[textExecErrorRegex.SubexpIndex("line")])
@@ -75,12 +64,7 @@ func ErrorFrom(err error, src string) *parsing.Error {
 
 	// Parsing error
 	if matches := textParsingErrorRegex.FindStringSubmatch(message); matches != nil {
-		e := serrors.New(matches[textParsingErrorRegex.SubexpIndex("message")])
-
-		// Template
-		if template := matches[textParsingErrorRegex.SubexpIndex("template")]; template != "" {
-			e = e.WithArguments("template", template)
-		}
+		e := errors.New(matches[textParsingErrorRegex.SubexpIndex("message")])
 
 		// Line
 		line, _ := strconv.Atoi(matches[textParsingErrorRegex.SubexpIndex("line")])

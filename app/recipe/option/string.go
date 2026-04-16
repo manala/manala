@@ -1,12 +1,13 @@
 package option
 
 import (
+	"errors"
+
 	"github.com/manala/manala/internal/accessor"
 	"github.com/manala/manala/internal/json/number"
 	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
 
 	"github.com/gosimple/slug"
 )
@@ -24,7 +25,7 @@ type String struct {
 func NewString(sch schema.Schema, p path.Path) (*String, error) {
 	// Schema type *MUST* be string
 	if t, ok := sch["type"]; !ok || t != "string" {
-		return nil, serrors.New("invalid recipe option string type")
+		return nil, errors.New("invalid recipe option string type")
 	}
 
 	return &String{
@@ -64,19 +65,19 @@ func (o *String) UnmarshalJSON(data []byte) error {
 
 	// Label (required, max=100)
 	if env.Label == "" {
-		return serrors.New("missing option label property")
+		return errors.New("missing option label property")
 	} else if len(env.Label) > 100 {
-		return serrors.New("too long option label field (max=100)")
+		return errors.New("too long option label field (max=100)")
 	}
 
 	// Help (optional, max=100)
 	if len(env.Help) > 100 {
-		return serrors.New("too long option help field (max=100)")
+		return errors.New("too long option help field (max=100)")
 	}
 
 	// Name (optional, max=100)
 	if len(env.Name) > 100 {
-		return serrors.New("too long option name field (max=100)")
+		return errors.New("too long option name field (max=100)")
 	}
 
 	o.label = env.Label

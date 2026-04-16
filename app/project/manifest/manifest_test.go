@@ -5,8 +5,7 @@ import (
 
 	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -68,15 +67,13 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 	tests := []struct {
 		test     string
 		content  string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test:    "Empty",
 			content: "",
-			expected: &parsing.ErrorAssertion{
-				Err: &serrors.Assertion{
-					Message: "empty yaml content",
-				},
+			expected: parsing.ErrorExpectation{
+				Err: expect.ErrorMessageExpectation("empty yaml content"),
 			},
 		},
 		{
@@ -84,12 +81,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				@
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "'@' is a reserved character",
-				},
+				Err:    expect.ErrorMessageExpectation("'@' is a reserved character"),
 			},
 		},
 		{
@@ -97,12 +92,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo: .inf
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular type"),
 			},
 		},
 		{
@@ -110,12 +103,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				0: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular map key"),
 			},
 		},
 		{
@@ -123,12 +114,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "yaml document must be a map",
-				},
+				Err:    expect.ErrorMessageExpectation("yaml document must be a map"),
 			},
 		},
 		// Manala
@@ -137,10 +126,8 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo: bar
 			`),
-			expected: &parsing.ErrorAssertion{
-				Err: &serrors.Assertion{
-					Message: "missing manala property",
-				},
+			expected: parsing.ErrorExpectation{
+				Err: expect.ErrorMessageExpectation("missing manala property"),
 			},
 		},
 		{
@@ -148,12 +135,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				manala: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 9,
-				Err: &serrors.Assertion{
-					Message: "string was used where mapping is expected",
-				},
+				Err:    expect.ErrorMessageExpectation("string was used where mapping is expected"),
 			},
 		},
 		{
@@ -161,12 +146,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				manala: {}
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "missing manala recipe property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala recipe property"),
 			},
 		},
 		{
@@ -176,12 +159,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: recipe
 				  foo: bar
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 3,
-				Err: &serrors.Assertion{
-					Message: "unknown field \"foo\"",
-				},
+				Err:    expect.ErrorMessageExpectation("unknown field \"foo\""),
 			},
 		},
 		// Recipe
@@ -191,12 +172,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				manala:
 				  repository: repository
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 7,
-				Err: &serrors.Assertion{
-					Message: "missing manala recipe property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala recipe property"),
 			},
 		},
 		{
@@ -206,12 +185,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: []
 				  repository: repository
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -221,12 +198,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: ""
 				  repository: repository
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "missing manala recipe property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala recipe property"),
 			},
 		},
 		{
@@ -236,12 +211,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 				  repository: repository
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "too long manala recipe field (max=100)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long manala recipe field (max=100)"),
 			},
 		},
 		// Repository
@@ -252,12 +225,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: recipe
 				  repository: []
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 15,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -267,12 +238,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  recipe: recipe
 				  repository: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 15,
-				Err: &serrors.Assertion{
-					Message: "too long manala repository field (max=256)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long manala repository field (max=256)"),
 			},
 		},
 	}
@@ -283,7 +252,7 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 
 			err := m.Unmarshal([]byte(test.content))
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

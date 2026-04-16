@@ -1,9 +1,9 @@
 package manifest
 
 import (
+	"errors"
 	"slices"
 
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/parser"
 	"github.com/manala/manala/internal/yaml/validator"
 
@@ -43,7 +43,7 @@ func (m *Manifest) Unmarshal(content []byte) error {
 	})
 	if i == -1 {
 		return parser.ErrorFrom(
-			serrors.New("missing manala property"),
+			errors.New("missing manala property"),
 		)
 	}
 

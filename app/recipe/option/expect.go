@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type Assertion struct {
+type Expectation struct {
 	Type  any
 	Label string
 	Name  string
@@ -19,10 +19,11 @@ type Assertion struct {
 	Values []any
 }
 
-func (a *Assertion) Assert(t *testing.T, opt app.RecipeOption) {
+func (a Expectation) Expect(t *testing.T, opt app.RecipeOption) {
 	t.Helper()
 
 	require.IsType(t, a.Type, opt)
+
 	assert.Equal(t, a.Label, opt.Label(), "Label not equal")
 	assert.Equal(t, a.Name, opt.Name(), "Name not equal")
 
@@ -37,24 +38,24 @@ func (a *Assertion) Assert(t *testing.T, opt app.RecipeOption) {
 	}
 }
 
-func Equal(t *testing.T, assertion Assertion, opt app.RecipeOption) {
+func ExpectOption(t *testing.T, expectation Expectation, opt app.RecipeOption) {
 	t.Helper()
-	assertion.Assert(t, opt)
+	expectation.Expect(t, opt)
 }
 
-type Assertions []Assertion
+type Expectations []Expectation
 
-func (a *Assertions) Assert(t *testing.T, opts []app.RecipeOption) {
+func (a Expectations) Expect(t *testing.T, opts []app.RecipeOption) {
 	t.Helper()
 
-	require.Len(t, opts, len(*a), "Incorrect options length")
+	require.Len(t, opts, len(a), "Incorrect options length")
 
-	for i, assertion := range *a {
-		assertion.Assert(t, opts[i])
+	for i, expectation := range a {
+		expectation.Expect(t, opts[i])
 	}
 }
 
-func Equals(t *testing.T, assertions Assertions, opts []app.RecipeOption) {
+func ExpectOptions(t *testing.T, expectations Expectations, opts []app.RecipeOption) {
 	t.Helper()
-	assertions.Assert(t, opts)
+	expectations.Expect(t, opts)
 }

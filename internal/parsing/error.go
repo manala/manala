@@ -2,8 +2,6 @@ package parsing
 
 import (
 	"errors"
-
-	"github.com/manala/manala/internal/serrors"
 )
 
 type Error struct {
@@ -46,31 +44,4 @@ func (e *Error) Flatten() *Error {
 		Line:   line,
 		Column: column,
 	}
-}
-
-func ErrorTo(serr serrors.Error, err *Error, options Options) serrors.Error {
-	err = err.Flatten()
-
-	if err.Line == 0 {
-		return serr.WithErrors(err)
-	}
-
-	serr = serr.WithArguments("line", err.Line, "column", err.Column)
-
-	if options.Src != "" {
-		serr = serr.WithDumper((&Dumper{
-			Err:   err,
-			Src:   options.Src,
-			Lexer: options.Lexer,
-		}))
-	} else {
-		serr = serr.WithErrors(err)
-	}
-
-	return serr
-}
-
-type Options struct {
-	Src   string
-	Lexer string
 }

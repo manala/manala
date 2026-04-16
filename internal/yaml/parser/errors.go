@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/token"
@@ -25,7 +24,7 @@ func ErrorFrom(err error) *parsing.Error {
 	// Type error
 	if err, ok := errors.AsType[*yaml.TypeError](err); ok {
 		return ErrorAt(
-			serrors.New(fmt.Sprintf("field must be a %s", err.DstType)),
+			fmt.Errorf("field must be a %s", err.DstType),
 			err.GetToken(),
 		)
 	}
@@ -40,19 +39,22 @@ func ErrorFrom(err error) *parsing.Error {
 		}
 
 		return ErrorAt(
-			serrors.New(message),
+			errors.New(message),
 			err.GetToken(),
 		)
 	}
 
 	if err, ok := errors.AsType[yaml.Error](err); ok {
-		return ErrorAt(serrors.New(err.GetMessage()), err.GetToken())
+		return ErrorAt(
+			errors.New(err.GetMessage()),
+			err.GetToken(),
+		)
 	}
 
 	// Exceeded max depth error
 	if errors.Is(err, yaml.ErrExceededMaxDepth) {
 		return &parsing.Error{
-			Err: serrors.New("yaml exceeded max depth"),
+			Err: errors.New("yaml exceeded max depth"),
 		}
 	}
 

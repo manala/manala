@@ -3,17 +3,17 @@ package list
 import (
 	"context"
 	"io"
-	"log/slog"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/cmd"
+	"github.com/manala/manala/internal/log"
 
 	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
+func NewCommand(log *log.Log, api *api.API, out io.Writer) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL string
@@ -47,7 +47,7 @@ Example: manala list -> resulting in a recipes list display`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer) error {
+func run(ctx context.Context, log *log.Log, api *api.API, out io.Writer) error {
 	var (
 		repository app.Repository
 		recipes    []app.Recipe

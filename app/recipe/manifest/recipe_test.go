@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/manifest"
+	"github.com/manala/manala/app/testing/mocks"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
 
@@ -30,7 +30,7 @@ func (s *RecipeSuite) Test() {
 
 	s.Require().NoError(err)
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	recipe := manifest.NewRecipe(
 		dir,
@@ -88,7 +88,7 @@ func (s *RecipeSuite) TestPartials() {
 		dir,
 		"recipe",
 		m,
-		&app.RepositoryMock{},
+		&mocks.RepositoryMock{},
 	)
 
 	s.Equal([]string{
@@ -106,7 +106,7 @@ func (s *RecipeSuite) TestPartialsHelpers() {
 	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	recipe := manifest.NewRecipe(
 		dir,
@@ -129,7 +129,7 @@ func (s *RecipeSuite) TestPartialsNoHelpers() {
 	err := m.Unmarshal(content)
 	s.Require().NoError(err)
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	recipe := manifest.NewRecipe(
 		dir,

@@ -62,35 +62,35 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 		if errors.Is(err, os.ErrNotExist) {
 			if err := os.MkdirAll(_dir, 0o755); err != nil {
 				return nil, serrors.New("unable to create project directory").
-					WithArguments("dir", _dir).
+					With("dir", _dir).
 					WithErrors(serrors.FromOs(err))
 			}
 		} else {
 			return nil, serrors.New("unable to stat project directory").
-				WithArguments("dir", _dir).
+				With("dir", _dir).
 				WithErrors(serrors.FromOs(err))
 		}
 	} else if !dirStat.IsDir() {
 		return nil, serrors.New("project is not a directory").
-			WithArguments("path", _dir)
+			With("path", _dir)
 	}
 
 	writer, err := os.Create(manifestFile)
 	if err != nil {
 		return nil, serrors.New("unable to create project manifest file").
-			WithArguments("file", manifestFile).
+			With("file", manifestFile).
 			WithErrors(serrors.FromOs(err))
 	}
 
 	if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
 		return nil, serrors.New("unable to save project manifest file").
-			WithArguments("file", manifestFile).
+			With("file", manifestFile).
 			WithErrors(err)
 	}
 
 	if err := writer.Sync(); err != nil {
 		return nil, serrors.New("unable to sync project manifest file").
-			WithArguments("file", manifestFile).
+			With("file", manifestFile).
 			WithErrors(err)
 	}
 

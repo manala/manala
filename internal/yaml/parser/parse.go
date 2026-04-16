@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/serrors"
+	"errors"
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
@@ -17,14 +17,14 @@ func Parse(data []byte) (*ast.MappingNode, error) {
 	// File must not be empty...
 	if len(file.Docs) == 0 || file.Docs[0].Body == nil {
 		return nil, ErrorFrom(
-			serrors.New("empty yaml content"),
+			errors.New("empty yaml content"),
 		)
 	}
 
 	// ... nor include multiple documents
 	if len(file.Docs) > 1 {
 		return nil, ErrorAt(
-			serrors.New("multiple documents yaml content"),
+			errors.New("multiple documents yaml content"),
 			file.Docs[1].GetToken().Prev.Prev,
 		)
 	}
@@ -33,7 +33,7 @@ func Parse(data []byte) (*ast.MappingNode, error) {
 	node, ok := file.Docs[0].Body.(*ast.MappingNode)
 	if !ok {
 		return nil, ErrorAt(
-			serrors.New("yaml document must be a map"),
+			errors.New("yaml document must be a map"),
 			file.Docs[0].Body.GetToken(),
 		)
 	}

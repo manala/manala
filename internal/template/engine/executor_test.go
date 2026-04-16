@@ -7,7 +7,8 @@ import (
 
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -102,17 +103,14 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }\nbaz\n")
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse template",
-			Arguments: []any{
-				"line", 2, "column", 0,
-			},
-			Dump: `
-				  1 | foo
-				> 2 |   {{ .bar }
-				  3 | baz
-				* unexpected "}" in operand
-			`,
+			Dump: heredoc.Doc(`
+				  1 │ foo
+				▶ 2 │   {{ .bar }
+				    ├ unexpected "}" in operand
+				  3 │ baz
+			`),
 		}, err)
 	})
 
@@ -124,18 +122,14 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }}\nbaz\n")
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse template",
-			Arguments: []any{
-				"line", 2, "column", 6,
-			},
-			Dump: `
-				  1 | foo
-				> 2 |   {{ .bar }}
-				           ^
-				  3 | baz
-				* nil data; no entry for key "bar"
-			`,
+			Dump: heredoc.Doc(`
+				  1 │ foo
+				▶ 2 │   {{ .bar }}
+				    ├──────╯ nil data; no entry for key "bar"
+				  3 │ baz
+			`),
 		}, err)
 	})
 }
@@ -228,17 +222,17 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "not_found.tmpl"))
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to read template file",
-			Arguments: []any{
-				"path", filepath.Join(dir, "not_found.tmpl"),
+			Attrs: [][2]any{
+				{"file", filepath.Join(dir, "not_found.tmpl")},
 			},
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
+			Errors: []expect.ErrorExpectation{
+				serrors.Expectation{
 					Message: "file does not exist",
-					Arguments: []any{
-						"operation", "open",
-						"path", filepath.Join(dir, "not_found.tmpl"),
+					Attrs: [][2]any{
+						{"operation", "open"},
+						{"path", filepath.Join(dir, "not_found.tmpl")},
 					},
 				},
 			},
@@ -254,18 +248,18 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse template file",
-			Arguments: []any{
-				"path", filepath.Join(dir, "template.tmpl"),
-				"line", 2, "column", 0,
-			},
-			Dump: `
-				  1 | foo
-				> 2 |   {{ .bar }
-				  3 | baz
-				* unexpected "}" in operand
+			Dump: heredoc.Doc(`
+				at %[1]s:2
+
+				  1 │ foo
+				▶ 2 │   {{ .bar }
+				    ├ unexpected "}" in operand
+				  3 │ baz
 			`,
+				filepath.Join(dir, "template.tmpl"),
+			),
 		}, err)
 	})
 
@@ -278,19 +272,18 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse template file",
-			Arguments: []any{
-				"path", filepath.Join(dir, "template.tmpl"),
-				"line", 2, "column", 6,
-			},
-			Dump: `
-				  1 | foo
-				> 2 |   {{ .bar }}
-				           ^
-				  3 | baz
-				* nil data; no entry for key "bar"
+			Dump: heredoc.Doc(`
+				at %[1]s:2:6
+
+				  1 │ foo
+				▶ 2 │   {{ .bar }}
+				    ├──────╯ nil data; no entry for key "bar"
+				  3 │ baz
 			`,
+				filepath.Join(dir, "template.tmpl"),
+			),
 		}, err)
 	})
 }

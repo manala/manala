@@ -32,7 +32,7 @@ See [installation documentation](installation.md)
 
 But in this example, we are going to create our own recipe repository to better understand how manala works under the hood and enable you to develop your own recipes and templates when the need arises.
 
-Run the following command to create your recipe repository: 
+Run the following command to create your recipe repository:
 
 `mkdir ~/my-manala-recipe-repository`
 
@@ -189,8 +189,8 @@ And finally run the following command:
 
 ```shell
 manala up
-# More verbose:
-# manala up --debug
+# More verbose output:
+# manala up -v
 ```
 
 This command should have created a `.manala` folder at the root of your project, including a `php-cs-rules.php` file.

@@ -1,10 +1,9 @@
 package sync
 
 import (
-	"log/slog"
-
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/template"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/sync"
 )
 
@@ -13,7 +12,7 @@ type Syncer struct {
 	templateEngine *template.Engine
 }
 
-func NewSyncer(log *slog.Logger, templateEngine *template.Engine) *Syncer {
+func NewSyncer(log *log.Log, templateEngine *template.Engine) *Syncer {
 	return &Syncer{
 		syncer:         sync.NewSyncer(log),
 		templateEngine: templateEngine,

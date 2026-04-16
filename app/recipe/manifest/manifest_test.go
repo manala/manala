@@ -8,9 +8,8 @@ import (
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -29,10 +28,10 @@ func (s *ManifestSuite) TestNew() {
 	s.Empty(m.Icon)
 	s.Empty(m.Template)
 	s.Empty(m.Partials)
-	sync.EqualUnits(s.T(), &sync.UnitsAssertion{}, m.Sync)
+	sync.ExpectUnits(s.T(), sync.UnitsExpectation{}, m.Sync)
 	s.Equal(map[string]any{}, m.Vars())
 	s.Equal(schema.Schema{}, m.Schema())
-	option.Equals(s.T(), option.Assertions{}, m.Options())
+	option.ExpectOptions(s.T(), option.Expectations{}, m.Options())
 }
 
 func (s *ManifestSuite) TestUnmarshalRequired() {
@@ -48,14 +47,14 @@ func (s *ManifestSuite) TestUnmarshalRequired() {
 	s.Empty(m.Icon)
 	s.Empty(m.Template)
 	s.Empty(m.Partials)
-	sync.EqualUnits(s.T(), &sync.UnitsAssertion{}, m.Sync)
+	sync.ExpectUnits(s.T(), sync.UnitsExpectation{}, m.Sync)
 	s.Equal(map[string]any{}, m.Vars())
 	s.Equal(schema.Schema{
 		"type":                 "object",
 		"additionalProperties": false,
 		"properties":           map[string]any{},
 	}, m.Schema())
-	option.Equals(s.T(), option.Assertions{}, m.Options())
+	option.ExpectOptions(s.T(), option.Expectations{}, m.Options())
 }
 
 func (s *ManifestSuite) TestUnmarshal() {
@@ -145,7 +144,7 @@ func (s *ManifestSuite) TestUnmarshal() {
 	}, m.Partials)
 
 	// Sync
-	sync.EqualUnits(s.T(), &sync.UnitsAssertion{
+	sync.ExpectUnits(s.T(), sync.UnitsExpectation{
 		{Source: "file", Destination: "file"},
 		{Source: "dir/file", Destination: "dir/file"},
 		{Source: "file", Destination: "dir/file"},
@@ -311,7 +310,7 @@ func (s *ManifestSuite) TestUnmarshal() {
 	}, m.Schema())
 
 	// Options
-	option.Equals(s.T(), option.Assertions{
+	option.ExpectOptions(s.T(), option.Expectations{
 		{
 			Type:      &option.String{},
 			Label:     "String",
@@ -406,15 +405,13 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 	tests := []struct {
 		test     string
 		content  string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test:    "Empty",
 			content: "",
-			expected: &parsing.ErrorAssertion{
-				Err: &serrors.Assertion{
-					Message: "empty yaml content",
-				},
+			expected: parsing.ErrorExpectation{
+				Err: expect.ErrorMessageExpectation("empty yaml content"),
 			},
 		},
 		{
@@ -422,12 +419,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				@
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "'@' is a reserved character",
-				},
+				Err:    expect.ErrorMessageExpectation("'@' is a reserved character"),
 			},
 		},
 		{
@@ -435,12 +430,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo: .inf
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular type"),
 			},
 		},
 		{
@@ -448,12 +441,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				0: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular map key"),
 			},
 		},
 		{
@@ -461,12 +452,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "yaml document must be a map",
-				},
+				Err:    expect.ErrorMessageExpectation("yaml document must be a map"),
 			},
 		},
 		// Manala
@@ -475,10 +464,8 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				foo: bar
 			`),
-			expected: &parsing.ErrorAssertion{
-				Err: &serrors.Assertion{
-					Message: "missing manala property",
-				},
+			expected: parsing.ErrorExpectation{
+				Err: expect.ErrorMessageExpectation("missing manala property"),
 			},
 		},
 		{
@@ -486,12 +473,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				manala: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 9,
-				Err: &serrors.Assertion{
-					Message: "string was used where mapping is expected",
-				},
+				Err:    expect.ErrorMessageExpectation("string was used where mapping is expected"),
 			},
 		},
 		{
@@ -499,12 +484,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 			content: heredoc.Doc(`
 				manala: {}
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "missing manala description property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala description property"),
 			},
 		},
 		{
@@ -514,12 +497,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  foo: bar
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 3,
-				Err: &serrors.Assertion{
-					Message: "unknown field \"foo\"",
-				},
+				Err:    expect.ErrorMessageExpectation("unknown field \"foo\""),
 			},
 		},
 		// Description
@@ -529,12 +510,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				manala:
 				  template: template
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 7,
-				Err: &serrors.Assertion{
-					Message: "missing manala description property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala description property"),
 			},
 		},
 		{
@@ -544,12 +523,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: []
 				  template: template
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 16,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -559,12 +536,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: ""
 				  template: template
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 16,
-				Err: &serrors.Assertion{
-					Message: "missing manala description property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing manala description property"),
 			},
 		},
 		{
@@ -574,12 +549,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 				  template: template
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 16,
-				Err: &serrors.Assertion{
-					Message: "too long manala description field (max=256)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long manala description field (max=256)"),
 			},
 		},
 		// Icon
@@ -590,12 +563,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  icon: []
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 9,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -605,12 +576,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  icon: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 9,
-				Err: &serrors.Assertion{
-					Message: "too long manala icon field (max=100)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long manala icon field (max=100)"),
 			},
 		},
 		// Template
@@ -621,12 +590,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  template: []
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 13,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -636,12 +603,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  template: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 13,
-				Err: &serrors.Assertion{
-					Message: "too long manala template field (max=100)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long manala template field (max=100)"),
 			},
 		},
 		// Partials
@@ -652,12 +617,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  partials: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 13,
-				Err: &serrors.Assertion{
-					Message: "string was used where sequence is expected",
-				},
+				Err:    expect.ErrorMessageExpectation("string was used where sequence is expected"),
 			},
 		},
 		// Partials Item
@@ -669,12 +632,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  partials:
 				    - []
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   4,
 				Column: 7,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -685,12 +646,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  partials:
 				    - ""
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "empty partials entry",
-				},
+				Err:    expect.ErrorMessageExpectation("empty partials entry"),
 			},
 		},
 		{
@@ -701,12 +660,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  partials:
 				    - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "too long partials entry (max=100)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long partials entry (max=100)"),
 			},
 		},
 		// Sync
@@ -717,12 +674,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  description: description
 				  sync: foo
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 9,
-				Err: &serrors.Assertion{
-					Message: "sync field must be a sequence",
-				},
+				Err:    expect.ErrorMessageExpectation("sync field must be a sequence"),
 			},
 		},
 		// Sync Item
@@ -734,12 +689,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  sync:
 				    - []
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   4,
 				Column: 5,
-				Err: &serrors.Assertion{
-					Message: "sync entry must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("sync entry must be a string"),
 			},
 		},
 		{
@@ -750,12 +703,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  sync:
 				    - ""
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   4,
 				Column: 5,
-				Err: &serrors.Assertion{
-					Message: "empty sync entry",
-				},
+				Err:    expect.ErrorMessageExpectation("empty sync entry"),
 			},
 		},
 		{
@@ -766,12 +717,10 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 				  sync:
 				    - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 			`),
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   4,
 				Column: 5,
-				Err: &serrors.Assertion{
-					Message: "too long sync entry (max=256)",
-				},
+				Err:    expect.ErrorMessageExpectation("too long sync entry (max=256)"),
 			},
 		},
 	}
@@ -782,7 +731,7 @@ func (s *ManifestSuite) TestUnmarshalErrors() {
 
 			err := m.Unmarshal([]byte(test.content))
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
