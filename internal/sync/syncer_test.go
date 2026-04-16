@@ -1,16 +1,18 @@
 package sync_test
 
 import (
-	"log/slog"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
 
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -27,7 +29,7 @@ func TestSyncerSuite(t *testing.T) {
 }
 
 func (s *SyncerSuite) SetupTest() {
-	s.syncer = sync.NewSyncer(slog.New(slog.DiscardHandler))
+	s.syncer = sync.NewSyncer(log.New(io.Discard))
 
 	e := engine.New()
 	s.templateExecutor, _ = e.Executor(nil)
@@ -53,10 +55,10 @@ func (s *SyncerSuite) TestSync() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "no source file or directory",
-			Arguments: []any{
-				"path", filepath.Join(sourcePath, "baz"),
+			Attrs: [][2]any{
+				{"path", filepath.Join(sourcePath, "baz")},
 			},
 		}, err)
 	})
@@ -209,10 +211,10 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateExecutor)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "no source file or directory",
-			Arguments: []any{
-				"path", filepath.Join(sourcePath, "baz.tmpl"),
+			Attrs: [][2]any{
+				{"path", filepath.Join(sourcePath, "baz.tmpl")},
 			},
 		}, err)
 	})
@@ -247,22 +249,21 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("Invalid", func() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateExecutor)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "template error",
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
+			Errors: []expect.ErrorExpectation{
+				serrors.Expectation{
 					Message: "unable to parse template file",
-					Arguments: []any{
-						"path", filepath.Join(sourcePath, "invalid.tmpl"),
-						"line", 2, "column", 6,
-					},
-					Dump: `
+					Dump: heredoc.Doc(`
+						in %[1]s:2:6
 						  1 | foo
 						> 2 |   {{ .bar }}
 						           ^
 						  3 | baz
 						* nil data; no entry for key "bar"
 					`,
+						filepath.Join(sourcePath, "invalid.tmpl"),
+					),
 				},
 			},
 		}, err)

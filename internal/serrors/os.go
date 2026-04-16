@@ -38,5 +38,5 @@ func FromOs(err error) Error {
 	}
 
 	return New(message).
-		WithArguments(arguments...)
+		With(arguments...)
 }

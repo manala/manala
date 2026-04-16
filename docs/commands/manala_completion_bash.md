@@ -41,7 +41,7 @@ manala completion bash
 
 ```
   -c, --cache-dir string   use cache directory
-  -d, --debug              set debug mode
+  -v, --verbose count      more verbose output (repeatable)
 ```
 
 ### SEE ALSO

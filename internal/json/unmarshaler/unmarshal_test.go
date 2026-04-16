@@ -6,8 +6,7 @@ import (
 
 	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -22,17 +21,15 @@ func (s *UnmarshalSuite) TestErrors() {
 	tests := []struct {
 		test     string
 		data     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Syntax",
 			data: `foo`,
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "invalid character 'o' in literal false (expecting 'a')",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid character 'o' in literal false (expecting 'a')"),
 			},
 		},
 	}
@@ -41,7 +38,7 @@ func (s *UnmarshalSuite) TestErrors() {
 		s.Run(test.test, func() {
 			err := unmarshaler.Unmarshal([]byte(test.data), nil)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

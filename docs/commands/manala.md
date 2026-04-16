@@ -13,8 +13,8 @@ Recipes are pulled from a git repository, or a local directory.
 
 ```
   -c, --cache-dir string   use cache directory
-  -d, --debug              set debug mode
   -h, --help               help for manala
+  -v, --verbose count      more verbose output (repeatable)
 ```
 
 ### SEE ALSO

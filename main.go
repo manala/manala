@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 
 	"github.com/manala/manala/app/api"
@@ -14,9 +13,8 @@ import (
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/notify"
-	"github.com/manala/manala/internal/ui/adapters/charm"
-	"github.com/manala/manala/internal/ui/log"
 
 	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
@@ -33,16 +31,11 @@ func main() {
 	// Streams
 	in, out, err := os.Stdin, os.Stdout, os.Stderr
 
-	// User interface
-	ui := charm.New(err)
-
 	// Notifier
 	notifier := notify.New(notify.NewBeeepHandler("Manala"))
 
-	var (
-		appLog = new(slog.Logger)
-		appAPI = new(api.API)
-	)
+	appLog := log.New(err)
+	appAPI := new(api.API)
 
 	// App commands
 	appCommand := cmd.NewCommand(version, in, out, err)
@@ -51,12 +44,12 @@ func main() {
 		cmdList.NewCommand(appLog, appAPI, out),
 		cmdMascot.NewCommand(in, out),
 		cmdUpdate.NewCommand(appLog, appAPI, out),
-		cmdWatch.NewCommand(appLog, appAPI, out, ui, notifier),
+		cmdWatch.NewCommand(appLog, appAPI, out, notifier),
 	)
 
 	// App commands persistent flags
 	appCommand.PersistentFlags().StringP("cache-dir", "c", "", "use cache directory")
-	appCommand.PersistentFlags().BoolP("debug", "d", false, "set debug mode")
+	appCommand.PersistentFlags().CountP("verbose", "v", "more verbose output (repeatable)")
 
 	// Docs app command only available in dev
 	if version == "dev" {
@@ -68,7 +61,7 @@ func main() {
 		v := viper.New()
 
 		_ = v.BindPFlag("cache_dir", appCommand.PersistentFlags().Lookup("cache-dir"))
-		_ = v.BindPFlag("debug", appCommand.PersistentFlags().Lookup("debug"))
+		_ = v.BindPFlag("verbose", appCommand.PersistentFlags().Lookup("verbose"))
 		v.SetDefault("default_repository", defaultRepositoryURL)
 
 		// Viper - Env
@@ -79,11 +72,8 @@ func main() {
 		appCache := caching.NewCache(v.GetString("cache_dir")).
 			WithUserDir("manala")
 
-		// Deferred app log instantiation
-		appLogHandler := log.NewSlogHandler(ui,
-			log.WithSlogHandlerDebug(v.GetBool("debug")),
-		)
-		*appLog = *slog.New(appLogHandler)
+		// App log verbose mode
+		appLog.Verbose(v.GetInt("verbose"))
 
 		// Deferred app api instantiation
 		*appAPI = *api.New(appLog, appCache,
@@ -94,7 +84,7 @@ func main() {
 		appLog.Debug("config",
 			"default_repository", v.GetString("default_repository"),
 			"cache_dir", v.GetString("cache_dir"),
-			"debug", v.GetBool("debug"),
+			"verbose", v.GetInt("verbose"),
 		)
 	})
 
@@ -104,7 +94,7 @@ func main() {
 			lipgloss.Fprintln(out, err.Error())
 			os.Exit(0)
 		}
-		ui.Error(err)
+		appLog.Error(err)
 		os.Exit(1)
 	}
 }

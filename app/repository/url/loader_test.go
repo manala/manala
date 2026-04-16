@@ -1,15 +1,15 @@
 package url_test
 
 import (
-	stderrors "errors"
-	"log/slog"
+	"io"
 	"testing"
 
-	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
+	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -21,37 +21,34 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestProcessorHandlerErrors() {
-	processor := url.NewProcessor(slog.New(slog.DiscardHandler))
+	processor := url.NewProcessor(log.New(io.Discard))
 
-	handler := url.NewProcessorLoaderHandler(slog.New(slog.DiscardHandler), processor)
+	handler := url.NewProcessorLoaderHandler(log.New(io.Discard), processor)
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
-	errors.Equal(s.T(), &serrors.Assertion{
+	expect.Error(s.T(), serrors.Expectation{
 		Message: "unable to process repository query",
-		Arguments: []any{
-			"query", "bar;baz",
+		Attrs: [][2]any{
+			{"query", "bar;baz"},
 		},
-		Errors: []errors.Assertion{
-			&serrors.Assertion{
-				Type:    stderrors.New(""),
-				Message: "invalid semicolon separator in query",
-			},
+		Errors: []expect.ErrorExpectation{
+			expect.ErrorMessageExpectation("invalid semicolon separator in query"),
 		},
 	}, err)
 	chainMock.AssertExpectations(s.T())
 }
 
 func (s *LoaderSuite) TestProcessorHandler() {
-	processor := url.NewProcessor(slog.New(slog.DiscardHandler))
+	processor := url.NewProcessor(log.New(io.Discard))
 	processor.Add("url", 10)
 
-	handler := url.NewProcessorLoaderHandler(slog.New(slog.DiscardHandler), processor)
+	handler := url.NewProcessorLoaderHandler(log.New(io.Discard), processor)
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 	chainMock.

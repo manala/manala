@@ -5,7 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/path"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -27,25 +27,25 @@ func (s *AccessorSuite) TestGetErrors() {
 	tests := []struct {
 		test     string
 		path     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Root",
 			path: "baz",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to access path",
-				Arguments: []any{
-					"path", "baz",
+				Attrs: [][2]any{
+					{"path", "baz"},
 				},
 			},
 		},
 		{
 			test: "Leaf",
 			path: "bar.bar",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to access path",
-				Arguments: []any{
-					"path", "bar.bar",
+				Attrs: [][2]any{
+					{"path", "bar.bar"},
 				},
 			},
 		},
@@ -60,7 +60,7 @@ func (s *AccessorSuite) TestGetErrors() {
 
 			value, err := accessor.Get()
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 			s.Nil(value)
 		})
 	}

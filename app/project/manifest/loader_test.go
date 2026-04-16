@@ -1,7 +1,7 @@
 package manifest_test
 
 import (
-	"log/slog"
+	"io"
 	"path/filepath"
 	"testing"
 
@@ -11,9 +11,10 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/parsing"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -27,104 +28,98 @@ func TestLoaderSuite(t *testing.T) {
 func (s *LoaderSuite) TestHandlerErrors() {
 	projectBaseDir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors")
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+		getter.NewFileLoaderHandler(log.New(io.Discard)),
 	))
-	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
+	recipeLoader := recipe.NewLoader(log.New(io.Discard), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(log.New(io.Discard)),
 	))
 
 	tests := []struct {
 		test     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Directory",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "project manifest is a directory",
-				Arguments: []any{
-					"dir", filepath.Join(projectBaseDir, "Directory", "project", ".manala.yaml"),
+				Attrs: [][2]any{
+					{"dir", filepath.Join(projectBaseDir, "Directory", "project", ".manala.yaml")},
 				},
 			},
 		},
 		{
 			test: "SyntaxError",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to parse project manifest",
-				Arguments: []any{
-					"file", filepath.Join(projectBaseDir, "SyntaxError", "project", ".manala.yaml"),
-					"line", 1, "column", 1,
-				},
-				Dump: `
+				Dump: heredoc.Doc(`
+					in %[1]s:1:1
 					> 1 | @
 					      ^
 					* '@' is a reserved character
 				`,
+					filepath.Join(projectBaseDir, "SyntaxError", "project", ".manala.yaml"),
+				),
 			},
 		},
 		{
 			test: "Empty",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to parse project manifest",
-				Arguments: []any{
-					"file", filepath.Join(projectBaseDir, "Empty", "project", ".manala.yaml"),
-				},
-				Errors: []errors.Assertion{
-					&parsing.ErrorAssertion{
-						Err: &serrors.Assertion{
-							Message: "empty yaml content",
-						},
-					},
-				},
+				Dump: heredoc.Doc(`
+					in %[1]s:0
+					* empty yaml content
+				`,
+					filepath.Join(projectBaseDir, "Empty", "project", ".manala.yaml"),
+				),
 			},
 		},
 		{
 			test: "MultipleDocuments",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to parse project manifest",
-				Arguments: []any{
-					"file", filepath.Join(projectBaseDir, "MultipleDocuments", "project", ".manala.yaml"),
-					"line", 5, "column", 1,
-				},
-				Dump: `
+				Dump: heredoc.Doc(`
+					in %[1]s:5:1
+					  2 | 
 					  3 | document: 1
-					  4 |
+					  4 | 
 					> 5 | ---
 					      ^
-					  6 |
+					  6 | 
 					  7 | document: 2
 					* multiple documents yaml content
 				`,
+					filepath.Join(projectBaseDir, "MultipleDocuments", "project", ".manala.yaml"),
+				),
 			},
 		},
 		{
 			test: "NotMap",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to parse project manifest",
-				Arguments: []any{
-					"file", filepath.Join(projectBaseDir, "NotMap", "project", ".manala.yaml"),
-					"line", 1, "column", 1,
-				},
-				Dump: `
+				Dump: heredoc.Doc(`
+					in %[1]s:1:1
 					> 1 | foo
 					      ^
 					* yaml document must be a map
 				`,
+					filepath.Join(projectBaseDir, "NotMap", "project", ".manala.yaml"),
+				),
 			},
 		},
 		{
 			test: "Vars",
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "invalid project manifest vars",
-				Arguments: []any{
-					"file", filepath.Join(projectBaseDir, "Vars", "project", ".manala.yaml"),
+				Attrs: [][2]any{
+					{"file", filepath.Join(projectBaseDir, "Vars", "project", ".manala.yaml")},
 				},
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
+				Errors: []expect.ErrorExpectation{
+					serrors.Expectation{
 						Message: "invalid type",
-						Arguments: []any{
-							"expected", "integer",
-							"actual", "string",
-							"path", "foo",
+						Attrs: [][2]any{
+							{"expected", "integer"},
+							{"actual", "string"},
+							{"path", "foo"},
 						},
 					},
 				},
@@ -136,11 +131,11 @@ func (s *LoaderSuite) TestHandlerErrors() {
 		s.Run(test.test, func() {
 			chainMock := &project.LoaderHandlerChainMock{}
 
-			handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler), repositoryLoader, recipeLoader)
+			handler := manifest.NewLoaderHandler(log.New(io.Discard), repositoryLoader, recipeLoader)
 			project, err := handler.Handle(&project.LoaderQuery{Dir: filepath.Join(projectBaseDir, test.test, "project")}, chainMock)
 
 			s.Nil(project)
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 			chainMock.AssertExpectations(s.T())
 		})
 	}
@@ -150,15 +145,15 @@ func (s *LoaderSuite) TestHandler() {
 	projectDir := filepath.FromSlash("testdata/LoaderSuite/TestHandler/project")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+		getter.NewFileLoaderHandler(log.New(io.Discard)),
 	))
-	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
+	recipeLoader := recipe.NewLoader(log.New(io.Discard), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(log.New(io.Discard)),
 	))
 
 	chainMock := &project.LoaderHandlerChainMock{}
 
-	handler := manifest.NewLoaderHandler(slog.New(slog.DiscardHandler), repositoryLoader, recipeLoader)
+	handler := manifest.NewLoaderHandler(log.New(io.Discard), repositoryLoader, recipeLoader)
 	project, err := handler.Handle(&project.LoaderQuery{Dir: projectDir}, chainMock)
 
 	s.Require().NoError(err)

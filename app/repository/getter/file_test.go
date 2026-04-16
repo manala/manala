@@ -1,12 +1,13 @@
 package getter_test
 
 import (
-	"log/slog"
+	"io"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -23,7 +24,7 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler))
+		handler := getter.NewFileLoaderHandler(log.New(io.Discard))
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)
@@ -37,7 +38,7 @@ func (s *FileSuite) TestLoaderHandler() {
 
 		chainMock := &repository.LoaderHandlerChainMock{}
 
-		handler := getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler))
+		handler := getter.NewFileLoaderHandler(log.New(io.Discard))
 		repository, err := handler.Handle(&repository.LoaderQuery{URL: url}, chainMock)
 
 		s.Require().NoError(err)

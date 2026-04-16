@@ -2,25 +2,25 @@ package getter
 
 import (
 	"context"
-	"log/slog"
 	"time"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 
 	"github.com/hashicorp/go-getter/v2"
 )
 
 type HTTPLoaderHandler struct {
-	log    *slog.Logger
+	log    *log.Log
 	cache  *caching.Cache
 	client *getter.Client
 }
 
-func NewHTTPLoaderHandler(log *slog.Logger, cache *caching.Cache) *HTTPLoaderHandler {
+func NewHTTPLoaderHandler(log *log.Log, cache *caching.Cache) *HTTPLoaderHandler {
 	return &HTTPLoaderHandler{
-		log:   log.With("handler", "getter.http"),
+		log:   log,
 		cache: cache.WithDir("repositories"),
 		client: &getter.Client{
 			// Prevent copying or writing files through symlinks
@@ -43,7 +43,7 @@ func NewHTTPLoaderHandler(log *slog.Logger, cache *caching.Cache) *HTTPLoaderHan
 }
 
 func (handler *HTTPLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.URL)
+	handler.log.Debug("handle repository", "handler", "getter.http", "url", query.URL)
 
 	// Cache dir
 	cacheDir, err := handler.cache.

@@ -4,8 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
@@ -21,7 +20,7 @@ func (s *ParseSuite) TestErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Duplicate",
@@ -29,12 +28,10 @@ func (s *ParseSuite) TestErrors() {
 # @foo bar
 # @foo baz
 `,
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 3,
-				Err: &serrors.Assertion{
-					Message: "duplicate annotation @foo",
-				},
+				Err:    expect.ErrorMessageExpectation("duplicate annotation @foo"),
 			},
 		},
 	}
@@ -43,7 +40,7 @@ func (s *ParseSuite) TestErrors() {
 		s.Run(test.test, func() {
 			_, err := annotation.Parse(test.src)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
