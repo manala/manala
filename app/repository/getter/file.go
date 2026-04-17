@@ -3,25 +3,25 @@ package getter
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/hashicorp/go-getter/v2"
 )
 
 type FileLoaderHandler struct {
-	log    *slog.Logger
+	log    *log.Log
 	client *getter.Client
 }
 
-func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {
+func NewFileLoaderHandler(log *log.Log) *FileLoaderHandler {
 	return &FileLoaderHandler{
-		log: log.With("handler", "getter.file"),
+		log: log,
 		client: &getter.Client{
 			// Prevent copying or writing files through symlinks
 			DisableSymlinks: true,
@@ -34,7 +34,7 @@ func NewFileLoaderHandler(log *slog.Logger) *FileLoaderHandler {
 }
 
 func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.URL)
+	handler.log.Debug("handle repository", "handler", "getter.file", "url", query.URL)
 
 	// Request
 	request := &getter.Request{
@@ -53,7 +53,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 		}
 
 		return nil, serrors.New("file system error").
-			WithArguments("path", request.Src).
+			With("path", request.Src).
 			WithErrors(serrors.FromOs(err))
 	} else if !stat.IsDir() {
 		// Chain

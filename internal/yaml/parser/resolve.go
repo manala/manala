@@ -1,7 +1,8 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/serrors"
+	"errors"
+	"fmt"
 
 	"github.com/goccy/go-yaml/ast"
 )
@@ -23,7 +24,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 					anchor := anchors[alias]
 					if anchor == nil {
 						return ErrorAt(
-							serrors.New("cannot find anchor").WithArguments("anchor", alias),
+							fmt.Errorf("cannot find anchor %s", alias),
 							vv.Value.GetToken(),
 						)
 					}
@@ -33,13 +34,13 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 						mergedValues = a.Values
 					default:
 						return ErrorAt(
-							serrors.New("anchor must be a map").WithArguments("anchor", alias),
+							fmt.Errorf("anchor %s must be a map", alias),
 							anchor.GetToken(),
 						)
 					}
 				} else {
 					return ErrorAt(
-						serrors.New("map value must be an alias"),
+						errors.New("map value must be an alias"),
 						v.Value.GetToken(),
 					)
 				}
@@ -92,7 +93,7 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node) error {
 
 		if anchor == nil {
 			return ErrorAt(
-				serrors.New("cannot find anchor").WithArguments("anchor", alias),
+				fmt.Errorf("cannot find anchor %s", alias),
 				n.Value.GetToken(),
 			)
 		}

@@ -9,8 +9,7 @@ import (
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/stretchr/testify/suite"
@@ -26,7 +25,7 @@ func (s *InferrerSuite) TestSchemaErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Annotation",
@@ -34,12 +33,10 @@ func (s *InferrerSuite) TestSchemaErrors() {
 # @schema foo
 node: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 12,
-				Err: &serrors.Assertion{
-					Message: "invalid character 'o' in literal false (expecting 'a')",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid character 'o' in literal false (expecting 'a')"),
 			},
 		},
 	}
@@ -52,7 +49,7 @@ node: ~
 			inf := manifest.Inferrer{}
 			err = inf.Infer(node)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -305,7 +302,7 @@ func (s *InferrerSuite) TestOptionErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Syntax",
@@ -313,12 +310,10 @@ func (s *InferrerSuite) TestOptionErrors() {
 # @option foo
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 12,
-				Err: &serrors.Assertion{
-					Message: "invalid character 'o' in literal false (expecting 'a')",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid character 'o' in literal false (expecting 'a')"),
 			},
 		},
 		{
@@ -327,12 +322,10 @@ foo: ~
 # @option []
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "wrong array value type",
-				},
+				Err:    expect.ErrorMessageExpectation("wrong array value type"),
 			},
 		},
 		{
@@ -341,12 +334,10 @@ foo: ~
 # @option {"label": "Label", "type": 123}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 40,
-				Err: &serrors.Assertion{
-					Message: "wrong number type for field \"type\"",
-				},
+				Err:    expect.ErrorMessageExpectation("wrong number type for field \"type\""),
 			},
 		},
 		{
@@ -355,12 +346,10 @@ foo: ~
 # @option {"label": "Label", "type": "unexpected"}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "unexpected \"unexpected\" option type",
-				},
+				Err:    expect.ErrorMessageExpectation("unexpected \"unexpected\" option type"),
 			},
 		},
 		{
@@ -369,12 +358,10 @@ foo: ~
 # @option {"foo": "bar"}
 foo: string
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "missing option label property",
-				},
+				Err:    expect.ErrorMessageExpectation("missing option label property"),
 			},
 		},
 		{
@@ -383,12 +370,10 @@ foo: string
 # @option {"label": "Label"}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "unable to auto detect option type",
-				},
+				Err:    expect.ErrorMessageExpectation("unable to auto detect option type"),
 			},
 		},
 		{
@@ -397,12 +382,10 @@ foo: ~
 # @option {"label": "Label", "type": "string"}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option string type",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid recipe option string type"),
 			},
 		},
 		{
@@ -412,12 +395,10 @@ foo: ~
 # @schema {"type": null}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option string type",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid recipe option string type"),
 			},
 		},
 		{
@@ -426,12 +407,10 @@ foo: ~
 # @option {"label": "Label", "type": "enum"}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option enum",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid recipe option enum"),
 			},
 		},
 		{
@@ -441,12 +420,10 @@ foo: ~
 # @schema {"enum": null}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "invalid recipe option enum",
-				},
+				Err:    expect.ErrorMessageExpectation("invalid recipe option enum"),
 			},
 		},
 		{
@@ -456,12 +433,10 @@ foo: ~
 # @schema {"enum": []}
 foo: ~
 `,
-			expected: &parsing.FlattenErrorAssertion{
+			expected: parsing.FlattenErrorExpectation{
 				Line:   2,
 				Column: 11,
-				Err: &serrors.Assertion{
-					Message: "empty recipe option enum",
-				},
+				Err:    expect.ErrorMessageExpectation("empty recipe option enum"),
 			},
 		},
 	}
@@ -474,7 +449,7 @@ foo: ~
 			inf := manifest.Inferrer{}
 			err = inf.Infer(node)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -483,7 +458,7 @@ func (s *InferrerSuite) TestOptions() {
 	tests := []struct {
 		test     string
 		src      string
-		expected option.Assertions
+		expected option.Expectations
 	}{
 		{
 			test: "String",
@@ -491,7 +466,7 @@ func (s *InferrerSuite) TestOptions() {
 # @option {"label": "Foo", "name": "bar", "type": "string"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo",
@@ -505,7 +480,7 @@ foo: bar
 # @option {"label": "Foo Bar", "type": "string"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo Bar",
@@ -519,7 +494,7 @@ foo: bar
 # @option {"label": "Foo", "name": "bar"}
 foo: bar
 `,
-			expected: option.Assertions{
+			expected: option.Expectations{
 				{
 					Type:  &option.String{},
 					Label: "Foo",
@@ -543,7 +518,7 @@ foo: bar
 			err = inf.Infer(node)
 			s.Require().NoError(err)
 
-			option.Equals(s.T(), test.expected, options)
+			option.ExpectOptions(s.T(), test.expected, options)
 		})
 	}
 }

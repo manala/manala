@@ -1,13 +1,13 @@
 package manifest
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/internal/json/unmarshaler"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/annotation"
 	"github.com/manala/manala/internal/yaml/parser"
 	"github.com/manala/manala/internal/yaml/path"
@@ -69,7 +69,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 			// No type
 		default:
 			return nil, parser.ErrorAt(
-				serrors.New("unable to infer schema value type"),
+				errors.New("unable to infer schema value type"),
 				node.GetToken(),
 			)
 		}
@@ -118,7 +118,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 						optionType = option.STRING
 					} else {
 						return annotation.ErrorAt(
-							serrors.New("unable to auto detect option type"),
+							errors.New("unable to auto detect option type"),
 							a.Value.Start(),
 						)
 					}
@@ -146,7 +146,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 					opt = o
 				default:
 					return annotation.ErrorAt(
-						serrors.New(fmt.Sprintf("unexpected \"%s\" option type", disc.Type)),
+						fmt.Errorf("unexpected \"%s\" option type", disc.Type),
 						a.Value.Start(),
 					)
 				}

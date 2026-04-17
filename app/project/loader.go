@@ -2,24 +2,24 @@ package project
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/filepath/filter"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/mock"
 )
 
 type Loader struct {
-	log      *slog.Logger
+	log      *log.Log
 	filter   *filter.Filter
 	handlers []LoaderHandler
 }
 
-func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
+func NewLoader(log *log.Log, opts ...LoaderOption) *Loader {
 	loader := &Loader{
 		log: log,
 	}
@@ -46,11 +46,11 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 			if err != nil {
 				if errors.Is(err, os.ErrNotExist) {
 					return serrors.New("dir not found").
-						WithArguments("dir", path)
+						With("dir", path)
 				}
 
 				return serrors.New("file system error").
-					WithArguments("path", path).
+					With("path", path).
 					WithErrors(serrors.FromOs(err))
 			}
 

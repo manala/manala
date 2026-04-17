@@ -1,13 +1,13 @@
 package url_test
 
 import (
-	stderrors "errors"
-	"log/slog"
+	"io"
 	"testing"
 
 	"github.com/manala/manala/app/repository/url"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -25,21 +25,18 @@ func (s *ProcessorSuite) TestProcess() {
 		urls        map[int]string
 		queries     map[int]map[string]string
 		expectedURL string
-		expectedErr errors.Assertion
+		expectedErr expect.ErrorExpectation
 	}{
 		{
 			test: "QuerySemicolon",
 			url:  "foo?bar;baz",
-			expectedErr: &serrors.Assertion{
+			expectedErr: serrors.Expectation{
 				Message: "unable to process repository query",
-				Arguments: []any{
-					"query", "bar;baz",
+				Attrs: [][2]any{
+					{"query", "bar;baz"},
 				},
-				Errors: []errors.Assertion{
-					&serrors.Assertion{
-						Type:    stderrors.New(""),
-						Message: "invalid semicolon separator in query",
-					},
+				Errors: []expect.ErrorExpectation{
+					expect.ErrorMessageExpectation("invalid semicolon separator in query"),
 				},
 			},
 		},
@@ -142,7 +139,7 @@ func (s *ProcessorSuite) TestProcess() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			processor := url.NewProcessor(slog.New(slog.DiscardHandler))
+			processor := url.NewProcessor(log.New(io.Discard))
 
 			for weight, url := range test.urls {
 				processor.Add(url, weight)
@@ -157,7 +154,7 @@ func (s *ProcessorSuite) TestProcess() {
 			url, err := processor.Process(test.url)
 
 			if test.expectedErr != nil {
-				errors.Equal(s.T(), test.expectedErr, err)
+				expect.Error(s.T(), test.expectedErr, err)
 				s.Empty(url)
 			} else {
 				s.Require().NoError(err)

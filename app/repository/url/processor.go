@@ -3,22 +3,22 @@ package url
 import (
 	"cmp"
 	"fmt"
-	"log/slog"
 	netURL "net/url"
 	"slices"
 	"strings"
 
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"dario.cat/mergo"
 )
 
 type Processor struct {
-	log     *slog.Logger
+	log     *log.Log
 	entries []processorEntry
 }
 
-func NewProcessor(log *slog.Logger) *Processor {
+func NewProcessor(log *log.Log) *Processor {
 	return &Processor{
 		log: log,
 	}
@@ -57,7 +57,7 @@ func (processor *Processor) Process(url string) (string, error) {
 			values, err := netURL.ParseQuery(entryQuery)
 			if err != nil {
 				return "", serrors.New("unable to process repository query").
-					WithArguments("query", entryQuery).
+					With("query", entryQuery).
 					WithErrors(err)
 			}
 

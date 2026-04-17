@@ -1,26 +1,25 @@
 package url
 
 import (
-	"log/slog"
-
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/log"
 )
 
 type ProcessorLoaderHandler struct {
-	log       *slog.Logger
+	log       *log.Log
 	processor *Processor
 }
 
-func NewProcessorLoaderHandler(log *slog.Logger, processor *Processor) *ProcessorLoaderHandler {
+func NewProcessorLoaderHandler(log *log.Log, processor *Processor) *ProcessorLoaderHandler {
 	return &ProcessorLoaderHandler{
-		log:       log.With("handler", "url.processor"),
+		log:       log,
 		processor: processor,
 	}
 }
 
 func (handler *ProcessorLoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository url", "url", query.URL)
+	handler.log.Debug("handle repository url", "handler", "url.processor", "url", query.URL)
 
 	var err error
 

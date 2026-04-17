@@ -27,7 +27,7 @@ func (accessor Accessor) Get() (any, error) {
 	value, found := expr.FirstFound(accessor.data)
 	if !found {
 		return nil, serrors.New("unable to access path").
-			WithArguments("path", accessor.path.String())
+			With("path", accessor.path.String())
 	}
 
 	return value, nil

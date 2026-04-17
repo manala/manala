@@ -2,19 +2,18 @@ package list_test
 
 import (
 	"bytes"
-	"log/slog"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/app/testing/errors"
 	cmdList "github.com/manala/manala/cmd/list"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/ui/adapters/charm"
-	"github.com/manala/manala/internal/ui/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -34,11 +33,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", "",
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", ""},
 			},
 		}, err)
 	})
@@ -55,11 +53,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", repositoryURL},
 			},
 		}, err)
 	})
@@ -76,11 +73,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading repository…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", repositoryURL},
 			},
 		}, err)
 	})
@@ -98,11 +94,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.EmptyRepositoryError{},
-			Message: "empty repository",
-			Arguments: []any{
-				"url", repositoryURL,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.EmptyRepositoryError{},
+			Attrs: [][2]any{
+				{"url", repositoryURL},
 			},
 		}, err)
 	})
@@ -160,10 +155,10 @@ func (s *CommandSuite) TestRecipeErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "recipe manifest is a directory",
-			Arguments: []any{
-				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+			Attrs: [][2]any{
+				{"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml")},
 			},
 		}, err)
 	})
@@ -181,17 +176,16 @@ func (s *CommandSuite) TestRecipeErrors() {
 			 • loading recipes…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse recipe manifest",
-			Arguments: []any{
-				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
-				"line", 1, "column", 1,
-			},
-			Dump: `
+			Dump: heredoc.Doc(`
+				in %[1]s:1:1
 				> 1 | manala: {}
 				      ^
 				* missing manala description property
 			`,
+				filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+			),
 		}, err)
 	})
 }
@@ -200,13 +194,13 @@ func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*by
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
-	ui := charm.New(stdErr)
-	log := slog.New(log.NewSlogHandler(ui))
+	logger := log.New(stdErr)
+	logger.Verbose(1)
 
 	command := cmdList.NewCommand(
-		log,
+		logger,
 		api.New(
-			log,
+			logger,
 			caching.NewCache(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),

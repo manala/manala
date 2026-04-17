@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/template"
+	"github.com/manala/manala/app/testing/mocks"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -21,11 +21,11 @@ func TestEngineSuite(t *testing.T) {
 func (s *EngineSuite) TestExecutor() {
 	engine := template.NewEngine()
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 	repositoryMock.
 		On("URL").Return("url")
 
-	recipeMock := &app.RecipeMock{}
+	recipeMock := &mocks.RecipeMock{}
 	recipeMock.
 		On("Name").Return("name").
 		On("Description").Return("description").

@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	"github.com/manala/manala/app"
+	"github.com/manala/manala/app/testing/errors"
+	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -18,28 +21,34 @@ func (s *ErrorsSuite) TestProject() {
 	s.Run("AlreadyExistingProjectError", func() {
 		err := &app.AlreadyExistingProjectError{Dir: "dir"}
 
-		s.Require().EqualError(err, "already existing project")
-		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.AlreadyExistingProjectError{},
+			Attrs: [][2]any{{"dir", "dir"}},
+		}, err)
 	})
 
 	s.Run("NotFoundProjectError", func() {
 		err := &app.NotFoundProjectError{Dir: "dir"}
 
-		s.Require().EqualError(err, "project not found")
-		s.Equal([]any{"dir", "dir"}, err.ErrorArguments())
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.NotFoundProjectError{},
+			Attrs: [][2]any{{"dir", "dir"}},
+		}, err)
 	})
 }
 
 func (s *ErrorsSuite) TestRecipe() {
 	s.Run("NotFoundRecipeError", func() {
-		repositoryMock := &app.RepositoryMock{}
+		repositoryMock := &mocks.RepositoryMock{}
 		repositoryMock.
 			On("URL").Return("url")
 
 		err := &app.NotFoundRecipeError{Repository: repositoryMock, Name: "name"}
 
-		s.Require().EqualError(err, "recipe not found")
-		s.Equal([]any{"repository", "url", "name", "name"}, err.ErrorArguments())
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.NotFoundRecipeError{},
+			Attrs: [][2]any{{"repository", "url"}, {"name", "name"}},
+		}, err)
 	})
 }
 
@@ -47,17 +56,22 @@ func (s *ErrorsSuite) TestRepository() {
 	s.Run("NotFoundRepositoryError", func() {
 		err := &app.NotFoundRepositoryError{URL: "url"}
 
-		s.Require().EqualError(err, "repository not found")
-		s.Equal([]any{"url", "url"}, err.ErrorArguments())
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{{"url", "url"}},
+		}, err)
 	})
+
 	s.Run("EmptyRepositoryError", func() {
-		repositoryMock := &app.RepositoryMock{}
+		repositoryMock := &mocks.RepositoryMock{}
 		repositoryMock.
 			On("URL").Return("url")
 
 		err := &app.EmptyRepositoryError{Repository: repositoryMock}
 
-		s.Require().EqualError(err, "empty repository")
-		s.Equal([]any{"url", "url"}, err.ErrorArguments())
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.EmptyRepositoryError{},
+			Attrs: [][2]any{{"url", "url"}},
+		}, err)
 	})
 }

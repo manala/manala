@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -10,23 +11,23 @@ import (
 
 const Context = 3
 
-type Dumper struct {
+type ErrorDumper struct {
 	Err   *Error
+	File  string
 	Src   string
 	Lexer string
 }
 
-func (d *Dumper) Dump(ansi bool) string {
-	source := d.Src
+func (d ErrorDumper) Dump(w io.Writer) {
+	src := d.Src
 
-	if ansi {
-		var h strings.Builder
-		if err := quick.Highlight(&h, source, d.Lexer, "terminal16m", "native"); err == nil {
-			source = h.String()
-		}
+	// Highlighting
+	var h strings.Builder
+	if err := quick.Highlight(&h, src, d.Lexer, "terminal16m", "native"); err == nil {
+		src = h.String()
 	}
 
-	lines := strings.Split(source, "\n")
+	lines := strings.Split(src, "\n")
 
 	minLine := max(d.Err.Line-Context, 1)
 	maxLine := min(d.Err.Line+Context, len(lines))
@@ -41,20 +42,24 @@ func (d *Dumper) Dump(ansi bool) string {
 
 	width := len(strconv.Itoa(maxLine))
 
-	var b strings.Builder
+	if d.File != "" {
+		_, _ = fmt.Fprintf(w, "in %s:%d", d.File, d.Err.Line)
+		if d.Err.Column != 0 {
+			_, _ = fmt.Fprintf(w, ":%d", d.Err.Column)
+		}
+		_, _ = fmt.Fprintf(w, "\n")
+	}
 
 	for i := minLine; i <= maxLine; i++ {
 		if i == d.Err.Line {
-			_, _ = fmt.Fprintf(&b, "> %*d | %s\n", width, i, lines[i-1])
+			_, _ = fmt.Fprintf(w, "> %*d | %s\n", width, i, lines[i-1])
 			if d.Err.Column > 0 {
-				_, _ = fmt.Fprintf(&b, "  %*s   %s^\n", width, "", strings.Repeat(" ", d.Err.Column-1))
+				_, _ = fmt.Fprintf(w, "  %*s   %s^\n", width, "", strings.Repeat(" ", d.Err.Column-1))
 			}
 		} else {
-			_, _ = fmt.Fprintf(&b, "  %*d | %s\n", width, i, lines[i-1])
+			_, _ = fmt.Fprintf(w, "  %*d | %s\n", width, i, lines[i-1])
 		}
 	}
 
-	_, _ = fmt.Fprintf(&b, "* %v\n", d.Err.Err)
-
-	return b.String()
+	_, _ = fmt.Fprintf(w, "* %v\n", d.Err.Err)
 }

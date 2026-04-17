@@ -3,8 +3,8 @@ package caching_test
 import (
 	"testing"
 
-	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository/caching"
+	"github.com/manala/manala/app/testing/mocks"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -23,7 +23,7 @@ func (s *CacheSuite) Test() {
 	s.Nil(repository)
 	s.False(ok)
 
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	cache.Set("foo", repositoryMock)
 

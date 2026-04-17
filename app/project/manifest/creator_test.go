@@ -1,7 +1,7 @@
 package manifest_test
 
 import (
-	"log/slog"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,8 +12,9 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/app/template"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -30,12 +31,12 @@ func (s *CreatorSuite) TestCreateErrors() {
 	recipeName := "recipe"
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+		getter.NewFileLoaderHandler(log.New(io.Discard)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
+	recipeLoader := recipe.NewLoader(log.New(io.Discard), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(log.New(io.Discard)),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
@@ -46,10 +47,10 @@ func (s *CreatorSuite) TestCreateErrors() {
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "project is not a directory",
-			Arguments: []any{
-				"path", projectDir,
+			Attrs: [][2]any{
+				{"path", projectDir},
 			},
 		}, err)
 	})
@@ -64,12 +65,12 @@ func (s *CreatorSuite) TestCreate() {
 	_ = os.RemoveAll(projectDir)
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+		getter.NewFileLoaderHandler(log.New(io.Discard)),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeLoader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(
-		recipeManifest.NewLoaderHandler(slog.New(slog.DiscardHandler)),
+	recipeLoader := recipe.NewLoader(log.New(io.Discard), recipe.WithLoaderHandlers(
+		recipeManifest.NewLoaderHandler(log.New(io.Discard)),
 	))
 	recipe, _ := recipeLoader.Load(repository, recipeName)
 
