@@ -54,6 +54,15 @@ homebrew_casks:
       email: contact@manala.io
     homepage: https://github.com/manala/manala
     description: Let your project's plumbing up to date
+    generate_completions_from_executable:
+      args:
+        - completion
+      shell_parameter_format: cobra
+      shells:
+        - bash
+        - fish
+        - pwsh
+        - zsh
     hooks:
       post:
         # Prevent quarantine
