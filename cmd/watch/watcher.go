@@ -2,21 +2,21 @@ package watch
 
 import (
 	"context"
-	"log/slog"
 	"slices"
 
 	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/log"
 
 	"github.com/fsnotify/fsnotify"
 	"golang.org/x/sync/errgroup"
 )
 
 type Watcher struct {
-	log    *slog.Logger
+	log    *log.Log
 	recipe bool
 }
 
-func NewWatcher(log *slog.Logger, recipe bool) *Watcher {
+func NewWatcher(log *log.Log, recipe bool) *Watcher {
 	return &Watcher{
 		log:    log,
 		recipe: recipe,

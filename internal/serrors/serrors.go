@@ -1,52 +1,44 @@
 package serrors
 
-import "slices"
+import (
+	"io"
+)
 
-func New(message string) Error {
+func New(msg string) Error {
 	return Error{
-		message: message,
+		msg: msg,
 	}
 }
 
 type Error struct {
-	message   string
-	arguments []any
-	dumper    Dumper
-	errors    []error
+	msg    string
+	attrs  [][2]any
+	dumper Dumper
+	errs   []error
 }
 
 func (err Error) Error() string {
-	return err.message
+	return err.msg
 }
 
-func (err Error) WithMessage(message string) Error {
-	err.message = message
-
-	return err
+func (err Error) Attrs() [][2]any {
+	return err.attrs
 }
 
-func (err Error) ErrorArguments() []any {
-	return err.arguments
-}
-
-func (err Error) WithArguments(arguments ...any) Error {
-	err.arguments = append(err.arguments, arguments...)
-
-	return err
-}
-
-func (err Error) ErrorDump(ansi bool) string {
-	if err.dumper == nil {
-		return ""
+func (err Error) With(args ...any) Error {
+	a := args
+	for len(a) >= 2 {
+		if key, ok := a[0].(string); ok {
+			err.attrs = append(err.attrs, [2]any{key, a[1]})
+		}
+		a = a[2:]
 	}
 
-	return err.dumper.Dump(ansi)
+	return err
 }
 
-func (err Error) WithDump(dump string) Error {
-	err.dumper = StringDumper(dump)
-
-	return err
+func (err Error) Dumper() Dumper {
+	return err.dumper
 }
 
 func (err Error) WithDumper(dumper Dumper) Error {
@@ -55,18 +47,30 @@ func (err Error) WithDumper(dumper Dumper) Error {
 	return err
 }
 
-func (err Error) Unwrap() []error {
-	return err.errors
-}
-
-func (err Error) WithErrors(errors ...error) Error {
-	// Add only non nil errors
-	err.errors = append(err.errors, slices.DeleteFunc(
-		errors,
-		func(err error) bool {
-			return err == nil
-		},
-	)...)
+func (err Error) WithDump(dump string) Error {
+	err.dumper = StringDumper(dump)
 
 	return err
+}
+
+func (err Error) Unwrap() []error {
+	return err.errs
+}
+
+func (err Error) WithErrors(errs ...error) Error {
+	for _, e := range errs {
+		if e != nil {
+			err.errs = append(err.errs, e)
+		}
+	}
+
+	return err
+}
+
+type Attrs interface {
+	Attrs() [][2]any
+}
+
+type Dumper = interface {
+	Dump(w io.Writer)
 }

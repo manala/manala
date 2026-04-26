@@ -1,7 +1,6 @@
 package recipe_test
 
 import (
-	"log/slog"
 	"path/filepath"
 	"testing"
 
@@ -9,8 +8,10 @@ import (
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/app/testing/errors"
+	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -23,36 +24,32 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoadErrors() {
-	loader := recipe.NewLoader(slog.New(slog.DiscardHandler))
+	loader := recipe.NewLoader(log.Discard)
 
 	s.Run("NotFound", func() {
-		repositoryMock := &app.RepositoryMock{}
+		repositoryMock := &mocks.RepositoryMock{}
 		repositoryMock.
 			On("URL").Return("url")
 
 		recipe, err := loader.Load(repositoryMock, "name")
 
 		s.Nil(recipe)
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRecipeError{},
-			Message: "recipe not found",
-			Arguments: []any{
-				"repository", "url",
-				"name", "name",
-			},
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.NotFoundRecipeError{},
+			Attrs: [][2]any{{"repository", "url"}, {"name", "name"}},
 		}, err)
 	})
 }
 
 func (s *LoaderSuite) TestLoad() {
-	repositoryMock := &app.RepositoryMock{}
-	recipeMock := &app.RecipeMock{}
+	repositoryMock := &mocks.RepositoryMock{}
+	recipeMock := &mocks.RecipeMock{}
 
 	handlerMock := &recipe.LoaderHandlerMock{}
 	handlerMock.
 		On("Handle", &recipe.LoaderQuery{Repository: repositoryMock, Name: "name"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(handlerMock))
+	loader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(handlerMock))
 
 	recipe, err := loader.Load(repositoryMock, "name")
 
@@ -62,25 +59,22 @@ func (s *LoaderSuite) TestLoad() {
 }
 
 func (s *LoaderSuite) TestLoadAllErrors() {
-	loader := recipe.NewLoader(slog.New(slog.DiscardHandler))
+	loader := recipe.NewLoader(log.Discard)
 
 	s.Run("EmptyRepository", func() {
 		repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAllErrors/EmptyRepository/repository")
 
 		repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-			getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+			getter.NewFileLoaderHandler(log.Discard),
 		))
 		repository, _ := repositoryLoader.Load(repositoryURL)
 
 		recipes, err := loader.LoadAll(repository)
 
 		s.Empty(recipes)
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.EmptyRepositoryError{},
-			Message: "empty repository",
-			Arguments: []any{
-				"url", repositoryURL,
-			},
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.EmptyRepositoryError{},
+			Attrs: [][2]any{{"url", repositoryURL}},
 		}, err)
 	})
 }
@@ -89,18 +83,18 @@ func (s *LoaderSuite) TestLoadAll() {
 	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestLoadAll/repository")
 
 	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(slog.New(slog.DiscardHandler)),
+		getter.NewFileLoaderHandler(log.Discard),
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeMock := &app.RecipeMock{}
+	recipeMock := &mocks.RecipeMock{}
 
 	handlerMock := &recipe.LoaderHandlerMock{}
 	handlerMock.
 		On("Handle", &recipe.LoaderQuery{Repository: repository, Name: "foo"}, mock.Anything).Return(recipeMock, nil).
 		On("Handle", &recipe.LoaderQuery{Repository: repository, Name: "bar"}, mock.Anything).Return(recipeMock, nil)
 
-	loader := recipe.NewLoader(slog.New(slog.DiscardHandler), recipe.WithLoaderHandlers(handlerMock))
+	loader := recipe.NewLoader(log.Discard, recipe.WithLoaderHandlers(handlerMock))
 
 	recipes, err := loader.LoadAll(repository)
 

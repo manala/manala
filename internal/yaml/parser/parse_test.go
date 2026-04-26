@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
@@ -25,36 +24,30 @@ func (s *ParseSuite) TestEmpty() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
-		Err: &serrors.Assertion{
-			Message: "empty yaml content",
-		},
+	expect.Error(s.T(), parsing.ErrorExpectation{
+		Err: expect.ErrorMessageExpectation("empty yaml content"),
 	}, err)
 }
 
 func (s *ParseSuite) TestInvalids() {
 	tests := []struct {
 		test     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "At",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "'@' is a reserved character",
-				},
+				Err:    expect.ErrorMessageExpectation("'@' is a reserved character"),
 			},
 		},
 		{
 			test: "Tab",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "found a tab character where an indentation space is expected ",
-				},
+				Err:    expect.ErrorMessageExpectation("found a tab character where an indentation space is expected "),
 			},
 		},
 	}
@@ -67,7 +60,7 @@ func (s *ParseSuite) TestInvalids() {
 			node, err := parser.Parse(content)
 
 			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -80,38 +73,32 @@ func (s *ParseSuite) TestMultipleDocuments() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
+	expect.Error(s.T(), parsing.ErrorExpectation{
 		Line:   2,
 		Column: 1,
-		Err: &serrors.Assertion{
-			Message: "multiple documents yaml content",
-		},
+		Err:    expect.ErrorMessageExpectation("multiple documents yaml content"),
 	}, err)
 }
 
 func (s *ParseSuite) TestIrregularMapKeys() {
 	tests := []struct {
 		test     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Integer",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular map key"),
 			},
 		},
 		{
 			test: "IntegerAnchor",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 4,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular map key"),
 			},
 		},
 	}
@@ -124,7 +111,7 @@ func (s *ParseSuite) TestIrregularMapKeys() {
 			node, err := parser.Parse(content)
 
 			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -132,26 +119,22 @@ func (s *ParseSuite) TestIrregularMapKeys() {
 func (s *ParseSuite) TestIrregularTypes() {
 	tests := []struct {
 		test     string
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Inf",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular type"),
 			},
 		},
 		{
 			test: "Nan",
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
+				Err:    expect.ErrorMessageExpectation("irregular type"),
 			},
 		},
 	}
@@ -164,7 +147,7 @@ func (s *ParseSuite) TestIrregularTypes() {
 			node, err := parser.Parse(content)
 
 			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }
@@ -198,12 +181,10 @@ func (s *ParseSuite) TestIrregularMappingKey() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
+	expect.Error(s.T(), parsing.ErrorExpectation{
 		Line:   1,
 		Column: 1,
-		Err: &serrors.Assertion{
-			Message: "irregular map key",
-		},
+		Err:    expect.ErrorMessageExpectation("irregular map key"),
 	}, err)
 }
 
@@ -229,15 +210,10 @@ func (s *ParseSuite) TestUnknownAnchors() {
 
 	s.Nil(node)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
+	expect.Error(s.T(), parsing.ErrorExpectation{
 		Line:   1,
 		Column: 7,
-		Err: &serrors.Assertion{
-			Message: "cannot find anchor",
-			Arguments: []any{
-				"anchor", "anchor",
-			},
-		},
+		Err:    expect.ErrorMessageExpectation("cannot find anchor bar"),
 	}, err)
 }
 

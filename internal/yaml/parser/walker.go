@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"github.com/manala/manala/internal/serrors"
+	"errors"
 
 	"github.com/goccy/go-yaml/ast"
 )
@@ -29,7 +29,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 		}
 
 		w.err = ErrorAt(
-			serrors.New("irregular map key"),
+			errors.New("irregular map key"),
 			n.GetToken(),
 		)
 		return nil
@@ -42,7 +42,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 		}
 
 		w.err = ErrorAt(
-			serrors.New("irregular map key"),
+			errors.New("irregular map key"),
 			n.GetToken(),
 		)
 		return nil
@@ -67,7 +67,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 	}
 
 	w.err = ErrorAt(
-		serrors.New("irregular type"),
+		errors.New("irregular type"),
 		node.GetToken(),
 	)
 	return nil

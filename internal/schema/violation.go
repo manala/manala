@@ -29,16 +29,16 @@ func (violation Violation) StructuredError() serrors.Error {
 	err := serrors.New(message)
 
 	// Arguments
-	err = err.WithArguments(violation.Arguments...)
+	err = err.With(violation.Arguments...)
 
 	// Path
 	if violation.Path != "" {
-		err = err.WithArguments("path", violation.Path.String())
+		err = err.With("path", violation.Path.String())
 	}
 
 	// Property
 	if violation.Property != "" {
-		err = err.WithArguments("property", violation.Property)
+		err = err.With("property", violation.Property)
 	}
 
 	return err

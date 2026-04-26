@@ -1,6 +1,7 @@
-package app
+package mocks
 
 import (
+	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/schema"
 	"github.com/manala/manala/internal/sync"
 
@@ -22,10 +23,10 @@ func (mock *ProjectMock) Dir() string {
 	return args.String(0)
 }
 
-func (mock *ProjectMock) Recipe() Recipe {
+func (mock *ProjectMock) Recipe() app.Recipe {
 	args := mock.Called()
 
-	return args.Get(0).(Recipe)
+	return args.Get(0).(app.Recipe)
 }
 
 func (mock *ProjectMock) Vars() map[string]any {
@@ -91,16 +92,16 @@ func (mock *RecipeMock) Schema() schema.Schema {
 	return args.Get(0).(schema.Schema)
 }
 
-func (mock *RecipeMock) Options() []RecipeOption {
+func (mock *RecipeMock) Options() []app.RecipeOption {
 	args := mock.Called()
 
-	return args.Get(0).([]RecipeOption)
+	return args.Get(0).([]app.RecipeOption)
 }
 
-func (mock *RecipeMock) Repository() Repository {
+func (mock *RecipeMock) Repository() app.Repository {
 	args := mock.Called()
 
-	return args.Get(0).(Repository)
+	return args.Get(0).(app.Repository)
 }
 
 func (mock *RecipeMock) Template() string {

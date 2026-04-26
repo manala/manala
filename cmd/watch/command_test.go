@@ -2,21 +2,19 @@ package watch_test
 
 import (
 	"bytes"
-	"log/slog"
 	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
+	"github.com/manala/manala/app/testing/errors"
 	cmdWatch "github.com/manala/manala/cmd/watch"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/notify"
-	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/ui/adapters/charm"
-	"github.com/manala/manala/internal/ui/log"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -40,11 +38,10 @@ func (s *CommandSuite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundProjectError{},
-			Message: "project not found",
-			Arguments: []any{
-				"dir", projectDir,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundProjectError{},
+			Attrs: [][2]any{
+				{"dir", projectDir},
 			},
 		}, err)
 	})
@@ -61,10 +58,10 @@ func (s *CommandSuite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "project manifest is a directory",
-			Arguments: []any{
-				"dir", filepath.Join(projectDir, ".manala.yaml"),
+			Attrs: [][2]any{
+				{"dir", filepath.Join(projectDir, ".manala.yaml")},
 			},
 		}, err)
 	})
@@ -81,18 +78,14 @@ func (s *CommandSuite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse project manifest",
-			Arguments: []any{
-				"file", filepath.Join(projectDir, ".manala.yaml"),
-			},
-			Errors: []errors.Assertion{
-				&parsing.ErrorAssertion{
-					Err: &serrors.Assertion{
-						Message: "empty yaml content",
-					},
-				},
-			},
+			Dump: heredoc.Doc(`
+				at %[1]s:0
+
+			`,
+				filepath.Join(projectDir, ".manala.yaml"),
+			),
 		}, err)
 	})
 
@@ -108,17 +101,16 @@ func (s *CommandSuite) TestProjectErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse project manifest",
-			Arguments: []any{
-				"file", filepath.Join(projectDir, ".manala.yaml"),
-				"line", 1, "column", 1,
-			},
-			Dump: `
-				> 1 | manala: {}
-				      ^
-				* missing manala recipe property
+			Dump: heredoc.Doc(`
+				at %[1]s:1:1
+
+				▶ 1 │ manala: {}
+				    ├─╯ missing manala recipe property
 			`,
+				filepath.Join(projectDir, ".manala.yaml"),
+			),
 		}, err)
 	})
 }
@@ -136,11 +128,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", "",
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", ""},
 			},
 		}, err)
 	})
@@ -159,11 +150,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", repositoryURL},
 			},
 		}, err)
 	})
@@ -182,11 +172,10 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", repositoryURL,
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{
+				{"url", repositoryURL},
 			},
 		}, err)
 	})
@@ -208,12 +197,11 @@ func (s *CommandSuite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRecipeError{},
-			Message: "recipe not found",
-			Arguments: []any{
-				"repository", repositoryURL,
-				"name", "recipe",
+		expect.Error(s.T(), errors.Expectation{
+			Type: &app.NotFoundRecipeError{},
+			Attrs: [][2]any{
+				{"repository", repositoryURL},
+				{"name", "recipe"},
 			},
 		}, err)
 	})
@@ -233,10 +221,10 @@ func (s *CommandSuite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "recipe manifest is a directory",
-			Arguments: []any{
-				"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+			Attrs: [][2]any{
+				{"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml")},
 			},
 		}, err)
 	})
@@ -256,17 +244,16 @@ func (s *CommandSuite) TestRecipeErrors() {
 			 • loading project…
 		`, stdErr)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "unable to parse recipe manifest",
-			Arguments: []any{
-				"file", filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
-				"line", 1, "column", 1,
-			},
-			Dump: `
-				> 1 | manala: {}
-				      ^
-				* missing manala description property
+			Dump: heredoc.Doc(`
+				at %[1]s:1:1
+
+				▶ 1 │ manala: {}
+				    ├─╯ missing manala description property
 			`,
+				filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
+			),
 		}, err)
 	})
 }
@@ -275,17 +262,16 @@ func (s *CommandSuite) execute(args ...string) (*bytes.Buffer, *bytes.Buffer, er
 	stdOut := &bytes.Buffer{}
 	stdErr := &bytes.Buffer{}
 
-	ui := charm.New(stdErr)
-	log := slog.New(log.NewSlogHandler(ui))
+	logger := log.New(stdErr)
+	logger.Verbose(1)
 
 	command := cmdWatch.NewCommand(
-		log,
+		logger,
 		api.New(
-			log,
+			logger,
 			caching.NewCache(""),
 		),
 		stdOut,
-		ui,
 		notify.New(notify.DiscardHandler),
 	)
 

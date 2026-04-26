@@ -16,36 +16,32 @@ type Executor struct {
 
 func (e *Executor) Execute(writer io.Writer, content string) error {
 	if err := e.execute(writer, content); err != nil {
-		return parsing.ErrorTo(
-			serrors.New("unable to parse template"),
-			ErrorFrom(err, content),
-			parsing.Options{
+		return serrors.New("unable to parse template").
+			WithDumper(parsing.ErrorDumper{
+				Err:   ErrorFrom(err, content),
 				Src:   content,
 				Lexer: "go-template",
-			},
-		)
+			})
 	}
 	return nil
 }
 
-func (e *Executor) ExecuteTemplate(writer io.Writer, path string) error {
-	content, err := os.ReadFile(path)
+func (e *Executor) ExecuteTemplate(writer io.Writer, file string) error {
+	content, err := os.ReadFile(file)
 	if err != nil {
 		return serrors.New("unable to read template file").
-			WithArguments("path", path).
+			With("file", file).
 			WithErrors(serrors.FromOs(err))
 	}
 
 	if err := e.execute(writer, string(content)); err != nil {
-		return parsing.ErrorTo(
-			serrors.New("unable to parse template file").
-				WithArguments("path", path),
-			ErrorFrom(err, string(content)),
-			parsing.Options{
+		return serrors.New("unable to parse template file").
+			WithDumper(parsing.ErrorDumper{
+				Err:   ErrorFrom(err, string(content)),
+				File:  file,
 				Src:   string(content),
 				Lexer: "go-template",
-			},
-		)
+			})
 	}
 	return nil
 }

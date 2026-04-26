@@ -62,7 +62,7 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 			item, err := NewSelectFormItem(opt, vars, form.errored)
 			if err != nil {
 				return serrors.New("invalid recipe option").
-					WithArguments("label", opt.Label()).
+					With("label", opt.Label()).
 					WithErrors(err)
 			}
 			items = append(items, item)
@@ -71,14 +71,14 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 			item, err := NewDialogTextFormItem(opt, vars, form.errored)
 			if err != nil {
 				return serrors.New("invalid recipe option").
-					WithArguments("label", opt.Label()).
+					With("label", opt.Label()).
 					WithErrors(err)
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
 		default:
 			return serrors.New("unknown recipe option").
-				WithArguments("label", opt.Label())
+				With("label", opt.Label())
 		}
 	}
 
@@ -156,7 +156,7 @@ func (item *DialogTextFormItem) Apply() bool {
 	violations, err := item.validator.Validate(value)
 	if err != nil {
 		item.errored(serrors.New("validation error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 
@@ -177,7 +177,7 @@ func (item *DialogTextFormItem) Apply() bool {
 	// Accession
 	if err := item.accessor.Set(value); err != nil {
 		item.errored(serrors.New("accession error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 
@@ -261,7 +261,7 @@ func (item *DialogSelectFormItem) Apply() bool {
 	// Accession
 	if err := item.accessor.Set(value); err != nil {
 		item.errored(serrors.New("accession error").
-			WithArguments("label", item.option.Label()).
+			With("label", item.option.Label()).
 			WithErrors(err),
 		)
 

@@ -5,8 +5,9 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/app/testing/errors"
+	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -25,18 +26,15 @@ func (s *LoaderSuite) TestLoadErrors() {
 		repository, err := loader.Load("url")
 
 		s.Nil(repository)
-		errors.Equal(s.T(), &serrors.Assertion{
-			Type:    &app.NotFoundRepositoryError{},
-			Message: "repository not found",
-			Arguments: []any{
-				"url", "url",
-			},
+		expect.Error(s.T(), errors.Expectation{
+			Type:  &app.NotFoundRepositoryError{},
+			Attrs: [][2]any{{"url", "url"}},
 		}, err)
 	})
 }
 
 func (s *LoaderSuite) TestLoad() {
-	repositoryMock := &app.RepositoryMock{}
+	repositoryMock := &mocks.RepositoryMock{}
 
 	handlerMock := &repository.LoaderHandlerMock{}
 	handlerMock.

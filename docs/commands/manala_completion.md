@@ -18,7 +18,7 @@ See each sub-command's help for details on how to use the generated script.
 
 ```
   -c, --cache-dir string   use cache directory
-  -d, --debug              set debug mode
+  -v, --verbose count      more verbose output (repeatable)
 ```
 
 ### SEE ALSO
