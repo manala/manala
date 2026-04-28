@@ -37,20 +37,18 @@ func (engine *Engine) Executor(data any, files ...string) (*Executor, error) {
 		content, err := os.ReadFile(file)
 		if err != nil {
 			return nil, serrors.New("unable to read template file").
-				WithArguments("path", file).
+				With("path", file).
 				WithErrors(serrors.FromOs(err))
 		}
 
 		if _, err := clone.Parse(string(content)); err != nil {
-			return nil, parsing.ErrorTo(
-				serrors.New("unable to parse template file").
-					WithArguments("path", file),
-				ErrorFrom(err, string(content)),
-				parsing.Options{
+			return nil, serrors.New("unable to parse template file").
+				WithDumper(parsing.ErrorDumper{
+					Err:   ErrorFrom(err, string(content)),
+					File:  file,
 					Src:   string(content),
 					Lexer: "go-template",
-				},
-			)
+				})
 		}
 	}
 

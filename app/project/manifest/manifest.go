@@ -1,9 +1,9 @@
 package manifest
 
 import (
+	"errors"
 	"slices"
 
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/parser"
 	"github.com/manala/manala/internal/yaml/validator"
 
@@ -42,8 +42,9 @@ func (m *Manifest) Unmarshal(content []byte) error {
 		return node.Key.String() == "manala"
 	})
 	if i == -1 {
-		return parser.ErrorFrom(
-			serrors.New("missing manala property"),
+		return parser.ErrorAt(
+			errors.New("missing \"manala\" property"),
+			node.GetToken(),
 		)
 	}
 
@@ -78,14 +79,14 @@ func (v manifestValidator) Struct(s any) error {
 
 	// Recipe (required, max=100)
 	if m.Recipe == "" {
-		errs = append(errs, validator.NewFieldError("Recipe", "missing manala recipe property"))
+		errs = append(errs, validator.NewFieldError("Recipe", "missing manala \"recipe\" property"))
 	} else if len(m.Recipe) > 100 {
-		errs = append(errs, validator.NewFieldError("Recipe", "too long manala recipe field (max=100)"))
+		errs = append(errs, validator.NewFieldError("Recipe", "too long manala \"recipe\" field (max=100)"))
 	}
 
 	// Repository (optional, max=256)
 	if len(m.Repository) > 256 {
-		errs = append(errs, validator.NewFieldError("Repository", "too long manala repository field (max=256)"))
+		errs = append(errs, validator.NewFieldError("Repository", "too long manala \"repository\" field (max=256)"))
 	}
 
 	if len(errs) == 0 {

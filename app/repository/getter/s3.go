@@ -2,26 +2,26 @@ package getter
 
 import (
 	"context"
-	"log/slog"
 	"time"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/log"
 
 	"github.com/hashicorp/go-getter/s3/v2"
 	"github.com/hashicorp/go-getter/v2"
 )
 
 type S3LoaderHandler struct {
-	log    *slog.Logger
+	log    *log.Log
 	cache  *caching.Cache
 	client *getter.Client
 }
 
-func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler {
+func NewS3LoaderHandler(log *log.Log, cache *caching.Cache) *S3LoaderHandler {
 	return &S3LoaderHandler{
-		log:   log.With("handler", "getter.s3"),
+		log:   log,
 		cache: cache.WithDir("repositories"),
 		client: &getter.Client{
 			// Prevent copying or writing files through symlinks
@@ -37,7 +37,7 @@ func NewS3LoaderHandler(log *slog.Logger, cache *caching.Cache) *S3LoaderHandler
 }
 
 func (handler *S3LoaderHandler) Handle(query *repository.LoaderQuery, chain repository.LoaderHandlerChain) (app.Repository, error) {
-	handler.log.Debug("handle repository", "url", query.URL)
+	handler.log.Debug("handle repository", "handler", "getter.s3", "url", query.URL)
 
 	// Cache dir
 	cacheDir, err := handler.cache.

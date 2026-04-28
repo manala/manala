@@ -1,13 +1,12 @@
 package parser_test
 
 import (
-	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/manala/manala/internal/parsing"
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/heredoc"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
@@ -20,160 +19,150 @@ func TestParseSuite(t *testing.T) {
 	suite.Run(t, new(ParseSuite))
 }
 
-func (s *ParseSuite) TestEmpty() {
-	node, err := parser.Parse(nil)
+func (s *ParseSuite) TestAnchors() {
+	s.Run("Anchors", func() {
+		node, err := parser.Parse([]byte(heredoc.Doc(`
+			anchor: &anchor foo
+			alias: *anchor
+		`)))
 
-	s.Nil(node)
+		s.Require().NoError(err)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
-		Err: &serrors.Assertion{
-			Message: "empty yaml content",
-		},
-	}, err)
+		s.Require().Len(node.Values, 2)
+
+		anchorNode := node.Values[0]
+		s.Require().IsType((*ast.StringNode)(nil), anchorNode.Value)
+		s.Equal("foo", anchorNode.Value.(*ast.StringNode).Value)
+
+		aliasNode := node.Values[1]
+		s.Require().IsType((*ast.StringNode)(nil), aliasNode.Value)
+		s.Equal("foo", aliasNode.Value.(*ast.StringNode).Value)
+	})
+
+	s.Run("MergeKeys", func() {
+		node, err := parser.Parse([]byte(heredoc.Doc(`
+			empty: &empty {}
+			mapping_value: &mapping_value
+			  foo: foo
+			mapping: &mapping
+			  foo: foo
+			  bar: bar
+			mapping_value_alias_empty:
+			  <<: *empty
+			mapping_value_alias_mapping_value:
+			  <<: *mapping_value
+			mapping_value_alias_mapping:
+			  <<: *mapping
+			mapping_alias_empty:
+			  <<: *empty
+			  baz: baz
+			mapping_alias_mapping_value:
+			  <<: *mapping_value
+			  baz: baz
+			mapping_alias_mapping:
+			  <<: *mapping
+			  baz: baz
+		`)))
+
+		s.Require().NoError(err)
+
+		s.Require().Len(node.Values, 9)
+
+		emptyNode := node.Values[0]
+		s.Require().IsType((*ast.MappingNode)(nil), emptyNode.Value)
+		s.Empty(emptyNode.Value.(*ast.MappingNode).Values)
+
+		mappingValueNode := node.Values[1]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingValueNode.Value)
+		s.Require().Len(mappingValueNode.Value.(*ast.MappingNode).Values, 1)
+
+		mappingNode := node.Values[2]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingNode.Value)
+		s.Require().Len(mappingNode.Value.(*ast.MappingNode).Values, 2)
+
+		mappingValueAliasEmptyNode := node.Values[3]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasEmptyNode.Value)
+		s.Empty(mappingValueAliasEmptyNode.Value.(*ast.MappingNode).Values)
+
+		mappingValueAliasMappingValueNode := node.Values[4]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingValueNode.Value)
+		s.Require().Len(mappingValueAliasMappingValueNode.Value.(*ast.MappingNode).Values, 1)
+
+		mappingValueAliasMappingNode := node.Values[5]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingNode.Value)
+		s.Require().Len(mappingValueAliasMappingNode.Value.(*ast.MappingNode).Values, 2)
+
+		mappingAliasEmptyNode := node.Values[6]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasEmptyNode.Value)
+		s.Require().Len(mappingAliasEmptyNode.Value.(*ast.MappingNode).Values, 1)
+
+		mappingAliasMappingValueNode := node.Values[7]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingValueNode.Value)
+		s.Require().Len(mappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 2)
+
+		mappingAliasMappingNode := node.Values[8]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingNode.Value)
+		s.Require().Len(mappingAliasMappingNode.Value.(*ast.MappingNode).Values, 3)
+	})
+
+	s.Run("MergeKeysDuplicated", func() {
+		node, err := parser.Parse([]byte(heredoc.Doc(`
+			mapping_value: &mapping_value
+			  foo: foo
+			mapping: &mapping
+			  foo: foo
+			  bar: bar
+			single_mapping_alias_mapping_value:
+			  <<: *mapping_value
+			  foo: bar
+			multiple_mapping_alias_mapping_value:
+			  <<: *mapping_value
+			  foo: bar
+			  bar: bar
+			mapping_alias_mapping:
+			  <<: *mapping
+			  foo: bar
+			  baz: baz
+		`)))
+
+		s.Require().NoError(err)
+
+		s.Require().Len(node.Values, 5)
+
+		singleMappingAliasMappingValueNode := node.Values[2]
+		s.Require().IsType((*ast.MappingNode)(nil), singleMappingAliasMappingValueNode.Value)
+		s.Require().Len(singleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 1)
+		s.Equal("bar", singleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+
+		multipleMappingAliasMappingValueNode := node.Values[3]
+		s.Require().IsType((*ast.MappingNode)(nil), multipleMappingAliasMappingValueNode.Value)
+		s.Require().Len(multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 2)
+		s.Equal("bar", multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+
+		mappingAliasMappingNode := node.Values[4]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingNode.Value)
+		s.Require().Len(mappingAliasMappingNode.Value.(*ast.MappingNode).Values, 3)
+		s.Equal("bar", multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[1].Value.(*ast.StringNode).Value)
+	})
 }
 
-func (s *ParseSuite) TestInvalids() {
-	tests := []struct {
-		test     string
-		expected errors.Assertion
-	}{
-		{
-			test: "At",
-			expected: &parsing.ErrorAssertion{
-				Line:   1,
-				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "'@' is a reserved character",
-				},
-			},
-		},
-		{
-			test: "Tab",
-			expected: &parsing.ErrorAssertion{
-				Line:   2,
-				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "found a tab character where an indentation space is expected ",
-				},
-			},
-		},
-	}
+func (s *ParseSuite) TestTags() {
+	node, err := parser.Parse([]byte(heredoc.Doc(`
+		foo: !!str bar
+	`)))
 
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/TestInvalids")
-			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
+	s.Require().NoError(err)
 
-			node, err := parser.Parse(content)
+	s.Require().Len(node.Values, 1)
 
-			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
-		})
-	}
+	s.Require().IsType((*ast.StringNode)(nil), node.Values[0].Value)
+	s.Equal("bar", node.Values[0].Value.String())
 }
 
-func (s *ParseSuite) TestMultipleDocuments() {
-	dir := filepath.FromSlash("testdata/TestMultipleDocuments")
-	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
-
-	node, err := parser.Parse(content)
-
-	s.Nil(node)
-
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
-		Line:   2,
-		Column: 1,
-		Err: &serrors.Assertion{
-			Message: "multiple documents yaml content",
-		},
-	}, err)
-}
-
-func (s *ParseSuite) TestIrregularMapKeys() {
-	tests := []struct {
-		test     string
-		expected errors.Assertion
-	}{
-		{
-			test: "Integer",
-			expected: &parsing.ErrorAssertion{
-				Line:   1,
-				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
-			},
-		},
-		{
-			test: "IntegerAnchor",
-			expected: &parsing.ErrorAssertion{
-				Line:   2,
-				Column: 4,
-				Err: &serrors.Assertion{
-					Message: "irregular map key",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/TestIrregularMapKeys")
-			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
-
-			node, err := parser.Parse(content)
-
-			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
-		})
-	}
-}
-
-func (s *ParseSuite) TestIrregularTypes() {
-	tests := []struct {
-		test     string
-		expected errors.Assertion
-	}{
-		{
-			test: "Inf",
-			expected: &parsing.ErrorAssertion{
-				Line:   1,
-				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
-			},
-		},
-		{
-			test: "Nan",
-			expected: &parsing.ErrorAssertion{
-				Line:   1,
-				Column: 6,
-				Err: &serrors.Assertion{
-					Message: "irregular type",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		s.Run(test.test, func() {
-			dir := filepath.FromSlash("testdata/TestIrregularTypes")
-			content, _ := os.ReadFile(filepath.Join(dir, test.test+".yaml"))
-
-			node, err := parser.Parse(content)
-
-			s.Nil(node)
-			errors.Equal(s.T(), test.expected, err)
-		})
-	}
-}
-
-func (s *ParseSuite) TestMappingKey() {
-	dir := filepath.FromSlash("testdata/TestMappingKey")
-	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
-
-	node, err := parser.Parse(content)
+func (s *ParseSuite) TestMapKeyExplicit() {
+	node, err := parser.Parse([]byte(heredoc.Doc(`
+		? foo: bar
+	`)))
 
 	s.Require().NoError(err)
 
@@ -190,145 +179,147 @@ func (s *ParseSuite) TestMappingKey() {
 	s.Equal("bar", valueNode.(*ast.StringNode).Value)
 }
 
-func (s *ParseSuite) TestIrregularMappingKey() {
-	dir := filepath.FromSlash("testdata/TestIrregularMappingKey")
-	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
-
-	node, err := parser.Parse(content)
-
-	s.Nil(node)
-
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
-		Line:   1,
-		Column: 1,
-		Err: &serrors.Assertion{
-			Message: "irregular map key",
-		},
-	}, err)
-}
-
-func (s *ParseSuite) TestTags() {
-	dir := filepath.FromSlash("testdata/TestTags")
-	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
-
-	node, err := parser.Parse(content)
-
-	s.Require().NoError(err)
-
-	s.Require().Len(node.Values, 1)
-
-	s.Require().IsType((*ast.StringNode)(nil), node.Values[0].Value)
-	s.Equal("bar", node.Values[0].Value.String())
-}
-
-func (s *ParseSuite) TestUnknownAnchors() {
-	dir := filepath.FromSlash("testdata/TestUnknownAnchors")
-	content, _ := os.ReadFile(filepath.Join(dir, "node.yaml"))
-
-	node, err := parser.Parse(content)
-
-	s.Nil(node)
-
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
-		Line:   1,
-		Column: 7,
-		Err: &serrors.Assertion{
-			Message: "cannot find anchor",
-			Arguments: []any{
-				"anchor", "anchor",
+func (s *ParseSuite) TestErrors() {
+	tests := []struct {
+		test     string
+		data     string
+		expected expect.ErrorExpectation
+	}{
+		{
+			test: "Empty",
+			data: "",
+			expected: serrors.Expectation{
+				Message: "empty yaml content",
 			},
 		},
-	}, err)
-}
+		{
+			test: "Spaces",
+			data: " ",
+			expected: serrors.Expectation{
+				Message: "empty yaml content",
+			},
+		},
+		{
+			test: "Invalid",
+			data: "@",
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("'@' is a reserved character"),
+			},
+		},
+		{
+			test: "Tab",
+			data: heredoc.Doc(`
+				foo: bar
+					baz: qux
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   2,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("found a tab character where an indentation space is expected "),
+			},
+		},
+		{
+			test: "MultipleDocuments",
+			data: heredoc.Doc(`
+				---
+				foo
+				---
+				bar
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   3,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("multiple documents yaml content"),
+			},
+		},
+		{
+			test: "NotMap",
+			data: heredoc.Doc(`
+				foo
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("yaml document must be a map"),
+			},
+		},
+		{
+			test: "IrregularTypeInf",
+			data: heredoc.Doc(`
+				foo: .inf
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 6,
+				Err:    expect.ErrorMessageExpectation("irregular yaml type"),
+			},
+		},
+		{
+			test: "IrregularTypeNan",
+			data: heredoc.Doc(`
+				foo: .nan
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 6,
+				Err:    expect.ErrorMessageExpectation("irregular yaml type"),
+			},
+		},
+		{
+			test: "IrregularMapKeyInteger",
+			data: heredoc.Doc(`
+				123: foo
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			},
+		},
+		{
+			test: "IrregularMapKeyExplicit",
+			data: heredoc.Doc(`
+				? 123: bar
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 1,
+				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			},
+		},
+		{
+			test: "IrregularMapKeyInteger",
+			data: heredoc.Doc(`
+				anchor: &anchor
+				  0: foo
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   2,
+				Column: 3,
+				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			},
+		},
+		{
+			test: "UnknownAnchors",
+			data: heredoc.Doc(`
+				foo: *bar
+			`),
+			expected: parsing.ErrorExpectation{
+				Line:   1,
+				Column: 7,
+				Err:    expect.ErrorMessageExpectation("unknown \"bar\" yaml anchor"),
+			},
+		},
+	}
 
-func (s *ParseSuite) TestAnchors() {
-	s.Run("Anchors", func() {
-		dir := filepath.FromSlash("testdata/TestAnchors")
-		content, _ := os.ReadFile(filepath.Join(dir, "Anchors.yaml"))
+	for _, test := range tests {
+		s.Run(test.test, func() {
+			node, err := parser.Parse([]byte(test.data))
 
-		node, err := parser.Parse(content)
-
-		s.Require().NoError(err)
-
-		s.Require().Len(node.Values, 2)
-
-		anchorNode := node.Values[0]
-		s.Require().IsType((*ast.StringNode)(nil), anchorNode.Value)
-		s.Equal("foo", anchorNode.Value.(*ast.StringNode).Value)
-
-		aliasNode := node.Values[1]
-		s.Require().IsType((*ast.StringNode)(nil), aliasNode.Value)
-		s.Equal("foo", aliasNode.Value.(*ast.StringNode).Value)
-	})
-	s.Run("MergeKeys", func() {
-		dir := filepath.FromSlash("testdata/TestAnchors")
-		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeys.yaml"))
-
-		node, err := parser.Parse(content)
-
-		s.Require().NoError(err)
-
-		s.Require().Len(node.Values, 9)
-
-		emptyAnchorNode := node.Values[0]
-		s.Require().IsType((*ast.MappingNode)(nil), emptyAnchorNode.Value)
-		s.Empty(emptyAnchorNode.Value.(*ast.MappingNode).Values)
-
-		mappingValueAnchorNode := node.Values[1]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAnchorNode.Value)
-		s.Require().Len(mappingValueAnchorNode.Value.(*ast.MappingNode).Values, 1)
-
-		mappingAnchorNode := node.Values[2]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAnchorNode.Value)
-		s.Require().Len(mappingAnchorNode.Value.(*ast.MappingNode).Values, 2)
-
-		mappingValueAliasEmptyAnchorNode := node.Values[3]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasEmptyAnchorNode.Value)
-		s.Empty(mappingValueAliasEmptyAnchorNode.Value.(*ast.MappingNode).Values)
-
-		mappingValueAliasMappingValueAnchorNode := node.Values[4]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingValueAnchorNode.Value)
-		s.Require().Len(mappingValueAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values, 1)
-
-		mappingValueAliasMappingAnchorNode := node.Values[5]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingAnchorNode.Value)
-		s.Require().Len(mappingValueAliasMappingAnchorNode.Value.(*ast.MappingNode).Values, 2)
-
-		mappingAliasEmptyAnchorNode := node.Values[6]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasEmptyAnchorNode.Value)
-		s.Require().Len(mappingAliasEmptyAnchorNode.Value.(*ast.MappingNode).Values, 1)
-
-		mappingAliasMappingValueAnchorNode := node.Values[7]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingValueAnchorNode.Value)
-		s.Require().Len(mappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values, 2)
-
-		mappingValueAliasMappingNode := node.Values[8]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingNode.Value)
-		s.Require().Len(mappingValueAliasMappingNode.Value.(*ast.MappingNode).Values, 3)
-	})
-	s.Run("MergeKeysDuplicated", func() {
-		dir := filepath.FromSlash("testdata/TestAnchors")
-		content, _ := os.ReadFile(filepath.Join(dir, "MergeKeysDuplicated.yaml"))
-
-		node, err := parser.Parse(content)
-
-		s.Require().NoError(err)
-
-		s.Require().Len(node.Values, 5)
-
-		singleMappingAliasMappingValueAnchorNode := node.Values[2]
-		s.Require().IsType((*ast.MappingNode)(nil), singleMappingAliasMappingValueAnchorNode.Value)
-		s.Require().Len(singleMappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values, 1)
-		s.Equal("bar", singleMappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
-
-		multipleMappingAliasMappingValueAnchorNode := node.Values[3]
-		s.Require().IsType((*ast.MappingNode)(nil), multipleMappingAliasMappingValueAnchorNode.Value)
-		s.Require().Len(multipleMappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values, 2)
-		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
-
-		mappingAliasMappingAnchorNode := node.Values[4]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingAnchorNode.Value)
-		s.Require().Len(mappingAliasMappingAnchorNode.Value.(*ast.MappingNode).Values, 3)
-		s.Equal("bar", multipleMappingAliasMappingValueAnchorNode.Value.(*ast.MappingNode).Values[1].Value.(*ast.StringNode).Value)
-	})
+			s.Nil(node)
+			expect.Error(s.T(), test.expected, err)
+		})
+	}
 }

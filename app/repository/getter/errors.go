@@ -47,7 +47,7 @@ func ErrorFrom(err error) serrors.Error {
 		}
 
 		return serrors.New("aws error").
-			WithArguments(arguments...).
+			With(arguments...).
 			WithErrors(err.OrigErr()).
 			WithDump(err.Error())
 	} else
@@ -55,7 +55,7 @@ func ErrorFrom(err error) serrors.Error {
 	if matches := commandErrorCodeRegex.FindStringSubmatch(message); matches != nil {
 		code, _ := strconv.Atoi(matches[commandErrorCodeRegex.SubexpIndex("code")])
 		return serrors.New("command error").
-			WithArguments(
+			With(
 				"command", matches[commandErrorCodeRegex.SubexpIndex("command")],
 				"code", code,
 			).
@@ -64,7 +64,7 @@ func ErrorFrom(err error) serrors.Error {
 	// Command error
 	if matches := commandErrorRegex.FindStringSubmatch(message); matches != nil {
 		return serrors.New("command error").
-			WithArguments("command", matches[commandErrorRegex.SubexpIndex("command")]).
+			With("command", matches[commandErrorRegex.SubexpIndex("command")]).
 			WithDump(matches[commandErrorRegex.SubexpIndex("dump")])
 	} else
 	// Multi error
@@ -74,5 +74,5 @@ func ErrorFrom(err error) serrors.Error {
 	}
 
 	return serrors.New("unable to handle repository").
-		WithArguments("error", err.Error())
+		With("error", err.Error())
 }

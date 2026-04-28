@@ -4,8 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
@@ -81,12 +80,10 @@ func (s *SetSuite) TestJSONVar() {
 		var foo map[string]any
 		err = set.JSONVar(&foo, "foo")
 
-		errors.Equal(s.T(), &parsing.FlattenErrorAssertion{
+		expect.Error(s.T(), parsing.FlattenErrorExpectation{
 			Line:   2,
 			Column: 8,
-			Err: &serrors.Assertion{
-				Message: "invalid character 'b' looking for beginning of value",
-			},
+			Err:    expect.ErrorMessageExpectation("invalid character 'b' looking for beginning of value"),
 		}, err)
 	})
 }

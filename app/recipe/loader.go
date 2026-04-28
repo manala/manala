@@ -2,24 +2,24 @@ package recipe
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 	"sort"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/internal/filepath/filter"
+	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/mock"
 )
 
 type Loader struct {
-	log      *slog.Logger
+	log      *log.Log
 	filter   *filter.Filter
 	handlers []LoaderHandler
 }
 
-func NewLoader(log *slog.Logger, opts ...LoaderOption) *Loader {
+func NewLoader(log *log.Log, opts ...LoaderOption) *Loader {
 	loader := &Loader{
 		log: log,
 	}
@@ -44,7 +44,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	dir, err := os.Open(repository.Dir())
 	if err != nil {
 		return nil, serrors.New("file system error").
-			WithArguments("dir", repository.Dir()).
+			With("dir", repository.Dir()).
 			WithErrors(serrors.FromOs(err))
 	}
 
@@ -53,7 +53,7 @@ func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	files, err := dir.ReadDir(0) // 0 to read all files and folders
 	if err != nil {
 		return nil, serrors.New("file system error").
-			WithArguments("dir", repository.Dir()).
+			With("dir", repository.Dir()).
 			WithErrors(serrors.FromOs(err))
 	}
 

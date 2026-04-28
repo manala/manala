@@ -1,12 +1,12 @@
 package parser_test
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
 	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 	"github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml"
@@ -23,18 +23,16 @@ func TestErrorsSuite(t *testing.T) {
 
 func (s *ErrorsSuite) TestErrorAt() {
 	err := parser.ErrorAt(
-		serrors.New("error"),
+		errors.New("error"),
 		&token.Token{
 			Position: &token.Position{Line: 2, Column: 3},
 		},
 	)
 
-	errors.Equal(s.T(), &parsing.ErrorAssertion{
+	expect.Error(s.T(), parsing.ErrorExpectation{
 		Line:   2,
 		Column: 3,
-		Err: &serrors.Assertion{
-			Message: "error",
-		},
+		Err:    expect.ErrorMessageExpectation("error"),
 	}, err)
 }
 
@@ -42,17 +40,15 @@ func (s *ErrorsSuite) TestErrorFrom() {
 	tests := []struct {
 		test     string
 		err      error
-		expected errors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Unknown",
-			err:  serrors.New("unknown"),
-			expected: &parsing.ErrorAssertion{
+			err:  errors.New("unknown"),
+			expected: parsing.ErrorExpectation{
 				Line:   0,
 				Column: 0,
-				Err: &serrors.Assertion{
-					Message: "unknown",
-				},
+				Err:    expect.ErrorMessageExpectation("unknown"),
 			},
 		},
 		{
@@ -63,12 +59,10 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 3, Column: 5},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   3,
 				Column: 5,
-				Err: &serrors.Assertion{
-					Message: "field must be a string",
-				},
+				Err:    expect.ErrorMessageExpectation("field must be a string"),
 			},
 		},
 		{
@@ -79,12 +73,10 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 2, Column: 4},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 4,
-				Err: &serrors.Assertion{
-					Message: "syntax error",
-				},
+				Err:    expect.ErrorMessageExpectation("syntax error"),
 			},
 		},
 		{
@@ -95,12 +87,10 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 4, Column: 1},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   4,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "duplicate key",
-				},
+				Err:    expect.ErrorMessageExpectation("duplicate key"),
 			},
 		},
 		{
@@ -112,12 +102,10 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 1, Column: 3},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   1,
 				Column: 3,
-				Err: &serrors.Assertion{
-					Message: "cannot unmarshal 999 into Go value of type int8 ( overflow )",
-				},
+				Err:    expect.ErrorMessageExpectation("cannot unmarshal 999 into Go value of type int8 ( overflow )"),
 			},
 		},
 		{
@@ -128,12 +116,10 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 5, Column: 2},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   5,
 				Column: 2,
-				Err: &serrors.Assertion{
-					Message: "unknown field",
-				},
+				Err:    expect.ErrorMessageExpectation("unknown field"),
 			},
 		},
 		{
@@ -145,23 +131,19 @@ func (s *ErrorsSuite) TestErrorFrom() {
 					Position: &token.Position{Line: 2, Column: 1},
 				},
 			},
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   2,
 				Column: 1,
-				Err: &serrors.Assertion{
-					Message: "string was used where mapping is expected",
-				},
+				Err:    expect.ErrorMessageExpectation("string was used where mapping is expected"),
 			},
 		},
 		{
 			test: "ExceededMaxDepth",
 			err:  yaml.ErrExceededMaxDepth,
-			expected: &parsing.ErrorAssertion{
+			expected: parsing.ErrorExpectation{
 				Line:   0,
 				Column: 0,
-				Err: &serrors.Assertion{
-					Message: "yaml exceeded max depth",
-				},
+				Err:    expect.ErrorMessageExpectation("yaml exceeded max depth"),
 			},
 		},
 	}
@@ -170,7 +152,7 @@ func (s *ErrorsSuite) TestErrorFrom() {
 		s.Run(test.test, func() {
 			err := parser.ErrorFrom(test.err)
 
-			errors.Equal(s.T(), test.expected, err)
+			expect.Error(s.T(), test.expected, err)
 		})
 	}
 }

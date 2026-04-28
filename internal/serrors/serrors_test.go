@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -19,19 +19,8 @@ func (s *SerrorsSuite) TestError() {
 	s.Run("New", func() {
 		err := serrors.New("error")
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
-		}, err)
-	})
-
-	s.Run("Message", func() {
-		message := "message"
-
-		err := serrors.New("error").
-			WithMessage(message)
-
-		errors.Equal(s.T(), &serrors.Assertion{
-			Message: message,
 		}, err)
 	})
 
@@ -40,12 +29,12 @@ func (s *SerrorsSuite) TestError() {
 		bar := "bar"
 
 		err := serrors.New("error").
-			WithArguments(foo, bar)
+			With(foo, bar)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
-			Arguments: []any{
-				foo, bar,
+			Attrs: [][2]any{
+				{foo, bar},
 			},
 		}, err)
 	})
@@ -56,19 +45,19 @@ func (s *SerrorsSuite) TestError() {
 		err := serrors.New("error").
 			WithDump(dump)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
 			Dump:    dump,
 		}, err)
 	})
 
-	s.Run("Dumper", func() {
+	s.Run("Dump", func() {
 		dump := "dump"
 
 		err := serrors.New("error").
-			WithDumper(serrors.StringDumper(dump))
+			WithDump(dump)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
 			Dump:    dump,
 		}, err)
@@ -81,13 +70,13 @@ func (s *SerrorsSuite) TestError() {
 		err := serrors.New("error").
 			WithErrors(foo, bar)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
+			Errors: []expect.ErrorExpectation{
+				serrors.Expectation{
 					Message: "foo",
 				},
-				&serrors.Assertion{
+				serrors.Expectation{
 					Message: "bar",
 				},
 			},
@@ -100,10 +89,10 @@ func (s *SerrorsSuite) TestError() {
 		err := serrors.New("error").
 			WithErrors(nil, foo, nil)
 
-		errors.Equal(s.T(), &serrors.Assertion{
+		expect.Error(s.T(), serrors.Expectation{
 			Message: "error",
-			Errors: []errors.Assertion{
-				&serrors.Assertion{
+			Errors: []expect.ErrorExpectation{
+				serrors.Expectation{
 					Message: "foo",
 				},
 			},

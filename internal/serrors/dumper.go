@@ -1,15 +1,11 @@
 package serrors
 
-type Dumper interface {
-	Dump(ansi bool) string
-}
+import (
+	"github.com/manala/manala/internal/output"
+)
 
 type StringDumper string
 
-func (dumper StringDumper) Dump(_ bool) string {
-	return string(dumper)
-}
-
-type ErrorDumper interface {
-	ErrorDump(ansi bool) string
+func (s StringDumper) Dump(_ output.Profile) string {
+	return string(s)
 }

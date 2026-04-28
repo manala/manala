@@ -2,16 +2,17 @@ package name
 
 import (
 	"cmp"
-	"log/slog"
 	"slices"
+
+	"github.com/manala/manala/internal/log"
 )
 
 type Processor struct {
-	log     *slog.Logger
+	log     *log.Log
 	entries []processorEntry
 }
 
-func NewProcessor(log *slog.Logger) *Processor {
+func NewProcessor(log *log.Log) *Processor {
 	return &Processor{
 		log: log,
 	}

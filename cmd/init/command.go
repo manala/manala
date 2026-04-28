@@ -2,19 +2,17 @@ package init
 
 import (
 	"context"
-	"io"
-	"log/slog"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	"github.com/manala/manala/cmd"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/output"
 
-	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
+func NewCommand(log *log.Log, api *api.API, out output.Output) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL string
@@ -54,7 +52,7 @@ current directory)`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, dir string) error {
+func run(ctx context.Context, log *log.Log, api *api.API, out output.Output, dir string) error {
 	var (
 		repository    app.Repository
 		dialogVariant DialogVariant
@@ -101,7 +99,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, dir
 	}
 
 	// Run dialog
-	outcome, err := RunDialog("Manala", dialogVariant)
+	outcome, err := RunDialog("Manala", dialogVariant, out.Profile)
 	if err != nil {
 		return err
 	}
@@ -120,7 +118,7 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer, dir
 		return err
 	}
 
-	lipgloss.Fprintln(out, cmd.Styles.Primary.Render("project successfully initialized"))
+	out.Println(out.Style().Render("project successfully initialized"))
 
 	return nil
 }

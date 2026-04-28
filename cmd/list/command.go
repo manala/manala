@@ -2,18 +2,16 @@ package list
 
 import (
 	"context"
-	"io"
-	"log/slog"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/api"
-	"github.com/manala/manala/cmd"
+	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/output"
 
-	"charm.land/lipgloss/v2"
 	"github.com/spf13/cobra"
 )
 
-func NewCommand(log *slog.Logger, api *api.API, out io.Writer) *cobra.Command {
+func NewCommand(log *log.Log, api *api.API, out output.Output) *cobra.Command {
 	// Flags
 	var (
 		repositoryURL string
@@ -47,7 +45,7 @@ Example: manala list -> resulting in a recipes list display`,
 	return command
 }
 
-func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer) error {
+func run(ctx context.Context, log *log.Log, api *api.API, out output.Output) error {
 	var (
 		repository app.Repository
 		recipes    []app.Recipe
@@ -73,8 +71,8 @@ func run(ctx context.Context, log *slog.Logger, api *api.API, out io.Writer) err
 	}
 
 	for _, recipe := range recipes {
-		lipgloss.Fprintln(out, cmd.Styles.Primary.Render(recipe.Name()))
-		lipgloss.Fprintln(out, "  "+cmd.Styles.Secondary.Render(recipe.Description()))
+		out.Println(out.Style().Render(recipe.Name()))
+		out.Println("  " + out.MutedStyle().Render(recipe.Description()))
 	}
 
 	return nil

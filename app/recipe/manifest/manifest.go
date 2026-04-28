@@ -1,12 +1,12 @@
 package manifest
 
 import (
+	"errors"
 	"slices"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/yaml/parser"
 	"github.com/manala/manala/internal/yaml/validator"
 
@@ -61,8 +61,9 @@ func (m *Manifest) Unmarshal(content []byte) error {
 		return node.Key.String() == "manala"
 	})
 	if i == -1 {
-		return parser.ErrorFrom(
-			serrors.New("missing manala property"),
+		return parser.ErrorAt(
+			errors.New("missing \"manala\" property"),
+			node.GetToken(),
 		)
 	}
 
@@ -106,29 +107,29 @@ func (v manifestValidator) Struct(s any) error {
 
 	// Description (required, max=256)
 	if m.Description == "" {
-		errs = append(errs, validator.NewFieldError("Description", "missing manala description property"))
+		errs = append(errs, validator.NewFieldError("Description", "missing manala \"description\" property"))
 	} else if len(m.Description) > 256 {
-		errs = append(errs, validator.NewFieldError("Description", "too long manala description field (max=256)"))
+		errs = append(errs, validator.NewFieldError("Description", "too long manala \"description\" field (max=256)"))
 	}
 
 	// Icon (optional, max=100)
 	if len(m.Icon) > 100 {
-		errs = append(errs, validator.NewFieldError("Icon", "too long manala icon field (max=100)"))
+		errs = append(errs, validator.NewFieldError("Icon", "too long manala \"icon\" field (max=100)"))
 	}
 
 	// Template (optional, max=100)
 	if len(m.Template) > 100 {
-		errs = append(errs, validator.NewFieldError("Template", "too long manala template field (max=100)"))
+		errs = append(errs, validator.NewFieldError("Template", "too long manala \"template\" field (max=100)"))
 	}
 
 	// Partials (optional, max=100 per entry)
 	for _, partial := range m.Partials {
 		if partial == "" {
-			errs = append(errs, validator.NewFieldError("Partials", "empty partials entry"))
+			errs = append(errs, validator.NewFieldError("Partials", "empty manala \"partials\" entry"))
 			break
 		}
 		if len(partial) > 100 {
-			errs = append(errs, validator.NewFieldError("Partials", "too long partials entry (max=100)"))
+			errs = append(errs, validator.NewFieldError("Partials", "too long manala \"partials\" entry (max=100)"))
 			break
 		}
 	}

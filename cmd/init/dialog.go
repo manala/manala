@@ -3,25 +3,12 @@ package init
 import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/cmd"
+	"github.com/manala/manala/internal/output"
 
 	"codeberg.org/tslocum/cview"
 	"github.com/gdamore/tcell/v3"
 	"github.com/gdamore/tcell/v3/color"
 )
-
-var DialogStyles = struct {
-	PrimaryColor    color.Color
-	SecondaryColor  color.Color
-	TertiaryColor   color.Color
-	QuaternaryColor color.Color
-	AlertColor      color.Color
-}{
-	PrimaryColor:    color.Default,
-	SecondaryColor:  color.XTerm247,
-	TertiaryColor:   color.Black,  // XTerm0
-	QuaternaryColor: color.White,  // XTerm15
-	AlertColor:      color.Maroon, // XTerm1
-}
 
 type (
 	DialogVariant       any
@@ -38,15 +25,15 @@ type DialogOutcome struct {
 	Vars   map[string]any
 }
 
-func RunDialog(title string, variant DialogVariant) (*DialogOutcome, error) {
+func RunDialog(title string, variant DialogVariant, profile output.Profile) (*DialogOutcome, error) {
 	var outcome *DialogOutcome
 
 	// Dialog
-	dialog, panels := NewDialog(title)
+	dialog, panels := NewDialog(title, profile)
 	defer dialog.HandlePanic()
 
 	// Form
-	form, formPanel := NewDialogForm("Configure recipe")
+	form, formPanel := NewDialogForm("Configure recipe", profile)
 	form.SetErroredFunc(func(err error) { dialog.Fatal(err) })
 	form.SetAppliedFunc(func() { dialog.Stop() })
 
@@ -68,7 +55,7 @@ func RunDialog(title string, variant DialogVariant) (*DialogOutcome, error) {
 		panels.AddPanel("form", formPanel, true, true)
 	case DialogMultiVariant:
 		// List
-		list, listPanel := NewDialogList("Select a recipe")
+		list, listPanel := NewDialogList("Select a recipe", profile)
 		list.SetDoneFunc(func() { dialog.Cancel() })
 		list.SetSelectedFunc(func(recipe app.Recipe) {
 			outcome = &DialogOutcome{recipe, recipe.Vars()}
@@ -108,14 +95,16 @@ func RunDialog(title string, variant DialogVariant) (*DialogOutcome, error) {
 type Dialog struct {
 	*cview.Application
 
-	title  string
-	panels *cview.Panels
-	err    error
+	title   string
+	profile output.Profile
+	panels  *cview.Panels
+	err     error
 }
 
-func NewDialog(title string) (*Dialog, *cview.Panels) {
+func NewDialog(title string, profile output.Profile) (*Dialog, *cview.Panels) {
 	application := &Dialog{
 		Application: cview.NewApplication(),
+		profile:     profile,
 	}
 	application.EnableMouse(true)
 	application.EnableBracketedPaste(true)
@@ -152,7 +141,7 @@ func (dialog *Dialog) Run() error {
 	// Screen
 	screen := dialog.GetScreen()
 	screen.SetTitle(dialog.title)
-	screen.SetCursorStyle(tcell.CursorStyleBlinkingBlock, DialogStyles.QuaternaryColor)
+	screen.SetCursorStyle(tcell.CursorStyleBlinkingBlock, dialog.profile.EmphasisColor())
 
 	// Panels
 	dialog.SetRoot(dialog.panels, true)
@@ -174,7 +163,7 @@ func (dialog *Dialog) Fatal(err error) {
 	dialog.Stop()
 }
 
-func NewDialogPanel(title string, item cview.Primitive) *cview.Flex {
+func NewDialogPanel(title string, item cview.Primitive, profile output.Profile) *cview.Flex {
 	panel := cview.NewFlex()
 	panel.SetDirection(cview.FlexRow)
 
@@ -182,12 +171,12 @@ func NewDialogPanel(title string, item cview.Primitive) *cview.Flex {
 	header := cview.NewTextView()
 	header.SetBackgroundColor(color.Default)
 	header.SetText(title)
-	header.SetTextColor(DialogStyles.PrimaryColor)
+	header.SetTextColor(profile.Color())
 	header.SetPadding(0, 0, 2, 0)
 	panel.AddItem(header, 1, 0, false)
 
 	// Separator
-	panel.AddItem(NewDialogPanelSeparator(), 1, 0, false)
+	panel.AddItem(NewDialogPanelSeparator(profile), 1, 0, false)
 
 	// Item
 	panel.AddItem(item, 0, 1, true)
@@ -197,10 +186,15 @@ func NewDialogPanel(title string, item cview.Primitive) *cview.Flex {
 
 type DialogPanelSeparator struct {
 	*cview.Box
+
+	profile output.Profile
 }
 
-func NewDialogPanelSeparator() *DialogPanelSeparator {
-	return &DialogPanelSeparator{cview.NewBox()}
+func NewDialogPanelSeparator(profile output.Profile) *DialogPanelSeparator {
+	return &DialogPanelSeparator{
+		Box:     cview.NewBox(),
+		profile: profile,
+	}
 }
 
 func (separator *DialogPanelSeparator) Draw(screen tcell.Screen) {
@@ -211,7 +205,7 @@ func (separator *DialogPanelSeparator) Draw(screen tcell.Screen) {
 			y,
 			'─',
 			nil,
-			tcell.StyleDefault.Foreground(DialogStyles.SecondaryColor),
+			tcell.StyleDefault.Foreground(separator.profile.MutedColor()),
 		)
 	}
 }

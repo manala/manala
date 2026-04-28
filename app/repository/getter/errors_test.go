@@ -6,7 +6,7 @@ import (
 
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/internal/serrors"
-	testingErrors "github.com/manala/manala/internal/testing/errors"
+	"github.com/manala/manala/internal/testing/expect"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -68,57 +68,57 @@ func (s *ErrorsSuite) TestError() {
 	tests := []struct {
 		test     string
 		err      error
-		expected testingErrors.Assertion
+		expected expect.ErrorExpectation
 	}{
 		{
 			test: "Any",
 			err:  errors.New("foo"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to handle repository",
-				Arguments: []any{
-					"error", "foo",
+				Attrs: [][2]any{
+					{"error", "foo"},
 				},
 			},
 		},
 		{
 			test: "SubdirOutOfRepository",
 			err:  errors.New("subdirectory component contain path traversal out of the repository"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "subdir out of repository",
 			},
 		},
 		{
 			test: "Aws",
 			err:  awsError{},
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "aws error",
 				Dump:    "error",
-				Arguments: []any{
-					"code", "code",
-					"message", "message",
+				Attrs: [][2]any{
+					{"code", "code"},
+					{"message", "message"},
 				},
 			},
 		},
 		{
 			test: "CommandErrorCode",
 			err:  errors.New("foo exited with 123: bar"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "command error",
 				Dump:    "bar",
-				Arguments: []any{
-					"command", "foo",
-					"code", 123,
+				Attrs: [][2]any{
+					{"command", "foo"},
+					{"code", 123},
 				},
 			},
 		},
 		{
 			test: "CommandError",
 			err:  errors.New("error running foo: bar"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "command error",
 				Dump:    "bar",
-				Arguments: []any{
-					"command", "foo",
+				Attrs: [][2]any{
+					{"command", "foo"},
 				},
 			},
 		},
@@ -126,7 +126,7 @@ func (s *ErrorsSuite) TestError() {
 			test: "MultiError",
 			//revive:disable:error-strings
 			err: errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
-			expected: &serrors.Assertion{
+			expected: serrors.Expectation{
 				Message: "unable to handle repository",
 				Dump:    "bar\nbaz",
 			},
@@ -135,7 +135,7 @@ func (s *ErrorsSuite) TestError() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			testingErrors.Equal(s.T(), test.expected, getter.ErrorFrom(test.err))
+			expect.Error(s.T(), test.expected, getter.ErrorFrom(test.err))
 		})
 	}
 }
