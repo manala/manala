@@ -19,7 +19,7 @@ func Parse(src string) (*Set, error) {
 		switch token.Kind {
 		case TokenName:
 			if seen[token.Value] {
-				return nil, ErrorAt(
+				return nil, NewError(
 					fmt.Errorf("duplicate annotation @%s", token.Value),
 					token,
 				)
@@ -33,7 +33,7 @@ func Parse(src string) (*Set, error) {
 			}
 			current.Value.Tokens = append(current.Value.Tokens, token)
 		case TokenUnknown:
-			return nil, ErrorAt(
+			return nil, NewError(
 				errors.New("unknown annotation token"),
 				token,
 			)

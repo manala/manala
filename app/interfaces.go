@@ -1,8 +1,7 @@
 package app
 
 import (
-	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/sync"
+	"github.com/manala/manala/app/sync"
 )
 
 /***********/
@@ -27,14 +26,13 @@ type Recipe interface {
 	Name() string
 	Description() string
 	Icon() string
-	Vars() map[string]any
-	Sync() []sync.UnitInterface
-	Schema() schema.Schema
-	Options() []RecipeOption
-	Repository() Repository
 	Template() string
 	Partials() []string
-	ProjectValidator() *schema.Validator
+	Sync() []sync.Unit
+	Repository() Repository
+	Vars() map[string]any
+	Schema() map[string]any
+	Options() []RecipeOption
 	Watches() ([]string, error)
 }
 

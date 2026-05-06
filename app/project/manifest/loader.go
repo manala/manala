@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 
@@ -10,11 +9,22 @@ import (
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/filepath/backwalk"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/validation"
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlmapping "github.com/manala/manala/internal/yaml/mapping"
+	yamlparser "github.com/manala/manala/internal/yaml/parser"
+	yamlvalidation "github.com/manala/manala/internal/yaml/validation"
+
+	"dario.cat/mergo"
+	"github.com/goccy/go-yaml"
 )
+
+const filename = ".manala.yaml"
 
 type LoaderHandler struct {
 	log              *log.Log
@@ -43,76 +53,98 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 			return chain.Next(query)
 		}
 
-		return nil, serrors.New("unable to stat project manifest").
+		return nil, serror.New("unable to stat project manifest").
 			With("file", file).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	} else if fileInfo.IsDir() {
-		return nil, serrors.New("project manifest is a directory").
+		return nil, serror.New("project manifest is a directory").
 			With("dir", file)
 	}
 
-	// Open file
-	reader, err := os.Open(file)
-	if err != nil {
-		return nil, serrors.New("unable to open project manifest").
-			With("file", file).
-			WithErrors(serrors.FromOs(err))
-	}
-	defer reader.Close()
-
 	// Read file
-	content, err := io.ReadAll(reader)
+	content, err := os.ReadFile(file)
 	if err != nil {
-		return nil, serrors.New("unable to read project manifest").
+		return nil, serror.New("unable to read project manifest").
 			With("file", file).
-			WithErrors(err)
+			WithErr(std.From(err))
 	}
 
-	// Parse file content
-	manifest := New()
-	if err := manifest.Unmarshal(content); err != nil {
-		e := serrors.New("unable to parse project manifest")
-		if err, ok := errors.AsType[*parsing.Error](err); ok {
-			return nil, e.WithDumper(parsing.ErrorDumper{
-				Err:   err.Flatten(),
-				File:  file,
-				Src:   string(content),
-				Lexer: "yaml",
-			})
-		}
-		return nil, e.With("file", file).
-			WithErrors(err)
+	// Prepare source error origin
+	origin := source.Origin{
+		File:     file,
+		Source:   string(content),
+		Language: "yaml",
+	}
+
+	// Init project
+	project := &Project{
+		dir: dir,
+	}
+
+	// Parse content
+	node, err := yamlparser.Parse(content)
+	if err != nil {
+		return nil, serror.New("unable to parse project manifest").
+			WithErr(source.From(err, origin))
+	}
+
+	// Pop config node
+	configNode, found := yamlmapping.Pop(node, "manala")
+	if !found {
+		return nil, serror.New("invalid project manifest").
+			WithErr(source.From(yamlerrors.New(
+				errors.New("missing \"manala\" property"),
+				node.GetToken(),
+			), origin))
+	}
+
+	// Decode config
+	config := &Config{}
+	if err := yaml.NodeToValue(configNode, config); err != nil {
+		return nil, serror.New("unable to decode project manifest config").
+			WithErr(source.From(err, origin))
 	}
 
 	handler.log.Debug("project manifest loaded", "handler", "manifest",
 		"file", file,
-		"repository", manifest.Repository,
-		"recipe", manifest.Recipe,
+		"repository", config.Repository,
+		"recipe", config.Recipe,
 	)
 
 	// Load repository
-	repository, err := handler.repositoryLoader.Load(manifest.Repository)
+	repository, err := handler.repositoryLoader.Load(config.Repository)
 	if err != nil {
 		return nil, err
 	}
 
 	// Load recipe
-	recipe, err := handler.recipeLoader.Load(repository, manifest.Recipe)
+	project.recipe, err = handler.recipeLoader.Load(repository, config.Recipe)
 	if err != nil {
 		return nil, err
 	}
 
-	project := NewProject(dir, manifest, recipe)
+	// Decode vars
+	var vars map[string]any
+	if err := yaml.NodeToValue(node, &vars); err != nil {
+		return nil, serror.New("unable to decode project manifest vars").
+			WithErr(source.From(yamlerrors.From(err), origin))
+	}
 
-	// Validate project vars against recipe
-	if violations, err := project.Recipe().ProjectValidator().Validate(project.Vars()); err != nil {
-		return nil, serrors.New("unable to validate project manifest").
-			With("file", file).
-			WithErrors(err)
-	} else if len(violations) != 0 {
-		return nil, serrors.New("invalid project manifest vars").
-			With("file", file).
-			WithErrors(violations.StructuredErrors()...)
+	// Merge vars
+	_ = mergo.Merge(&project.vars, project.recipe.Vars())
+	_ = mergo.Merge(&project.vars, vars, mergo.WithOverride)
+
+	// Validate vars
+	validator, err := validation.NewValidator(project.recipe.Schema())
+	if err != nil {
+		return nil, err
+	}
+	if violations, err := validator.Validate(project.vars, yamlvalidation.WithLocator(node)); err != nil {
+		return nil, serror.New("unable to validate project manifest vars").
+			With("file", file).WithErr(err)
+	} else if violations != nil {
+		return nil, serror.New("invalid project manifest vars").
+			WithErr(source.From(violations, origin))
 	}
 
 	return project, nil
@@ -139,9 +171,9 @@ func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain proje
 	if err := backwalk.WalkDir(dir,
 		func(path string, _ os.DirEntry, err error) error {
 			if err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("path", path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			// Update query

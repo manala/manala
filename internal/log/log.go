@@ -20,8 +20,6 @@ const (
 
 const messageWidth = 33
 
-var Discard = &Log{out: output.Discard}
-
 type Log struct {
 	out     output.Output
 	verbose int
@@ -63,55 +61,6 @@ func (l *Log) Log(level Level, msg string, args ...any) {
 		attrs = append(attrs, [2]any{args[i], args[i+1]})
 	}
 	l.out.Println(l.log(level, msg, attrs))
-}
-
-func (l *Log) Error(err error) {
-	l.out.Println(l.error(err, 0))
-}
-
-func (l *Log) error(err error, depth int) string {
-	var b strings.Builder
-
-	// Attrs
-	var attrs [][2]any
-	if a, ok := err.(Attrs); ok {
-		attrs = a.Attrs()
-	}
-
-	b.WriteString(l.indent(
-		l.log(Error, err.Error(), attrs), depth*2,
-	) + "\n")
-
-	// Dumper
-	if e, ok := err.(Dumper); ok {
-		if d := e.Dumper(); d != nil {
-			if dump := d.Dump(l.out.Profile); dump != "" {
-				b.WriteString("\n" + l.indent(
-					dump, 3+depth*2,
-				))
-			}
-		}
-	}
-
-	// Children errors
-	var children []error
-	switch u := err.(type) {
-	case interface{ Unwrap() error }:
-		if child := u.Unwrap(); child != nil {
-			children = append(children, child)
-		}
-	case interface{ Unwrap() []error }:
-		for _, child := range u.Unwrap() {
-			if child != nil {
-				children = append(children, child)
-			}
-		}
-	}
-	for _, child := range children {
-		b.WriteString(l.error(child, depth+1))
-	}
-
-	return b.String()
 }
 
 func (l *Log) log(level Level, msg string, attrs [][2]any) string {
@@ -164,14 +113,10 @@ func (l *Log) indent(s string, n int) string {
 	return pad + strings.ReplaceAll(s, "\n", "\n"+pad)
 }
 
+func (l *Log) block(s string) string {
+	return " │ " + strings.ReplaceAll(s, "\n", "\n │ ")
+}
+
 type Attrs interface {
 	Attrs() [][2]any
-}
-
-type Dumper interface {
-	Dumper() dumper
-}
-
-type dumper = interface {
-	Dump(profile output.Profile) string
 }

@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 
 	"dario.cat/mergo"
 )
@@ -56,9 +56,9 @@ func (processor *Processor) Process(url string) (string, error) {
 		if entryQuery != "" {
 			values, err := netURL.ParseQuery(entryQuery)
 			if err != nil {
-				return "", serrors.New("unable to process repository query").
+				return "", serror.New("unable to process repository query").
 					With("query", entryQuery).
-					WithErrors(err)
+					WithErr(err)
 			}
 
 			_ = mergo.Merge(&entry.query, values)

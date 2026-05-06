@@ -9,7 +9,8 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/template"
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/std"
 )
 
 //go:embed template.yaml.tmpl
@@ -39,61 +40,60 @@ func (creator *Creator) Create(dir string, recipe app.Recipe, vars map[string]an
 	buffer := &bytes.Buffer{}
 	if template := recipe.Template(); template != "" {
 		if err := templateExecutor.ExecuteTemplate(buffer, template); err != nil {
-			return nil, serrors.New("recipe template error").
-				WithErrors(err)
+			return nil, serror.New("recipe template error").
+				WithErr(err)
 		}
 	} else {
 		if err := templateExecutor.Execute(buffer, _template); err != nil {
-			return nil, serrors.New("recipe template error").
-				WithErrors(err)
+			return nil, serror.New("recipe template error").
+				WithErr(err)
 		}
 	}
 
 	manifestFile := filepath.Join(dir, filename)
-
-	manifest := New()
-	if err := manifest.Unmarshal(buffer.Bytes()); err != nil {
-		return nil, err
-	}
 
 	// Ensure directory exists
 	_dir := filepath.Dir(manifestFile)
 	if dirStat, err := os.Stat(_dir); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			if err := os.MkdirAll(_dir, 0o755); err != nil {
-				return nil, serrors.New("unable to create project directory").
+				return nil, serror.New("unable to create project directory").
 					With("dir", _dir).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 		} else {
-			return nil, serrors.New("unable to stat project directory").
+			return nil, serror.New("unable to stat project directory").
 				With("dir", _dir).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 	} else if !dirStat.IsDir() {
-		return nil, serrors.New("project is not a directory").
+		return nil, serror.New("project is not a directory").
 			With("path", _dir)
 	}
 
 	writer, err := os.Create(manifestFile)
 	if err != nil {
-		return nil, serrors.New("unable to create project manifest file").
+		return nil, serror.New("unable to create project manifest file").
 			With("file", manifestFile).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	}
 
 	if _, err := writer.ReadFrom(bytes.NewReader(buffer.Bytes())); err != nil {
-		return nil, serrors.New("unable to save project manifest file").
+		return nil, serror.New("unable to save project manifest file").
 			With("file", manifestFile).
-			WithErrors(err)
+			WithErr(err)
 	}
 
 	if err := writer.Sync(); err != nil {
-		return nil, serrors.New("unable to sync project manifest file").
+		return nil, serror.New("unable to sync project manifest file").
 			With("file", manifestFile).
-			WithErrors(err)
+			WithErr(err)
 	}
 
 	// Final project
-	return NewProject(dir, manifest, recipe), nil
+	return &Project{
+		dir:    dir,
+		recipe: recipe,
+		vars:   vars,
+	}, nil
 }

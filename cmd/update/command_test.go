@@ -10,11 +10,12 @@ import (
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/app/testing/errors"
 	cmdUpdate "github.com/manala/manala/cmd/update"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/output"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -32,7 +33,7 @@ func (s *CommandSuite) TestProjectErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -47,42 +48,44 @@ func (s *CommandSuite) TestProjectErrors() {
 			},
 		},
 		{
-			test: "Unparsable",
+			test: "Undecodable",
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "unable to parse project manifest",
-				Dump: heredoc.Doc(`
-				at %[1]s:1:1
+			expectedError: serror.Expectation{
+				Msg: "unable to decode project manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
 
-				▶ 1 │ manala: {}
-				    ├─╯ missing manala "recipe" property
-			`,
-					filepath.Join(dir, "Unparsable", "project", ".manala.yaml"),
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'recipe'
+					`,
+						filepath.Join(dir, "Undecodable", "project", ".manala.yaml"),
+					)),
 				),
 			},
 		},
 		{
-			test: "Invalid",
+			test: "InvalidVars",
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "invalid project manifest vars",
-				Attrs: [][2]any{
-					{"file", filepath.Join(dir, "Invalid", "project", ".manala.yaml")},
-				},
-				Errors: []expect.ErrorExpectation{
-					serrors.Expectation{
-						Message: "invalid type",
-						Attrs: [][2]any{
-							{"expected", "integer"},
-							{"actual", "string"},
-							{"path", "foo"},
-						},
-					},
-				},
+			expectedError: serror.Expectation{
+				Msg: "invalid project manifest vars",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:5:6
+
+						  2 │   recipe: recipe
+						  3 │   repository: testdata/TestProjectErrors/InvalidVars/repository
+						  4 │
+						▶ 5 │ foo: bar
+						    ├──────╯ got string, want integer
+					`,
+						filepath.Join(dir, "InvalidVars", "project", ".manala.yaml"),
+					)),
+				),
 			},
 		},
 	}
@@ -96,7 +99,7 @@ func (s *CommandSuite) TestProjectErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -107,7 +110,7 @@ func (s *CommandSuite) TestProjectRecursiveErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -117,42 +120,44 @@ func (s *CommandSuite) TestProjectRecursiveErrors() {
 			expectedError: nil,
 		},
 		{
-			test: "Unparsable",
+			test: "Undecodable",
 			expectedStderr: heredoc.Doc(`
 				 ● loading projects recursive…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "unable to parse project manifest",
-				Dump: heredoc.Doc(`
-				at %[1]s:1:1
+			expectedError: serror.Expectation{
+				Msg: "unable to decode project manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
 
-				▶ 1 │ manala: {}
-				    ├─╯ missing manala "recipe" property
-			`,
-					filepath.Join(dir, "Unparsable", "project", ".manala.yaml"),
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'recipe'
+					`,
+						filepath.Join(dir, "Undecodable", "project", ".manala.yaml"),
+					)),
 				),
 			},
 		},
 		{
-			test: "Invalid",
+			test: "InvalidVars",
 			expectedStderr: heredoc.Doc(`
 				 ● loading projects recursive…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "invalid project manifest vars",
-				Attrs: [][2]any{
-					{"file", filepath.Join(dir, "Invalid", "project", ".manala.yaml")},
-				},
-				Errors: []expect.ErrorExpectation{
-					serrors.Expectation{
-						Message: "invalid type",
-						Attrs: [][2]any{
-							{"expected", "integer"},
-							{"actual", "string"},
-							{"path", "foo"},
-						},
-					},
-				},
+			expectedError: serror.Expectation{
+				Msg: "invalid project manifest vars",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:5:6
+
+						  2 │   recipe: recipe
+						  3 │   repository: testdata/TestProjectRecursiveErrors/InvalidVars/repository
+						  4 │
+						▶ 5 │ foo: bar
+						    ├──────╯ got string, want integer
+					`,
+						filepath.Join(dir, "InvalidVars", "project", ".manala.yaml"),
+					)),
+				),
 			},
 		},
 	}
@@ -167,7 +172,7 @@ func (s *CommandSuite) TestProjectRecursiveErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -237,7 +242,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -263,7 +268,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -300,7 +305,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -316,19 +321,21 @@ func (s *CommandSuite) TestRecipeErrors() {
 			},
 		},
 		{
-			test: "Unparsable",
+			test: "Undecodable",
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "unable to parse recipe manifest",
-				Dump: heredoc.Doc(`
-					at %[1]s:1:1
+			expectedError: serror.Expectation{
+				Msg: "unable to decode recipe manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
 
-					▶ 1 │ manala: {}
-					    ├─╯ missing manala "description" property
-				`,
-					filepath.Join(dir, "Unparsable", "repository", "recipe", ".manala.yaml"),
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'description'
+					`,
+						filepath.Join(dir, "Undecodable", "repository", "recipe", ".manala.yaml"),
+					)),
 				),
 			},
 		},
@@ -344,7 +351,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -360,7 +367,7 @@ func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*by
 		logger,
 		api.New(
 			logger,
-			caching.NewCache(""),
+			cache.New(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 		output.NewDetached(out),

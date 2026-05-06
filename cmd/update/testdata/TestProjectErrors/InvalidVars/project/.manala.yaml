@@ -1,0 +1,5 @@
+manala:
+  recipe: recipe
+  repository: testdata/TestProjectErrors/InvalidVars/repository
+
+foo: bar

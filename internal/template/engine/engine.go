@@ -4,8 +4,10 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/std"
+	templateerrors "github.com/manala/manala/internal/template/errors"
 
 	"github.com/Masterminds/sprig/v3"
 )
@@ -36,19 +38,18 @@ func (engine *Engine) Executor(data any, files ...string) (*Executor, error) {
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return nil, serrors.New("unable to read template file").
+			return nil, serror.New("unable to read template file").
 				With("path", file).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		if _, err := clone.Parse(string(content)); err != nil {
-			return nil, serrors.New("unable to parse template file").
-				WithDumper(parsing.ErrorDumper{
-					Err:   ErrorFrom(err, string(content)),
-					File:  file,
-					Src:   string(content),
-					Lexer: "go-template",
-				})
+			return nil, serror.New("unable to parse template file").
+				WithErr(source.From(templateerrors.From(err, string(content)), source.Origin{
+					File:     file,
+					Source:   string(content),
+					Language: "go-template",
+				}))
 		}
 	}
 

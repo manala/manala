@@ -11,9 +11,9 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/app/template"
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -46,8 +46,8 @@ func (s *CreatorSuite) TestCreateErrors() {
 		project, err := creator.Create(projectDir, recipe, nil)
 
 		s.Nil(project)
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "project is not a directory",
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "project is not a directory",
 			Attrs: [][2]any{
 				{"path", projectDir},
 			},

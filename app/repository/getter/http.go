@@ -6,7 +6,7 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
 	"github.com/manala/manala/internal/log"
 
 	"github.com/hashicorp/go-getter/v2"
@@ -14,11 +14,11 @@ import (
 
 type HTTPLoaderHandler struct {
 	log    *log.Log
-	cache  *caching.Cache
+	cache  *cache.Cache
 	client *getter.Client
 }
 
-func NewHTTPLoaderHandler(log *log.Log, cache *caching.Cache) *HTTPLoaderHandler {
+func NewHTTPLoaderHandler(log *log.Log, cache *cache.Cache) *HTTPLoaderHandler {
 	return &HTTPLoaderHandler{
 		log:   log,
 		cache: cache.WithDir("repositories"),

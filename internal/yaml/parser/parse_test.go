@@ -3,11 +3,11 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/yaml/parser"
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlparser "github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/stretchr/testify/suite"
@@ -21,7 +21,7 @@ func TestParseSuite(t *testing.T) {
 
 func (s *ParseSuite) TestAnchors() {
 	s.Run("Anchors", func() {
-		node, err := parser.Parse([]byte(heredoc.Doc(`
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 			anchor: &anchor foo
 			alias: *anchor
 		`)))
@@ -40,7 +40,7 @@ func (s *ParseSuite) TestAnchors() {
 	})
 
 	s.Run("MergeKeys", func() {
-		node, err := parser.Parse([]byte(heredoc.Doc(`
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 			empty: &empty {}
 			mapping_value: &mapping_value
 			  foo: foo
@@ -106,7 +106,7 @@ func (s *ParseSuite) TestAnchors() {
 	})
 
 	s.Run("MergeKeysDuplicated", func() {
-		node, err := parser.Parse([]byte(heredoc.Doc(`
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 			mapping_value: &mapping_value
 			  foo: foo
 			mapping: &mapping
@@ -147,7 +147,7 @@ func (s *ParseSuite) TestAnchors() {
 }
 
 func (s *ParseSuite) TestTags() {
-	node, err := parser.Parse([]byte(heredoc.Doc(`
+	node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 		foo: !!str bar
 	`)))
 
@@ -160,7 +160,7 @@ func (s *ParseSuite) TestTags() {
 }
 
 func (s *ParseSuite) TestMapKeyExplicit() {
-	node, err := parser.Parse([]byte(heredoc.Doc(`
+	node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 		? foo: bar
 	`)))
 
@@ -183,29 +183,28 @@ func (s *ParseSuite) TestErrors() {
 	tests := []struct {
 		test     string
 		data     string
-		expected expect.ErrorExpectation
+		expected expectation.ErrorExpectation
 	}{
 		{
 			test: "Empty",
 			data: "",
-			expected: serrors.Expectation{
-				Message: "empty yaml content",
+			expected: serror.Expectation{
+				Msg: "empty yaml content",
 			},
 		},
 		{
 			test: "Spaces",
 			data: " ",
-			expected: serrors.Expectation{
-				Message: "empty yaml content",
+			expected: serror.Expectation{
+				Msg: "empty yaml content",
 			},
 		},
 		{
 			test: "Invalid",
 			data: "@",
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("'@' is a reserved character"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 1},
+				Err:      expectation.ErrorMessage("'@' is a reserved character"),
 			},
 		},
 		{
@@ -214,10 +213,9 @@ func (s *ParseSuite) TestErrors() {
 				foo: bar
 					baz: qux
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   2,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("found a tab character where an indentation space is expected "),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{2, 1},
+				Err:      expectation.ErrorMessage("found a tab character where an indentation space is expected "),
 			},
 		},
 		{
@@ -228,10 +226,9 @@ func (s *ParseSuite) TestErrors() {
 				---
 				bar
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   3,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("multiple documents yaml content"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{3, 1},
+				Err:      expectation.ErrorMessage("multiple documents yaml content"),
 			},
 		},
 		{
@@ -239,10 +236,9 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("yaml document must be a map"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 1},
+				Err:      expectation.ErrorMessage("yaml document must be a map"),
 			},
 		},
 		{
@@ -250,10 +246,9 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: .inf
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 6,
-				Err:    expect.ErrorMessageExpectation("irregular yaml type"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 6},
+				Err:      expectation.ErrorMessage("irregular yaml type"),
 			},
 		},
 		{
@@ -261,10 +256,9 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: .nan
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 6,
-				Err:    expect.ErrorMessageExpectation("irregular yaml type"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 6},
+				Err:      expectation.ErrorMessage("irregular yaml type"),
 			},
 		},
 		{
@@ -272,10 +266,9 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				123: foo
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 1},
+				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
 		},
 		{
@@ -283,10 +276,9 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				? 123: bar
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 1,
-				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 1},
+				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
 		},
 		{
@@ -295,10 +287,9 @@ func (s *ParseSuite) TestErrors() {
 				anchor: &anchor
 				  0: foo
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   2,
-				Column: 3,
-				Err:    expect.ErrorMessageExpectation("irregular yaml map key"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{2, 3},
+				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
 		},
 		{
@@ -306,20 +297,19 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: *bar
 			`),
-			expected: parsing.ErrorExpectation{
-				Line:   1,
-				Column: 7,
-				Err:    expect.ErrorMessageExpectation("unknown \"bar\" yaml anchor"),
+			expected: yamlerrors.Expectation{
+				Position: [2]int{1, 7},
+				Err:      expectation.ErrorMessage("unknown \"bar\" yaml anchor"),
 			},
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			node, err := parser.Parse([]byte(test.data))
+			node, err := yamlparser.Parse([]byte(test.data))
 
 			s.Nil(node)
-			expect.Error(s.T(), test.expected, err)
+			expectation.ExpectError(s.T(), test.expected, err)
 		})
 	}
 }

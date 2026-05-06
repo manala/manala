@@ -3,6 +3,8 @@ package parser
 import (
 	"errors"
 
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+
 	"github.com/goccy/go-yaml/ast"
 )
 
@@ -28,7 +30,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 			return w
 		}
 
-		w.err = ErrorAt(
+		w.err = yamlerrors.New(
 			errors.New("irregular yaml map key"),
 			n.Key.GetToken(),
 		)
@@ -41,7 +43,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 			return w
 		}
 
-		w.err = ErrorAt(
+		w.err = yamlerrors.New(
 			errors.New("irregular yaml map key"),
 			n.GetToken(),
 		)
@@ -66,7 +68,7 @@ func (w *walker) Visit(node ast.Node) ast.Visitor {
 		return w
 	}
 
-	w.err = ErrorAt(
+	w.err = yamlerrors.New(
 		errors.New("irregular yaml type"),
 		node.GetToken(),
 	)

@@ -6,18 +6,16 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
-	"github.com/manala/manala/internal/json/unmarshaler"
-	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/yaml/annotation"
-	"github.com/manala/manala/internal/yaml/parser"
-	"github.com/manala/manala/internal/yaml/path"
+	jsondecoder "github.com/manala/manala/internal/json/decoder"
+	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
 
 	"dario.cat/mergo"
 	"github.com/goccy/go-yaml/ast"
 )
 
 type Inferrer struct {
-	Schema  *schema.Schema
+	Schema  *map[string]any
 	Options *[]app.RecipeOption
 }
 
@@ -68,7 +66,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 		case *ast.NullNode:
 			// No type
 		default:
-			return nil, parser.ErrorAt(
+			return nil, yamlerrors.New(
 				errors.New("unable to infer schema value type"),
 				node.GetToken(),
 			)
@@ -76,19 +74,19 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 
 		// Parse comment annotations
 		if comment := node.GetComment(); comment != nil {
-			annotations, err := annotation.Parse(comment.String())
+			annotations, err := yamlannotation.Parse(comment.String())
 			if err != nil {
-				return nil, parser.ErrorAt(err, comment.GetToken())
+				return nil, yamlerrors.New(err, comment.GetToken())
 			}
 
 			// Schema
 			var propertySch map[string]any
 			if err := annotations.JSONVar(&propertySch, "schema"); err != nil {
-				return nil, parser.ErrorAt(err, comment.GetToken())
+				return nil, yamlerrors.New(err, comment.GetToken())
 			}
 
 			if err := mergo.Merge(&property, propertySch, mergo.WithOverride); err != nil {
-				return nil, parser.ErrorAt(err, comment.GetToken())
+				return nil, yamlerrors.New(err, comment.GetToken())
 			}
 
 			// Enum makes type redundant
@@ -97,15 +95,15 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 			}
 
 			// Option
-			if err := annotations.Func("option", func(a *annotation.Annotation) error {
+			if err := annotations.Func("option", func(a *yamlannotation.Annotation) error {
 				// Stencil preserves source positions for accurate error reporting
 				value := a.Value.Stencil()
 
-				// Unmarshal option type discriminator
+				// Decode option type discriminator
 				var disc struct {
 					Type string `json:"type"`
 				}
-				if err := unmarshaler.Unmarshal([]byte(value), &disc); err != nil {
+				if err := jsondecoder.Decode([]byte(value), &disc); err != nil {
 					return err
 				}
 
@@ -117,7 +115,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 					} else if property["type"] == "string" {
 						optionType = option.STRING
 					} else {
-						return annotation.ErrorAt(
+						return yamlannotation.NewError(
 							errors.New("unable to auto detect option type"),
 							a.Value.Start(),
 						)
@@ -127,25 +125,25 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 				var opt app.RecipeOption
 				switch optionType {
 				case option.STRING:
-					o, err := option.NewString(property, path.NewNodePath(node))
+					o, err := option.NewString(property, node.GetPath())
 					if err != nil {
-						return annotation.ErrorAt(err, a.Value.Start())
+						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					if err := o.UnmarshalJSON([]byte(value)); err != nil {
-						return annotation.ErrorAt(err, a.Value.Start())
+						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					opt = o
 				case option.ENUM:
-					o, err := option.NewEnum(property, path.NewNodePath(node))
+					o, err := option.NewEnum(property, node.GetPath())
 					if err != nil {
-						return annotation.ErrorAt(err, a.Value.Start())
+						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					if err := o.UnmarshalJSON([]byte(value)); err != nil {
-						return annotation.ErrorAt(err, a.Value.Start())
+						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					opt = o
 				default:
-					return annotation.ErrorAt(
+					return yamlannotation.NewError(
 						fmt.Errorf("unexpected \"%s\" option type", disc.Type),
 						a.Value.Start(),
 					)
@@ -155,7 +153,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 
 				return nil
 			}); err != nil {
-				return nil, parser.ErrorAt(err, comment.GetToken())
+				return nil, yamlerrors.New(err, comment.GetToken())
 			}
 		}
 

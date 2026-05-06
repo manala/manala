@@ -5,7 +5,7 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
-	"github.com/manala/manala/app/repository/caching"
+	"github.com/manala/manala/app/repository/cache"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/app/repository/url"
 )
@@ -28,7 +28,7 @@ func (api *API) NewRepositoryLoader(ctx context.Context) *repository.Loader {
 	return repository.NewLoader(
 		repository.WithLoaderHandlers(
 			url.NewProcessorLoaderHandler(api.log, urlProcessor),
-			caching.NewLoaderHandler(api.log, caching.NewCache()),
+			cache.NewLoaderHandler(api.log, cache.New()),
 			getter.NewGitLoaderHandler(api.log, api.cache),
 			getter.NewS3LoaderHandler(api.log, api.cache),
 			getter.NewHTTPLoaderHandler(api.log, api.cache),

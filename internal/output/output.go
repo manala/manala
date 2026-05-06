@@ -9,8 +9,6 @@ import (
 	"github.com/charmbracelet/x/term"
 )
 
-var Discard = Output{out: io.Discard}
-
 type Output struct {
 	Profile
 
@@ -31,6 +29,10 @@ func NewDetached(out io.Writer) Output {
 	return Output{
 		out: out,
 	}
+}
+
+func (o Output) Print(a ...any) {
+	_, _ = fmt.Fprint(o.out, a...)
 }
 
 func (o Output) Println(a ...any) {

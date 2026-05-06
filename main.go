@@ -12,7 +12,7 @@ import (
 	cmdMascot "github.com/manala/manala/cmd/mascot"
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	cmdWatch "github.com/manala/manala/cmd/watch"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/notify"
 	"github.com/manala/manala/internal/output"
@@ -77,7 +77,7 @@ func main() {
 		v.SetEnvPrefix("MANALA")
 
 		// Cache
-		cache := caching.NewCache(v.GetString("cache_dir")).
+		cache := cache.New(v.GetString("cache_dir")).
 			WithUserDir("manala")
 
 		// Logger verbose mode

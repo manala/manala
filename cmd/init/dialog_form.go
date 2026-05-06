@@ -1,15 +1,15 @@
 package init
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/option"
-	"github.com/manala/manala/internal/accessor"
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/output"
-	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/validation"
 
 	"codeberg.org/tslocum/cview"
 	"github.com/gdamore/tcell/v3/color"
@@ -66,23 +66,23 @@ func (form *DialogForm) Build(options []app.RecipeOption, vars *map[string]any) 
 		case *option.Enum:
 			item, err := NewSelectFormItem(opt, vars, form.errored, form.profile)
 			if err != nil {
-				return serrors.New("invalid recipe option").
+				return serror.New("invalid recipe option").
 					With("label", opt.Label()).
-					WithErrors(err)
+					WithErr(err)
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
 		case *option.String:
 			item, err := NewDialogTextFormItem(opt, vars, form.errored, form.profile)
 			if err != nil {
-				return serrors.New("invalid recipe option").
+				return serror.New("invalid recipe option").
 					With("label", opt.Label()).
-					WithErrors(err)
+					WithErr(err)
 			}
 			items = append(items, item)
 			form.AddFormItem(item)
 		default:
-			return serrors.New("unknown recipe option").
+			return serror.New("unknown recipe option").
 				With("label", opt.Label())
 		}
 	}
@@ -112,11 +112,10 @@ type DialogFormItem interface {
 type DialogTextFormItem struct {
 	*cview.InputField
 
-	option    *option.String
-	accessor  accessor.Accessor
-	validator *schema.Validator
-	profile   output.Profile
-	errored   func(error)
+	option  *option.String
+	vars    *map[string]any
+	profile output.Profile
+	errored func(error)
 }
 
 func NewDialogTextFormItem(
@@ -125,15 +124,11 @@ func NewDialogTextFormItem(
 	errored func(error),
 	profile output.Profile,
 ) (*DialogTextFormItem, error) {
-	// Accessor
-	itemAccessor := option.Accessor(vars)
-
 	// Item
 	item := &DialogTextFormItem{
 		InputField: cview.NewInputField(),
 		option:     option,
-		accessor:   itemAccessor,
-		validator:  option.Validator(),
+		vars:       vars,
 		errored:    errored,
 		profile:    profile,
 	}
@@ -146,11 +141,11 @@ func NewDialogTextFormItem(
 	})
 
 	// Initial value
-	value, err := itemAccessor.Get()
+	value, err := option.Get(vars)
 	if err != nil {
 		return nil, err
 	}
-	if value, ok := value.(string); ok {
+	if value != "" {
 		item.SetText(value)
 	}
 
@@ -161,21 +156,16 @@ func (item *DialogTextFormItem) Apply() bool {
 	value := item.GetText()
 
 	// Validation
-	violations, err := item.validator.Validate(value)
-	if err != nil {
-		item.errored(serrors.New("validation error").
-			With("label", item.option.Label()).
-			WithErrors(err),
-		)
-
-		return false
-	}
-	if violations != nil {
-		if errs := violations.Errors(); len(errs) > 0 {
+	if err := item.option.Validate(value); err != nil {
+		if violation, ok := errors.AsType[*validation.Violation](err); ok {
 			item.SetFieldNoteTextColor(item.profile.ErrorColor())
-			item.SetFieldNote(errs[0].Error())
+			item.SetFieldNote(violation.Error())
+		} else {
+			item.errored(serror.New("validation error").
+				With("label", item.option.Label()).
+				WithErr(err),
+			)
 		}
-
 		return false
 	}
 
@@ -183,10 +173,10 @@ func (item *DialogTextFormItem) Apply() bool {
 	item.SetFieldNoteTextColor(item.profile.MutedColor())
 
 	// Accession
-	if err := item.accessor.Set(value); err != nil {
-		item.errored(serrors.New("accession error").
+	if err := item.option.Set(item.vars, value); err != nil {
+		item.errored(serror.New("accession error").
 			With("label", item.option.Label()).
-			WithErrors(err),
+			WithErr(err),
 		)
 
 		return false
@@ -198,10 +188,10 @@ func (item *DialogTextFormItem) Apply() bool {
 type DialogSelectFormItem struct {
 	*cview.DropDown
 
-	option   *option.Enum
-	values   []any
-	accessor accessor.Accessor
-	errored  func(error)
+	option  *option.Enum
+	values  []any
+	vars    *map[string]any
+	errored func(error)
 }
 
 func NewSelectFormItem(
@@ -210,14 +200,11 @@ func NewSelectFormItem(
 	errored func(error),
 	profile output.Profile,
 ) (*DialogSelectFormItem, error) {
-	// Accessor
-	itemAccessor := option.Accessor(vars)
-
 	// Item
 	item := &DialogSelectFormItem{
 		DropDown: cview.NewDropDown(),
 		option:   option,
-		accessor: itemAccessor,
+		vars:     vars,
 		values:   option.Values(),
 		errored:  errored,
 	}
@@ -248,7 +235,7 @@ func NewSelectFormItem(
 	}
 
 	// Initial value
-	value, err := itemAccessor.Get()
+	value, err := option.Get(vars)
 	if err != nil {
 		return nil, err
 	}
@@ -268,10 +255,10 @@ func (item *DialogSelectFormItem) Apply() bool {
 	value := item.values[i]
 
 	// Accession
-	if err := item.accessor.Set(value); err != nil {
-		item.errored(serrors.New("accession error").
+	if err := item.option.Set(item.vars, value); err != nil {
+		item.errored(serror.New("accession error").
 			With("label", item.option.Label()).
-			WithErrors(err),
+			WithErr(err),
 		)
 
 		return false

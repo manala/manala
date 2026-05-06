@@ -6,9 +6,10 @@ import (
 	"sort"
 
 	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/filepath/filter"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -43,18 +44,18 @@ func (loader *Loader) Load(repository app.Repository, name string) (app.Recipe, 
 func (loader *Loader) LoadAll(repository app.Repository) ([]app.Recipe, error) {
 	dir, err := os.Open(repository.Dir())
 	if err != nil {
-		return nil, serrors.New("file system error").
+		return nil, serror.New("file system error").
 			With("dir", repository.Dir()).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	}
 
 	defer dir.Close()
 
 	files, err := dir.ReadDir(0) // 0 to read all files and folders
 	if err != nil {
-		return nil, serrors.New("file system error").
+		return nil, serror.New("file system error").
 			With("dir", repository.Dir()).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	}
 
 	// Sort alphabetically

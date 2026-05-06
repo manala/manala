@@ -1,5 +1,0 @@
-manala:
-  recipe: recipe
-  repository: testdata/TestProjectRecursiveErrors/Invalid/repository
-
-foo: bar

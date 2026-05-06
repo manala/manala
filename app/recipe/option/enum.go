@@ -3,27 +3,40 @@ package option
 import (
 	"errors"
 
-	"github.com/manala/manala/internal/accessor"
-	"github.com/manala/manala/internal/json/number"
-	"github.com/manala/manala/internal/json/unmarshaler"
-	"github.com/manala/manala/internal/path"
-	"github.com/manala/manala/internal/schema"
+	jsondecoder "github.com/manala/manala/internal/json/decoder"
+	jsonnumber "github.com/manala/manala/internal/json/number"
+	jsonvalidation "github.com/manala/manala/internal/json/validation"
+	"github.com/manala/manala/internal/validation"
+	yamlpath "github.com/manala/manala/internal/yaml/path"
 
+	"github.com/go-openapi/jsonpointer"
 	"github.com/gosimple/slug"
 )
 
 const ENUM = "enum"
 
+var enumValidator = validation.MustNewValidator(map[string]any{
+	"type": "object",
+	"properties": map[string]any{
+		"type":  map[string]any{"const": "enum"},
+		"name":  map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+		"label": map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+		"help":  map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+	},
+	"additionalProperties": false,
+	"required":             []any{"label"},
+})
+
 type Enum struct {
-	name   string
-	label  string
-	help   string
-	schema schema.Schema
-	path   path.Path
+	name    string
+	label   string
+	help    string
+	values  []any
+	pointer jsonpointer.Pointer
 }
 
-func NewEnum(sch schema.Schema, p path.Path) (*Enum, error) {
-	// Enum
+func NewEnum(sch map[string]any, path string) (*Enum, error) {
+	// Schema *MUST* contains enum
 	enum, ok := sch["enum"].([]any)
 	if !ok {
 		return nil, errors.New("invalid recipe option enum")
@@ -33,65 +46,67 @@ func NewEnum(sch schema.Schema, p path.Path) (*Enum, error) {
 		return nil, errors.New("empty recipe option enum")
 	}
 
-	return &Enum{
-		schema: sch,
-		path:   p,
-	}, nil
+	o := &Enum{}
+
+	// Values
+	o.values = make([]any, len(enum))
+	for i := range enum {
+		if value, ok := jsonnumber.NumberType(enum[i]); ok {
+			o.values[i] = value.Normalize()
+		} else {
+			o.values[i] = enum[i]
+		}
+	}
+
+	// Pointer
+	var err error
+	if o.pointer, err = jsonpointer.New(yamlpath.ToJSONPointer(path)); err != nil {
+		return nil, err
+	}
+
+	return o, nil
 }
 
 func (o *Enum) Name() string  { return o.name }
 func (o *Enum) Label() string { return o.label }
 func (o *Enum) Help() string  { return o.help }
+func (o *Enum) Values() []any { return o.values }
 
-func (o *Enum) Values() []any {
-	enum := o.schema["enum"].([]any)
-	values := make([]any, len(enum))
-	for i := range enum {
-		if value, ok := number.NumberType(enum[i]); ok {
-			values[i] = value.Normalize()
-		} else {
-			values[i] = enum[i]
-		}
+func (o *Enum) Get(data *map[string]any) (any, error) {
+	value, _, err := o.pointer.Get(data)
+	return value, err
+}
+
+func (o *Enum) Set(data *map[string]any, v any) error {
+	_, err := o.pointer.Set(data, v)
+	return err
+}
+
+func (o *Enum) UnmarshalJSON(bytes []byte) error {
+	// Decode to map for validation
+	var data map[string]any
+	if err := jsondecoder.Decode(bytes, &data); err != nil {
+		return err
 	}
-	return values
-}
 
-func (o *Enum) Accessor(data any) accessor.Accessor {
-	return path.NewAccessor(o.path, data)
-}
+	// Validate
+	if violations, err := enumValidator.Validate(data, jsonvalidation.WithLocator(bytes)); violations != nil || err != nil {
+		return errors.Join(violations, err)
+	}
 
-func (o *Enum) UnmarshalJSON(data []byte) error {
+	// Decode
 	var env struct {
 		Name  string `json:"name"`
 		Label string `json:"label"`
 		Help  string `json:"help"`
 	}
-	if err := unmarshaler.Unmarshal(data, &env); err != nil {
+	if err := jsondecoder.Decode(bytes, &env); err != nil {
 		return err
-	}
-
-	// Label (required, max=100)
-	if env.Label == "" {
-		return errors.New("missing option label property")
-	} else if len(env.Label) > 100 {
-		return errors.New("too long option label field (max=100)")
-	}
-
-	// Help (optional, max=100)
-	if len(env.Help) > 100 {
-		return errors.New("too long option help field (max=100)")
-	}
-
-	// Name (optional, max=100)
-	if len(env.Name) > 100 {
-		return errors.New("too long option name field (max=100)")
 	}
 
 	o.label = env.Label
 	o.help = env.Help
-	o.name = env.Name
-
-	if o.name == "" {
+	if o.name = env.Name; o.name == "" {
 		o.name = slug.Make(o.label)
 	}
 

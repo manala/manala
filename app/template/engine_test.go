@@ -21,11 +21,11 @@ func TestEngineSuite(t *testing.T) {
 func (s *EngineSuite) TestExecutor() {
 	engine := template.NewEngine()
 
-	repositoryMock := &mocks.RepositoryMock{}
+	repositoryMock := &mocks.Repository{}
 	repositoryMock.
 		On("URL").Return("url")
 
-	recipeMock := &mocks.RecipeMock{}
+	recipeMock := &mocks.Recipe{}
 	recipeMock.
 		On("Name").Return("name").
 		On("Description").Return("description").

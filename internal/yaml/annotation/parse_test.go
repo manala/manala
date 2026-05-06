@@ -3,9 +3,8 @@ package annotation_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/testing/expect"
-	"github.com/manala/manala/internal/yaml/annotation"
+	"github.com/manala/manala/internal/testing/expectation"
+	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -20,7 +19,7 @@ func (s *ParseSuite) TestErrors() {
 	tests := []struct {
 		test     string
 		src      string
-		expected expect.ErrorExpectation
+		expected expectation.ErrorExpectation
 	}{
 		{
 			test: "Duplicate",
@@ -28,19 +27,18 @@ func (s *ParseSuite) TestErrors() {
 # @foo bar
 # @foo baz
 `,
-			expected: parsing.ErrorExpectation{
-				Line:   3,
-				Column: 3,
-				Err:    expect.ErrorMessageExpectation("duplicate annotation @foo"),
+			expected: yamlannotation.ErrorExpectation{
+				Position: [2]int{3, 3},
+				Err:      expectation.ErrorMessage("duplicate annotation @foo"),
 			},
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			_, err := annotation.Parse(test.src)
+			_, err := yamlannotation.Parse(test.src)
 
-			expect.Error(s.T(), test.expected, err)
+			expectation.ExpectError(s.T(), test.expected, err)
 		})
 	}
 }
@@ -61,7 +59,7 @@ func (s *ParseSuite) Test() {
   		 # @indented foo
 		# @empty
 	`
-	set, err := annotation.Parse(src)
+	set, err := yamlannotation.Parse(src)
 	s.Require().NoError(err)
 
 	tests := []struct {

@@ -11,7 +11,7 @@ import (
 	"github.com/manala/manala/app/testing/errors"
 	"github.com/manala/manala/app/testing/mocks"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -24,8 +24,8 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoad() {
-	repositoryMock := &mocks.RepositoryMock{}
-	recipeMock := &mocks.RecipeMock{}
+	repositoryMock := &mocks.Repository{}
+	recipeMock := &mocks.Recipe{}
 
 	handlerMock := &recipe.LoaderHandlerMock{}
 	handlerMock.
@@ -44,14 +44,14 @@ func (s *LoaderSuite) TestLoadErrors() {
 	loader := recipe.NewLoader(log.Discard)
 
 	s.Run("NotFound", func() {
-		repositoryMock := &mocks.RepositoryMock{}
+		repositoryMock := &mocks.Repository{}
 		repositoryMock.
 			On("URL").Return("url")
 
 		recipe, err := loader.Load(repositoryMock, "name")
 
 		s.Nil(recipe)
-		expect.Error(s.T(), errors.Expectation{
+		expectation.ExpectError(s.T(), errors.Expectation{
 			Type:  &app.NotFoundRecipeError{},
 			Attrs: [][2]any{{"repository", "url"}, {"name", "name"}},
 		}, err)
@@ -66,7 +66,7 @@ func (s *LoaderSuite) TestLoadAll() {
 	))
 	repository, _ := repositoryLoader.Load(repositoryURL)
 
-	recipeMock := &mocks.RecipeMock{}
+	recipeMock := &mocks.Recipe{}
 
 	handlerMock := &recipe.LoaderHandlerMock{}
 	handlerMock.
@@ -99,7 +99,7 @@ func (s *LoaderSuite) TestLoadAllErrors() {
 		recipes, err := loader.LoadAll(repository)
 
 		s.Empty(recipes)
-		expect.Error(s.T(), errors.Expectation{
+		expectation.ExpectError(s.T(), errors.Expectation{
 			Type:  &app.EmptyRepositoryError{},
 			Attrs: [][2]any{{"url", repositoryURL}},
 		}, err)

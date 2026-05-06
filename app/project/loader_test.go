@@ -8,9 +8,9 @@ import (
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/app/testing/errors"
 	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -23,7 +23,7 @@ func TestLoaderSuite(t *testing.T) {
 }
 
 func (s *LoaderSuite) TestLoad() {
-	projectMock := &mocks.ProjectMock{}
+	projectMock := &mocks.Project{}
 
 	handlerMock := &project.LoaderHandlerMock{}
 	handlerMock.
@@ -45,7 +45,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 		project, err := loader.Load("dir")
 
 		s.Nil(project)
-		expect.Error(s.T(), errors.Expectation{
+		expectation.ExpectError(s.T(), errors.Expectation{
 			Type:  &app.NotFoundProjectError{},
 			Attrs: [][2]any{{"dir", "dir"}},
 		}, err)
@@ -54,7 +54,7 @@ func (s *LoaderSuite) TestLoadErrors() {
 
 func (s *LoaderSuite) TestLoadRecursive() {
 	projectsDir := filepath.FromSlash("testdata/LoaderSuite/TestLoadRecursive/projects")
-	projectMock := &mocks.ProjectMock{}
+	projectMock := &mocks.Project{}
 
 	handlerMock := &project.LoaderHandlerMock{}
 	handlerMock.
@@ -85,8 +85,8 @@ func (s *LoaderSuite) TestLoadRecursiveErrors() {
 			return nil
 		})
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "dir not found",
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "dir not found",
 			Attrs: [][2]any{
 				{"dir", "dir"},
 			},

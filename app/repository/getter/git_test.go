@@ -9,7 +9,7 @@ import (
 
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/heredoc"
 
@@ -42,7 +42,7 @@ func (s *GitSuite) TearDownSuite() {
 
 func (s *GitSuite) TestLoaderHandler() {
 	cacheDir := filepath.FromSlash("testdata/cache")
-	cache := caching.NewCache(cacheDir)
+	cache := cache.New(cacheDir)
 
 	s.Run("Http", func() {
 		_ = os.RemoveAll(cacheDir)

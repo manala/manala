@@ -5,7 +5,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
 
 	"github.com/goccy/go-yaml"
 )
@@ -49,7 +49,7 @@ func funcInclude(t *template.Template) func(name string, data any) (string, erro
 
 		if v, ok := includedNames[name]; ok {
 			if v > 1000 {
-				return "", serrors.New("rendering template has a nested reference").
+				return "", serror.New("rendering template has a nested reference").
 					With("reference", name)
 			}
 

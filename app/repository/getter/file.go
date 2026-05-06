@@ -8,8 +8,9 @@ import (
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/repository"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 
 	"github.com/hashicorp/go-getter/v2"
 )
@@ -52,9 +53,9 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 			return chain.Next(query)
 		}
 
-		return nil, serrors.New("file system error").
+		return nil, serror.New("file system error").
 			With("path", request.Src).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	} else if !stat.IsDir() {
 		// Chain
 		return chain.Next(query)
@@ -65,7 +66,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 		var err error
 		request.Pwd, err = os.Getwd()
 		if err != nil {
-			return nil, serrors.New("unable to get current directory")
+			return nil, serror.New("unable to get current directory")
 		}
 	}
 
@@ -85,7 +86,7 @@ func (handler *FileLoaderHandler) Handle(query *repository.LoaderQuery, chain re
 
 		response.Dst, err = filepath.Rel(request.Pwd, response.Dst)
 		if err != nil {
-			return nil, serrors.New("unable to get relative path")
+			return nil, serror.New("unable to get relative path")
 		}
 	}
 

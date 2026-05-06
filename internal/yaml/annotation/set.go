@@ -1,7 +1,7 @@
 package annotation
 
 import (
-	"github.com/manala/manala/internal/json/unmarshaler"
+	jsondecoder "github.com/manala/manala/internal/json/decoder"
 )
 
 // Set is a set of parsed annotations, returned by Parse.
@@ -36,7 +36,7 @@ func (s *Set) JSONVar(p any, name string) error {
 	// Stencil preserves source positions for accurate error reporting
 	value := annot.Value.Stencil()
 
-	return unmarshaler.Unmarshal([]byte(value), p)
+	return jsondecoder.Decode([]byte(value), p)
 }
 
 // Func calls fn with the named annotation, if present.

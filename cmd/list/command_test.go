@@ -9,11 +9,12 @@ import (
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/app/testing/errors"
 	cmdList "github.com/manala/manala/cmd/list"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/output"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -69,7 +70,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -107,7 +108,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -118,23 +119,25 @@ func (s *CommandSuite) TestRecipeErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
-			test: "Unparsable",
+			test: "Undecodable",
 			expectedStderr: heredoc.Doc(`
 				 ● loading repository…
 				 ● loading recipes…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "unable to parse recipe manifest",
-				Dump: heredoc.Doc(`
-					at %[1]s:1:1
+			expectedError: serror.Expectation{
+				Msg: "unable to decode recipe manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
 
-					▶ 1 │ manala: {}
-					    ├─╯ missing manala "description" property
-				`,
-					filepath.Join(dir, "Unparsable", "repository", "recipe", ".manala.yaml"),
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'description'
+					`,
+						filepath.Join(dir, "Undecodable", "repository", "recipe", ".manala.yaml"),
+					)),
 				),
 			},
 		},
@@ -149,7 +152,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -165,7 +168,7 @@ func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*by
 		logger,
 		api.New(
 			logger,
-			caching.NewCache(""),
+			cache.New(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 		output.NewDetached(out),

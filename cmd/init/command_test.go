@@ -10,11 +10,12 @@ import (
 	"github.com/manala/manala/app/api"
 	"github.com/manala/manala/app/testing/errors"
 	cmdInit "github.com/manala/manala/cmd/init"
-	"github.com/manala/manala/internal/caching"
+	"github.com/manala/manala/internal/cache"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/output"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -32,7 +33,7 @@ func (s *CommandSuite) TestProjectErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "AlreadyExisting",
@@ -57,7 +58,7 @@ func (s *CommandSuite) TestProjectErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -152,7 +153,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -192,7 +193,7 @@ func (s *CommandSuite) TestRepositoryErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
 }
@@ -203,7 +204,7 @@ func (s *CommandSuite) TestRecipeErrors() {
 	tests := []struct {
 		test           string
 		expectedStderr string
-		expectedError  expect.ErrorExpectation
+		expectedError  expectation.ErrorExpectation
 	}{
 		{
 			test: "NotFound",
@@ -221,21 +222,23 @@ func (s *CommandSuite) TestRecipeErrors() {
 			},
 		},
 		{
-			test: "Unparsable",
+			test: "Undecodable",
 			expectedStderr: heredoc.Doc(`
 				 ● finding project…
 				 ● loading repository…
 				 ● loading recipe…
 			`),
-			expectedError: serrors.Expectation{
-				Message: "unable to parse recipe manifest",
-				Dump: heredoc.Doc(`
-					at %[1]s:1:1
+			expectedError: serror.Expectation{
+				Msg: "unable to decode recipe manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
 
-					▶ 1 │ manala: {}
-					    ├─╯ missing manala "description" property
-				`,
-					filepath.Join(dir, "Unparsable", "repository", "recipe", ".manala.yaml"),
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'description'
+					`,
+						filepath.Join(dir, "Undecodable", "repository", "recipe", ".manala.yaml"),
+					)),
 				),
 			},
 		},
@@ -251,85 +254,9 @@ func (s *CommandSuite) TestRecipeErrors() {
 			s.Empty(stdout)
 
 			s.Equal(test.expectedStderr, stderr.String())
-			expect.Error(s.T(), test.expectedError, err)
+			expectation.ExpectError(s.T(), test.expectedError, err)
 		})
 	}
-	/*
-		s.Run("RecipeNotFound", func() {
-			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/RecipeNotFound/repository")
-
-			stdout, stderr, err := s.execute("",
-				"--repository", repositoryURL,
-				"--recipe", "recipe",
-			)
-
-			s.Empty(stdout)
-			heredoc.Equal(s.T(), `
-				 ● finding project…
-				 ● loading repository…
-				 ● loading recipe…
-			`, stderr)
-
-			expect.Error(s.T(), errors.Expectation{
-				Type: &app.NotFoundRecipeError{},
-				Attrs: [][2]any{
-					{"repository", repositoryURL},
-					{"name", "recipe"},
-				},
-			}, err)
-		})
-
-		s.Run("WrongRecipeManifest", func() {
-			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/WrongRecipeManifest/repository")
-
-			stdout, stderr, err := s.execute("",
-				"--repository", repositoryURL,
-				"--recipe", "recipe",
-			)
-
-			s.Empty(stdout)
-			heredoc.Equal(s.T(), `
-				 ● finding project…
-				 ● loading repository…
-				 ● loading recipe…
-			`, stderr)
-
-			expect.Error(s.T(), serrors.Expectation{
-				Message: "recipe manifest is a directory",
-				Attrs: [][2]any{
-					{"dir", filepath.Join(repositoryURL, "recipe", ".manala.yaml")},
-				},
-			}, err)
-		})
-
-		s.Run("InvalidRecipeManifest", func() {
-			repositoryURL := filepath.FromSlash("testdata/TestRecipeErrors/InvalidRecipeManifest/repository")
-
-			stdout, stderr, err := s.execute("",
-				"--repository", repositoryURL,
-				"--recipe", "recipe",
-			)
-
-			s.Empty(stdout)
-			heredoc.Equal(s.T(), `
-				 ● finding project…
-				 ● loading repository…
-				 ● loading recipe…
-			`, stderr)
-
-			expect.Error(s.T(), serrors.Expectation{
-				Message: "unable to parse recipe manifest",
-				Dump: heredoc.Doc(`
-					at %[1]s:1:1
-
-					▶ 1 │ manala: {}
-					    ├─╯ missing manala description property
-				`,
-					filepath.Join(repositoryURL, "recipe", ".manala.yaml"),
-				),
-			}, err)
-		})
-	*/
 }
 
 func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
@@ -343,7 +270,7 @@ func (s *CommandSuite) execute(defaultRepositoryURL string, args ...string) (*by
 		logger,
 		api.New(
 			logger,
-			caching.NewCache(""),
+			cache.New(""),
 			api.WithDefaultRepositoryURL(defaultRepositoryURL),
 		),
 		output.NewDetached(out),
