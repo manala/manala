@@ -3,9 +3,9 @@ package annotation_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/testing/expect"
-	"github.com/manala/manala/internal/yaml/annotation"
+	jsonerrors "github.com/manala/manala/internal/json/errors"
+	"github.com/manala/manala/internal/testing/expectation"
+	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -21,11 +21,11 @@ func (s *SetSuite) TestLookup() {
 		# @foo bar
 		# @bar baz
 	`
-	set, err := annotation.Parse(src)
+	set, err := yamlannotation.Parse(src)
 	s.Require().NoError(err)
 	s.Equal(2, set.Len())
 
-	var annot *annotation.Annotation
+	var annot *yamlannotation.Annotation
 	var ok bool
 
 	annot, ok = set.Lookup("foo")
@@ -48,7 +48,7 @@ func (s *SetSuite) TestJSONVar() {
 		src := `
 # @foo {"bar": "baz"}
 `
-		set, err := annotation.Parse(src)
+		set, err := yamlannotation.Parse(src)
 		s.Require().NoError(err)
 
 		var foo map[string]any
@@ -61,7 +61,7 @@ func (s *SetSuite) TestJSONVar() {
 		src := `
 # @foo {"bar": "baz"}
 `
-		set, err := annotation.Parse(src)
+		set, err := yamlannotation.Parse(src)
 		s.Require().NoError(err)
 
 		var bar map[string]any
@@ -74,16 +74,15 @@ func (s *SetSuite) TestJSONVar() {
 		src := `
 # @foo bar
 `
-		set, err := annotation.Parse(src)
+		set, err := yamlannotation.Parse(src)
 		s.Require().NoError(err)
 
 		var foo map[string]any
 		err = set.JSONVar(&foo, "foo")
 
-		expect.Error(s.T(), parsing.FlattenErrorExpectation{
-			Line:   2,
-			Column: 8,
-			Err:    expect.ErrorMessageExpectation("invalid character 'b' looking for beginning of value"),
+		expectation.ExpectError(s.T(), jsonerrors.Expectation{
+			Position: [2]int{2, 8},
+			Err:      expectation.ErrorMessage("invalid character 'b' looking for beginning of value"),
 		}, err)
 	})
 }

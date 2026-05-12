@@ -5,9 +5,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -103,14 +104,16 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }\nbaz\n")
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to parse template",
-			Dump: heredoc.Doc(`
-				  1 │ foo
-				▶ 2 │   {{ .bar }
-				    ├ unexpected "}" in operand
-				  3 │ baz
-			`),
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to parse template",
+			Err: expectation.Errors(
+				source.Expectation(heredoc.Doc(`
+					  1 │ foo
+					▶ 2 │   {{ .bar }
+					    ├ unexpected "}" in operand
+					  3 │ baz
+				`)),
+			),
 		}, err)
 	})
 
@@ -122,14 +125,16 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }}\nbaz\n")
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to parse template",
-			Dump: heredoc.Doc(`
-				  1 │ foo
-				▶ 2 │   {{ .bar }}
-				    ├──────╯ nil data; no entry for key "bar"
-				  3 │ baz
-			`),
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to parse template",
+			Err: expectation.Errors(
+				source.Expectation(heredoc.Doc(`
+					  1 │ foo
+					▶ 2 │   {{ .bar }}
+					    ├──────╯ nil data; no entry for key "bar"
+					  3 │ baz
+				`)),
+			),
 		}, err)
 	})
 }
@@ -222,18 +227,16 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "not_found.tmpl"))
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to read template file",
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to read template file",
 			Attrs: [][2]any{
 				{"file", filepath.Join(dir, "not_found.tmpl")},
 			},
-			Errors: []expect.ErrorExpectation{
-				serrors.Expectation{
-					Message: "file does not exist",
-					Attrs: [][2]any{
-						{"operation", "open"},
-						{"path", filepath.Join(dir, "not_found.tmpl")},
-					},
+			Err: serror.Expectation{
+				Msg: "file does not exist",
+				Attrs: [][2]any{
+					{"operation", "open"},
+					{"path", filepath.Join(dir, "not_found.tmpl")},
 				},
 			},
 		}, err)
@@ -248,17 +251,19 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to parse template file",
-			Dump: heredoc.Doc(`
-				at %[1]s:2
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to parse template file",
+			Err: expectation.Errors(
+				source.Expectation(heredoc.Doc(`
+					at %[1]s:2
 
-				  1 │ foo
-				▶ 2 │   {{ .bar }
-				    ├ unexpected "}" in operand
-				  3 │ baz
-			`,
-				filepath.Join(dir, "template.tmpl"),
+					  1 │ foo
+					▶ 2 │   {{ .bar }
+					    ├ unexpected "}" in operand
+					  3 │ baz
+				`,
+					filepath.Join(dir, "template.tmpl"),
+				)),
 			),
 		}, err)
 	})
@@ -272,17 +277,19 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to parse template file",
-			Dump: heredoc.Doc(`
-				at %[1]s:2:6
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to parse template file",
+			Err: expectation.Errors(
+				source.Expectation(heredoc.Doc(`
+					at %[1]s:2:6
 
-				  1 │ foo
-				▶ 2 │   {{ .bar }}
-				    ├──────╯ nil data; no entry for key "bar"
-				  3 │ baz
-			`,
-				filepath.Join(dir, "template.tmpl"),
+					  1 │ foo
+					▶ 2 │   {{ .bar }}
+					    ├──────╯ nil data; no entry for key "bar"
+					  3 │ baz
+				`,
+					filepath.Join(dir, "template.tmpl"),
+				)),
 			),
 		}, err)
 	})

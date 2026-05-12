@@ -3,7 +3,7 @@ package annotation_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/yaml/annotation"
+	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -15,8 +15,8 @@ func TestAnnotationSuite(t *testing.T) {
 }
 
 func (s *AnnotationSuite) TestName() {
-	name := annotation.Name{
-		Token: annotation.Token{Value: "foo"},
+	name := yamlannotation.Name{
+		Token: yamlannotation.Token{Value: "foo"},
 	}
 
 	s.Equal("foo", name.String())
@@ -24,8 +24,8 @@ func (s *AnnotationSuite) TestName() {
 
 func (s *AnnotationSuite) TestValueString() {
 	s.Run("Single", func() {
-		value := annotation.Value{
-			Tokens: []annotation.Token{
+		value := yamlannotation.Value{
+			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 7},
 			},
 		}
@@ -33,8 +33,8 @@ func (s *AnnotationSuite) TestValueString() {
 	})
 
 	s.Run("Multiline", func() {
-		value := annotation.Value{
-			Tokens: []annotation.Token{
+		value := yamlannotation.Value{
+			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 7},
 				{Value: "baz", Line: 2, Column: 3},
 			},
@@ -43,15 +43,15 @@ func (s *AnnotationSuite) TestValueString() {
 	})
 
 	s.Run("Empty", func() {
-		value := annotation.Value{}
+		value := yamlannotation.Value{}
 		s.Empty(value.String())
 	})
 }
 
 func (s *AnnotationSuite) TestValueStencil() {
 	s.Run("Single", func() {
-		value := annotation.Value{
-			Tokens: []annotation.Token{
+		value := yamlannotation.Value{
+			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 8},
 			},
 		}
@@ -59,8 +59,8 @@ func (s *AnnotationSuite) TestValueStencil() {
 	})
 
 	s.Run("Multiline", func() {
-		value := annotation.Value{
-			Tokens: []annotation.Token{
+		value := yamlannotation.Value{
+			Tokens: []yamlannotation.Token{
 				{Value: "{", Line: 2, Column: 8},
 				{Value: "\"bar\":", Line: 3, Column: 5},
 				{Value: "123", Line: 3, Column: 12},
@@ -72,11 +72,11 @@ func (s *AnnotationSuite) TestValueStencil() {
 }
 
 func (s *AnnotationSuite) TestValueStart() {
-	token1 := annotation.Token{Value: "foo", Line: 2, Column: 5}
-	token2 := annotation.Token{Value: "bar", Line: 3, Column: 3}
+	token1 := yamlannotation.Token{Value: "foo", Line: 2, Column: 5}
+	token2 := yamlannotation.Token{Value: "bar", Line: 3, Column: 3}
 
-	value := annotation.Value{
-		Tokens: []annotation.Token{token1, token2},
+	value := yamlannotation.Value{
+		Tokens: []yamlannotation.Token{token1, token2},
 	}
 
 	s.Equal(token1, value.Start())

@@ -1,12 +1,10 @@
-package manifest_test
+package manifest //nolint:testpackage
 
 import (
 	_ "embed"
-	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/app/testing/mocks"
 
 	"github.com/stretchr/testify/suite"
@@ -21,52 +19,21 @@ func TestProjectSuite(t *testing.T) {
 }
 
 func (s *ProjectSuite) Test() {
-	repositoryMock := &mocks.RepositoryMock{}
-	repositoryMock.
-		On("URL").Return("repository")
+	dir := "dir"
+	recipeMock := &mocks.Recipe{}
+	vars := map[string]any{"foo": "bar"}
 
-	recipeMock := &mocks.RecipeMock{}
-	recipeMock.
-		On("Name").Return("recipe").
-		On("Description").Return("description").
-		On("Icon").Return("icon").
-		On("Vars").Return(map[string]any{
-		"foo": "recipe",
-		"bar": "recipe",
-	}).
-		On("Repository").Return(repositoryMock)
-
-	m := manifest.New()
-
-	dir := filepath.FromSlash("testdata/ProjectSuite/Test")
-	content, _ := os.ReadFile(filepath.Join(dir, "manifest.yaml"))
-
-	err := m.Unmarshal(content)
-	s.Require().NoError(err)
-
-	project := manifest.NewProject(
-		dir,
-		m,
-		recipeMock,
-	)
+	project := &Project{
+		dir:    dir,
+		recipe: recipeMock,
+		vars:   vars,
+	}
 
 	s.Equal(dir, project.Dir())
 	s.Equal(recipeMock, project.Recipe())
+	s.Equal(vars, project.Vars())
 
-	s.Run("Vars", func() {
-		s.Equal(map[string]any{
-			"foo": "recipe",
-			"bar": "project",
-			"baz": "project",
-		}, project.Vars())
-	})
-
-	s.Run("Watches", func() {
-		watches, err := project.Watches()
-
-		s.Require().NoError(err)
-		s.Equal([]string{
-			filepath.Join(dir, ".manala.yaml"),
-		}, watches)
-	})
+	watches, err := project.Watches()
+	s.Require().NoError(err)
+	s.Equal([]string{filepath.Join(dir, ".manala.yaml")}, watches)
 }

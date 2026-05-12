@@ -23,8 +23,8 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	handler := name.NewProcessorLoaderHandler(log.Discard, processor)
 
-	repositoryMock := &mocks.RepositoryMock{}
-	recipeMock := &mocks.RecipeMock{}
+	repositoryMock := &mocks.Repository{}
+	recipeMock := &mocks.Recipe{}
 
 	chainMock := &recipe.LoaderHandlerChainMock{}
 	chainMock.

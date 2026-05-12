@@ -4,22 +4,12 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
-
-	"dario.cat/mergo"
 )
 
 type Project struct {
-	manifest *Manifest
-	dir      string
-	recipe   app.Recipe
-}
-
-func NewProject(dir string, manifest *Manifest, recipe app.Recipe) *Project {
-	return &Project{
-		dir:      dir,
-		manifest: manifest,
-		recipe:   recipe,
-	}
+	dir    string
+	recipe app.Recipe
+	vars   map[string]any
 }
 
 func (project *Project) Dir() string {
@@ -31,12 +21,7 @@ func (project *Project) Recipe() app.Recipe {
 }
 
 func (project *Project) Vars() map[string]any {
-	var vars map[string]any
-
-	_ = mergo.Merge(&vars, project.recipe.Vars())
-	_ = mergo.Merge(&vars, project.manifest.Vars(), mergo.WithOverride)
-
-	return vars
+	return project.vars
 }
 
 func (project *Project) Watches() ([]string, error) {

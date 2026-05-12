@@ -6,9 +6,9 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
 	"github.com/manala/manala/app/testing/mocks"
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -25,7 +25,7 @@ func (s *LoaderSuite) TestProcessorHandler() {
 
 	handler := url.NewProcessorLoaderHandler(log.Discard, processor)
 
-	repositoryMock := &mocks.RepositoryMock{}
+	repositoryMock := &mocks.Repository{}
 
 	chainMock := &repository.LoaderHandlerChainMock{}
 	chainMock.
@@ -48,14 +48,12 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
-	expect.Error(s.T(), serrors.Expectation{
-		Message: "unable to process repository query",
+	expectation.ExpectError(s.T(), serror.Expectation{
+		Msg: "unable to process repository query",
 		Attrs: [][2]any{
 			{"query", "bar;baz"},
 		},
-		Errors: []expect.ErrorExpectation{
-			expect.ErrorMessageExpectation("invalid semicolon separator in query"),
-		},
+		Err: expectation.ErrorMessage("invalid semicolon separator in query"),
 	}, err)
 	chainMock.AssertExpectations(s.T())
 }

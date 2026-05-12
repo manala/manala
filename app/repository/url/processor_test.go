@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/manala/manala/app/repository/url"
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -24,19 +24,17 @@ func (s *ProcessorSuite) TestProcess() {
 		urls        map[int]string
 		queries     map[int]map[string]string
 		expectedURL string
-		expectedErr expect.ErrorExpectation
+		expectedErr expectation.ErrorExpectation
 	}{
 		{
 			test: "QuerySemicolon",
 			url:  "foo?bar;baz",
-			expectedErr: serrors.Expectation{
-				Message: "unable to process repository query",
+			expectedErr: serror.Expectation{
+				Msg: "unable to process repository query",
 				Attrs: [][2]any{
 					{"query", "bar;baz"},
 				},
-				Errors: []expect.ErrorExpectation{
-					expect.ErrorMessageExpectation("invalid semicolon separator in query"),
-				},
+				Err: expectation.ErrorMessage("invalid semicolon separator in query"),
 			},
 		},
 		{
@@ -153,7 +151,7 @@ func (s *ProcessorSuite) TestProcess() {
 			url, err := processor.Process(test.url)
 
 			if test.expectedErr != nil {
-				expect.Error(s.T(), test.expectedErr, err)
+				expectation.ExpectError(s.T(), test.expectedErr, err)
 				s.Empty(url)
 			} else {
 				s.Require().NoError(err)

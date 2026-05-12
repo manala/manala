@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+
 	"github.com/goccy/go-yaml/ast"
 )
 
@@ -23,7 +25,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 
 					anchor := anchors[alias]
 					if anchor == nil {
-						return ErrorAt(
+						return yamlerrors.New(
 							fmt.Errorf("unknown \"%s\" yaml anchor", alias),
 							vv.Value.GetToken(),
 						)
@@ -33,13 +35,13 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 					case *ast.MappingNode:
 						mergedValues = a.Values
 					default:
-						return ErrorAt(
+						return yamlerrors.New(
 							fmt.Errorf("anchor %s must be a map", alias),
 							anchor.GetToken(),
 						)
 					}
 				} else {
-					return ErrorAt(
+					return yamlerrors.New(
 						errors.New("map value must be an alias"),
 						v.Value.GetToken(),
 					)
@@ -92,7 +94,7 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node) error {
 		anchor := anchors[alias]
 
 		if anchor == nil {
-			return ErrorAt(
+			return yamlerrors.New(
 				fmt.Errorf("unknown \"%s\" yaml anchor", alias),
 				n.Value.GetToken(),
 			)

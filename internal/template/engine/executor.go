@@ -5,8 +5,10 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/std"
+	templateerrors "github.com/manala/manala/internal/template/errors"
 )
 
 type Executor struct {
@@ -16,12 +18,11 @@ type Executor struct {
 
 func (e *Executor) Execute(writer io.Writer, content string) error {
 	if err := e.execute(writer, content); err != nil {
-		return serrors.New("unable to parse template").
-			WithDumper(parsing.ErrorDumper{
-				Err:   ErrorFrom(err, content),
-				Src:   content,
-				Lexer: "go-template",
-			})
+		return serror.New("unable to parse template").
+			WithErr(source.From(templateerrors.From(err, content), source.Origin{
+				Source:   content,
+				Language: "go-template",
+			}))
 	}
 	return nil
 }
@@ -29,19 +30,18 @@ func (e *Executor) Execute(writer io.Writer, content string) error {
 func (e *Executor) ExecuteTemplate(writer io.Writer, file string) error {
 	content, err := os.ReadFile(file)
 	if err != nil {
-		return serrors.New("unable to read template file").
+		return serror.New("unable to read template file").
 			With("file", file).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	}
 
 	if err := e.execute(writer, string(content)); err != nil {
-		return serrors.New("unable to parse template file").
-			WithDumper(parsing.ErrorDumper{
-				Err:   ErrorFrom(err, string(content)),
-				File:  file,
-				Src:   string(content),
-				Lexer: "go-template",
-			})
+		return serror.New("unable to parse template file").
+			WithErr(source.From(templateerrors.From(err, string(content)), source.Origin{
+				File:     file,
+				Source:   string(content),
+				Language: "go-template",
+			}))
 	}
 	return nil
 }

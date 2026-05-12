@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/manala/manala/internal/json/number"
+	jsonnumber "github.com/manala/manala/internal/json/number"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -35,9 +35,9 @@ func (s *NumberSuite) TestType() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			num, ok := number.NumberType(test.value)
+			num, ok := jsonnumber.NumberType(test.value)
 
-			s.Require().IsType(number.Number{}, num)
+			s.Require().IsType(jsonnumber.Number{}, num)
 			s.Equal(test.expected, ok)
 		})
 	}
@@ -90,7 +90,7 @@ func (s *NumberSuite) Test() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			num := number.Number{Number: test.number}
+			num := jsonnumber.Number{Number: test.number}
 
 			s.Equal(test.expectedInt, num.Int())
 		})

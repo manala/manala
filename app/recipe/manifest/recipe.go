@@ -6,24 +6,17 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
-	"github.com/manala/manala/internal/schema"
-	"github.com/manala/manala/internal/sync"
+	"github.com/manala/manala/app/sync"
 )
 
 type Recipe struct {
-	manifest   *Manifest
 	dir        string
 	name       string
+	config     *Config
 	repository app.Repository
-}
-
-func NewRecipe(dir, name string, manifest *Manifest, repository app.Repository) *Recipe {
-	return &Recipe{
-		dir:        dir,
-		name:       name,
-		manifest:   manifest,
-		repository: repository,
-	}
+	vars       map[string]any
+	schema     map[string]any
+	options    []app.RecipeOption
 }
 
 func (recipe *Recipe) Dir() string {
@@ -35,36 +28,16 @@ func (recipe *Recipe) Name() string {
 }
 
 func (recipe *Recipe) Description() string {
-	return recipe.manifest.Description
+	return recipe.config.Description
 }
 
 func (recipe *Recipe) Icon() string {
-	return recipe.manifest.Icon
-}
-
-func (recipe *Recipe) Vars() map[string]any {
-	return recipe.manifest.Vars()
-}
-
-func (recipe *Recipe) Sync() []sync.UnitInterface {
-	return recipe.manifest.Sync
-}
-
-func (recipe *Recipe) Schema() schema.Schema {
-	return recipe.manifest.Schema()
-}
-
-func (recipe *Recipe) Options() []app.RecipeOption {
-	return recipe.manifest.Options()
-}
-
-func (recipe *Recipe) Repository() app.Repository {
-	return recipe.repository
+	return recipe.config.Icon
 }
 
 func (recipe *Recipe) Template() string {
-	if recipe.manifest.Template != "" {
-		return filepath.Join(recipe.Dir(), recipe.manifest.Template)
+	if recipe.config.Template != "" {
+		return filepath.Join(recipe.Dir(), recipe.config.Template)
 	}
 	return ""
 }
@@ -72,7 +45,7 @@ func (recipe *Recipe) Template() string {
 func (recipe *Recipe) Partials() []string {
 	var partials []string
 
-	for _, partial := range recipe.manifest.Partials {
+	for _, partial := range recipe.config.Partials {
 		partials = append(partials, filepath.Join(recipe.Dir(), partial))
 	}
 
@@ -87,8 +60,24 @@ func (recipe *Recipe) Partials() []string {
 	return partials
 }
 
-func (recipe *Recipe) ProjectValidator() *schema.Validator {
-	return schema.NewValidator(recipe.Schema())
+func (recipe *Recipe) Sync() []sync.Unit {
+	return recipe.config.Sync
+}
+
+func (recipe *Recipe) Repository() app.Repository {
+	return recipe.repository
+}
+
+func (recipe *Recipe) Vars() map[string]any {
+	return recipe.vars
+}
+
+func (recipe *Recipe) Schema() map[string]any {
+	return recipe.schema
+}
+
+func (recipe *Recipe) Options() []app.RecipeOption {
+	return recipe.options
 }
 
 func (recipe *Recipe) Watches() ([]string, error) {

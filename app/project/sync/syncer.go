@@ -34,9 +34,9 @@ func (syncer *Syncer) Sync(project app.Project) error {
 	for _, unit := range project.Recipe().Sync() {
 		if err := syncer.syncer.Sync(
 			project.Recipe().Dir(),
-			unit.Source(),
+			unit.Source,
 			project.Dir(),
-			unit.Destination(),
+			unit.Destination,
 			templateExecutor,
 		); err != nil {
 			return err

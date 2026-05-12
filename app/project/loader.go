@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 
 	"github.com/manala/manala/app"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/filepath/filter"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -45,13 +46,13 @@ func (loader *Loader) LoadRecursive(dir string, fn func(project app.Project) err
 		func(path string, entry os.DirEntry, err error) error {
 			if err != nil {
 				if errors.Is(err, os.ErrNotExist) {
-					return serrors.New("dir not found").
+					return serror.New("dir not found").
 						With("dir", path)
 				}
 
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("path", path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			// Only directories

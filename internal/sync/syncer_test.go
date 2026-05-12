@@ -6,11 +6,12 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/sync"
 	"github.com/manala/manala/internal/template/engine"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
@@ -54,8 +55,8 @@ func (s *SyncerSuite) TestSync() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz", destinationPath, "baz", nil)
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "no source file or directory",
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "no source file or directory",
 			Attrs: [][2]any{
 				{"path", filepath.Join(sourcePath, "baz")},
 			},
@@ -210,8 +211,8 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("SourceNotExists", func() {
 		err := s.syncer.Sync(sourcePath, "baz.tmpl", destinationPath, "baz", s.templateExecutor)
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "no source file or directory",
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "no source file or directory",
 			Attrs: [][2]any{
 				{"path", filepath.Join(sourcePath, "baz.tmpl")},
 			},
@@ -248,17 +249,19 @@ func (s *SyncerSuite) TestSyncTemplate() {
 	s.Run("Invalid", func() {
 		err := s.syncer.Sync(sourcePath, "invalid.tmpl", destinationPath, "invalid", s.templateExecutor)
 
-		expect.Error(s.T(), serrors.Expectation{
-			Message: "unable to parse template file",
-			Dump: heredoc.Doc(`
-				at %[1]s:2:6
+		expectation.ExpectError(s.T(), serror.Expectation{
+			Msg: "unable to parse template file",
+			Err: expectation.Errors(
+				source.Expectation(heredoc.Doc(`
+					at %[1]s:2:6
 
-				  1 │ foo
-				▶ 2 │   {{ .bar }}
-				    ├──────╯ nil data; no entry for key "bar"
-				  3 │ baz
-			`,
-				filepath.Join(sourcePath, "invalid.tmpl"),
+					  1 │ foo
+					▶ 2 │   {{ .bar }}
+					    ├──────╯ nil data; no entry for key "bar"
+					  3 │ baz
+				`,
+					filepath.Join(sourcePath, "invalid.tmpl"),
+				)),
 			),
 		}, err)
 	})

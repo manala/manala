@@ -9,8 +9,9 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
 	"github.com/manala/manala/internal/template/engine"
 )
 
@@ -22,11 +23,6 @@ func NewSyncer(log *log.Log) *Syncer {
 	return &Syncer{
 		log: log,
 	}
-}
-
-type UnitInterface interface {
-	Source() string
-	Destination() string
 }
 
 // Sync a source with a destination.
@@ -63,9 +59,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Destination is a file; remove
 		if node.Dst.IsExist && !node.Dst.IsDir {
 			if err := os.Remove(node.Dst.Path); err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("file", node.Dst.Path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			node.Dst.IsExist = false
@@ -74,9 +70,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Destination does not exist; create
 		if !node.Dst.IsExist {
 			if err := os.MkdirAll(node.Dst.Path, 0o755); err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("dir", node.Dst.Path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			// Log
@@ -111,18 +107,18 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Delete not synced destination files
 		files, err := os.ReadDir(node.Dst.Path)
 		if err != nil {
-			return serrors.New("file system error").
+			return serror.New("file system error").
 				With("dir", node.Dst.Path).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		for _, file := range files {
 			if !dstMap[file.Name()] {
 				path := filepath.Join(node.Dst.Path, file.Name())
 				if err := os.RemoveAll(path); err != nil {
-					return serrors.New("file system error").
+					return serror.New("file system error").
 						With("file", path).
-						WithErrors(serrors.FromOs(err))
+						WithErr(std.From(err))
 				}
 			}
 		}
@@ -140,9 +136,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Destination is a directory; remove
 		if node.Dst.IsDir {
 			if err := os.RemoveAll(node.Dst.Path); err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("dir", node.Dst.Path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			node.Dst.IsExist = false
@@ -156,9 +152,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Ensure destination parents directories exists
 		if dir := filepath.Dir(node.Dst.Path); dir != "." {
 			if err := os.MkdirAll(dir, 0o755); err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("dir", dir).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 		}
 	}
@@ -189,9 +185,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Node is not a template, let's go buffering \o/
 		srcFile, err := os.Open(node.Src.Path)
 		if err != nil {
-			return serrors.New("file system error").
+			return serror.New("file system error").
 				With("file", node.Src.Path).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		defer srcFile.Close()
@@ -224,9 +220,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 		// Create or truncate destination file
 		dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 		if err != nil {
-			return serrors.New("file system error").
+			return serror.New("file system error").
 				With("file", node.Dst.Path).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		defer dstFile.Close()
@@ -249,9 +245,9 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 		if dstMode != node.Dst.Mode {
 			if err := os.Chmod(node.Dst.Path, dstMode); err != nil {
-				return serrors.New("file system error").
+				return serror.New("file system error").
 					With("file", node.Dst.Path).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 		}
 	}
@@ -299,13 +295,13 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 	if err != nil {
 		// Source does not exist
 		if errors.Is(err, os.ErrNotExist) {
-			return nil, serrors.New("no source file or directory").
+			return nil, serror.New("no source file or directory").
 				With("path", srcPath)
 		}
 
-		return nil, serrors.New("file system error").
+		return nil, serror.New("file system error").
 			With("path", srcPath).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	}
 
 	node.Src.IsDir = srcStat.IsDir()
@@ -313,9 +309,9 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 	if node.Src.IsDir {
 		files, err := os.ReadDir(srcPath)
 		if err != nil {
-			return nil, serrors.New("file system error").
+			return nil, serror.New("file system error").
 				With("dir", srcPath).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		for _, file := range files {
@@ -342,9 +338,9 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 	if err != nil {
 		// Error other than not existing destination
 		if !errors.Is(err, os.ErrNotExist) {
-			return nil, serrors.New("file system error").
+			return nil, serror.New("file system error").
 				With("path", dstPath).
-				WithErrors(serrors.FromOs(err))
+				WithErr(std.From(err))
 		}
 
 		node.Dst.IsExist = false
@@ -360,9 +356,9 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 		if node.Dst.IsDir {
 			files, err := os.ReadDir(dstPath)
 			if err != nil {
-				return nil, serrors.New("file system error").
+				return nil, serror.New("file system error").
 					With("dir", dstPath).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			for _, file := range files {
@@ -372,9 +368,9 @@ func newNode(srcDir, src, dstDir, dst string, templateExecutor *engine.Executor)
 			// Get destination hash
 			file, err := os.Open(dstPath)
 			if err != nil {
-				return nil, serrors.New("file system error").
+				return nil, serror.New("file system error").
 					With("file", dstPath).
-					WithErrors(serrors.FromOs(err))
+					WithErr(std.From(err))
 			}
 
 			defer file.Close()

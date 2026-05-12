@@ -10,9 +10,11 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/serrors"
-	"github.com/manala/manala/internal/testing/expect"
+	"github.com/manala/manala/internal/testing/expectation"
+	"github.com/manala/manala/internal/testing/heredoc"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -55,34 +57,98 @@ func (s *LoaderSuite) TestHandlerErrors() {
 
 	tests := []struct {
 		test     string
-		expected expect.ErrorExpectation
+		expected expectation.ErrorExpectation
 	}{
 		{
 			test: "Directory",
-			expected: serrors.Expectation{
-				Message: "project manifest is a directory",
+			expected: serror.Expectation{
+				Msg: "project manifest is a directory",
 				Attrs: [][2]any{
 					{"dir", filepath.Join(dir, "Directory", "project", ".manala.yaml")},
 				},
 			},
 		},
 		{
+			test: "Unparsable",
+			expected: serror.Expectation{
+				Msg: "unable to parse project manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:1
+
+						▶ 1 │ @
+						    ├─╯ '@' is a reserved character
+					`,
+						filepath.Join(dir, "Unparsable", "project", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "MissingConfig",
+			expected: serror.Expectation{
+				Msg: "invalid project manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:4
+
+						▶ 1 │ foo: bar
+						    ├────╯ missing "manala" property
+					`,
+						filepath.Join(dir, "MissingConfig", "project", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "UndecodableConfig",
+			expected: serror.Expectation{
+				Msg: "unable to decode project manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
+
+						▶ 1 │ manala: foo
+						    ├─────────╯ string was used where mapping is expected
+					`,
+						filepath.Join(dir, "UndecodableConfig", "project", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "InvalidConfig",
+			expected: serror.Expectation{
+				Msg: "unable to decode project manifest config",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:1:9
+
+						▶ 1 │ manala: {}
+						    ├─────────╯ missing property 'recipe'
+					`,
+						filepath.Join(dir, "InvalidConfig", "project", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
 			test: "InvalidVars",
-			expected: serrors.Expectation{
-				Message: "invalid project manifest vars",
-				Attrs: [][2]any{
-					{"file", filepath.Join(dir, "InvalidVars", "project", ".manala.yaml")},
-				},
-				Errors: []expect.ErrorExpectation{
-					serrors.Expectation{
-						Message: "invalid type",
-						Attrs: [][2]any{
-							{"expected", "integer"},
-							{"actual", "string"},
-							{"path", "foo"},
-						},
-					},
-				},
+			expected: serror.Expectation{
+				Msg: "invalid project manifest vars",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+						at %[1]s:5:6
+
+						  2 │   recipe: recipe
+						  3 │   repository: testdata/LoaderSuite/TestHandlerErrors/InvalidVars/repository
+						  4 │
+						▶ 5 │ foo: bar
+						    ├──────╯ got string, want integer
+					`,
+						filepath.Join(dir, "InvalidVars", "project", ".manala.yaml"),
+					)),
+				),
 			},
 		},
 	}
@@ -95,7 +161,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 			project, err := handler.Handle(&project.LoaderQuery{Dir: filepath.Join(dir, test.test, "project")}, chainMock)
 
 			s.Nil(project)
-			expect.Error(s.T(), test.expected, err)
+			expectation.ExpectError(s.T(), test.expected, err)
 			chainMock.AssertExpectations(s.T())
 		})
 	}

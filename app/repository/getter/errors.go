@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/manala/manala/internal/serrors"
+	"github.com/manala/manala/internal/errors/serror"
 )
 
 var detectErrorRegex = regexp.MustCompile(`(?s)^error downloading '(?P<error>.*)'$`)
@@ -29,11 +29,11 @@ type awsError interface {
 	OrigErr() error
 }
 
-func ErrorFrom(err error) serrors.Error {
+func ErrorFrom(err error) serror.Error {
 	message := err.Error()
 
 	if message == "subdirectory component contain path traversal out of the repository" {
-		return serrors.New("subdir out of repository")
+		return serror.New("subdir out of repository")
 	} else
 	// Aws error
 	if err, ok := errors.AsType[awsError](err); ok {
@@ -46,15 +46,15 @@ func ErrorFrom(err error) serrors.Error {
 			arguments = append(arguments, "message", message)
 		}
 
-		return serrors.New("aws error").
+		return serror.New("aws error").
 			With(arguments...).
-			WithErrors(err.OrigErr()).
+			WithErr(err.OrigErr()).
 			WithDump(err.Error())
 	} else
 	// Command error code
 	if matches := commandErrorCodeRegex.FindStringSubmatch(message); matches != nil {
 		code, _ := strconv.Atoi(matches[commandErrorCodeRegex.SubexpIndex("code")])
-		return serrors.New("command error").
+		return serror.New("command error").
 			With(
 				"command", matches[commandErrorCodeRegex.SubexpIndex("command")],
 				"code", code,
@@ -63,16 +63,16 @@ func ErrorFrom(err error) serrors.Error {
 	} else
 	// Command error
 	if matches := commandErrorRegex.FindStringSubmatch(message); matches != nil {
-		return serrors.New("command error").
+		return serror.New("command error").
 			With("command", matches[commandErrorRegex.SubexpIndex("command")]).
 			WithDump(matches[commandErrorRegex.SubexpIndex("dump")])
 	} else
 	// Multi error
 	if matches := multiErrorRegex.FindStringSubmatch(message); matches != nil {
-		return serrors.New("unable to handle repository").
+		return serror.New("unable to handle repository").
 			WithDump(matches[multiErrorRegex.SubexpIndex("dump")])
 	}
 
-	return serrors.New("unable to handle repository").
+	return serror.New("unable to handle repository").
 		With("error", err.Error())
 }

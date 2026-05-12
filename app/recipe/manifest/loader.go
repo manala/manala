@@ -2,16 +2,23 @@ package manifest
 
 import (
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
+	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/log"
-	"github.com/manala/manala/internal/parsing"
-	"github.com/manala/manala/internal/serrors"
+	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlmapping "github.com/manala/manala/internal/yaml/mapping"
+	yamlparser "github.com/manala/manala/internal/yaml/parser"
+
+	"github.com/goccy/go-yaml"
 )
+
+const filename = ".manala.yaml"
 
 type LoaderHandler struct {
 	log *log.Log
@@ -36,48 +43,77 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 			return chain.Next(query)
 		}
 
-		return nil, serrors.New("unable to stat recipe manifest").
+		return nil, serror.New("unable to stat recipe manifest").
 			With("file", file).
-			WithErrors(serrors.FromOs(err))
+			WithErr(std.From(err))
 	} else if fileInfo.IsDir() {
-		return nil, serrors.New("recipe manifest is a directory").
+		return nil, serror.New("recipe manifest is a directory").
 			With("dir", file)
 	}
 
-	// Open file
-	reader, err := os.Open(file)
-	if err != nil {
-		return nil, serrors.New("unable to open recipe manifest").
-			With("file", file).
-			WithErrors(serrors.FromOs(err))
-	}
-	defer reader.Close()
-
 	// Read file
-	content, err := io.ReadAll(reader)
+	content, err := os.ReadFile(file)
 	if err != nil {
-		return nil, serrors.New("unable to read recipe manifest").
+		return nil, serror.New("unable to read recipe manifest").
 			With("file", file).
-			WithErrors(err)
+			WithErr(std.From(err))
 	}
 
-	// Parse file content
-	manifest := New()
-	if err := manifest.Unmarshal(content); err != nil {
-		e := serrors.New("unable to parse recipe manifest")
-		if err, ok := errors.AsType[*parsing.Error](err); ok {
-			return nil, e.WithDumper(parsing.ErrorDumper{
-				Err:   err.Flatten(),
-				File:  file,
-				Src:   string(content),
-				Lexer: "yaml",
-			})
-		}
-		return nil, e.With("file", file).
-			WithErrors(err)
+	// Prepare source error origin
+	origin := source.Origin{
+		File:     file,
+		Source:   string(content),
+		Language: "yaml",
+	}
+
+	// Init recipe
+	recipe := &Recipe{
+		dir:        dir,
+		name:       query.Name,
+		config:     &Config{},
+		repository: query.Repository,
+	}
+
+	// Parse content
+	node, err := yamlparser.Parse(content)
+	if err != nil {
+		return nil, serror.New("unable to parse recipe manifest").
+			WithErr(source.From(err, origin))
+	}
+
+	// Pop config node
+	configNode, found := yamlmapping.Pop(node, "manala")
+	if !found {
+		return nil, serror.New("invalid recipe manifest").
+			WithErr(source.From(yamlerrors.New(
+				errors.New("missing \"manala\" property"),
+				node.GetToken(),
+			), origin))
+	}
+
+	// Decode config
+	if err := yaml.NodeToValue(configNode, recipe.config); err != nil {
+		return nil, serror.New("unable to decode recipe manifest config").
+			WithErr(source.From(err, origin))
 	}
 
 	handler.log.Debug("recipe manifest loaded", "handler", "manifest", "file", file)
 
-	return NewRecipe(dir, query.Name, manifest, query.Repository), nil
+	// Decode vars
+	if err := yaml.NodeToValue(node, &recipe.vars); err != nil {
+		return nil, serror.New("unable to decode recipe manifest vars").
+			WithErr(source.From(yamlerrors.From(err), origin))
+	}
+
+	// Infer schema & options
+	inf := Inferrer{
+		Schema:  &recipe.schema,
+		Options: &recipe.options,
+	}
+	if err = inf.Infer(node); err != nil {
+		return nil, serror.New("unable to infer recipe manifest vars").
+			WithErr(source.From(err, origin))
+	}
+
+	return recipe, nil
 }
