@@ -54,7 +54,7 @@ jobs:
     needs:
       - lint
       - test
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - name: Checkout
         uses: actions/checkout@v6
