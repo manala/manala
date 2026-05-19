@@ -16,7 +16,9 @@ linters:
     - gochecknoglobals
     - gochecknoinits
     - gocognit
+    - goconst
     - gocyclo
+    - gomodguard
     - interfacebloat
     - ireturn
     - lll
@@ -40,11 +42,6 @@ linters:
     errorlint:
       asserts: false
       comparison: false
-    goconst:
-      ignore-string-values:
-        - foo
-        - bar
-        - baz
     gosec:
       excludes:
         - G104
@@ -52,6 +49,7 @@ linters:
         - G304
         - G306
         - G404
+        - G703
     govet:
       disable:
         - stdmethods
