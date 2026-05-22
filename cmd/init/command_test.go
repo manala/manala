@@ -222,22 +222,23 @@ func (s *CommandSuite) TestRecipeErrors() {
 			},
 		},
 		{
-			test: "Undecodable",
+			test: "Invalid",
 			expectedStderr: heredoc.Doc(`
 				 ● finding project…
 				 ● loading repository…
 				 ● loading recipe…
 			`),
 			expectedError: serror.Expectation{
-				Msg: "unable to decode recipe manifest config",
+				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:1:9
+
+						at %[1]s:1:1
 
 						▶ 1 │ manala: {}
-						    ├─────────╯ missing property 'description'
+						    ├─╯ missing property 'description'
 					`,
-						filepath.Join(dir, "Undecodable", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "Invalid", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},

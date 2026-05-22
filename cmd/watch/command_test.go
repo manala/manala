@@ -48,20 +48,21 @@ func (s *CommandSuite) TestProjectErrors() {
 			},
 		},
 		{
-			test: "Undecodable",
+			test: "Invalid",
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
 			expectedError: serror.Expectation{
-				Msg: "unable to decode project manifest config",
+				Msg: "invalid project manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:1:9
+
+						at %[1]s:1:1
 
 						▶ 1 │ manala: {}
-						    ├─────────╯ missing property 'recipe'
+						    ├─╯ missing property 'recipe'
 					`,
-						filepath.Join(dir, "Undecodable", "project", ".manala.yaml"),
+						filepath.Join(dir, "Invalid", "project", ".manala.yaml"),
 					)),
 				),
 			},
@@ -75,6 +76,7 @@ func (s *CommandSuite) TestProjectErrors() {
 				Msg: "invalid project manifest vars",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
+
 						at %[1]s:5:6
 
 						  2 │   recipe: recipe
@@ -163,20 +165,21 @@ func (s *CommandSuite) TestRecipeErrors() {
 			},
 		},
 		{
-			test: "Undecodable",
+			test: "Invalid",
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
 			expectedError: serror.Expectation{
-				Msg: "unable to decode recipe manifest config",
+				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:1:9
+
+						at %[1]s:1:1
 
 						▶ 1 │ manala: {}
-						    ├─────────╯ missing property 'description'
+						    ├─╯ missing property 'description'
 					`,
-						filepath.Join(dir, "Undecodable", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "Invalid", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},

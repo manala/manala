@@ -10,6 +10,7 @@ import (
 	jsonerrors "github.com/manala/manala/internal/json/errors"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
+	"github.com/manala/manala/internal/validation"
 	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
 	yamlparser "github.com/manala/manala/internal/yaml/parser"
@@ -502,10 +503,18 @@ func (s *InferrerSuite) TestOptionErrors() {
 			`),
 			expected: yamlerrors.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
-					Position: [2]int{1, 11},
-					Err:      expectation.ErrorMessage("missing property 'label'\nadditional properties 'foo' not allowed"),
-				},
+				Err: expectation.Errors(
+					validation.ViolationExpectation{
+						Location: "",
+						Position: [2]int{0, 0},
+						Err:      expectation.ErrorMessage("missing property 'label'"),
+					},
+					validation.ViolationExpectation{
+						Location: "/foo",
+						Position: [2]int{1, 12},
+						Err:      expectation.ErrorMessage("additional property 'foo' not allowed"),
+					},
+				),
 			},
 		},
 		{

@@ -69,6 +69,7 @@ func (s *EngineSuite) TestExecutor() {
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					at %[1]s:2
 
 					  1 │ foo

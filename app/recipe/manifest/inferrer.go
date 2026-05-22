@@ -130,7 +130,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					if err := o.UnmarshalJSON([]byte(value)); err != nil {
-						return yamlannotation.NewError(err, a.Value.Start())
+						return err
 					}
 					opt = o
 				case option.ENUM:
@@ -139,7 +139,7 @@ func (i *Inferrer) infer(node ast.MapNode) (map[string]any, error) {
 						return yamlannotation.NewError(err, a.Value.Start())
 					}
 					if err := o.UnmarshalJSON([]byte(value)); err != nil {
-						return yamlannotation.NewError(err, a.Value.Start())
+						return err
 					}
 					opt = o
 				default:

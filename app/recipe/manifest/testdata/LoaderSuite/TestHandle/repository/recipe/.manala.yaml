@@ -1,0 +1,20 @@
+manala:
+  description: description
+  icon: icon
+  template: template
+  partials:
+    - partial.tmpl
+    - dir/partial.tmpl
+  sync:
+    - file
+    - dir/file
+    - file dir/file
+    - dir/file file
+    - src_file dst_file
+    - src_dir/file dst_dir/file
+
+# @schema {"type": "int"}
+foo: ~
+
+# @option {"label": "label", "name": "name"}
+bar: baz

@@ -17,21 +17,71 @@ type Locator struct {
 	Node ast.Node
 }
 
-func (l Locator) At(location string) (int, int) {
-	path, err := yaml.PathString(yamlpath.FromJSONPointer(location))
-	if err != nil {
+func (l Locator) ValueAt(location string) (int, int) {
+	node := l.at(location)
+	if node == nil {
 		return 0, 0
 	}
 
-	target, err := path.FilterNode(l.Node)
-	if err != nil || target == nil {
-		return 0, 0
+	if n, ok := node.(*ast.MappingNode); ok {
+		parent := ast.Parent(l.Node, n)
+
+		// Root map
+		if parent == node {
+			return 0, 0
+		}
+
+		if parent, ok := parent.(*ast.MappingValueNode); ok {
+			node = parent.Key
+		}
 	}
 
-	token := target.GetToken()
+	token := node.GetToken()
 	if token == nil {
 		return 0, 0
 	}
 
 	return token.Position.Line, token.Position.Column
+}
+
+func (l Locator) PropertyAt(location string) (int, int) {
+	node := l.at(location)
+	if node == nil {
+		return 0, 0
+	}
+
+	parent := ast.Parent(l.Node, node)
+	if parent, ok := parent.(*ast.MappingValueNode); ok {
+		node = parent.Key
+	}
+
+	token := node.GetToken()
+	if token == nil {
+		return 0, 0
+	}
+
+	return token.Position.Line, token.Position.Column
+}
+
+func (l Locator) at(location string) ast.Node {
+	if l.Node == nil {
+		return nil
+	}
+
+	// Root
+	if location == "" {
+		return l.Node
+	}
+
+	path, err := yaml.PathString(yamlpath.FromJSONPointer(location))
+	if err != nil {
+		return nil
+	}
+
+	node, err := path.FilterNode(l.Node)
+	if err != nil || node == nil {
+		return nil
+	}
+
+	return node
 }

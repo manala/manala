@@ -7,24 +7,38 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type UnitsExpectation []struct {
+type UnitExpectation struct {
 	Source      string
 	Destination string
 }
 
-func (a UnitsExpectation) Expect(t *testing.T, units []Unit) {
+func (a UnitExpectation) Expect(t *testing.T, unit Unit) {
 	t.Helper()
 
-	require.Len(t, units, len(a))
+	assert.Equal(t, a.Source, unit.Source, "source not equal")
+	assert.Equal(t, a.Destination, unit.Destination, "destination not equal")
+}
 
-	for i, u := range a {
-		assert.Equal(t, u.Source, units[i].Source, "source not equal")
-		assert.Equal(t, u.Destination, units[i].Destination, "destination not equal")
+func ExpectUnit(t *testing.T, expectation UnitExpectation, unit Unit) {
+	t.Helper()
+
+	expectation.Expect(t, unit)
+}
+
+type UnitExpectations []UnitExpectation
+
+func (a UnitExpectations) Expect(t *testing.T, units []Unit) {
+	t.Helper()
+
+	require.Len(t, units, len(a), "units count not equal")
+
+	for i, expectation := range a {
+		expectation.Expect(t, units[i])
 	}
 }
 
-func ExpectUnits(t *testing.T, expectation UnitsExpectation, units []Unit) {
+func ExpectUnits(t *testing.T, expectations UnitExpectations, units []Unit) {
 	t.Helper()
 
-	expectation.Expect(t, units)
+	expectations.Expect(t, units)
 }

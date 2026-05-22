@@ -20,7 +20,17 @@ type Locator struct {
 
 var pointerReplacer = strings.NewReplacer("~1", "/", "~0", "~")
 
-func (l Locator) At(location string) (int, int) {
+func (l Locator) ValueAt(location string) (int, int) {
+	return l.at(location, false)
+}
+
+func (l Locator) PropertyAt(location string) (int, int) {
+	return l.at(location, true)
+}
+
+// at resolves a JSON pointer and returns the line/column of the matched
+// entry's key (when asProperty is true) or value.
+func (l Locator) at(location string, asProperty bool) (int, int) {
 	if location == "" {
 		return 0, 0
 	}
@@ -30,51 +40,58 @@ func (l Locator) At(location string) (int, int) {
 		tokens[i] = pointerReplacer.Replace(t)
 	}
 
-	dec := json.NewDecoder(bytes.NewReader(l.Bytes))
-	if offset, ok := l.walk(dec, tokens); ok {
-		chunk := l.Bytes[:offset]
-		return 1 + bytes.Count(chunk, []byte("\n")), int(offset) - bytes.LastIndexByte(chunk, '\n')
+	property, value, ok := l.walk(json.NewDecoder(bytes.NewReader(l.Bytes)), tokens, 0)
+	if !ok {
+		return 0, 0
 	}
 
-	return 0, 0
+	offset := value
+	if asProperty {
+		offset = property
+	}
+
+	chunk := l.Bytes[:offset]
+	return 1 + bytes.Count(chunk, []byte("\n")), int(offset) - bytes.LastIndexByte(chunk, '\n')
 }
 
-func (l Locator) walk(dec *json.Decoder, tokens []string) (int64, bool) {
+// walk descends through `tokens`, returning the property/value byte offsets
+// of the final match. `property` carries the parent-level offset of the
+// current entry: the key for object members, the element start for array members.
+func (l Locator) walk(dec *json.Decoder, tokens []string, property int64) (int64, int64, bool) {
 	if len(tokens) == 0 {
-		return int64(len(l.Bytes)) - int64(len(bytes.TrimLeft(l.Bytes[dec.InputOffset():], " \t\n\r:,"))), true
+		return property, l.skip(dec.InputOffset()), true
 	}
-	if tok, err := dec.Token(); err == nil {
-		switch tok {
-		case json.Delim('{'):
-			for dec.More() {
-				k, _ := dec.Token()
-				if k.(string) == tokens[0] {
-					return l.walk(dec, tokens[1:])
-				}
-				l.skipValue(dec)
+
+	tok, err := dec.Token()
+	if err != nil {
+		return 0, 0, false
+	}
+
+	switch tok {
+	case json.Delim('{'):
+		for dec.More() {
+			keyOffset := l.skip(dec.InputOffset())
+			key, _ := dec.Token()
+			if key == tokens[0] {
+				return l.walk(dec, tokens[1:], keyOffset)
 			}
-		case json.Delim('['):
-			idx, _ := strconv.Atoi(tokens[0])
-			for i := 0; dec.More(); i++ {
-				if i == idx {
-					return l.walk(dec, tokens[1:])
-				}
-				l.skipValue(dec)
+			_ = dec.Decode(&json.RawMessage{})
+		}
+	case json.Delim('['):
+		idx, _ := strconv.Atoi(tokens[0])
+		for i := 0; dec.More(); i++ {
+			elemOffset := l.skip(dec.InputOffset())
+			if i == idx {
+				return l.walk(dec, tokens[1:], elemOffset)
 			}
+			_ = dec.Decode(&json.RawMessage{})
 		}
 	}
-	return 0, false
+
+	return 0, 0, false
 }
 
-func (l Locator) skipValue(dec *json.Decoder) {
-	if t, _ := dec.Token(); t != json.Delim('{') && t != json.Delim('[') {
-		return
-	}
-	for depth := 1; depth > 0; {
-		if t, _ := dec.Token(); t == json.Delim('{') || t == json.Delim('[') {
-			depth++
-		} else if t == json.Delim('}') || t == json.Delim(']') {
-			depth--
-		}
-	}
+// skip advances past JSON structural whitespace and separators (`:` and `,`).
+func (l Locator) skip(offset int64) int64 {
+	return int64(len(l.Bytes)) - int64(len(bytes.TrimLeft(l.Bytes[offset:], " \t\n\r:,")))
 }
