@@ -50,6 +50,22 @@ func (e Error) Unwrap() []error {
 func (e Error) Render(p output.Profile) string {
 	var b strings.Builder
 
+	// File
+	if e.File != "" {
+		file := e.File
+		if e.Line > 0 {
+			file += fmt.Sprintf(":%d", e.Line)
+			if e.Column > 0 {
+				file += fmt.Sprintf(":%d", e.Column)
+			}
+		}
+		_, _ = fmt.Fprintf(&b, "\n%s %s\n",
+			p.MutedStyle().Render("at"),
+			p.LitteralStyle().Render(file),
+		)
+	}
+	b.WriteByte('\n')
+
 	src := e.Source
 
 	// Highlight
@@ -73,24 +89,12 @@ func (e Error) Render(p output.Profile) string {
 
 	lines := strings.Split(src, "\n")
 
-	// File
-	if e.File != "" {
-		file := fmt.Sprintf("%s:%d", e.File, e.Line)
-		if e.Column > 0 {
-			file += fmt.Sprintf(":%d", e.Column)
-		}
-		_, _ = fmt.Fprintf(&b, "%s %s\n\n",
-			p.MutedStyle().Render("at"),
-			p.LitteralStyle().Render(file),
-		)
-	}
-
 	lineMin := max(e.Line-Context, 1)
 	lineMax := min(e.Line+Context, len(lines))
-	for lineMin < e.Line && lipgloss.Width(lines[lineMin-1]) == 0 {
+	for lineMin < lineMax && lineMin < e.Line && lipgloss.Width(lines[lineMin-1]) == 0 {
 		lineMin++
 	}
-	for lineMax > e.Line && lipgloss.Width(lines[lineMax-1]) == 0 {
+	for lineMax > lineMin && lineMax > e.Line && lipgloss.Width(lines[lineMax-1]) == 0 {
 		lineMax--
 	}
 
@@ -127,6 +131,12 @@ func (e Error) Render(p output.Profile) string {
 		}
 	}
 
+	// Message footer when the focal line falls outside the rendered window
+	if e.Line < lineMin || e.Line > lineMax {
+		b.WriteByte('\n')
+		b.WriteString(p.ErrorStyle().Render(e.Position.Error()) + "\n")
+	}
+
 	return b.String()
 }
 
@@ -136,13 +146,13 @@ func (e Error) Render(p output.Profile) string {
 func (e Error) expand(err error, origin Origin, absLine, absCol int) []error {
 	for err != nil {
 		if pos, ok := err.(Position); ok {
-			// 1-based: l=1 means same line as parent, l>1 resets the column
 			l, c := pos.Position()
-			line, col := absLine+max(l-1, 0), c
-			if l <= 1 {
-				col = absCol + max(c-1, 0)
-			}
-			return []error{Error{Origin: origin, Position: pos, Line: line, Column: col}}
+			return []error{Error{
+				Origin:   origin,
+				Position: pos,
+				Line:     absLine + max(l-1, 0),
+				Column:   absCol + max(c-1, 0),
+			}}
 		}
 		switch x := err.(type) {
 		case interface{ Unwrap() []error }:

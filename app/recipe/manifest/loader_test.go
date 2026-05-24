@@ -4,10 +4,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe"
 	"github.com/manala/manala/app/recipe/manifest"
+	"github.com/manala/manala/app/recipe/option"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
+	"github.com/manala/manala/app/sync"
 	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/log"
@@ -23,30 +26,51 @@ func TestLoaderSuite(t *testing.T) {
 	suite.Run(t, new(LoaderSuite))
 }
 
-func (s *LoaderSuite) TestHandler() {
-	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandler/repository")
+func (s *LoaderSuite) TestHandle() {
+	repositoryURL := filepath.FromSlash("testdata/LoaderSuite/TestHandle/repository")
 
-	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
-	))
-	repository, _ := repositoryLoader.Load(repositoryURL)
-
-	chainMock := &recipe.LoaderHandlerChainMock{}
-
-	handler := manifest.NewLoaderHandler(log.Discard)
-	recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
+	recipe, err := s.handle(repositoryURL)
 
 	s.Require().NoError(err)
+
 	s.Equal(filepath.Join(repositoryURL, "recipe"), recipe.Dir())
+	s.Equal("recipe", recipe.Name())
+	s.Equal("description", recipe.Description())
+	s.Equal("icon", recipe.Icon())
+	s.Equal(filepath.Join(repositoryURL, "recipe", "template"), recipe.Template())
+	s.Equal([]string{
+		filepath.Join(repositoryURL, "recipe", "partial.tmpl"),
+		filepath.Join(repositoryURL, "recipe", "dir", "partial.tmpl"),
+	}, recipe.Partials())
+	sync.ExpectUnits(s.T(), sync.UnitExpectations{
+		{Source: "file", Destination: "file"},
+		{Source: "dir/file", Destination: "dir/file"},
+		{Source: "file", Destination: "dir/file"},
+		{Source: "dir/file", Destination: "file"},
+		{Source: "src_file", Destination: "dst_file"},
+		{Source: "src_dir/file", Destination: "dst_dir/file"},
+	}, recipe.Sync())
 	s.Equal(repositoryURL, recipe.Repository().URL())
-	chainMock.AssertExpectations(s.T())
+	s.Equal(map[string]any{"foo": nil, "bar": "baz"}, recipe.Vars())
+	s.Equal(map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"foo": map[string]any{"type": "int"},
+			"bar": map[string]any{"type": "string"},
+		},
+		"additionalProperties": false,
+	}, recipe.Schema())
+	option.ExpectOptions(s.T(), option.Expectations{{
+		Type:      &option.String{},
+		Label:     "label",
+		Name:      "name",
+		MaxLength: 0,
+		Values:    []any{},
+	}}, recipe.Options())
 }
 
-func (s *LoaderSuite) TestHandlerErrors() {
-	dir := filepath.FromSlash("testdata/LoaderSuite/TestHandlerErrors")
-	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
-		getter.NewFileLoaderHandler(log.Discard),
-	))
+func (s *LoaderSuite) TestHandleErrors() {
+	dir := filepath.FromSlash("testdata/LoaderSuite/TestHandleErrors")
 
 	tests := []struct {
 		test     string
@@ -67,6 +91,7 @@ func (s *LoaderSuite) TestHandlerErrors() {
 				Msg: "unable to parse recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
+
 						at %[1]s:1:1
 
 						▶ 1 │ @
@@ -78,105 +103,581 @@ func (s *LoaderSuite) TestHandlerErrors() {
 			},
 		},
 		{
-			test: "MissingConfig",
+			test: "Empty",
+			expected: serror.Expectation{
+				Msg: "unable to parse recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s
+
+						  1 │
+
+						empty yaml content
+					`,
+						filepath.Join(dir, "Empty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "MultipleDocuments",
+			expected: serror.Expectation{
+				Msg: "unable to parse recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:2:1
+
+						  1 │ foo: bar
+						▶ 2 │ ---
+						    ├─╯ multiple documents yaml content
+						  3 │ foo: bar
+					`,
+						filepath.Join(dir, "MultipleDocuments", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "NotMap",
+			expected: serror.Expectation{
+				Msg: "unable to parse recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:1:1
+
+						▶ 1 │ - foo
+						    ├─╯ yaml document must be a map
+						  2 │ - bar
+					`,
+						filepath.Join(dir, "NotMap", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "MapEmpty",
 			expected: serror.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:1:4
 
-						▶ 1 │ foo: bar
-						    ├────╯ missing "manala" property
+						at %[1]s
+
+						  1 │ {}
+
+						missing property 'manala'
 					`,
-						filepath.Join(dir, "MissingConfig", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "MapEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config
+		{
+			test: "ConfigMissing",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s
+
+						  1 │ foo: bar
+
+						missing property 'manala'
+					`,
+						filepath.Join(dir, "ConfigMissing", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},
 		},
 		{
-			test: "UndecodableConfig",
+			test: "ConfigNotMap",
 			expected: serror.Expectation{
-				Msg: "unable to decode recipe manifest config",
+				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
+
 						at %[1]s:1:9
 
 						▶ 1 │ manala: foo
-						    ├─────────╯ string was used where mapping is expected
+						    ├─────────╯ got string, want object
 					`,
-						filepath.Join(dir, "UndecodableConfig", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "ConfigNotMap", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},
 		},
 		{
-			test: "InvalidConfig",
+			test: "ConfigMapEmpty",
 			expected: serror.Expectation{
-				Msg: "unable to decode recipe manifest config",
+				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:1:9
+
+						at %[1]s:1:1
 
 						▶ 1 │ manala: {}
-						    ├─────────╯ missing property 'description'
+						    ├─╯ missing property 'description'
 					`,
-						filepath.Join(dir, "InvalidConfig", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "ConfigMapEmpty", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},
 		},
 		{
-			test: "UnparsableAnnotation",
+			test: "ConfigAdditionalProperty",
 			expected: serror.Expectation{
-				Msg: "unable to infer recipe manifest vars",
+				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:4:12
+
+						at %[1]s:3:3
 
 						  1 │ manala:
 						  2 │   description: description
-						  3 │
-						▶ 4 │ # @schema foo
-						    ├────────────╯ invalid character 'o' in literal false (expecting 'a')
-						  5 │ node: ~
+						▶ 3 │   foo: bar
+						    ├───╯ additional property 'foo' not allowed
 					`,
-						filepath.Join(dir, "UnparsableAnnotation", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "ConfigAdditionalProperty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Description
+		{
+			test: "ConfigDescriptionAbsent",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:1:1
+
+						▶ 1 │ manala:
+						    ├─╯ missing property 'description'
+						  2 │   icon: icon
+					`,
+						filepath.Join(dir, "ConfigDescriptionAbsent", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},
 		},
 		{
-			test: "InvalidAnnotation",
+			test: "ConfigDescriptionNotString",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:2:16
+
+						  1 │ manala:
+						▶ 2 │   description: []
+						    ├────────────────╯ got array, want string
+					`,
+						filepath.Join(dir, "ConfigDescriptionNotString", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigDescriptionEmpty",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:2:16
+
+						  1 │ manala:
+						▶ 2 │   description: ""
+						    ├────────────────╯ minLength: got 0, want 1
+					`,
+						filepath.Join(dir, "ConfigDescriptionEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigDescriptionTooLong",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:2:16
+
+						  1 │ manala:
+						▶ 2 │   description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						    ├────────────────╯ maxLength: got 445, want 256
+					`,
+						filepath.Join(dir, "ConfigDescriptionTooLong", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Icon
+		{
+			test: "ConfigIconNotString",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:9
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   icon: []
+						    ├─────────╯ got array, want string
+					`,
+						filepath.Join(dir, "ConfigIconNotString", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigIconEmpty",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:9
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   icon: ""
+						    ├─────────╯ minLength: got 0, want 1
+					`,
+						filepath.Join(dir, "ConfigIconEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigIconTooLong",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:9
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   icon: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						    ├─────────╯ maxLength: got 445, want 100
+					`,
+						filepath.Join(dir, "ConfigIconTooLong", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Template
+		{
+			test: "ConfigTemplateNotString",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:13
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   template: []
+						    ├─────────────╯ got array, want string
+					`,
+						filepath.Join(dir, "ConfigTemplateNotString", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigTemplateEmpty",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:13
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   template: ""
+						    ├─────────────╯ minLength: got 0, want 1
+					`,
+						filepath.Join(dir, "ConfigTemplateEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigTemplateTooLong",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:13
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   template: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						    ├─────────────╯ maxLength: got 445, want 100
+					`,
+						filepath.Join(dir, "ConfigTemplateTooLong", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Partials
+		{
+			test: "ConfigPartialsNotArray",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:13
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   partials: foo
+						    ├─────────────╯ got string, want array
+					`,
+						filepath.Join(dir, "ConfigPartialsNotArray", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Partials Item
+		{
+			test: "ConfigPartialsItemNotString",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   partials:
+						▶ 4 │     - []
+						    ├───────╯ got array, want string
+					`,
+						filepath.Join(dir, "ConfigPartialsItemNotString", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigPartialsItemEmpty",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   partials:
+						▶ 4 │     - ""
+						    ├───────╯ minLength: got 0, want 1
+					`,
+						filepath.Join(dir, "ConfigPartialsItemEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigPartialsItemTooLong",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   partials:
+						▶ 4 │     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						    ├───────╯ maxLength: got 445, want 100
+					`,
+						filepath.Join(dir, "ConfigPartialsItemTooLong", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Sync
+		{
+			test: "ConfigSyncNotArray",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:3:9
+
+						  1 │ manala:
+						  2 │   description: description
+						▶ 3 │   sync: foo
+						    ├─────────╯ got string, want array
+					`,
+						filepath.Join(dir, "ConfigSyncNotArray", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		// Config - Sync Item
+		{
+			test: "ConfigSyncItemNotString",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   sync:
+						▶ 4 │     - []
+						    ├───────╯ got array, want string
+					`,
+						filepath.Join(dir, "ConfigSyncItemNotString", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigSyncItemEmpty",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   sync:
+						▶ 4 │     - ""
+						    ├───────╯ minLength: got 0, want 1
+					`,
+						filepath.Join(dir, "ConfigSyncItemEmpty", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "ConfigSyncItemTooLong",
+			expected: serror.Expectation{
+				Msg: "invalid recipe manifest",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:7
+
+						  1 │ manala:
+						  2 │   description: description
+						  3 │   sync:
+						▶ 4 │     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						    ├───────╯ maxLength: got 445, want 256
+					`,
+						filepath.Join(dir, "ConfigSyncItemTooLong", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "AnnotationUnparsableSingleLine",
 			expected: serror.Expectation{
 				Msg: "unable to infer recipe manifest vars",
 				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:4:11
 
-						  1 │ manala:
+						at %[1]s:5:14
+
 						  2 │   description: description
 						  3 │
-						▶ 4 │ # @option {
-						    ├───────────╯ missing property 'label'
-						  5 │ #   "foo": "bar"
-						  6 │ # }
-						  7 │ node: foo
+						  4 │ foo:
+						▶ 5 │   # @schema foo
+						    ├──────────────╯ invalid character 'o' in literal false (expecting 'a')
+						  6 │   bar: ~
 					`,
-						filepath.Join(dir, "InvalidAnnotation", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "AnnotationUnparsableSingleLine", "repository", "recipe", ".manala.yaml"),
 					)),
+				),
+			},
+		},
+		{
+			test: "AnnotationUnparsableMultiLine",
+			expected: serror.Expectation{
+				Msg: "unable to infer recipe manifest vars",
+				Err: expectation.Errors(
 					source.Expectation(heredoc.Doc(`
-						at %[1]s:4:11
+
+						at %[1]s:6:8
+
+						  4 │ foo:
+						  5 │   # @schema
+						▶ 6 │   #   foo
+						    ├────────╯ invalid character 'o' in literal false (expecting 'a')
+						  7 │   bar: ~
+					`,
+						filepath.Join(dir, "AnnotationUnparsableMultiLine", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "AnnotationInvalidSingleLine",
+			expected: serror.Expectation{
+				Msg: "unable to infer recipe manifest vars",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:4:30
 
 						  1 │ manala:
 						  2 │   description: description
 						  3 │
-						▶ 4 │ # @option {
-						    ├───────────╯ additional properties 'foo' not allowed
-						  5 │ #   "foo": "bar"
+						▶ 4 │ # @option {"label": "Label", "foo": "bar"}
+						    ├──────────────────────────────╯ additional property 'foo' not allowed
+						  5 │ node: foo
+					`,
+						filepath.Join(dir, "AnnotationInvalidSingleLine", "repository", "recipe", ".manala.yaml"),
+					)),
+				),
+			},
+		},
+		{
+			test: "AnnotationInvalidMultiLine",
+			expected: serror.Expectation{
+				Msg: "unable to infer recipe manifest vars",
+				Err: expectation.Errors(
+					source.Expectation(heredoc.Doc(`
+
+						at %[1]s:5:5
+
+						  2 │   description: description
+						  3 │
+						  4 │ # @option {"label": "Label",
+						▶ 5 │ #   "foo": "bar"
+						    ├─────╯ additional property 'foo' not allowed
 						  6 │ # }
 						  7 │ node: foo
 					`,
-						filepath.Join(dir, "InvalidAnnotation", "repository", "recipe", ".manala.yaml"),
+						filepath.Join(dir, "AnnotationInvalidMultiLine", "repository", "recipe", ".manala.yaml"),
 					)),
 				),
 			},
@@ -185,16 +686,23 @@ func (s *LoaderSuite) TestHandlerErrors() {
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			repository, _ := repositoryLoader.Load(filepath.Join(dir, test.test, "repository"))
-
-			chainMock := &recipe.LoaderHandlerChainMock{}
-
-			handler := manifest.NewLoaderHandler(log.Discard)
-			recipe, err := handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
+			recipe, err := s.handle(filepath.Join(dir, test.test, "repository"))
 
 			s.Nil(recipe)
+
 			expectation.ExpectError(s.T(), test.expected, err)
-			chainMock.AssertExpectations(s.T())
 		})
 	}
+}
+
+func (s *LoaderSuite) handle(repositoryURL string) (app.Recipe, error) {
+	repositoryLoader := repository.NewLoader(repository.WithLoaderHandlers(
+		getter.NewFileLoaderHandler(log.Discard),
+	))
+	repository, _ := repositoryLoader.Load(repositoryURL)
+
+	chainMock := &recipe.LoaderHandlerChainMock{}
+
+	handler := manifest.NewLoaderHandler(log.Discard)
+	return handler.Handle(&recipe.LoaderQuery{Repository: repository, Name: "recipe"}, chainMock)
 }

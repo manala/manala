@@ -85,12 +85,13 @@ func (o *String) Set(data *map[string]any, v string) error {
 }
 
 func (o *String) Validate(v string) error {
-	violations, err := o.validator.Validate(v)
-	if err != nil {
+	if err := o.validator.Validate(v); err != nil {
+		if violations, ok := errors.AsType[validation.Violations](err); ok {
+			if violation, ok := violations.First(); ok {
+				return violation
+			}
+		}
 		return err
-	}
-	if violation, ok := violations.First(); ok {
-		return violation
 	}
 	return nil
 }
@@ -103,8 +104,8 @@ func (o *String) UnmarshalJSON(bytes []byte) error {
 	}
 
 	// Validate
-	if violations, err := stringValidator.Validate(data, jsonvalidation.WithLocator(bytes)); violations != nil || err != nil {
-		return errors.Join(violations, err)
+	if err := stringValidator.Validate(data, jsonvalidation.WithLocator(bytes)); err != nil {
+		return err
 	}
 
 	// Decode

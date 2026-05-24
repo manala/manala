@@ -1,0 +1,7 @@
+manala:
+  description: description
+
+foo:
+  # @schema
+  #   foo
+  bar: ~

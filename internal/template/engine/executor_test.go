@@ -108,6 +108,7 @@ func (s *ExecutorSuite) TestExecute() {
 			Msg: "unable to parse template",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					  1 │ foo
 					▶ 2 │   {{ .bar }
 					    ├ unexpected "}" in operand
@@ -129,6 +130,7 @@ func (s *ExecutorSuite) TestExecute() {
 			Msg: "unable to parse template",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					  1 │ foo
 					▶ 2 │   {{ .bar }}
 					    ├──────╯ nil data; no entry for key "bar"
@@ -255,6 +257,7 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					at %[1]s:2
 
 					  1 │ foo
@@ -281,6 +284,7 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					at %[1]s:2:6
 
 					  1 │ foo

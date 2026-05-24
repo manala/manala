@@ -3,7 +3,6 @@ package parser_test
 import (
 	"testing"
 
-	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
@@ -188,15 +187,17 @@ func (s *ParseSuite) TestErrors() {
 		{
 			test: "Empty",
 			data: "",
-			expected: serror.Expectation{
-				Msg: "empty yaml content",
+			expected: yamlerrors.Expectation{
+				Position: [2]int{0, 0},
+				Err:      expectation.ErrorMessage("empty yaml content"),
 			},
 		},
 		{
 			test: "Spaces",
 			data: " ",
-			expected: serror.Expectation{
-				Msg: "empty yaml content",
+			expected: yamlerrors.Expectation{
+				Position: [2]int{0, 0},
+				Err:      expectation.ErrorMessage("empty yaml content"),
 			},
 		},
 		{
@@ -298,7 +299,7 @@ func (s *ParseSuite) TestErrors() {
 				foo: *bar
 			`),
 			expected: yamlerrors.Expectation{
-				Position: [2]int{1, 7},
+				Position: [2]int{1, 6},
 				Err:      expectation.ErrorMessage("unknown \"bar\" yaml anchor"),
 			},
 		},

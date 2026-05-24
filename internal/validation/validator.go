@@ -1,9 +1,14 @@
 package validation
 
 import (
+	"cmp"
 	"errors"
+	"fmt"
+	"slices"
 
+	"github.com/go-openapi/jsonpointer"
 	"github.com/santhosh-tekuri/jsonschema/v6"
+	"github.com/santhosh-tekuri/jsonschema/v6/kind"
 )
 
 type Validator struct {
@@ -41,7 +46,7 @@ func MustNewValidator(schema map[string]any) *Validator {
 	return validator
 }
 
-func (v *Validator) Validate(value any, opts ...ValidateOption) (Violations, error) {
+func (v *Validator) Validate(value any, opts ...ValidateOption) error {
 	// Config
 	cfg := &validateConfig{
 		locator: zeroLocator{},
@@ -54,31 +59,58 @@ func (v *Validator) Validate(value any, opts ...ValidateOption) (Violations, err
 
 	err := v.schema.Validate(value)
 	if err == nil {
-		return nil, nil
+		return nil
 	}
 
 	verr, ok := errors.AsType[*jsonschema.ValidationError](err)
 	if !ok {
-		return nil, err
+		return err
 	}
 
 	errs := verr.BasicOutput().Errors
 	if len(errs) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	var violations Violations
 	for _, unit := range errs {
 		location := unit.InstanceLocation
-		line, column := cfg.locator.At(location)
-		violations = append(violations, &Violation{
-			error:  errors.New(unit.Error.String()),
-			line:   line,
-			column: column,
-		})
+
+		switch k := unit.Error.Kind.(type) {
+		case *kind.AdditionalProperties:
+			slices.Sort(k.Properties)
+			for _, property := range k.Properties {
+				propertyLocation := location + "/" + jsonpointer.Escape(property)
+				line, column := cfg.locator.PropertyAt(propertyLocation)
+				violations = append(violations, &Violation{
+					error:    fmt.Errorf("additional property '%s' not allowed", property),
+					location: propertyLocation,
+					line:     line,
+					column:   column,
+				})
+			}
+		default:
+			line, column := cfg.locator.ValueAt(location)
+			violations = append(violations, &Violation{
+				error:    errors.New(unit.Error.String()),
+				location: location,
+				line:     line,
+				column:   column,
+			})
+		}
 	}
 
-	return violations, nil
+	// Keep deterministic violations order
+	slices.SortFunc(violations, func(a, b *Violation) int {
+		// By location
+		if c := cmp.Compare(a.location, b.location); c != 0 {
+			return c
+		}
+		// By error message
+		return cmp.Compare(a.error.Error(), b.error.Error())
+	})
+
+	return violations
 }
 
 type validateConfig struct {

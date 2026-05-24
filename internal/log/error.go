@@ -17,7 +17,7 @@ func (l *Log) error(err error, depth int) string {
 
 	// Self-rendering bypasses the default pipeline (Attrs, Dump, Children).
 	if r, ok := err.(Render); ok {
-		return l.indent(r.Render(l.out.Profile), 3+depth*2) + "\n"
+		return l.indent(r.Render(l.out.Profile), 3+depth*3) + "\n"
 	}
 
 	// Attrs
@@ -27,13 +27,13 @@ func (l *Log) error(err error, depth int) string {
 	}
 
 	b.WriteString(l.indent(
-		l.log(Error, err.Error(), attrs), depth*2,
+		l.log(Error, err.Error(), attrs), depth*3,
 	) + "\n")
 
 	// Dump
 	if e, ok := err.(Dump); ok {
 		if dump := e.Dump(); dump != "" {
-			b.WriteString(l.indent(l.block(dump), 3+depth*2) + "\n")
+			b.WriteString(l.indent(l.block(dump), 3+depth*3) + "\n")
 		}
 	}
 

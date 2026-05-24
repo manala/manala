@@ -26,6 +26,22 @@ import (
 
 const filename = ".manala.yaml"
 
+var manifestValidator = validation.MustNewValidator(map[string]any{
+	"type": "object",
+	"properties": map[string]any{
+		"manala": map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"recipe":     map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+				"repository": map[string]any{"type": "string", "minLength": 1, "maxLength": 256},
+			},
+			"additionalProperties": false,
+			"required":             []any{"recipe"},
+		},
+	},
+	"required": []any{"manala"},
+})
+
 type LoaderHandler struct {
 	log              *log.Log
 	repositoryLoader *repository.Loader
@@ -69,16 +85,16 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 			WithErr(std.From(err))
 	}
 
+	// Init project
+	project := &Project{
+		dir: dir,
+	}
+
 	// Prepare source error origin
 	origin := source.Origin{
 		File:     file,
 		Source:   string(content),
 		Language: "yaml",
-	}
-
-	// Init project
-	project := &Project{
-		dir: dir,
 	}
 
 	// Parse content
@@ -88,14 +104,28 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 			WithErr(source.From(err, origin))
 	}
 
+	// Decode manifest map
+	var manifestMap map[string]any
+	if err := yaml.NodeToValue(node, &manifestMap); err != nil {
+		return nil, serror.New("unable to decode project manifest").
+			WithErr(source.From(yamlerrors.From(err), origin))
+	}
+
+	// Validate manifest map
+	if err := manifestValidator.Validate(manifestMap, yamlvalidation.WithLocator(node)); err != nil {
+		if violations, ok := errors.AsType[validation.Violations](err); ok {
+			return nil, serror.New("invalid project manifest").
+				WithErr(source.From(violations, origin))
+		}
+		return nil, serror.New("unable to validate project manifest").
+			With("file", file).WithErr(err)
+	}
+
 	// Pop config node
 	configNode, found := yamlmapping.Pop(node, "manala")
 	if !found {
-		return nil, serror.New("invalid project manifest").
-			WithErr(source.From(yamlerrors.New(
-				errors.New("missing \"manala\" property"),
-				node.GetToken(),
-			), origin))
+		return nil, serror.New("project manifest config not found").
+			With("file", file)
 	}
 
 	// Decode config
@@ -139,12 +169,13 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 	if err != nil {
 		return nil, err
 	}
-	if violations, err := validator.Validate(project.vars, yamlvalidation.WithLocator(node)); err != nil {
+	if err := validator.Validate(project.vars, yamlvalidation.WithLocator(node)); err != nil {
+		if violations, ok := errors.AsType[validation.Violations](err); ok {
+			return nil, serror.New("invalid project manifest vars").
+				WithErr(source.From(violations, origin))
+		}
 		return nil, serror.New("unable to validate project manifest vars").
 			With("file", file).WithErr(err)
-	} else if violations != nil {
-		return nil, serror.New("invalid project manifest vars").
-			WithErr(source.From(violations, origin))
 	}
 
 	return project, nil

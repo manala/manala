@@ -253,6 +253,7 @@ func (s *SyncerSuite) TestSyncTemplate() {
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
 				source.Expectation(heredoc.Doc(`
+
 					at %[1]s:2:6
 
 					  1 │ foo

@@ -40,6 +40,7 @@ func (a Expectation) Expect(t *testing.T, opt app.RecipeOption) {
 
 func ExpectOption(t *testing.T, expectation Expectation, opt app.RecipeOption) {
 	t.Helper()
+
 	expectation.Expect(t, opt)
 }
 
@@ -57,5 +58,6 @@ func (a Expectations) Expect(t *testing.T, opts []app.RecipeOption) {
 
 func ExpectOptions(t *testing.T, expectations Expectations, opts []app.RecipeOption) {
 	t.Helper()
+
 	expectations.Expect(t, opts)
 }

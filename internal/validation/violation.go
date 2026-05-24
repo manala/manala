@@ -5,11 +5,16 @@ import "strings"
 type Violation struct { //nolint:errname
 	error
 
+	location     string
 	line, column int
 }
 
 func (e Violation) Error() string {
 	return e.error.Error()
+}
+
+func (e Violation) Location() string {
+	return e.location
 }
 
 func (e Violation) Position() (int, int) {

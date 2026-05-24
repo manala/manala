@@ -11,14 +11,41 @@ import (
 	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/log"
+	"github.com/manala/manala/internal/validation"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
 	yamlmapping "github.com/manala/manala/internal/yaml/mapping"
 	yamlparser "github.com/manala/manala/internal/yaml/parser"
+	yamlvalidation "github.com/manala/manala/internal/yaml/validation"
 
 	"github.com/goccy/go-yaml"
 )
 
 const filename = ".manala.yaml"
+
+var manifestValidator = validation.MustNewValidator(map[string]any{
+	"type": "object",
+	"properties": map[string]any{
+		"manala": map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"description": map[string]any{"type": "string", "minLength": 1, "maxLength": 256},
+				"icon":        map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+				"template":    map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+				"partials": map[string]any{
+					"type":  "array",
+					"items": map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
+				},
+				"sync": map[string]any{
+					"type":  "array",
+					"items": map[string]any{"type": "string", "minLength": 1, "maxLength": 256},
+				},
+			},
+			"additionalProperties": false,
+			"required":             []any{"description"},
+		},
+	},
+	"required": []any{"manala"},
+})
 
 type LoaderHandler struct {
 	log *log.Log
@@ -59,19 +86,19 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 			WithErr(std.From(err))
 	}
 
-	// Prepare source error origin
-	origin := source.Origin{
-		File:     file,
-		Source:   string(content),
-		Language: "yaml",
-	}
-
 	// Init recipe
 	recipe := &Recipe{
 		dir:        dir,
 		name:       query.Name,
 		config:     &Config{},
 		repository: query.Repository,
+	}
+
+	// Prepare source error origin
+	origin := source.Origin{
+		File:     file,
+		Source:   string(content),
+		Language: "yaml",
 	}
 
 	// Parse content
@@ -81,14 +108,28 @@ func (handler *LoaderHandler) Handle(query *recipe.LoaderQuery, chain recipe.Loa
 			WithErr(source.From(err, origin))
 	}
 
+	// Decode manifest map
+	var manifestMap map[string]any
+	if err := yaml.NodeToValue(node, &manifestMap); err != nil {
+		return nil, serror.New("unable to decode recipe manifest").
+			WithErr(source.From(yamlerrors.From(err), origin))
+	}
+
+	// Validate manifest map
+	if err := manifestValidator.Validate(manifestMap, yamlvalidation.WithLocator(node)); err != nil {
+		if violations, ok := errors.AsType[validation.Violations](err); ok {
+			return nil, serror.New("invalid recipe manifest").
+				WithErr(source.From(violations, origin))
+		}
+		return nil, serror.New("unable to validate recipe manifest").
+			With("file", file).WithErr(err)
+	}
+
 	// Pop config node
 	configNode, found := yamlmapping.Pop(node, "manala")
 	if !found {
-		return nil, serror.New("invalid recipe manifest").
-			WithErr(source.From(yamlerrors.New(
-				errors.New("missing \"manala\" property"),
-				node.GetToken(),
-			), origin))
+		return nil, serror.New("recipe manifest config not found").
+			With("file", file)
 	}
 
 	// Decode config

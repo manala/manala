@@ -27,7 +27,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 					if anchor == nil {
 						return yamlerrors.New(
 							fmt.Errorf("unknown \"%s\" yaml anchor", alias),
-							vv.Value.GetToken(),
+							vv.GetToken(),
 						)
 					}
 
@@ -96,7 +96,7 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node) error {
 		if anchor == nil {
 			return yamlerrors.New(
 				fmt.Errorf("unknown \"%s\" yaml anchor", alias),
-				n.Value.GetToken(),
+				n.GetToken(),
 			)
 		}
 

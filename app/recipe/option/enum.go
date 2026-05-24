@@ -90,8 +90,8 @@ func (o *Enum) UnmarshalJSON(bytes []byte) error {
 	}
 
 	// Validate
-	if violations, err := enumValidator.Validate(data, jsonvalidation.WithLocator(bytes)); violations != nil || err != nil {
-		return errors.Join(violations, err)
+	if err := enumValidator.Validate(data, jsonvalidation.WithLocator(bytes)); err != nil {
+		return err
 	}
 
 	// Decode
