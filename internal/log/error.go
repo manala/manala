@@ -33,7 +33,7 @@ func (l *Log) error(err error, depth int) string {
 	// Dump
 	if e, ok := err.(Dump); ok {
 		if dump := e.Dump(); dump != "" {
-			b.WriteString(l.indent(l.block(dump), 3+depth*3) + "\n")
+			b.WriteString("\n" + l.indent(l.block(dump), 3+depth*3) + "\n")
 		}
 	}
 

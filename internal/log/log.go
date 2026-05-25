@@ -114,7 +114,10 @@ func (l *Log) indent(s string, n int) string {
 }
 
 func (l *Log) block(s string) string {
-	return " │ " + strings.ReplaceAll(s, "\n", "\n │ ")
+	return " │ " + strings.ReplaceAll(
+		strings.TrimRight(s, "\n\r\t "),
+		"\n", "\n │ ",
+	)
 }
 
 type Attrs interface {

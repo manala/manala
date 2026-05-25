@@ -16,7 +16,7 @@ func TestSerrorSuite(t *testing.T) {
 	suite.Run(t, new(SerrorSuite))
 }
 
-func (s *SerrorSuite) TestError() {
+func (s *SerrorSuite) Test() {
 	s.Run("New", func() {
 		err := serror.New("error")
 
