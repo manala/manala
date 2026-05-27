@@ -24,11 +24,11 @@ func (s *LocatorSuite) TestAt() {
 		property [2]int
 	}{
 		{
-			test:     "Empty",
+			test:     "Root",
 			bytes:    `{"foo": "bar"}`,
 			location: "",
-			value:    [2]int{0, 0},
-			property: [2]int{0, 0},
+			value:    [2]int{1, 1},
+			property: [2]int{1, 1},
 		},
 		{
 			test:     "NotFound",

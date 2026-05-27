@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"strconv"
-	"strings"
 
 	"github.com/manala/manala/internal/validation"
+
+	"github.com/go-openapi/jsonpointer"
 )
 
 func WithLocator(bytes []byte) validation.ValidateOption {
@@ -17,8 +18,6 @@ func WithLocator(bytes []byte) validation.ValidateOption {
 type Locator struct {
 	Bytes []byte
 }
-
-var pointerReplacer = strings.NewReplacer("~1", "/", "~0", "~")
 
 func (l Locator) ValueAt(location string) (int, int) {
 	return l.at(location, false)
@@ -31,16 +30,12 @@ func (l Locator) PropertyAt(location string) (int, int) {
 // at resolves a JSON pointer and returns the line/column of the matched
 // entry's key (when asProperty is true) or value.
 func (l Locator) at(location string, asProperty bool) (int, int) {
-	if location == "" {
+	p, err := jsonpointer.New(location)
+	if err != nil {
 		return 0, 0
 	}
 
-	tokens := strings.Split(strings.TrimPrefix(location, "/"), "/")
-	for i, t := range tokens {
-		tokens[i] = pointerReplacer.Replace(t)
-	}
-
-	property, value, ok := l.walk(json.NewDecoder(bytes.NewReader(l.Bytes)), tokens, 0)
+	property, value, ok := l.walk(json.NewDecoder(bytes.NewReader(l.Bytes)), p.DecodedTokens(), 0)
 	if !ok {
 		return 0, 0
 	}

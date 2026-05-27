@@ -475,10 +475,13 @@ func (s *InferrerSuite) TestOptionErrors() {
 			`),
 			expected: yamlerrors.Expectation{
 				Position: [2]int{1, 1},
-				Err: jsonerrors.Expectation{
-					Position: [2]int{1, 40},
-					Err:      expectation.ErrorMessage("wrong number type for field \"type\""),
-				},
+				Err: expectation.Errors(
+					validation.ViolationExpectation{
+						Location: "/type",
+						Position: [2]int{1, 38},
+						Err:      expectation.ErrorMessage("value must be one of 'string', 'enum'"),
+					},
+				),
 			},
 		},
 		{
@@ -489,10 +492,13 @@ func (s *InferrerSuite) TestOptionErrors() {
 			`),
 			expected: yamlerrors.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
-					Position: [2]int{1, 11},
-					Err:      expectation.ErrorMessage("unexpected \"unexpected\" option type"),
-				},
+				Err: expectation.Errors(
+					validation.ViolationExpectation{
+						Location: "/type",
+						Position: [2]int{1, 38},
+						Err:      expectation.ErrorMessage("value must be one of 'string', 'enum'"),
+					},
+				),
 			},
 		},
 		{
@@ -506,7 +512,7 @@ func (s *InferrerSuite) TestOptionErrors() {
 				Err: expectation.Errors(
 					validation.ViolationExpectation{
 						Location: "",
-						Position: [2]int{0, 0},
+						Position: [2]int{1, 11},
 						Err:      expectation.ErrorMessage("missing property 'label'"),
 					},
 					validation.ViolationExpectation{
@@ -527,7 +533,7 @@ func (s *InferrerSuite) TestOptionErrors() {
 				Position: [2]int{1, 1},
 				Err: yamlannotation.ErrorExpectation{
 					Position: [2]int{1, 11},
-					Err:      expectation.ErrorMessage("unable to auto detect option type"),
+					Err:      expectation.ErrorMessage("unable to auto-detect option type"),
 				},
 			},
 		},

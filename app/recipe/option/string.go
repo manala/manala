@@ -5,7 +5,6 @@ import (
 
 	jsondecoder "github.com/manala/manala/internal/json/decoder"
 	jsonnumber "github.com/manala/manala/internal/json/number"
-	jsonvalidation "github.com/manala/manala/internal/json/validation"
 	"github.com/manala/manala/internal/validation"
 	yamlpath "github.com/manala/manala/internal/yaml/path"
 
@@ -15,22 +14,8 @@ import (
 
 const STRING = "string"
 
-var stringValidator = validation.MustNewValidator(map[string]any{
-	"type": "object",
-	"properties": map[string]any{
-		"type":  map[string]any{"const": "string"},
-		"name":  map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
-		"label": map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
-		"help":  map[string]any{"type": "string", "minLength": 1, "maxLength": 100},
-	},
-	"additionalProperties": false,
-	"required":             []any{"label"},
-})
-
 type String struct {
-	name      string
-	label     string
-	help      string
+	option    option
 	maxLength int
 	pointer   jsonpointer.Pointer
 	validator *validation.Validator
@@ -63,9 +48,25 @@ func NewString(sch map[string]any, path string) (*String, error) {
 	return o, nil
 }
 
-func (o *String) Name() string   { return o.name }
-func (o *String) Label() string  { return o.label }
-func (o *String) Help() string   { return o.help }
+func (o *String) UnmarshalJSON(bytes []byte) error {
+	// Decode as generic option
+	if err := jsondecoder.Decode(bytes, &o.option); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *String) Name() string {
+	if o.option.Name == "" {
+		o.option.Name = slug.Make(o.option.Label)
+	}
+	return o.option.Name
+}
+
+func (o *String) Label() string { return o.option.Label }
+func (o *String) Help() string  { return o.option.Help }
+
 func (o *String) MaxLength() int { return o.maxLength }
 
 func (o *String) Get(data *map[string]any) (string, error) {
@@ -93,36 +94,5 @@ func (o *String) Validate(v string) error {
 		}
 		return err
 	}
-	return nil
-}
-
-func (o *String) UnmarshalJSON(bytes []byte) error {
-	// Decode to map for validation
-	var data map[string]any
-	if err := jsondecoder.Decode(bytes, &data); err != nil {
-		return err
-	}
-
-	// Validate
-	if err := stringValidator.Validate(data, jsonvalidation.WithLocator(bytes)); err != nil {
-		return err
-	}
-
-	// Decode
-	var env struct {
-		Name  string `json:"name"`
-		Label string `json:"label"`
-		Help  string `json:"help"`
-	}
-	if err := jsondecoder.Decode(bytes, &env); err != nil {
-		return err
-	}
-
-	o.label = env.Label
-	o.help = env.Help
-	if o.name = env.Name; o.name == "" {
-		o.name = slug.Make(o.label)
-	}
-
 	return nil
 }

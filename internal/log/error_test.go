@@ -33,31 +33,31 @@ func (s *ErrorSuite) TestDump() {
 		},
 		{
 			test: "SingleLine",
-			dump: "dump",
+			dump: "foo",
 			expected: heredoc.Doc(`
 				 ✖ error
 
-				    │ dump
+				    │ foo
 			`),
 		},
 		{
 			test: "MultiLine",
-			dump: "dump\ndump",
+			dump: "foo\nbar",
 			expected: heredoc.Doc(`
 				 ✖ error
 
-				    │ dump
-				    │ dump
+				    │ foo
+				    │ bar
 			`),
 		},
 		{
 			test: "TrailingLine",
-			dump: "dump\ndump\n",
+			dump: "foo\nbar\n",
 			expected: heredoc.Doc(`
 				 ✖ error
 
-				    │ dump
-				    │ dump
+				    │ foo
+				    │ bar
 			`),
 		},
 	}

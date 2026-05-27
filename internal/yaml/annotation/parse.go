@@ -6,8 +6,8 @@ import (
 )
 
 // Parse parses the given source into a Set of annotations.
-func Parse(src string) (*Set, error) {
-	set := &Set{}
+func Parse(src string) ([]*Annotation, error) {
+	var annotations []*Annotation
 	var current *Annotation
 
 	scanner := NewScanner(src)
@@ -20,25 +20,28 @@ func Parse(src string) (*Set, error) {
 		case TokenName:
 			if seen[token.Value] {
 				return nil, NewError(
-					fmt.Errorf("duplicate annotation @%s", token.Value),
+					fmt.Errorf("duplicate @%s annotation", token.Value),
 					token,
 				)
 			}
 			seen[token.Value] = true
 			current = &Annotation{Name: Name{Token: token}}
-			set.annotations = append(set.annotations, current)
+			annotations = append(annotations, current)
 		case TokenText:
 			if current == nil {
 				continue
 			}
-			current.Value.Tokens = append(current.Value.Tokens, token)
+			if current.Body == nil {
+				current.Body = &Body{}
+			}
+			current.Body.Tokens = append(current.Body.Tokens, token)
 		case TokenUnknown:
 			return nil, NewError(
 				errors.New("unknown annotation token"),
 				token,
 			)
 		case TokenEOF:
-			return set, nil
+			return annotations, nil
 		}
 	}
 }
