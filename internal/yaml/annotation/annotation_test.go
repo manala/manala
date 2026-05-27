@@ -22,44 +22,44 @@ func (s *AnnotationSuite) TestName() {
 	s.Equal("foo", name.String())
 }
 
-func (s *AnnotationSuite) TestValueString() {
+func (s *AnnotationSuite) TestBodyString() {
 	s.Run("Single", func() {
-		value := yamlannotation.Value{
+		body := yamlannotation.Body{
 			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 7},
 			},
 		}
-		s.Equal("bar", value.String())
+		s.Equal("bar", body.String())
 	})
 
 	s.Run("Multiline", func() {
-		value := yamlannotation.Value{
+		body := yamlannotation.Body{
 			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 7},
 				{Value: "baz", Line: 2, Column: 3},
 			},
 		}
-		s.Equal("bar\nbaz", value.String())
+		s.Equal("bar\nbaz", body.String())
 	})
 
 	s.Run("Empty", func() {
-		value := yamlannotation.Value{}
-		s.Empty(value.String())
+		body := yamlannotation.Body{}
+		s.Empty(body.String())
 	})
 }
 
-func (s *AnnotationSuite) TestValueStencil() {
+func (s *AnnotationSuite) TestBodyStencil() {
 	s.Run("Single", func() {
-		value := yamlannotation.Value{
+		body := yamlannotation.Body{
 			Tokens: []yamlannotation.Token{
 				{Value: "bar", Line: 1, Column: 8},
 			},
 		}
-		s.Equal("       bar", value.Stencil())
+		s.Equal("       bar", body.Stencil())
 	})
 
 	s.Run("Multiline", func() {
-		value := yamlannotation.Value{
+		body := yamlannotation.Body{
 			Tokens: []yamlannotation.Token{
 				{Value: "{", Line: 2, Column: 8},
 				{Value: "\"bar\":", Line: 3, Column: 5},
@@ -67,17 +67,17 @@ func (s *AnnotationSuite) TestValueStencil() {
 				{Value: "}", Line: 4, Column: 3},
 			},
 		}
-		s.Equal("\n       {\n    \"bar\":           123\n  }", value.Stencil())
+		s.Equal("\n       {\n    \"bar\":           123\n  }", body.Stencil())
 	})
 }
 
-func (s *AnnotationSuite) TestValueStart() {
+func (s *AnnotationSuite) TestBodyStart() {
 	token1 := yamlannotation.Token{Value: "foo", Line: 2, Column: 5}
 	token2 := yamlannotation.Token{Value: "bar", Line: 3, Column: 3}
 
-	value := yamlannotation.Value{
+	body := yamlannotation.Body{
 		Tokens: []yamlannotation.Token{token1, token2},
 	}
 
-	s.Equal(token1, value.Start())
+	s.Equal(token1, body.Start())
 }

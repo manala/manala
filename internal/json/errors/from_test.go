@@ -3,6 +3,7 @@ package errors_test
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"reflect"
 	"testing"
 
@@ -22,16 +23,19 @@ func (s *FromSuite) Test() {
 	tests := []struct {
 		test     string
 		err      error
+		src      string
 		expected expectation.ErrorExpectation
 	}{
 		{
 			test:     "Unknown",
 			err:      errors.New("unknown"),
+			src:      "",
 			expected: expectation.ErrorEqual(errors.New("unknown")),
 		},
 		{
 			test: "SyntaxError",
 			err:  &json.SyntaxError{Offset: 0},
+			src:  "",
 			expected: jsonerrors.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage(""),
@@ -46,6 +50,7 @@ func (s *FromSuite) Test() {
 				Field:  "foo",
 				Type:   reflect.TypeFor[float64](),
 			},
+			src: "",
 			expected: jsonerrors.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("wrong value type for field \"foo\""),
@@ -58,16 +63,53 @@ func (s *FromSuite) Test() {
 				Value:  "foo",
 				Type:   reflect.TypeFor[float64](),
 			},
+			src: "",
 			expected: jsonerrors.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("wrong foo value type"),
+			},
+		},
+		{
+			test: "EOFEmpty",
+			err:  io.EOF,
+			src:  "",
+			expected: jsonerrors.Expectation{
+				Position: [2]int{0, 0},
+				Err:      expectation.ErrorMessage("EOF"),
+			},
+		},
+		{
+			test: "EOF",
+			err:  io.EOF,
+			src:  "{\"foo\":",
+			expected: jsonerrors.Expectation{
+				Position: [2]int{1, 7},
+				Err:      expectation.ErrorMessage("EOF"),
+			},
+		},
+		{
+			test: "UnexpectedEOF",
+			err:  io.ErrUnexpectedEOF,
+			src:  "{\"foo\":",
+			expected: jsonerrors.Expectation{
+				Position: [2]int{1, 7},
+				Err:      expectation.ErrorMessage("unexpected EOF"),
+			},
+		},
+		{
+			test: "UnexpectedEOFMultiLine",
+			err:  io.ErrUnexpectedEOF,
+			src:  "{\n  \"foo\":",
+			expected: jsonerrors.Expectation{
+				Position: [2]int{2, 8},
+				Err:      expectation.ErrorMessage("unexpected EOF"),
 			},
 		},
 	}
 
 	for _, test := range tests {
 		s.Run(test.test, func() {
-			err := jsonerrors.From(test.err, "")
+			err := jsonerrors.From(test.err, test.src)
 
 			expectation.ExpectError(s.T(), test.expected, err)
 		})
