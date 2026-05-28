@@ -41,107 +41,169 @@ func (s *ParseSuite) TestAnchors() {
 	s.Run("MergeKeys", func() {
 		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 			empty: &empty {}
-			mapping_value: &mapping_value
+			single: &single
 			  foo: foo
-			mapping: &mapping
-			  foo: foo
+			multiple: &multiple
 			  bar: bar
-			mapping_value_alias_empty:
+			  baz: baz
+
+			mapping_empty_alias_empty:
 			  <<: *empty
-			mapping_value_alias_mapping_value:
-			  <<: *mapping_value
-			mapping_value_alias_mapping:
-			  <<: *mapping
-			mapping_alias_empty:
+			mapping_empty_alias_single:
+			  <<: *single
+			mapping_empty_alias_multiple:
+			  <<: *multiple
+			mapping_empty_aliases_empty_single_multiple:
+			  <<: [*empty, *single, *multiple]
+
+			mapping_single_alias_empty:
 			  <<: *empty
-			  baz: baz
-			mapping_alias_mapping_value:
-			  <<: *mapping_value
-			  baz: baz
-			mapping_alias_mapping:
-			  <<: *mapping
-			  baz: baz
+			  qux: qux
+			mapping_single_alias_single:
+			  <<: *single
+			  qux: qux
+			mapping_single_alias_multiple:
+			  <<: *multiple
+			  qux: qux
+			mapping_single_aliases_empty_single_multiple:
+			  <<: [*empty, *single, *multiple]
+			  qux: qux
 		`)))
 
 		s.Require().NoError(err)
 
-		s.Require().Len(node.Values, 9)
+		s.Require().Len(node.Values, 11)
 
-		emptyNode := node.Values[0]
-		s.Require().IsType((*ast.MappingNode)(nil), emptyNode.Value)
-		s.Empty(emptyNode.Value.(*ast.MappingNode).Values)
+		empty := node.Values[0]
+		s.Require().IsType((*ast.MappingNode)(nil), empty.Value)
+		s.Empty(empty.Value.(*ast.MappingNode).Values)
 
-		mappingValueNode := node.Values[1]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueNode.Value)
-		s.Require().Len(mappingValueNode.Value.(*ast.MappingNode).Values, 1)
+		single := node.Values[1]
+		s.Require().IsType((*ast.MappingNode)(nil), single.Value)
+		s.Require().Len(single.Value.(*ast.MappingNode).Values, 1)
 
-		mappingNode := node.Values[2]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingNode.Value)
-		s.Require().Len(mappingNode.Value.(*ast.MappingNode).Values, 2)
+		multiple := node.Values[2]
+		s.Require().IsType((*ast.MappingNode)(nil), multiple.Value)
+		s.Require().Len(multiple.Value.(*ast.MappingNode).Values, 2)
 
-		mappingValueAliasEmptyNode := node.Values[3]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasEmptyNode.Value)
-		s.Empty(mappingValueAliasEmptyNode.Value.(*ast.MappingNode).Values)
+		mappingEmptyAliasEmpty := node.Values[3]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingEmptyAliasEmpty.Value)
+		s.Empty(mappingEmptyAliasEmpty.Value.(*ast.MappingNode).Values)
 
-		mappingValueAliasMappingValueNode := node.Values[4]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingValueNode.Value)
-		s.Require().Len(mappingValueAliasMappingValueNode.Value.(*ast.MappingNode).Values, 1)
+		mappingEmptyAliasSingle := node.Values[4]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingEmptyAliasSingle.Value)
+		s.Require().Len(mappingEmptyAliasSingle.Value.(*ast.MappingNode).Values, 1)
 
-		mappingValueAliasMappingNode := node.Values[5]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingValueAliasMappingNode.Value)
-		s.Require().Len(mappingValueAliasMappingNode.Value.(*ast.MappingNode).Values, 2)
+		mappingEmptyAliasMultiple := node.Values[5]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingEmptyAliasMultiple.Value)
+		s.Require().Len(mappingEmptyAliasMultiple.Value.(*ast.MappingNode).Values, 2)
 
-		mappingAliasEmptyNode := node.Values[6]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasEmptyNode.Value)
-		s.Require().Len(mappingAliasEmptyNode.Value.(*ast.MappingNode).Values, 1)
+		mappingEmptyAliasesEmptySingleMultiple := node.Values[6]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingEmptyAliasesEmptySingleMultiple.Value)
+		s.Require().Len(mappingEmptyAliasesEmptySingleMultiple.Value.(*ast.MappingNode).Values, 3)
 
-		mappingAliasMappingValueNode := node.Values[7]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingValueNode.Value)
-		s.Require().Len(mappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 2)
+		mappingSingleAliasEmpty := node.Values[7]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasEmpty.Value)
+		s.Require().Len(mappingSingleAliasEmpty.Value.(*ast.MappingNode).Values, 1)
 
-		mappingAliasMappingNode := node.Values[8]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingNode.Value)
-		s.Require().Len(mappingAliasMappingNode.Value.(*ast.MappingNode).Values, 3)
+		mappingSingleAliasSingle := node.Values[8]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasSingle.Value)
+		s.Require().Len(mappingSingleAliasSingle.Value.(*ast.MappingNode).Values, 2)
+
+		mappingSingleAliasMultiple := node.Values[9]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasMultiple.Value)
+		s.Require().Len(mappingSingleAliasMultiple.Value.(*ast.MappingNode).Values, 3)
+
+		mappingSingleAliasesEmptySingleMultiple := node.Values[10]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasesEmptySingleMultiple.Value)
+		s.Require().Len(mappingSingleAliasesEmptySingleMultiple.Value.(*ast.MappingNode).Values, 4)
 	})
 
 	s.Run("MergeKeysDuplicated", func() {
 		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
-			mapping_value: &mapping_value
+			single: &single
 			  foo: foo
-			mapping: &mapping
+			multiple: &multiple
 			  foo: foo
 			  bar: bar
-			single_mapping_alias_mapping_value:
-			  <<: *mapping_value
+
+			mapping_single_alias_single:
+			  <<: *single
 			  foo: bar
-			multiple_mapping_alias_mapping_value:
-			  <<: *mapping_value
+			mapping_single_aliases_single_multiple:
+			  <<: [*single, *multiple]
+			  foo: bar
+
+			mapping_multiple_alias_single:
+			  <<: *single
 			  foo: bar
 			  bar: bar
-			mapping_alias_mapping:
-			  <<: *mapping
+			mapping_multiple_alias_multiple:
+			  <<: *multiple
+			  foo: bar
+			  baz: baz
+			mapping_multiple_aliases_single_multiple:
+			  <<: [*single, *multiple]
 			  foo: bar
 			  baz: baz
 		`)))
 
 		s.Require().NoError(err)
 
-		s.Require().Len(node.Values, 5)
+		s.Require().Len(node.Values, 7)
 
-		singleMappingAliasMappingValueNode := node.Values[2]
-		s.Require().IsType((*ast.MappingNode)(nil), singleMappingAliasMappingValueNode.Value)
-		s.Require().Len(singleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 1)
-		s.Equal("bar", singleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+		mappingSingleAliasSingle := node.Values[2]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasSingle.Value)
+		s.Require().Len(mappingSingleAliasSingle.Value.(*ast.MappingNode).Values, 1)
+		s.Equal("bar", mappingSingleAliasSingle.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
 
-		multipleMappingAliasMappingValueNode := node.Values[3]
-		s.Require().IsType((*ast.MappingNode)(nil), multipleMappingAliasMappingValueNode.Value)
-		s.Require().Len(multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values, 2)
-		s.Equal("bar", multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+		mappingSingleAliasesSingleMultiple := node.Values[3]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingSingleAliasesSingleMultiple.Value)
+		s.Require().Len(mappingSingleAliasesSingleMultiple.Value.(*ast.MappingNode).Values, 2)
+		s.Equal("bar", mappingSingleAliasesSingleMultiple.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
 
-		mappingAliasMappingNode := node.Values[4]
-		s.Require().IsType((*ast.MappingNode)(nil), mappingAliasMappingNode.Value)
-		s.Require().Len(mappingAliasMappingNode.Value.(*ast.MappingNode).Values, 3)
-		s.Equal("bar", multipleMappingAliasMappingValueNode.Value.(*ast.MappingNode).Values[1].Value.(*ast.StringNode).Value)
+		mappingMultipleAliasSingle := node.Values[4]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingMultipleAliasSingle.Value)
+		s.Require().Len(mappingMultipleAliasSingle.Value.(*ast.MappingNode).Values, 2)
+		s.Equal("bar", mappingMultipleAliasSingle.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+
+		mappingMultipleAliasMultiple := node.Values[5]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingMultipleAliasMultiple.Value)
+		s.Require().Len(mappingMultipleAliasMultiple.Value.(*ast.MappingNode).Values, 3)
+		s.Equal("bar", mappingMultipleAliasMultiple.Value.(*ast.MappingNode).Values[1].Value.(*ast.StringNode).Value)
+
+		mappingMultipleAliasesSingleMultiple := node.Values[6]
+		s.Require().IsType((*ast.MappingNode)(nil), mappingMultipleAliasesSingleMultiple.Value)
+		s.Require().Len(mappingMultipleAliasesSingleMultiple.Value.(*ast.MappingNode).Values, 3)
+		s.Equal("bar", mappingMultipleAliasesSingleMultiple.Value.(*ast.MappingNode).Values[0].Value.(*ast.StringNode).Value)
+	})
+}
+
+func (s *ParseSuite) TestAnchorsCycle() {
+	s.Run("Anchor", func() {
+		// Anchor cycles must surface as an explicit error rather than a stack overflow.
+		_, err := yamlparser.Parse([]byte(heredoc.Doc(`
+			cyclic: &cyclic
+			  self: *cyclic
+		`)))
+
+		expectation.ExpectError(s.T(), yamlerrors.Expectation{
+			Position: [2]int{2, 9},
+			Err:      expectation.ErrorMessage("cycle through yaml anchor \"cyclic\""),
+		}, err)
+	})
+
+	s.Run("MergeKey", func() {
+		// Merge-key cycles must surface as an explicit error rather than a stack overflow.
+		_, err := yamlparser.Parse([]byte(heredoc.Doc(`
+			cyclic: &cyclic
+			  <<: *cyclic
+		`)))
+
+		expectation.ExpectError(s.T(), yamlerrors.Expectation{
+			Position: [2]int{2, 7},
+			Err:      expectation.ErrorMessage("cycle through yaml anchor \"cyclic\""),
+		}, err)
 	})
 }
 
@@ -154,8 +216,9 @@ func (s *ParseSuite) TestTags() {
 
 	s.Require().Len(node.Values, 1)
 
-	s.Require().IsType((*ast.StringNode)(nil), node.Values[0].Value)
-	s.Equal("bar", node.Values[0].Value.String())
+	value := node.Values[0].Value
+	s.Require().IsType((*ast.StringNode)(nil), value)
+	s.Equal("bar", value.String())
 }
 
 func (s *ParseSuite) TestMapKeyExplicit() {
@@ -167,15 +230,83 @@ func (s *ParseSuite) TestMapKeyExplicit() {
 
 	s.Require().Len(node.Values, 1)
 
-	keyNode := node.Values[0].Key
-	s.Require().IsType((*ast.MappingKeyNode)(nil), keyNode)
-	keyNodeValue := keyNode.(*ast.MappingKeyNode).Value
-	s.Require().IsType((*ast.StringNode)(nil), keyNodeValue)
-	s.Equal("foo", keyNodeValue.(*ast.StringNode).Value)
+	key := node.Values[0].Key
+	s.Require().IsType((*ast.MappingKeyNode)(nil), key)
 
-	valueNode := node.Values[0].Value
-	s.Require().IsType((*ast.StringNode)(nil), valueNode)
-	s.Equal("bar", valueNode.(*ast.StringNode).Value)
+	keyValue := key.(*ast.MappingKeyNode).Value
+	s.Require().IsType((*ast.StringNode)(nil), keyValue)
+	s.Equal("foo", keyValue.(*ast.StringNode).Value)
+
+	value := node.Values[0].Value
+	s.Require().IsType((*ast.StringNode)(nil), value)
+	s.Equal("bar", value.(*ast.StringNode).Value)
+}
+
+func (s *ParseSuite) TestComments() {
+	s.Run("PreservedThroughMerge", func() {
+		// Merge without override: all comments must survive on merged keys.
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
+			foo: &foo
+			  # foo_foo annotation
+			  foo_foo: 1
+			  # foo_bar annotation
+			  foo_bar: 2
+			bar:
+			  <<: *foo
+		`)))
+		s.Require().NoError(err)
+
+		bar := node.Values[1].Value.(*ast.MappingNode)
+		s.Require().Len(bar.Values, 2)
+
+		s.Require().NotNil(bar.Values[0].GetComment())
+		s.Equal("# foo_foo annotation", bar.Values[0].GetComment().String())
+
+		s.Require().NotNil(bar.Values[1].GetComment())
+		s.Equal("# foo_bar annotation", bar.Values[1].GetComment().String())
+	})
+
+	s.Run("InheritedOnOverrideWithoutChildComment", func() {
+		// Override with no comment of its own should inherit the parent annotation.
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
+				foo: &foo
+				  # foo_foo annotation
+				  foo_foo: 1
+				bar:
+				  <<: *foo
+				  bar_foo: 2
+			`)))
+		s.Require().NoError(err)
+
+		bar := node.Values[1].Value.(*ast.MappingNode)
+		s.Require().Len(bar.Values, 2)
+
+		s.Require().NotNil(bar.Values[0].GetComment())
+		s.Equal("# foo_foo annotation", bar.Values[0].GetComment().String())
+	})
+
+	s.Run("OverriddenOnOverrideWithChildComment", func() {
+		// Override that carries its own comment wins over the parent annotation.
+		node, err := yamlparser.Parse([]byte(heredoc.Doc(`
+				foo: &foo
+				  # foo_foo annotation
+				  foo_foo: 1
+				bar:
+				  <<: *foo
+				  # bar_foo annotation
+				  bar_foo: 2
+			`)))
+		s.Require().NoError(err)
+
+		bar := node.Values[1].Value.(*ast.MappingNode)
+		s.Require().Len(bar.Values, 2)
+
+		s.Require().NotNil(bar.Values[0].GetComment())
+		s.Equal("# foo_foo annotation", bar.Values[0].GetComment().String())
+
+		s.Require().NotNil(bar.Values[1].GetComment())
+		s.Equal("# bar_foo annotation", bar.Values[1].GetComment().String())
+	})
 }
 
 func (s *ParseSuite) TestErrors() {
