@@ -10,7 +10,8 @@ import (
 )
 
 // resolve replaces aliases with their anchor values and deduplicates mapping keys.
-func resolve(node ast.Node, anchors map[string]ast.Node) error {
+// visiting tracks anchor names currently being resolved to detect cycles.
+func resolve(node ast.Node, anchors map[string]ast.Node, visiting map[string]bool) error {
 	switch n := node.(type) {
 	case *ast.MappingNode:
 		deduplicatedValues := make([]*ast.MappingValueNode, 0)
@@ -20,27 +21,36 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 			mergedValues := make([]*ast.MappingValueNode, 0)
 
 			if _, ok := v.Key.(*ast.MergeKeyNode); ok {
-				if vv, ok := v.Value.(*ast.AliasNode); ok {
-					alias := vv.Value.GetToken().Value
-
-					anchor := anchors[alias]
-					if anchor == nil {
-						return yamlerrors.New(
-							fmt.Errorf("unknown \"%s\" yaml anchor", alias),
-							vv.GetToken(),
-						)
+				switch vv := v.Value.(type) {
+				case *ast.AliasNode:
+					mn, err := resolveMergeAlias(vv, anchors, visiting)
+					if err != nil {
+						return err
 					}
-
-					switch a := anchor.(type) {
-					case *ast.MappingNode:
-						mergedValues = a.Values
-					default:
-						return yamlerrors.New(
-							fmt.Errorf("anchor %s must be a map", alias),
-							anchor.GetToken(),
-						)
+					mergedValues = mn.Values
+				case *ast.SequenceNode:
+					// `<<: [*a, *b]` — defer flattening to goccy's SequenceMergeValue
+					// so we follow its iteration order rather than reimplementing it.
+					maps := make([]ast.MapNode, 0, len(vv.Values))
+					for _, elt := range vv.Values {
+						alias, ok := elt.(*ast.AliasNode)
+						if !ok {
+							return yamlerrors.New(
+								errors.New("map value must be an alias"),
+								elt.GetToken(),
+							)
+						}
+						mn, err := resolveMergeAlias(alias, anchors, visiting)
+						if err != nil {
+							return err
+						}
+						maps = append(maps, mn)
 					}
-				} else {
+					iter := ast.SequenceMergeValue(maps...).MapRange()
+					for iter.Next() {
+						mergedValues = append(mergedValues, iter.KeyValue())
+					}
+				default:
 					return yamlerrors.New(
 						errors.New("map value must be an alias"),
 						v.Value.GetToken(),
@@ -62,7 +72,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 				deduplicatedValues = append(deduplicatedValues, mv)
 
 				// Resolve
-				if err := resolveValue(&mv.Value, anchors); err != nil {
+				if err := resolveValue(&mv.Value, anchors, visiting); err != nil {
 					return err
 				}
 			}
@@ -72,7 +82,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 
 	case *ast.SequenceNode:
 		for idx := range n.Values {
-			if err := resolveValue(&n.Values[idx], anchors); err != nil {
+			if err := resolveValue(&n.Values[idx], anchors, visiting); err != nil {
 				return err
 			}
 		}
@@ -81,31 +91,82 @@ func resolve(node ast.Node, anchors map[string]ast.Node) error {
 	return nil
 }
 
-func resolveValue(node *ast.Node, anchors map[string]ast.Node) error {
+func resolveMergeAlias(alias *ast.AliasNode, anchors map[string]ast.Node, visiting map[string]bool) (*ast.MappingNode, error) {
+	name := alias.Value.GetToken().Value
+
+	if visiting[name] {
+		return nil, yamlerrors.New(
+			fmt.Errorf("cycle through yaml anchor %q", name),
+			alias.GetToken(),
+		)
+	}
+
+	anchor := anchors[name]
+	if anchor == nil {
+		return nil, yamlerrors.New(
+			fmt.Errorf("unknown \"%s\" yaml anchor", name),
+			alias.GetToken(),
+		)
+	}
+
+	mn, ok := anchor.(*ast.MappingNode)
+	if !ok {
+		return nil, yamlerrors.New(
+			fmt.Errorf("anchor %s must be a map", name),
+			anchor.GetToken(),
+		)
+	}
+
+	return mn, nil
+}
+
+func resolveValue(node *ast.Node, anchors map[string]ast.Node, visiting map[string]bool) error {
 	switch n := (*node).(type) {
 	case *ast.TagNode:
 		*node = n.Value
-		return resolveValue(node, anchors)
+		return resolveValue(node, anchors, visiting)
 	case *ast.MappingKeyNode:
 		*node = n.Value
-		return resolveValue(node, anchors)
+		return resolveValue(node, anchors, visiting)
 	case *ast.AliasNode:
-		alias := n.Value.GetToken().Value
-		anchor := anchors[alias]
+		name := n.Value.GetToken().Value
 
-		if anchor == nil {
+		if visiting[name] {
 			return yamlerrors.New(
-				fmt.Errorf("unknown \"%s\" yaml anchor", alias),
+				fmt.Errorf("cycle through yaml anchor %q", name),
 				n.GetToken(),
 			)
 		}
 
+		anchor := anchors[name]
+		if anchor == nil {
+			return yamlerrors.New(
+				fmt.Errorf("unknown \"%s\" yaml anchor", name),
+				n.GetToken(),
+			)
+		}
+
+		visiting[name] = true
 		*node = anchor
-		return resolveValue(node, anchors)
+		err := resolveValue(node, anchors, visiting)
+		delete(visiting, name)
+		return err
 	case *ast.AnchorNode:
+		name := n.Name.GetToken().Value
+
+		if visiting[name] {
+			return yamlerrors.New(
+				fmt.Errorf("cycle through yaml anchor %q", name),
+				n.GetToken(),
+			)
+		}
+
+		visiting[name] = true
 		*node = n.Value
-		return resolveValue(node, anchors)
+		err := resolveValue(node, anchors, visiting)
+		delete(visiting, name)
+		return err
 	default:
-		return resolve(*node, anchors)
+		return resolve(*node, anchors, visiting)
 	}
 }
