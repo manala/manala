@@ -8,7 +8,10 @@ import (
 	"github.com/manala/manala/internal/output"
 
 	"charm.land/lipgloss/v2"
-	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/formatters"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 )
 
 const Context = 3
@@ -70,20 +73,38 @@ func (e Error) Render(p output.Profile) string {
 
 	// Highlight
 	if p.Rich() {
-		formatter := "terminal16"
+		// Determine lexer
+		lexer := lexers.Get(e.Language)
+		if lexer == nil {
+			lexer = lexers.Analyse(src)
+		}
+		if lexer == nil {
+			lexer = lexers.Fallback
+		}
+		lexer = chroma.Coalesce(lexer)
+
+		// Get formatter
+		formatterName := "terminal16"
 		switch {
 		case p.Extended():
-			formatter = "terminal256"
+			formatterName = "terminal256"
 		case p.True():
-			formatter = "terminal16m"
+			formatterName = "terminal16m"
 		}
-		style := "catppuccin-mocha"
+		formatter := formatters.Get(formatterName)
+
+		// Get style
+		chromaMode := chroma.Dark
 		if p.Light() {
-			style = "catppuccin-latte"
+			chromaMode = chroma.Light
 		}
-		var h strings.Builder
-		if err := quick.Highlight(&h, src, e.Language, formatter, style); err == nil {
-			src = h.String()
+		style := styles.GetForMode("catppuccin-mocha", chromaMode)
+
+		if it, err := lexer.Tokenise(nil, src); err == nil {
+			var h strings.Builder
+			if err := formatter.Format(&h, style, it); err == nil {
+				src = h.String()
+			}
 		}
 	}
 
