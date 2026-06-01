@@ -12,7 +12,6 @@ import (
 	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/errors/std"
-	"github.com/manala/manala/internal/filepath/backwalk"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/validation"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
@@ -176,61 +175,6 @@ func (handler *LoaderHandler) Handle(query *project.LoaderQuery, chain project.L
 		}
 		return nil, serror.New("unable to validate project manifest vars").
 			With("file", file).WithErr(err)
-	}
-
-	return project, nil
-}
-
-type FromLoaderHandler struct {
-	log *log.Log
-}
-
-func NewFromLoaderHandler(log *log.Log) *FromLoaderHandler {
-	return &FromLoaderHandler{
-		log: log,
-	}
-}
-
-func (handler *FromLoaderHandler) Handle(query *project.LoaderQuery, chain project.LoaderHandlerChain) (app.Project, error) {
-	dir := query.Dir
-
-	handler.log.Debug("handle project manifest from", "handler", "manifest.from", "dir", dir)
-
-	var project app.Project
-
-	// Backwalk from dir
-	if err := backwalk.WalkDir(dir,
-		func(path string, _ os.DirEntry, err error) error {
-			if err != nil {
-				return serror.New("file system error").
-					With("path", path).
-					WithErr(std.From(err))
-			}
-
-			// Update query
-			query.Dir = path
-
-			// Load project
-			project, err = chain.Next(query)
-			if err != nil {
-				if _, ok := errors.AsType[*app.NotFoundProjectError](err); ok {
-					return nil
-				}
-
-				return err
-			}
-
-			// Stop backwalk
-			return filepath.SkipAll
-		},
-	); err != nil {
-		return nil, err
-	}
-
-	if project == nil {
-		query.Dir = dir
-
-		return chain.Last(query)
 	}
 
 	return project, nil
