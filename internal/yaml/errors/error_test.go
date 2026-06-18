@@ -6,6 +6,7 @@ import (
 
 	"github.com/manala/manala/internal/testing/expectation"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlerrorstest "github.com/manala/manala/internal/yaml/errors/errorstest"
 
 	"github.com/goccy/go-yaml/token"
 	"github.com/stretchr/testify/suite"
@@ -25,7 +26,7 @@ func (s *ErrorsSuite) Test() {
 		},
 	)
 
-	expectation.ExpectError(s.T(), yamlerrors.Expectation{
+	expectation.ExpectError(s.T(), yamlerrorstest.Expectation{
 		Position: [2]int{2, 3},
 		Err:      expectation.ErrorMessage("error"),
 	}, err)

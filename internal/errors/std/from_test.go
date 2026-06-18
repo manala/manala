@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/errors/std"
 	"github.com/manala/manala/internal/testing/expectation"
 
@@ -26,7 +27,7 @@ func (s *FromSuite) Test() {
 		{
 			test: "Unknown",
 			err:  serror.New("unknown"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unknown",
 			},
 		},
@@ -37,7 +38,7 @@ func (s *FromSuite) Test() {
 				Path: "path",
 				Err:  serror.New("path"),
 			},
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "path",
 				Attrs: [][2]any{
 					{"operation", "operation"},
@@ -52,7 +53,7 @@ func (s *FromSuite) Test() {
 				Path: "/foo/bar",
 				Err:  os.ErrNotExist,
 			},
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "file does not exist",
 				Attrs: [][2]any{
 					{"operation", "open"},
@@ -66,7 +67,7 @@ func (s *FromSuite) Test() {
 				Syscall: "syscall",
 				Err:     serror.New("syscall"),
 			},
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "syscall",
 				Attrs: [][2]any{
 					{"syscall", "syscall"},

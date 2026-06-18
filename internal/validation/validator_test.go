@@ -5,6 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/validation"
+	"github.com/manala/manala/internal/validation/validationtest"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -47,12 +48,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				"root_baz": "string",
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar/nested_bar",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("additional property 'nested_bar' not allowed"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_baz",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("additional property 'root_baz' not allowed"),
@@ -80,22 +81,22 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				"root_BAZ": "string",
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("'nested_BAR' does not match pattern '^[a-z_]+$'"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("'root_BAZ' does not match pattern '^[a-z_]+$'"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("invalid propertyName 'nested_BAR'"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("invalid propertyName 'root_BAZ'"),
@@ -122,12 +123,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				"root_baz": "string",
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar/nested_foo",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("got string, want integer"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_baz",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("got string, want integer"),
@@ -150,12 +151,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				"root_bar": map[string]any{},
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("missing property 'root_foo'"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("missing property 'nested_foo'"),
@@ -181,12 +182,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				},
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("properties 'root_baz' required, if 'root_foo' exists"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("properties 'nested_baz' required, if 'nested_foo' exists"),
@@ -212,12 +213,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				},
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("minProperties: got 2, want 3"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("minProperties: got 1, want 2"),
@@ -244,12 +245,12 @@ func (s *ValidatorLocatorSuite) TestValidateViolations() {
 				},
 			},
 			expected: expectation.Errors(
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("maxProperties: got 2, want 1"),
 				},
-				validation.ViolationExpectation{
+				validationtest.ViolationExpectation{
 					Location: "/root_bar",
 					Position: [2]int{0, 0},
 					Err:      expectation.ErrorMessage("maxProperties: got 2, want 1"),

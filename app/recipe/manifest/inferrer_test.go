@@ -7,12 +7,12 @@ import (
 	"github.com/manala/manala/app"
 	"github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/recipe/option"
-	jsonerrors "github.com/manala/manala/internal/json/errors"
+	jsonerrorstest "github.com/manala/manala/internal/json/errors/errorstest"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/validation"
-	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
-	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	"github.com/manala/manala/internal/validation/validationtest"
+	yamlannotationtest "github.com/manala/manala/internal/yaml/annotation/annotationtest"
+	yamlerrorstest "github.com/manala/manala/internal/yaml/errors/errorstest"
 	yamlparser "github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/stretchr/testify/suite"
@@ -341,9 +341,9 @@ func (s *InferrerSuite) TestSchemaErrors() {
 				# @schema foo
 				node: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: jsonerrors.Expectation{
+				Err: jsonerrorstest.Expectation{
 					Position: [2]int{1, 12},
 					Err:      expectation.ErrorMessage("invalid character 'o' in literal false (expecting 'a')"),
 				},
@@ -445,9 +445,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option foo
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: jsonerrors.Expectation{
+				Err: jsonerrorstest.Expectation{
 					Position: [2]int{1, 12},
 					Err:      expectation.ErrorMessage("invalid character 'o' in literal false (expecting 'a')"),
 				},
@@ -459,9 +459,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option []
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: jsonerrors.Expectation{
+				Err: jsonerrorstest.Expectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("wrong array value type"),
 				},
@@ -473,10 +473,10 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"label": "Label", "type": 123}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err: expectation.Errors(
-					validation.ViolationExpectation{
+					validationtest.ViolationExpectation{
 						Location: "/type",
 						Position: [2]int{1, 38},
 						Err:      expectation.ErrorMessage("value must be one of 'string', 'enum'"),
@@ -490,10 +490,10 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"label": "Label", "type": "unexpected"}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err: expectation.Errors(
-					validation.ViolationExpectation{
+					validationtest.ViolationExpectation{
 						Location: "/type",
 						Position: [2]int{1, 38},
 						Err:      expectation.ErrorMessage("value must be one of 'string', 'enum'"),
@@ -507,15 +507,15 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"foo": "bar"}
 				foo: string
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err: expectation.Errors(
-					validation.ViolationExpectation{
+					validationtest.ViolationExpectation{
 						Location: "",
 						Position: [2]int{1, 11},
 						Err:      expectation.ErrorMessage("missing property 'label'"),
 					},
-					validation.ViolationExpectation{
+					validationtest.ViolationExpectation{
 						Location: "/foo",
 						Position: [2]int{1, 12},
 						Err:      expectation.ErrorMessage("additional property 'foo' not allowed"),
@@ -529,9 +529,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"label": "Label"}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("unable to auto-detect option type"),
 				},
@@ -543,9 +543,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"label": "Label", "type": "string"}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("invalid recipe option string type"),
 				},
@@ -558,9 +558,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @schema {"type": null}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("invalid recipe option string type"),
 				},
@@ -572,9 +572,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @option {"label": "Label", "type": "enum"}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("invalid recipe option enum"),
 				},
@@ -587,9 +587,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @schema {"enum": null}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("invalid recipe option enum"),
 				},
@@ -602,9 +602,9 @@ func (s *InferrerSuite) TestOptionErrors() {
 				# @schema {"enum": []}
 				foo: ~
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
-				Err: yamlannotation.ErrorExpectation{
+				Err: yamlannotationtest.ErrorExpectation{
 					Position: [2]int{1, 11},
 					Err:      expectation.ErrorMessage("empty recipe option enum"),
 				},

@@ -1,8 +1,9 @@
-package source
+package sourcetest
 
 import (
 	"testing"
 
+	"github.com/manala/manala/internal/errors/source"
 	"github.com/manala/manala/internal/output"
 
 	"github.com/stretchr/testify/assert"
@@ -14,8 +15,8 @@ type Expectation string
 func (a Expectation) Expect(t *testing.T, err error) {
 	t.Helper()
 
-	require.IsType(t, Error{}, err)
-	e := err.(Error)
+	require.IsType(t, source.Error{}, err)
+	e := err.(source.Error)
 
 	assert.Equal(t, string(a), e.Render(output.Plain))
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/internal/testing/heredoc"
-	"github.com/manala/manala/internal/yaml/validation"
+	yamlvalidation "github.com/manala/manala/internal/yaml/validation"
 
 	"github.com/goccy/go-yaml/parser"
 	"github.com/stretchr/testify/suite"
@@ -349,7 +349,7 @@ func (s *LocatorSuite) TestAt() {
 			s.Require().NoError(err)
 
 			node := file.Docs[0].Body
-			l := validation.Locator{Node: node}
+			l := yamlvalidation.Locator{Node: node}
 
 			// Value
 			line, column := l.ValueAt(test.location)

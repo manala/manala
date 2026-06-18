@@ -7,6 +7,7 @@ import (
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
+	yamlannotationtest "github.com/manala/manala/internal/yaml/annotation/annotationtest"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -75,7 +76,7 @@ func (s *SetSuite) TestBodyFuncNoBody() {
 	err := set.Parse(src)
 
 	s.False(called)
-	expectation.ExpectError(s.T(), yamlannotation.ErrorExpectation{
+	expectation.ExpectError(s.T(), yamlannotationtest.ErrorExpectation{
 		Position: [2]int{1, 3},
 		Err:      expectation.ErrorMessage("annotation @foo requires a value"),
 	}, err)
@@ -112,7 +113,7 @@ func (s *SetSuite) TestUndeclared() {
 
 	err := set.Parse(src)
 
-	expectation.ExpectError(s.T(), yamlannotation.ErrorExpectation{
+	expectation.ExpectError(s.T(), yamlannotationtest.ErrorExpectation{
 		Position: [2]int{1, 3},
 		Err:      expectation.ErrorMessage("annotation @foo not defined"),
 	}, err)
@@ -197,7 +198,7 @@ func (s *SetSuite) TestParseError() {
 
 	err := set.Parse(src)
 
-	expectation.ExpectError(s.T(), yamlannotation.ErrorExpectation{
+	expectation.ExpectError(s.T(), yamlannotationtest.ErrorExpectation{
 		Position: [2]int{2, 3},
 		Err:      expectation.ErrorMessage("duplicate @foo annotation"),
 	}, err)

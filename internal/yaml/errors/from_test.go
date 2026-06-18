@@ -7,6 +7,7 @@ import (
 
 	"github.com/manala/manala/internal/testing/expectation"
 	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlerrorstest "github.com/manala/manala/internal/yaml/errors/errorstest"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -39,7 +40,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 3, Column: 5},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{3, 5},
 				Err:      expectation.ErrorMessage("field must be a string"),
 			},
@@ -52,7 +53,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 2, Column: 4},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{2, 4},
 				Err:      expectation.ErrorMessage("syntax error"),
 			},
@@ -65,7 +66,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 4, Column: 1},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{4, 1},
 				Err:      expectation.ErrorMessage("duplicate key"),
 			},
@@ -79,7 +80,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 1, Column: 3},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 3},
 				Err:      expectation.ErrorMessage("cannot unmarshal 999 into Go value of type int8 ( overflow )"),
 			},
@@ -92,7 +93,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 5, Column: 2},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{5, 2},
 				Err:      expectation.ErrorMessage("unknown field"),
 			},
@@ -106,7 +107,7 @@ func (s *FromSuite) Test() {
 					Position: &token.Position{Line: 2, Column: 1},
 				},
 			},
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{2, 1},
 				Err:      expectation.ErrorMessage("string was used where mapping is expected"),
 			},

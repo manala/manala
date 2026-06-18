@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	jsonerrors "github.com/manala/manala/internal/json/errors"
+	jsonerrorstest "github.com/manala/manala/internal/json/errors/errorstest"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
@@ -36,7 +37,7 @@ func (s *FromSuite) Test() {
 			test: "SyntaxError",
 			err:  &json.SyntaxError{Offset: 0},
 			src:  "",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage(""),
 			},
@@ -51,7 +52,7 @@ func (s *FromSuite) Test() {
 				Type:   reflect.TypeFor[float64](),
 			},
 			src: "",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("wrong value type for field \"foo\""),
 			},
@@ -64,7 +65,7 @@ func (s *FromSuite) Test() {
 				Type:   reflect.TypeFor[float64](),
 			},
 			src: "",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("wrong foo value type"),
 			},
@@ -73,7 +74,7 @@ func (s *FromSuite) Test() {
 			test: "EOFEmpty",
 			err:  io.EOF,
 			src:  "",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("EOF"),
 			},
@@ -82,7 +83,7 @@ func (s *FromSuite) Test() {
 			test: "EOF",
 			err:  io.EOF,
 			src:  "{\"foo\":",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{1, 7},
 				Err:      expectation.ErrorMessage("EOF"),
 			},
@@ -91,7 +92,7 @@ func (s *FromSuite) Test() {
 			test: "UnexpectedEOF",
 			err:  io.ErrUnexpectedEOF,
 			src:  "{\"foo\":",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{1, 7},
 				Err:      expectation.ErrorMessage("unexpected EOF"),
 			},
@@ -100,7 +101,7 @@ func (s *FromSuite) Test() {
 			test: "UnexpectedEOFMultiLine",
 			err:  io.ErrUnexpectedEOF,
 			src:  "{\n  \"foo\":",
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{2, 8},
 				Err:      expectation.ErrorMessage("unexpected EOF"),
 			},

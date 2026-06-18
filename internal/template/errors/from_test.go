@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	templateerrors "github.com/manala/manala/internal/template/errors"
+	templateerrorstest "github.com/manala/manala/internal/template/errors/errorstest"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
@@ -36,7 +37,7 @@ func (s *FromSuite) Test() {
 		{
 			test: "TextTemplateLine",
 			err:  errors.New(`template: foo.tmpl:12: message`),
-			expected: templateerrors.Expectation{
+			expected: templateerrorstest.Expectation{
 				Position: [2]int{12, 0},
 				Err:      expectation.ErrorMessage("message"),
 			},
@@ -44,7 +45,7 @@ func (s *FromSuite) Test() {
 		{
 			test: "TextEmptyTemplateLine",
 			err:  errors.New(`template: :12: message`),
-			expected: templateerrors.Expectation{
+			expected: templateerrorstest.Expectation{
 				Position: [2]int{12, 0},
 				Err:      expectation.ErrorMessage("message"),
 			},
@@ -53,7 +54,7 @@ func (s *FromSuite) Test() {
 			test: "TextTemplateLineColumnContext",
 			err:  template.ExecError{Err: errors.New(`template: foo.gohtml:12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
 			src:  asciiSrc,
-			expected: templateerrors.Expectation{
+			expected: templateerrorstest.Expectation{
 				Position: [2]int{12, 35},
 				Err:      expectation.ErrorMessage("can't evaluate field Bar in type []foo.Bar"),
 			},
@@ -62,7 +63,7 @@ func (s *FromSuite) Test() {
 			test: "TextEmptyTemplateLineColumnContext",
 			err:  template.ExecError{Err: errors.New(`template: :12:34: executing "title" at <.Bar>: can't evaluate field Bar in type []foo.Bar`)},
 			src:  asciiSrc,
-			expected: templateerrors.Expectation{
+			expected: templateerrorstest.Expectation{
 				Position: [2]int{12, 35},
 				Err:      expectation.ErrorMessage("can't evaluate field Bar in type []foo.Bar"),
 			},

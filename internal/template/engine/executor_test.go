@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/template/engine"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -104,10 +104,10 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }\nbaz\n")
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to parse template",
 			Err: expectation.Errors(
-				source.Expectation(heredoc.Doc(`
+				sourcetest.Expectation(heredoc.Doc(`
 
 					  1 │ foo
 					▶ 2 │   {{ .bar }
@@ -126,10 +126,10 @@ func (s *ExecutorSuite) TestExecute() {
 
 		err = executor.Execute(s.buffer, "foo\n  {{ .bar }}\nbaz\n")
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to parse template",
 			Err: expectation.Errors(
-				source.Expectation(heredoc.Doc(`
+				sourcetest.Expectation(heredoc.Doc(`
 
 					  1 │ foo
 					▶ 2 │   {{ .bar }}
@@ -229,12 +229,12 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "not_found.tmpl"))
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to read template file",
 			Attrs: [][2]any{
 				{"file", filepath.Join(dir, "not_found.tmpl")},
 			},
-			Err: serror.Expectation{
+			Err: serrortest.Expectation{
 				Msg: "file does not exist",
 				Attrs: [][2]any{
 					{"operation", "open"},
@@ -253,10 +253,10 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
-				source.Expectation(heredoc.Doc(`
+				sourcetest.Expectation(heredoc.Doc(`
 
 					at %[1]s:2
 
@@ -280,10 +280,10 @@ func (s *ExecutorSuite) TestExecuteTemplate() {
 
 		err = executor.ExecuteTemplate(s.buffer, filepath.Join(dir, "template.tmpl"))
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
-				source.Expectation(heredoc.Doc(`
+				sourcetest.Expectation(heredoc.Doc(`
 
 					at %[1]s:2:6
 

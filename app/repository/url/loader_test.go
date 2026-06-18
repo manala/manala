@@ -6,7 +6,7 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/url"
 	"github.com/manala/manala/app/testing/mocks"
-	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 
@@ -48,7 +48,7 @@ func (s *LoaderSuite) TestProcessorHandlerErrors() {
 	repository, err := handler.Handle(&repository.LoaderQuery{URL: "foo?bar;baz"}, chainMock)
 
 	s.Nil(repository)
-	expectation.ExpectError(s.T(), serror.Expectation{
+	expectation.ExpectError(s.T(), serrortest.Expectation{
 		Msg: "unable to process repository query",
 		Attrs: [][2]any{
 			{"query", "bar;baz"},

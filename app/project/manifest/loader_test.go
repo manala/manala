@@ -11,8 +11,8 @@ import (
 	recipeManifest "github.com/manala/manala/app/recipe/manifest"
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -46,7 +46,7 @@ func (s *LoaderSuite) TestHandleErrors() {
 	}{
 		{
 			test: "Directory",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "project manifest is a directory",
 				Attrs: [][2]any{
 					{"dir", filepath.Join(dir, "Directory", "project", ".manala.yaml")},
@@ -55,10 +55,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "Unparsable",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -72,10 +72,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "Empty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -90,10 +90,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "MultipleDocuments",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:1
 
@@ -109,10 +109,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "NotMap",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -127,10 +127,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "MapEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -146,10 +146,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config
 		{
 			test: "ConfigMissing",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -164,10 +164,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigNotMap",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:9
 
@@ -181,10 +181,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigMapEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -198,10 +198,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigAdditionalProperty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:3
 
@@ -218,10 +218,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Recipe
 		{
 			test: "ConfigRecipeAbsent",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -236,10 +236,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigRecipeNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:11
 
@@ -254,10 +254,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigRecipeEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:11
 
@@ -272,10 +272,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigRecipeTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:11
 
@@ -291,10 +291,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Repository
 		{
 			test: "ConfigRepositoryNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:15
 
@@ -310,10 +310,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigRepositoryEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:15
 
@@ -329,10 +329,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigRepositoryTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:15
 
@@ -349,10 +349,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Vars
 		{
 			test: "VarsInvalid",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:6
 
@@ -369,10 +369,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "VarsAdditionalProperty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid project manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:1
 
