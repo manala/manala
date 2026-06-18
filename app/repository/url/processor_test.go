@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/app/repository/url"
-	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 
@@ -29,7 +29,7 @@ func (s *ProcessorSuite) TestProcess() {
 		{
 			test: "QuerySemicolon",
 			url:  "foo?bar;baz",
-			expectedErr: serror.Expectation{
+			expectedErr: serrortest.Expectation{
 				Msg: "unable to process repository query",
 				Attrs: [][2]any{
 					{"query", "bar;baz"},

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	jsondecoder "github.com/manala/manala/internal/json/decoder"
-	jsonerrors "github.com/manala/manala/internal/json/errors"
+	jsonerrorstest "github.com/manala/manala/internal/json/errors/errorstest"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
@@ -26,7 +26,7 @@ func (s *DecodeSuite) TestErrors() {
 		{
 			test: "Syntax",
 			data: `foo`,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{1, 2},
 				Err:      expectation.ErrorMessage("invalid character 'o' in literal false (expecting 'a')"),
 			},

@@ -1,8 +1,9 @@
-package serror
+package serrortest
 
 import (
 	"testing"
 
+	"github.com/manala/manala/internal/errors/serror"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/assert"
@@ -19,8 +20,8 @@ type Expectation struct {
 func (a Expectation) Expect(t *testing.T, err error) {
 	t.Helper()
 
-	require.IsType(t, Error{}, err)
-	e := err.(Error)
+	require.IsType(t, serror.Error{}, err)
+	e := err.(serror.Error)
 
 	require.EqualError(t, e, a.Msg, "msg not equal")
 

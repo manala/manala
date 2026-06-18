@@ -11,8 +11,8 @@ import (
 	"github.com/manala/manala/app/repository"
 	"github.com/manala/manala/app/repository/getter"
 	"github.com/manala/manala/app/sync"
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -78,7 +78,7 @@ func (s *LoaderSuite) TestHandleErrors() {
 	}{
 		{
 			test: "Directory",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "recipe manifest is a directory",
 				Attrs: [][2]any{
 					{"dir", filepath.Join(dir, "Directory", "repository", "recipe", ".manala.yaml")},
@@ -87,10 +87,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "Unparsable",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -104,10 +104,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "Empty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -122,10 +122,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "MultipleDocuments",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:1
 
@@ -141,10 +141,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "NotMap",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to parse recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -159,10 +159,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "MapEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -178,10 +178,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config
 		{
 			test: "ConfigMissing",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s
 
@@ -196,10 +196,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigNotMap",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:9
 
@@ -213,10 +213,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigMapEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -230,10 +230,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigAdditionalProperty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:3
 
@@ -250,10 +250,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Description
 		{
 			test: "ConfigDescriptionAbsent",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -268,10 +268,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigDescriptionNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:16
 
@@ -286,10 +286,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigDescriptionEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:16
 
@@ -304,10 +304,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigDescriptionTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:2:16
 
@@ -323,10 +323,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Icon
 		{
 			test: "ConfigIconNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:9
 
@@ -342,10 +342,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigIconEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:9
 
@@ -361,10 +361,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigIconTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:9
 
@@ -381,10 +381,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Template
 		{
 			test: "ConfigTemplateNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:13
 
@@ -400,10 +400,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigTemplateEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:13
 
@@ -419,10 +419,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigTemplateTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:13
 
@@ -439,10 +439,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Partials
 		{
 			test: "ConfigPartialsNotArray",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:13
 
@@ -459,10 +459,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Partials Item
 		{
 			test: "ConfigPartialsItemNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -479,10 +479,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigPartialsItemEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -499,10 +499,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigPartialsItemTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -520,10 +520,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Sync
 		{
 			test: "ConfigSyncNotArray",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:3:9
 
@@ -540,10 +540,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		// Config - Sync Item
 		{
 			test: "ConfigSyncItemNotString",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -560,10 +560,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigSyncItemEmpty",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -580,10 +580,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "ConfigSyncItemTooLong",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:7
 
@@ -600,10 +600,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "AnnotationUnparsableSingleLine",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to infer recipe manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:14
 
@@ -621,10 +621,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "AnnotationUnparsableMultiLine",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to infer recipe manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:6:8
 
@@ -641,10 +641,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "AnnotationInvalidSingleLine",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to infer recipe manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:4:30
 
@@ -662,10 +662,10 @@ func (s *LoaderSuite) TestHandleErrors() {
 		},
 		{
 			test: "AnnotationInvalidMultiLine",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to infer recipe manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:5
 

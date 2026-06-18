@@ -11,8 +11,8 @@ import (
 	"github.com/manala/manala/app/testing/errors"
 	cmdUpdate "github.com/manala/manala/cmd/update"
 	"github.com/manala/manala/internal/cache"
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/output"
 	"github.com/manala/manala/internal/testing/expectation"
@@ -52,10 +52,10 @@ func (s *CommandSuite) TestProjectErrors() {
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -72,10 +72,10 @@ func (s *CommandSuite) TestProjectErrors() {
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid project manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:6
 
@@ -126,10 +126,10 @@ func (s *CommandSuite) TestProjectRecursiveErrors() {
 			expectedStderr: heredoc.Doc(`
 				 ● loading projects recursive…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid project manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 
@@ -146,10 +146,10 @@ func (s *CommandSuite) TestProjectRecursiveErrors() {
 			expectedStderr: heredoc.Doc(`
 				 ● loading projects recursive…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid project manifest vars",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:5:6
 
@@ -329,10 +329,10 @@ func (s *CommandSuite) TestRecipeErrors() {
 			expectedStderr: heredoc.Doc(`
 				 ● loading project…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 

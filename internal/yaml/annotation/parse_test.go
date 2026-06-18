@@ -7,6 +7,7 @@ import (
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
 	yamlannotation "github.com/manala/manala/internal/yaml/annotation"
+	yamlannotationtest "github.com/manala/manala/internal/yaml/annotation/annotationtest"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -128,7 +129,7 @@ func (s *ParseSuite) TestErrors() {
 				# @foo bar
 				# @foo baz
 			`),
-			expected: yamlannotation.ErrorExpectation{
+			expected: yamlannotationtest.ErrorExpectation{
 				Position: [2]int{2, 3},
 				Err:      expectation.ErrorMessage("duplicate @foo annotation"),
 			},

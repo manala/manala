@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/manala/manala/app/repository/getter"
-	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
@@ -73,7 +73,7 @@ func (s *ErrorsSuite) TestError() {
 		{
 			test: "Any",
 			err:  errors.New("foo"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "unable to handle repository",
 				Attrs: [][2]any{
 					{"error", "foo"},
@@ -83,14 +83,14 @@ func (s *ErrorsSuite) TestError() {
 		{
 			test: "SubdirOutOfRepository",
 			err:  errors.New("subdirectory component contain path traversal out of the repository"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "subdir out of repository",
 			},
 		},
 		{
 			test: "Aws",
 			err:  awsError{},
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg:  "aws error",
 				Dump: "error",
 				Attrs: [][2]any{
@@ -102,7 +102,7 @@ func (s *ErrorsSuite) TestError() {
 		{
 			test: "CommandErrorCode",
 			err:  errors.New("foo exited with 123: bar"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg:  "command error",
 				Dump: "bar",
 				Attrs: [][2]any{
@@ -114,7 +114,7 @@ func (s *ErrorsSuite) TestError() {
 		{
 			test: "CommandError",
 			err:  errors.New("error running foo: bar"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg:  "command error",
 				Dump: "bar",
 				Attrs: [][2]any{
@@ -126,7 +126,7 @@ func (s *ErrorsSuite) TestError() {
 			test: "MultiError",
 			//revive:disable:error-strings
 			err: errors.New("error downloading 'foo': 123 errors occurred:\nbar\nbaz\n\n"),
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg:  "unable to handle repository",
 				Dump: "bar\nbaz",
 			},

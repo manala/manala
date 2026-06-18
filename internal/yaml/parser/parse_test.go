@@ -5,7 +5,7 @@ import (
 
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
-	yamlerrors "github.com/manala/manala/internal/yaml/errors"
+	yamlerrorstest "github.com/manala/manala/internal/yaml/errors/errorstest"
 	yamlparser "github.com/manala/manala/internal/yaml/parser"
 
 	"github.com/goccy/go-yaml/ast"
@@ -187,7 +187,7 @@ func (s *ParseSuite) TestAnchorsCycle() {
 			  self: *cyclic
 		`)))
 
-		expectation.ExpectError(s.T(), yamlerrors.Expectation{
+		expectation.ExpectError(s.T(), yamlerrorstest.Expectation{
 			Position: [2]int{2, 9},
 			Err:      expectation.ErrorMessage("cycle through yaml anchor \"cyclic\""),
 		}, err)
@@ -200,7 +200,7 @@ func (s *ParseSuite) TestAnchorsCycle() {
 			  <<: *cyclic
 		`)))
 
-		expectation.ExpectError(s.T(), yamlerrors.Expectation{
+		expectation.ExpectError(s.T(), yamlerrorstest.Expectation{
 			Position: [2]int{2, 7},
 			Err:      expectation.ErrorMessage("cycle through yaml anchor \"cyclic\""),
 		}, err)
@@ -318,7 +318,7 @@ func (s *ParseSuite) TestErrors() {
 		{
 			test: "Empty",
 			data: "",
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("empty yaml content"),
 			},
@@ -326,7 +326,7 @@ func (s *ParseSuite) TestErrors() {
 		{
 			test: "Spaces",
 			data: " ",
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("empty yaml content"),
 			},
@@ -334,7 +334,7 @@ func (s *ParseSuite) TestErrors() {
 		{
 			test: "Invalid",
 			data: "@",
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err:      expectation.ErrorMessage("'@' is a reserved character"),
 			},
@@ -345,7 +345,7 @@ func (s *ParseSuite) TestErrors() {
 				foo: bar
 					baz: qux
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{2, 1},
 				Err:      expectation.ErrorMessage("found a tab character where an indentation space is expected "),
 			},
@@ -358,7 +358,7 @@ func (s *ParseSuite) TestErrors() {
 				---
 				bar
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{3, 1},
 				Err:      expectation.ErrorMessage("multiple documents yaml content"),
 			},
@@ -368,7 +368,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err:      expectation.ErrorMessage("yaml document must be a map"),
 			},
@@ -378,7 +378,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: .inf
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 6},
 				Err:      expectation.ErrorMessage("irregular yaml type"),
 			},
@@ -388,7 +388,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: .nan
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 6},
 				Err:      expectation.ErrorMessage("irregular yaml type"),
 			},
@@ -398,7 +398,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				123: foo
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
@@ -408,7 +408,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				? 123: bar
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
@@ -419,7 +419,7 @@ func (s *ParseSuite) TestErrors() {
 				anchor: &anchor
 				  0: foo
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{2, 3},
 				Err:      expectation.ErrorMessage("irregular yaml map key"),
 			},
@@ -429,7 +429,7 @@ func (s *ParseSuite) TestErrors() {
 			data: heredoc.Doc(`
 				foo: *bar
 			`),
-			expected: yamlerrors.Expectation{
+			expected: yamlerrorstest.Expectation{
 				Position: [2]int{1, 6},
 				Err:      expectation.ErrorMessage("unknown \"bar\" yaml anchor"),
 			},

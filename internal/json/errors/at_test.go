@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	jsonerrors "github.com/manala/manala/internal/json/errors"
+	jsonerrorstest "github.com/manala/manala/internal/json/errors/errorstest"
 	"github.com/manala/manala/internal/testing/expectation"
 
 	"github.com/stretchr/testify/suite"
@@ -27,7 +28,7 @@ func (s *AtSuite) Test() {
 			test:   "EmptySource",
 			src:    "",
 			offset: 0,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{0, 0},
 				Err:      expectation.ErrorMessage("error"),
 			},
@@ -36,7 +37,7 @@ func (s *AtSuite) Test() {
 			test:   "Beginning",
 			src:    "foo",
 			offset: 1,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{1, 1},
 				Err:      expectation.ErrorMessage("error"),
 			},
@@ -45,7 +46,7 @@ func (s *AtSuite) Test() {
 			test:   "Middle",
 			src:    "foo",
 			offset: 2,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{1, 2},
 				Err:      expectation.ErrorMessage("error"),
 			},
@@ -54,7 +55,7 @@ func (s *AtSuite) Test() {
 			test:   "AfterLine",
 			src:    "foo\nbar",
 			offset: 5,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{2, 1},
 				Err:      expectation.ErrorMessage("error"),
 			},
@@ -63,7 +64,7 @@ func (s *AtSuite) Test() {
 			test:   "MultipleLines",
 			src:    "foo\nbar\nbaz",
 			offset: 10,
-			expected: jsonerrors.Expectation{
+			expected: jsonerrorstest.Expectation{
 				Position: [2]int{3, 2},
 				Err:      expectation.ErrorMessage("error"),
 			},

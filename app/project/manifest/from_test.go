@@ -8,7 +8,7 @@ import (
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/app/project/manifest"
 	"github.com/manala/manala/app/testing/mocks"
-	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 
@@ -30,7 +30,7 @@ func (s *FromSuite) TestHandleErrors() {
 	}{
 		{
 			test: "NotExists",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "project from dir does not exist",
 				Attrs: [][2]any{
 					{"dir", filepath.Join(dir, "NotExists", "project")},
@@ -39,7 +39,7 @@ func (s *FromSuite) TestHandleErrors() {
 		},
 		{
 			test: "File",
-			expected: serror.Expectation{
+			expected: serrortest.Expectation{
 				Msg: "project from dir is not a dir",
 				Attrs: [][2]any{
 					{"dir", filepath.Join(dir, "File", "project")},

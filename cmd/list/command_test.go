@@ -10,8 +10,8 @@ import (
 	"github.com/manala/manala/app/testing/errors"
 	cmdList "github.com/manala/manala/cmd/list"
 	"github.com/manala/manala/internal/cache"
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/output"
 	"github.com/manala/manala/internal/testing/expectation"
@@ -127,10 +127,10 @@ func (s *CommandSuite) TestRecipeErrors() {
 				 ● loading repository…
 				 ● loading recipes…
 			`),
-			expectedError: serror.Expectation{
+			expectedError: serrortest.Expectation{
 				Msg: "invalid recipe manifest",
 				Err: expectation.Errors(
-					source.Expectation(heredoc.Doc(`
+					sourcetest.Expectation(heredoc.Doc(`
 
 						at %[1]s:1:1
 

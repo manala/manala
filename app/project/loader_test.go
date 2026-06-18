@@ -8,7 +8,7 @@ import (
 	"github.com/manala/manala/app/project"
 	"github.com/manala/manala/app/testing/errors"
 	"github.com/manala/manala/app/testing/mocks"
-	"github.com/manala/manala/internal/errors/serror"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
 	"github.com/manala/manala/internal/log"
 	"github.com/manala/manala/internal/testing/expectation"
 
@@ -85,7 +85,7 @@ func (s *LoaderSuite) TestLoadRecursiveErrors() {
 			return nil
 		})
 
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "dir not found",
 			Attrs: [][2]any{
 				{"dir", "dir"},

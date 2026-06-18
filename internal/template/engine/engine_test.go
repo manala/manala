@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/manala/manala/internal/errors/serror"
-	"github.com/manala/manala/internal/errors/source"
+	"github.com/manala/manala/internal/errors/serror/serrortest"
+	"github.com/manala/manala/internal/errors/source/sourcetest"
 	"github.com/manala/manala/internal/template/engine"
 	"github.com/manala/manala/internal/testing/expectation"
 	"github.com/manala/manala/internal/testing/heredoc"
@@ -44,12 +44,12 @@ func (s *EngineSuite) TestExecutor() {
 		executor, err := e.Executor("data", filepath.Join(dir, "not_found.tmpl"))
 
 		s.Nil(executor)
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to read template file",
 			Attrs: [][2]any{
 				{"path", filepath.Join(dir, "not_found.tmpl")},
 			},
-			Err: serror.Expectation{
+			Err: serrortest.Expectation{
 				Msg: "file does not exist",
 				Attrs: [][2]any{
 					{"operation", "open"},
@@ -65,10 +65,10 @@ func (s *EngineSuite) TestExecutor() {
 		executor, err := e.Executor("data", filepath.Join(dir, "partial.tmpl"))
 
 		s.Nil(executor)
-		expectation.ExpectError(s.T(), serror.Expectation{
+		expectation.ExpectError(s.T(), serrortest.Expectation{
 			Msg: "unable to parse template file",
 			Err: expectation.Errors(
-				source.Expectation(heredoc.Doc(`
+				sourcetest.Expectation(heredoc.Doc(`
 
 					at %[1]s:2
 
