@@ -207,6 +207,22 @@ func (s *ParseSuite) TestAnchorsCycle() {
 	})
 }
 
+func (s *ParseSuite) TestAnchorsExpansionLimit() {
+	// Exponential alias fan-out (a "billion laughs" bomb) must be rejected
+	// during resolution rather than exhausting memory materializing the
+	// expanded value tree.
+	_, err := yamlparser.Parse([]byte(heredoc.Doc(`
+		a: &a [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+		b: &b [*a, *a, *a, *a, *a, *a, *a, *a, *a, *a]
+		c: &c [*b, *b, *b, *b, *b, *b, *b, *b, *b, *b]
+		d: &d [*c, *c, *c, *c, *c, *c, *c, *c, *c, *c]
+		e: &e [*d, *d, *d, *d, *d, *d, *d, *d, *d, *d]
+		bomb: *e
+	`)))
+
+	s.Require().ErrorContains(err, "yaml anchor expansion limit exceeded")
+}
+
 func (s *ParseSuite) TestTags() {
 	node, err := yamlparser.Parse([]byte(heredoc.Doc(`
 		foo: !!str bar
