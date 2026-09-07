@@ -14,7 +14,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/gdamore/tcell/v3 v3.4.0
 	github.com/gen2brain/beeep v0.11.2
-	github.com/go-openapi/jsonpointer v0.23.1
+	github.com/go-openapi/jsonpointer v1.0.1
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gopxl/beep/v2 v2.1.1
 	github.com/gosimple/slug v1.15.0
