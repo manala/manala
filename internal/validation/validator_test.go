@@ -16,6 +16,18 @@ func TestValidatorSuite(t *testing.T) {
 	suite.Run(t, new(ValidatorLocatorSuite))
 }
 
+func (s *ValidatorLocatorSuite) TestNewValidatorRejectsExternalRef() {
+	// An untrusted schema must not read local files via a $ref to an external
+	// URL — the ref is rejected at compile time, not fetched.
+	_, err := validation.NewValidator(map[string]any{
+		"$ref": "file:///etc/passwd",
+	})
+
+	// The scheme is rejected before any file access (no read/existence oracle):
+	// the default loader would instead open the file and fail parsing it.
+	s.Require().ErrorContains(err, "no URLLoader registered")
+}
+
 func (s *ValidatorLocatorSuite) TestValidateViolations() {
 	tests := []struct {
 		test     string
