@@ -211,27 +211,69 @@ func (syncer *Syncer) syncNode(node *node) error {
 
 	// Files are not equals or destination does not exist
 	if !equal {
-		// Destination file mode
-		var dstMode os.FileMode = 0o666
-		if node.Src.IsExecutable {
-			dstMode = 0o777
-		}
-
-		// Create or truncate destination file
-		dstFile, err := os.OpenFile(node.Dst.Path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
+		// Write to a temporary file in the destination directory, then rename
+		// it into place. Renaming is atomic, so an interrupted copy or a flush
+		// error leaves any existing destination untouched instead of truncating
+		// it in place.
+		tmpFile, err := os.CreateTemp(filepath.Dir(node.Dst.Path), ".manala-sync-*")
 		if err != nil {
 			return serror.New("file system error").
 				With("file", node.Dst.Path).
 				WithErr(std.From(err))
 		}
 
-		defer dstFile.Close()
+		tmpPath := tmpFile.Name()
 
-		// Copy from source to destination
-		_, err = io.Copy(dstFile, srcReader)
-		if err != nil {
+		// Remove the temporary file unless it is successfully renamed into place.
+		committed := false
+		defer func() {
+			if !committed {
+				_ = tmpFile.Close()
+				_ = os.Remove(tmpPath)
+			}
+		}()
+
+		// Copy from source to the temporary file
+		if _, err := io.Copy(tmpFile, srcReader); err != nil {
 			return err
 		}
+
+		// Flush and close, surfacing a late write error (e.g. a full disk
+		// reported only at close) instead of swallowing it.
+		if err := tmpFile.Sync(); err != nil {
+			return serror.New("file system error").
+				With("file", node.Dst.Path).
+				WithErr(std.From(err))
+		}
+		if err := tmpFile.Close(); err != nil {
+			return serror.New("file system error").
+				With("file", node.Dst.Path).
+				WithErr(std.From(err))
+		}
+
+		// Destination file mode: preserve an existing file's permissions
+		// (matching the previous in-place truncate), use a standard mode for a
+		// new file.
+		dstMode := node.Dst.Mode
+		if !node.Dst.IsExist {
+			dstMode = 0o644
+			if node.Src.IsExecutable {
+				dstMode = 0o755
+			}
+		}
+		if err := os.Chmod(tmpPath, dstMode); err != nil {
+			return serror.New("file system error").
+				With("file", node.Dst.Path).
+				WithErr(std.From(err))
+		}
+
+		// Atomically replace the destination
+		if err := os.Rename(tmpPath, node.Dst.Path); err != nil {
+			return serror.New("file system error").
+				With("file", node.Dst.Path).
+				WithErr(std.From(err))
+		}
+		committed = true
 
 		// Log
 		syncer.log.Info("file synced",
