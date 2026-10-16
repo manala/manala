@@ -9,9 +9,16 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// maxResolveNodes bounds the number of nodes visited while expanding yaml
+// anchors. It aborts pathological exponential alias fan-out (the "billion
+// laughs" attack) during resolution — before the shared anchor DAG would be
+// materialized into an exponential value tree by NodeToValue.
+const maxResolveNodes = 100_000
+
 // resolve replaces aliases with their anchor values and deduplicates mapping keys.
 // visiting tracks anchor names currently being resolved to detect cycles.
-func resolve(node ast.Node, anchors map[string]ast.Node, visiting map[string]bool) error {
+// count tracks the number of resolved nodes to bound anchor expansion.
+func resolve(node ast.Node, anchors map[string]ast.Node, visiting map[string]bool, count *int) error {
 	switch n := node.(type) {
 	case *ast.MappingNode:
 		deduplicatedValues := make([]*ast.MappingValueNode, 0)
@@ -72,7 +79,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node, visiting map[string]boo
 				deduplicatedValues = append(deduplicatedValues, mv)
 
 				// Resolve
-				if err := resolveValue(&mv.Value, anchors, visiting); err != nil {
+				if err := resolveValue(&mv.Value, anchors, visiting, count); err != nil {
 					return err
 				}
 			}
@@ -82,7 +89,7 @@ func resolve(node ast.Node, anchors map[string]ast.Node, visiting map[string]boo
 
 	case *ast.SequenceNode:
 		for idx := range n.Values {
-			if err := resolveValue(&n.Values[idx], anchors, visiting); err != nil {
+			if err := resolveValue(&n.Values[idx], anchors, visiting, count); err != nil {
 				return err
 			}
 		}
@@ -120,14 +127,24 @@ func resolveMergeAlias(alias *ast.AliasNode, anchors map[string]ast.Node, visiti
 	return mn, nil
 }
 
-func resolveValue(node *ast.Node, anchors map[string]ast.Node, visiting map[string]bool) error {
+func resolveValue(node *ast.Node, anchors map[string]ast.Node, visiting map[string]bool, count *int) error {
+	// Bound anchor expansion: each resolved node counts, so exponential alias
+	// fan-out trips this well before it can be materialized into values.
+	*count++
+	if *count > maxResolveNodes {
+		return yamlerrors.New(
+			errors.New("yaml anchor expansion limit exceeded"),
+			(*node).GetToken(),
+		)
+	}
+
 	switch n := (*node).(type) {
 	case *ast.TagNode:
 		*node = n.Value
-		return resolveValue(node, anchors, visiting)
+		return resolveValue(node, anchors, visiting, count)
 	case *ast.MappingKeyNode:
 		*node = n.Value
-		return resolveValue(node, anchors, visiting)
+		return resolveValue(node, anchors, visiting, count)
 	case *ast.AliasNode:
 		name := n.Value.GetToken().Value
 
@@ -148,7 +165,7 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node, visiting map[stri
 
 		visiting[name] = true
 		*node = anchor
-		err := resolveValue(node, anchors, visiting)
+		err := resolveValue(node, anchors, visiting, count)
 		delete(visiting, name)
 		return err
 	case *ast.AnchorNode:
@@ -163,10 +180,10 @@ func resolveValue(node *ast.Node, anchors map[string]ast.Node, visiting map[stri
 
 		visiting[name] = true
 		*node = n.Value
-		err := resolveValue(node, anchors, visiting)
+		err := resolveValue(node, anchors, visiting, count)
 		delete(visiting, name)
 		return err
 	default:
-		return resolve(*node, anchors, visiting)
+		return resolve(*node, anchors, visiting, count)
 	}
 }
