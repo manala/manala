@@ -38,7 +38,7 @@ as user with sudo privileges:
 ```shell
 curl -sSL https://raw.githubusercontent.com/manala/packages/main/manala.gpg | sudo pacman-key --add -
 sudo pacman-key --lsign-key 1394DEA3
-echo -e "\n[manala]\nServer = https://manala.github.io/packages/aur/stable/\$arch" | sudo tee -a /etc/apt/sources.list.d/manala.list
+echo -e "\n[manala]\nServer = https://manala.github.io/packages/aur/stable/\$arch" | sudo tee -a /etc/pacman.conf
 sudo pacman -Sy manala
 ```
 
