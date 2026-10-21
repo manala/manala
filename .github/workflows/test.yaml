@@ -69,8 +69,6 @@ jobs:
           go-version: ${{ env.MANALA_GO_VERSION }}
       - name: Goreleaser build
         uses: goreleaser/goreleaser-action@v7
-        env:
-          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         with:
           version: v${{ env.MANALA_GORELEASER_VERSION }}
           args: >

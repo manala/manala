@@ -31,7 +31,6 @@ jobs:
       - name: Goreleaser release
         uses: goreleaser/goreleaser-action@v7
         env:
-          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
           GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
         with:
           version: v${{ env.MANALA_GORELEASER_VERSION }}
