@@ -18,6 +18,11 @@ type Validator struct {
 func NewValidator(schema map[string]any) (*Validator, error) {
 	compiler := jsonschema.NewCompiler()
 
+	// Block external $ref resolution. Manala schemas are added in memory, so no
+	// URL is ever legitimately fetched; an empty loader rejects every scheme,
+	// closing the file:// local-file read/existence oracle in @schema refs.
+	compiler.UseLoader(jsonschema.SchemeURLLoader{})
+
 	if err := compiler.AddResource("urn:manala", schema); err != nil {
 		return nil, err
 	}
