@@ -19,22 +19,26 @@ func walkDir(path string, dir os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 
 	pathAbs, err := filepath.Abs(path)
 	if err != nil {
-		// Second call, to report Abs error
-		err = walkDirFunc(path, dir, err)
-		if err != nil {
+		// Report the error; if the callback does not abort, stop ascending
+		// rather than continuing with an invalid path.
+		if err := walkDirFunc(path, dir, err); err != nil {
 			return err
 		}
+
+		return nil
 	}
 
 	// Get parent dir
 	parent := filepath.Join(path, "..")
 	parentAbs, err := filepath.Abs(parent)
 	if err != nil {
-		// Second call, to report parent Abs error
-		err = walkDirFunc(parent, dir, err)
-		if err != nil {
+		// Report the error; if the callback does not abort, stop ascending
+		// rather than continuing with an invalid parent path.
+		if err := walkDirFunc(parent, dir, err); err != nil {
 			return err
 		}
+
+		return nil
 	}
 
 	// If absolute parent path equals to absolute path,
@@ -45,11 +49,13 @@ func walkDir(path string, dir os.DirEntry, walkDirFunc fs.WalkDirFunc) error {
 
 	info, err := os.Lstat(parent)
 	if err != nil {
-		// Second call, to report Stat error.
-		err = walkDirFunc(parent, dir, err)
-		if err != nil {
+		// Report the error; if the callback does not abort, stop here rather
+		// than recursing with a nil DirEntry (which would panic on IsDir()).
+		if err := walkDirFunc(parent, dir, err); err != nil {
 			return err
 		}
+
+		return nil
 	}
 
 	if err := walkDir(parent, fs.FileInfoToDirEntry(info), walkDirFunc); err != nil {
