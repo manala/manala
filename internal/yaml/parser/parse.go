@@ -52,7 +52,7 @@ func Parse(data []byte) (*ast.MappingNode, error) {
 	}
 
 	// Resolve
-	if err := resolve(node, w.anchors, map[string]bool{}); err != nil {
+	if err := resolve(node, w.anchors, map[string]bool{}, new(int)); err != nil {
 		return nil, err
 	}
 
